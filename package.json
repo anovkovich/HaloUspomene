@@ -1,0 +1,29 @@
+{
+  "name": "monorepo-fast-next",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "---------------- DB ----------------": "",
+    "db:up": "docker compose up -d",
+    "db:stop": "docker compose stop",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f db",
+    "---------------- SETUP ----------------": "",
+    "setup:backend": "cd backend && python -m venv venv && .\\venv\\Scripts\\pip install -r requirements.txt",
+    "setup:backend-mac": "cd backend && python3 -m venv venv && ./venv/bin/pip install -r requirements.txt",
+    "setup:frontend": "cd frontend && yarn install",
+    "setup": "yarn install && yarn setup:frontend && yarn setup:backend",
+    "setup-mac": "yarn install && yarn setup:frontend && yarn setup:backend-mac",
+    "---------------- DEV ----------------": "",
+    "dev:frontend": "cd frontend && yarn dev",
+    "dev:backend": "cd backend && .\\venv\\Scripts\\python -m uvicorn main:app --reload --port 8000",
+    "dev:backend-mac": "cd backend && ./venv/bin/uvicorn main:app --reload --port 8000",
+    "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\" --names \"NEXT,API\" --prefix-colors \"blue,yellow\"",
+    "dev-mac": "concurrently \"yarn dev:frontend\" \"yarn dev:backend-mac\" --names \"NEXT,API\" --prefix-colors \"blue,yellow\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
