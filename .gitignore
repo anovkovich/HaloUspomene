@@ -4,6 +4,9 @@
 # Ignore node_modules anywhere (root, frontend, etc.)
 node_modules
 
+
+.idea/
+
 # macOS junk
 .DS_Store
 .AppleDouble
