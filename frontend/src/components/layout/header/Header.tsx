@@ -17,7 +17,7 @@ const Header = () => {
       <div className="navbar-start">
         <Link
           href="/"
-          className="btn btn-ghost text-xl font-bold tracking-tighter"
+          className="btn-ghost hover:bg-transparent border-0 text-xl font-bold tracking-tighter"
         >
           <Image src="/images/logo.png" alt="Logo" width={150} height={45} />
         </Link>

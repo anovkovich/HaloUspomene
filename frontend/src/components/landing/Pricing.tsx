@@ -2,11 +2,14 @@ import React from "react";
 import CarIcon from "../assets/svg/CarIcon";
 import SuitcaseIcon from "../assets/svg/SuitcaseIcon";
 import HouseIcon from "../assets/svg/HouseIcon";
+import { link } from "fs";
+import Link from "next/link";
 
 const InsurancePackages = () => {
   const packages = [
     {
       title: "Pomoć na putu",
+      link: "/kupovina/pomoc-na-putu",
       icon: <CarIcon className="h-25 w-25 text-base-300" />,
       features: [
         "Saobraćajne nezgode",
@@ -18,6 +21,7 @@ const InsurancePackages = () => {
     },
     {
       title: "Putno osiguranje",
+      link: "/kupovina/putno-osiguranje",
       icon: <SuitcaseIcon className="h-25 w-25 text-base-300" />,
       features: ["Ambulantno lečenje", "Akutna zubobolja", "Sanitetski prevoz"],
       price: "100",
@@ -25,6 +29,7 @@ const InsurancePackages = () => {
     },
     {
       title: "Osiguranje domaćinstava",
+      link: "/kupovina/osiguranje-domacinstava",
       icon: <HouseIcon className="h-25 w-25 text-base-300" />,
       features: [
         "Požar i provalna krađa",
@@ -91,7 +96,7 @@ const InsurancePackages = () => {
                 </ul>
 
                 {/* Pricing Section */}
-                <div className="mt-auto flex items-baseline gap-2">
+                {/* <div className="mt-auto flex items-baseline gap-2">
                   <span className="text-6xl font-black text-warning leading-none">
                     {pkg.price}
                   </span>
@@ -99,7 +104,14 @@ const InsurancePackages = () => {
                     <span>din /</span>
                     <span>{pkg.period.split("/ ")[1]}</span>
                   </div>
-                </div>
+                </div> */}
+
+                <Link
+                  href={pkg.link}
+                  className="btn btn-primary btn-lg rounded-full px-10 normal-case text-lg mt-8 w-full hover:scale-105 transition-transform"
+                >
+                  Kupi sada
+                </Link>
               </div>
             </div>
           ))}

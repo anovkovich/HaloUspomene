@@ -21,8 +21,8 @@ export default function NavbarShell({
       className={`navbar fixed z-50 transition-all duration-300 ease-in-out px-4 md:px-8
         ${
           isScrolled
-            ? "bg-base-100/90 backdrop-blur-md py-1 shadow-md min-h-[4rem]"
-            : "bg-base-200 py-4 min-h-[5rem]"
+            ? "bg-base-100/90 backdrop-blur-md py-1 shadow-md min-h-16"
+            : "bg-base-200 py-4 min-h-20 border-b border-base-300"
         }`}
     >
       {children}
