@@ -164,8 +164,8 @@ export default function RootLayout({
       closes: "21:00",
     },
     sameAs: [
+      "https://www.instagram.com/halo_uspomene",
       // Add your social media links when available:
-      // "https://www.instagram.com/halouspomene",
       // "https://www.facebook.com/halouspomene",
       // "https://www.tiktok.com/@halouspomene",
     ],

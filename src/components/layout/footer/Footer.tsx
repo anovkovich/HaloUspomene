@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart } from "lucide-react";
+import { Heart, Instagram } from "lucide-react";
 
 const Footer: React.FC = () => {
   return (
@@ -16,16 +16,19 @@ const Footer: React.FC = () => {
           <div className="self-end content-end w-full">
             <span className="text-3xl font-serif font-bold italic">
               Tu za <span className="text-[#AE343F] ">Vas</span>!
+              <a
+                href="https://www.instagram.com/halo_uspomene"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-[#AE343F] transition-colors"
+              >
+                <Instagram className="inline-block ml-4 mb-1" />
+              </a>
             </span>
             <p className="mt-4 text-[#F5F4DC]/40  leading-relaxed">
               Tu smo da sačuvate najdragocenije glasove sa svog venčanja. Jer
               ljubav zaslužuje da se čuje — zauvek.
             </p>
-            {/* <h4 className="text-xl font-serif mb-8">Kontakt</h4>
-            <ul className="space-y-4 text-[#F5F4DC]/50 font-light">
-              <li>info@halouspomene.rs</li>
-              <li>+381 60 123 4567</li>
-            </ul> */}
           </div>
         </div>
         <div className="pt-12 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest text-[#F5F4DC]/20">
