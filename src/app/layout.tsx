@@ -34,12 +34,9 @@ export const metadata: Metadata = {
     "knjiga utisaka",
     "venčanje",
     "wedding guest book",
-    "audio poruke venčanje",
     "iznajmljivanje telefona",
     "uspomene sa venčanja",
     "vintage telefon",
-    "Beograd",
-    "Srbija",
   ],
 
   authors: [{ name: "HALO Uspomene" }],
@@ -138,14 +135,21 @@ export default function RootLayout({
     priceRange: "$$",
     openingHoursSpecification: {
       "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      dayOfWeek: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
       opens: "09:00",
       closes: "21:00",
     },
     sameAs: [
       // Add your social media links when available:
       // "https://www.instagram.com/halouspomene",
-      // "https://www.facebook.com/halouspomene",
     ],
     aggregateRating: {
       "@type": "AggregateRating",
@@ -169,7 +173,8 @@ export default function RootLayout({
           itemOffered: {
             "@type": "Service",
             name: "Premium Paket",
-            description: "Lična dostava, montaža i ekskluzivna drvena govornica",
+            description:
+              "Lična dostava, montaža i ekskluzivna drvena govornica",
           },
         },
       ],

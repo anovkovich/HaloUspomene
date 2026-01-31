@@ -3,9 +3,9 @@ import { Heart } from "lucide-react";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#232323] text-[#F5F4DC] pt-24 pb-12 border-t border-white/5">
+    <footer className="bg-[#232323] text-[#F5F4DC] pt-16 sm:pt-20 md:pt-24 pb-12 border-t border-white/5">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-16 mb-24">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 md:gap-16 mb-12 sm:mb-16 md:mb-24">
           <div className="lg:col-span-2">
             <span className="text-3xl font-serif font-bold">
               HALO <span className="text-[#AE343F] italic">Uspomene</span>

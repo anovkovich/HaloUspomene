@@ -63,7 +63,7 @@ const Navbar: React.FC = () => {
           </div>
 
           <button
-            className="lg:hidden btn btn-ghost btn-circle text-[#232323]"
+            className="lg:hidden btn btn-ghost btn-circle text-[#232323] min-w-[44px] min-h-[44px]"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? "Zatvori meni" : "Otvori meni"}
           >
@@ -78,13 +78,13 @@ const Navbar: React.FC = () => {
           isMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <ul className="p-6 space-y-4">
+        <ul className="p-4 sm:p-6 space-y-4">
           {navLinks.map((link) => (
             <li key={link.name}>
               <a
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="block text-2xl font-serif text-[#232323] hover:text-[#AE343F] py-2 transition-colors"
+                className="block text-2xl font-serif text-[#232323] hover:text-[#AE343F] py-2 transition-colors min-h-[44px] flex items-center"
               >
                 {link.name}
               </a>
@@ -94,7 +94,7 @@ const Navbar: React.FC = () => {
             <a
               href="#book"
               onClick={() => setIsMenuOpen(false)}
-              className="btn bg-[#AE343F] hover:bg-[#8A2A32] w-full text-[#F5F4DC] rounded-xl text-lg border-none"
+              className="btn bg-[#AE343F] hover:bg-[#8A2A32] w-full text-[#F5F4DC] rounded-xl text-lg border-none min-h-[48px]"
             >
               Pošalji Upit
             </a>

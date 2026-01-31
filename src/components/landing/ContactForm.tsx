@@ -80,7 +80,7 @@ const ContactForm: React.FC = () => {
 
   if (isSubmitted) {
     return (
-      <div className="bg-white/5 backdrop-blur-md p-16 rounded-[3rem] border border-white/10 text-center">
+      <div className="bg-white/5 backdrop-blur-md p-8 sm:p-12 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/10 text-center">
         <div className="w-24 h-24 bg-[#AE343F] rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-[#AE343F]/40">
           <CheckCircle2 size={48} className="text-[#F5F4DC]" />
         </div>
@@ -105,7 +105,7 @@ const ContactForm: React.FC = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-10 bg-white/5 backdrop-blur-md p-8 md:p-16 rounded-[3rem] border border-white/10 shadow-2xl relative"
+      className="space-y-10 bg-white/5 backdrop-blur-md p-6 sm:p-10 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/10 shadow-2xl relative"
     >
       {/* Error Message */}
       {error && (
@@ -197,7 +197,7 @@ const ContactForm: React.FC = () => {
           <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
             <Package size={14} className="text-[#AE343F]" /> Izaberite Paket
           </label>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {["classic", "premium"].map((pkg) => (
               <button
                 key={pkg}
@@ -220,7 +220,7 @@ const ContactForm: React.FC = () => {
       <button
         type="submit"
         disabled={isLoading}
-        className="btn bg-[#AE343F] hover:bg-[#8A2A32] btn-lg w-full h-20 rounded-2xl text-[#F5F4DC] text-lg font-bold shadow-2xl shadow-[#AE343F]/40 group relative overflow-hidden border-none disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn bg-[#AE343F] hover:bg-[#8A2A32] btn-lg w-full min-h-[48px] h-16 sm:h-20 rounded-2xl text-[#F5F4DC] text-base sm:text-lg font-bold shadow-2xl shadow-[#AE343F]/40 group relative overflow-hidden border-none disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className="relative z-10 flex items-center gap-3">
           {isLoading ? (

@@ -23,25 +23,26 @@ const Hero: React.FC = () => {
         .hero-badge { animation: float 5s ease-in-out infinite; }
       `}</style>
 
-      <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[70%] bg-[#AE343F]/5 rounded-full blur-[120px] -z-10" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[60%] bg-[#AE343F]/10 rounded-full blur-[100px] -z-10" />
+      <div className="absolute top-[-10%] right-[-5%] w-[70%] sm:w-[60%] md:w-[50%] h-[70%] bg-[#AE343F]/5 rounded-full blur-[80px] sm:blur-[100px] md:blur-[120px] -z-10" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[60%] sm:w-[50%] md:w-[40%] h-[60%] bg-[#AE343F]/10 rounded-full blur-[60px] sm:blur-[80px] md:blur-[100px] -z-10" />
 
       <div className="container mx-auto px-4 md:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           <div className="hero-text">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#AE343F]/10 text-[#AE343F] rounded-full text-xs font-bold uppercase tracking-[0.2em] mb-8">
               <Sparkles size={14} className="animate-pulse" />
-              Prvi Audio Guest Book u Srbiji
+              Audio Guest Book koji osvaja srca
             </div>
 
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-serif text-[#232323] leading-[1.05] mb-8">
-              Glasovi koji <br />
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-serif text-[#232323] leading-[1.05] mb-8">
+              Uspomene koje
+              <br />
               <span className="italic text-[#AE343F] font-medium">
                 ne blede.
               </span>
             </h1>
 
-            <p className="text-xl text-[#232323]/60 mb-12 max-w-lg leading-relaxed font-light">
+            <p className="text-base sm:text-lg md:text-xl text-[#232323]/60 mb-8 sm:mb-10 md:mb-12 max-w-lg leading-relaxed font-light">
               Zamenite tradicionalne papirne knjige utisaka nečim magičnim.
               Sačuvajte smeh, emociju i glasove onih koji vam najviše znače uz
               naš autentični retro telefon.
@@ -69,7 +70,7 @@ const Hero: React.FC = () => {
 
           <div className="relative hero-image">
             {/* <div className="relative z-10 rounded-[3rem] overflow-hidden border-[16px] border-white shadow-2xl transform hover:scale-[1.02] transition-transform duration-700"> */}
-            <div className="transform rotate-0 hover:rotate-2 hover:scale-[1.05] transition-transform duration-700">
+            <div className="transform rotate-0 md:hover:rotate-2 md:hover:scale-[1.05] transition-transform duration-700">
               <img
                 src="/images/phone.png"
                 alt="Retro Red Telephone"
@@ -78,13 +79,13 @@ const Hero: React.FC = () => {
             </div>
             {/* </div> */}
 
-            <div className="hero-badge absolute -bottom-10 -left-10 z-20 bg-[#F5F4DC] p-6 rounded-[2rem] shadow-2xl flex items-center gap-5 border border-white/20 backdrop-blur-sm">
+            <div className="hero-badge absolute hidden lg:flex -bottom-10 -left-10 z-20 bg-[#F5F4DC] p-6 rounded-[2rem] shadow-2xl items-center gap-5 border border-white/20 backdrop-blur-sm">
               <div className="w-16 h-16 bg-[#AE343F] rounded-2xl flex items-center justify-center text-[#F5F4DC] shadow-lg shadow-[#AE343F]/20">
                 <Phone size={32} />
               </div>
               <div>
                 <p className="text-[10px] font-black text-[#AE343F] uppercase tracking-[0.2em] mb-1">
-                  Phone model:
+                  Model telefona:
                 </p>
                 <p className="text-lg font-serif font-bold text-[#232323]">
                   Vintage - Rotary Black
