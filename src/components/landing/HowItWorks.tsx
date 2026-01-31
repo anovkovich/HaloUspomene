@@ -28,7 +28,7 @@ const HowItWorks: React.FC = () => {
       className="py-16 sm:py-24 md:py-32 bg-[#AE343F] text-[#F5F4DC] overflow-hidden"
     >
       <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 sm:mb-16 md:mb-24 gap-6 sm:gap-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 sm:mb-16 md:mb-24 gap-6 sm:gap-8">
           <div>
             <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-serif mb-6 leading-none">
               Tri koraka do <br />
