@@ -1,0 +1,254 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  Calendar,
+  User,
+  MapPin,
+  Package,
+  Send,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import DatePicker from "@/components/ui/DatePicker";
+
+const ContactForm: React.FC = () => {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formLoadTime, setFormLoadTime] = useState<number>(0);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    date: "",
+    location: "",
+    package: "premium",
+    honeypot: "", // Hidden field for bot detection
+  });
+
+  // Track when form was loaded (for time-based spam check)
+  useEffect(() => {
+    setFormLoadTime(Date.now());
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          formLoadTime,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Došlo je do greške");
+      }
+
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Došlo je do greške");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setIsSubmitted(false);
+    setError(null);
+    setFormData({
+      name: "",
+      email: "",
+      date: "",
+      location: "",
+      package: "premium",
+      honeypot: "",
+    });
+    setFormLoadTime(Date.now());
+  };
+
+  if (isSubmitted) {
+    return (
+      <div className="bg-white/5 backdrop-blur-md p-16 rounded-[3rem] border border-white/10 text-center">
+        <div className="w-24 h-24 bg-[#AE343F] rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-[#AE343F]/40">
+          <CheckCircle2 size={48} className="text-[#F5F4DC]" />
+        </div>
+        <h3 className="text-4xl font-serif text-[#F5F4DC] mb-4">
+          Hvala Vam, {formData.name.split(" ")[0]}!
+        </h3>
+        <p className="text-[#F5F4DC]/60 text-lg mb-8">
+          Vaš upit za {new Date(formData.date).toLocaleDateString("sr-RS")} je
+          uspešno primljen. <br />
+          Odgovorićemo Vam u najkraćem roku sa potvrdom dostupnosti.
+        </p>
+        <button
+          onClick={resetForm}
+          className="btn btn-outline border-white/20 text-white hover:bg-white hover:text-[#232323] rounded-full px-12"
+        >
+          Pošalji novi upit
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-10 bg-white/5 backdrop-blur-md p-8 md:p-16 rounded-[3rem] border border-white/10 shadow-2xl relative"
+    >
+      {/* Error Message */}
+      {error && (
+        <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400">
+          <AlertCircle size={20} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+        {/* Honeypot - Hidden from users, bots will fill it */}
+        <input
+          type="text"
+          name="website"
+          value={formData.honeypot}
+          onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+          className="absolute -left-[9999px] opacity-0 pointer-events-none"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+        />
+
+        {/* Name Input */}
+        <div className="space-y-3">
+          <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <User size={14} className="text-[#AE343F]" /> Vaše Ime
+          </label>
+          <input
+            required
+            type="text"
+            placeholder="Ime i Prezime"
+            className="w-full bg-transparent border-b border-white/10 py-4 px-1 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* Date Input - Custom DatePicker */}
+        <div className="space-y-3">
+          <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <Calendar size={14} className="text-[#AE343F]" /> Datum Događaja
+          </label>
+          <DatePicker
+            value={formData.date}
+            onChange={(date) => setFormData({ ...formData, date })}
+            placeholder="Izaberite datum"
+          />
+        </div>
+
+        {/* Email Input */}
+        <div className="space-y-3">
+          <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <Send size={14} className="text-[#AE343F]" /> Email Adresa
+          </label>
+          <input
+            required
+            type="email"
+            placeholder="primer@email.rs"
+            className="w-full bg-transparent border-b border-white/10 py-4 px-1 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* Location Input */}
+        <div className="space-y-3">
+          <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <MapPin size={14} className="text-[#AE343F]" /> Lokacija / Restoran
+          </label>
+          <input
+            required
+            type="text"
+            placeholder="npr. Beograd, Sala XY"
+            className="w-full bg-transparent border-b border-white/10 py-4 px-1 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+            value={formData.location}
+            onChange={(e) =>
+              setFormData({ ...formData, location: e.target.value })
+            }
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* Package Select */}
+        <div className="md:col-span-2 space-y-3">
+          <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <Package size={14} className="text-[#AE343F]" /> Izaberite Paket
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            {["classic", "premium"].map((pkg) => (
+              <button
+                key={pkg}
+                type="button"
+                onClick={() => setFormData({ ...formData, package: pkg })}
+                disabled={isLoading}
+                className={`py-4 rounded-2xl border transition-all text-sm font-bold uppercase tracking-widest ${
+                  formData.package === pkg
+                    ? "bg-[#AE343F] border-[#AE343F] text-[#F5F4DC] shadow-lg shadow-[#AE343F]/20"
+                    : "bg-white/5 border-white/10 text-[#F5F4DC]/40 hover:border-white/20"
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                {pkg} Paket
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="btn bg-[#AE343F] hover:bg-[#8A2A32] btn-lg w-full h-20 rounded-2xl text-[#F5F4DC] text-lg font-bold shadow-2xl shadow-[#AE343F]/40 group relative overflow-hidden border-none disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span className="relative z-10 flex items-center gap-3">
+          {isLoading ? (
+            <>
+              <Loader2 size={20} className="animate-spin" />
+              Slanje...
+            </>
+          ) : (
+            <>
+              Pošalji Upit Za Termin
+              <Send
+                size={20}
+                className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+              />
+            </>
+          )}
+        </span>
+        {!isLoading && (
+          <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+        )}
+      </button>
+
+      <p className="text-center text-xs text-[#F5F4DC]/20 font-light italic mt-6">
+        * Slanjem upita potvrđujete da ste saglasni sa obradom podataka u svrhu
+        rezervacije.
+      </p>
+    </form>
+  );
+};
+
+export default ContactForm;

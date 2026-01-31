@@ -1,25 +1,33 @@
 {
-  "name": "monorepo-fast-next",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
+  "name": "next-app",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "---------------- DOCKER ----------------": "",
-    "docker:up": "docker compose up -d",
-    "docker:stop": "docker compose stop",
-    "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f db",
-    "---------------- SETUP ----------------": "",
-    "setup:backend-n-db": "yarn docker:up",
-    "setup:frontend": "cd frontend && yarn install",
-    "setup": "yarn install && yarn setup:frontend  && yarn setup:backend-n-db",
-    "---------------- DEV ----------------": "",
-    "dev:frontend": "cd frontend && yarn dev",
-    "dev:backend": "yarn setup:backend-n-db",
-    "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\" --names \"NEXT,API\" --prefix-colors \"blue,yellow\""
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "daisyui": "^5.5.14",
+    "framer-motion": "^12.29.2",
+    "jose": "^6.1.2",
+    "js-cookie": "^3.0.5",
+    "lucide-react": "^0.562.0",
+    "next": "16.0.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "resend": "^6.9.1"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@tailwindcss/postcss": "^4",
+    "@types/js-cookie": "^3.0.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
