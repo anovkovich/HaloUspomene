@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Calendar,
   User,
@@ -13,11 +13,13 @@ import {
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
 
+// Web3Forms access key - get yours free at https://web3forms.com
+const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+
 const ContactForm: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formLoadTime, setFormLoadTime] = useState<number>(0);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -25,13 +27,7 @@ const ContactForm: React.FC = () => {
     date: "",
     location: "",
     package: "premium",
-    honeypot: "", // Hidden field for bot detection
   });
-
-  // Track when form was loaded (for time-based spam check)
-  useEffect(() => {
-    setFormLoadTime(Date.now());
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,26 +35,45 @@ const ContactForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/contact", {
+      const formattedDate = formData.date
+        ? new Date(formData.date).toLocaleDateString("sr-RS", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : "";
+
+      const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
-          formLoadTime,
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: `Nova rezervacija - ${formData.name} - ${formattedDate}`,
+          from_name: "HALO Uspomene",
+          name: formData.name,
+          email: formData.email,
+          datum_dogadjaja: formattedDate,
+          lokacija: formData.location,
+          paket: formData.package === "premium" ? "Premium" : "Essential",
         }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Došlo je do greške");
+      if (!data.success) {
+        throw new Error(data.message || "Došlo je do greške");
       }
 
       setIsSubmitted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Došlo je do greške");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Došlo je do greške pri slanju. Pokušajte ponovo.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -73,9 +88,7 @@ const ContactForm: React.FC = () => {
       date: "",
       location: "",
       package: "premium",
-      honeypot: "",
     });
-    setFormLoadTime(Date.now());
   };
 
   if (isSubmitted) {
@@ -116,20 +129,6 @@ const ContactForm: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-        {/* Honeypot - Hidden from users, bots will fill it */}
-        <input
-          type="text"
-          name="website"
-          value={formData.honeypot}
-          onChange={(e) =>
-            setFormData({ ...formData, honeypot: e.target.value })
-          }
-          className="absolute -left-[9999px] opacity-0 pointer-events-none"
-          tabIndex={-1}
-          autoComplete="off"
-          aria-hidden="true"
-        />
-
         {/* Name Input */}
         <div className="space-y-3">
           <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
