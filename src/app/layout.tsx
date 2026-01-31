@@ -64,7 +64,7 @@ export const metadata: Metadata = {
       "Premium audio guest book za Vaše događaje. Sačuvajte glasove najdražih zauvek. Dostava brzom poštom na teritoriji cele Srbije ili lična dostava sa montažom govornice u Novom Sadu.",
     images: [
       {
-        url: "/images/gallery/halo%20uspomene%202.png",
+        url: "/images/gallery/og-image.png",
         width: 1200,
         height: 630,
         alt: "HALO Uspomene - Audio Guest Book za Venčanja",
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
     title: "HALO Uspomene | Uspomene koje ne blede",
     description:
       "Zamislite da za nekoliko godina ponovo čujete kako vam baka čestita venčanje. Mi to omogućavamo.",
-    images: ["/images/gallery/halo%20uspomene%202.png"],
+    images: ["/images/gallery/og-image.png"],
   },
 
   robots: {
@@ -120,7 +120,7 @@ export default function RootLayout({
       "Premium audio guest book servis za venčanja u Srbiji. Lična dostava, profesionalna montaža, digitalni album sa svim porukama gostiju. Sačuvajte glasove najdražih zauvek.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
-    image: `${siteUrl}/images/gallery/halo%20uspomene%202.png`,
+    image: `${siteUrl}/images/gallery/og-image.png`,
     telephone: "+381601234567",
     email: "info@halouspomene.rs",
     address: {

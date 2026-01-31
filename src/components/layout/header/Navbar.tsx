@@ -58,7 +58,7 @@ const Navbar: React.FC = () => {
               href="#book"
               className="btn bg-[#232323] hover:bg-[#AE343F] text-[#F5F4DC] rounded-full px-10 shadow-xl shadow-black/10 border-none transition-all"
             >
-              Kontakt
+              KONTAKT
             </a>
           </div>
 
