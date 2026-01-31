@@ -1,5 +1,8 @@
 import { MetadataRoute } from "next";
 
+// Required for static export
+export const dynamic = "force-static";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "HALO Uspomene - Audio Guest Book za Venčanja",
