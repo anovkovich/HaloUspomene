@@ -231,7 +231,7 @@ const ContactForm: React.FC = () => {
             </>
           ) : (
             <>
-              Pošalji Upit Za Termin
+              Pošalji upit za termin
               <Send
                 size={20}
                 className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"

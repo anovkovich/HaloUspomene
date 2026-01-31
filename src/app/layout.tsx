@@ -14,13 +14,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://anovkovich.github.io/HaloUspomene";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
   title: {
-    default: "HALO Uspomene | Audio Guest Book za Venčanja u Srbiji",
+    default: "HALO Uspomene | Uspomene koje ne blede",
     template: "%s | HALO Uspomene",
   },
 
@@ -57,25 +59,25 @@ export const metadata: Metadata = {
     locale: "sr_RS",
     url: siteUrl,
     siteName: "HALO Uspomene",
-    title: "HALO Uspomene | Glasovi Koji Grle Zauvek",
+    title: "HALO Uspomene | Uspomene koje ne blede",
     description:
-      "Premium audio guest book za venčanja. Lična dostava, profesionalna montaža, digitalni album sa svim porukama vaših gostiju. Sačuvajte emocije koje fotografije ne mogu.",
+      "Premium audio guest book za Vaše događaje. Sačuvajte glasove najdražih zauvek. Dostava brzom poštom na teritoriji cele Srbije ili lična dostava sa montažom govornice u Novom Sadu.",
     images: [
       {
-        url: "/images/og-image.jpg",
+        url: "/images/gallery/halo uspomene 2.png",
         width: 1200,
         height: 630,
-        alt: "HALO Uspomene - Premium Audio Guest Book za Venčanja",
+        alt: "HALO Uspomene - Audio Guest Book za Venčanja",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "HALO Uspomene | Glasovi Koji Grle Zauvek",
+    title: "HALO Uspomene | Uspomene koje ne blede",
     description:
-      "Zamislite da za 30 godina ponovo čujete kako vam baka čestita venčanje. Mi to omogućavamo.",
-    images: ["/images/og-image.jpg"],
+      "Zamislite da za nekoliko godina ponovo čujete kako vam baka čestita venčanje. Mi to omogućavamo.",
+    images: ["/images/gallery/halo uspomene 2.png"],
   },
 
   robots: {
@@ -118,7 +120,7 @@ export default function RootLayout({
       "Premium audio guest book servis za venčanja u Srbiji. Lična dostava, profesionalna montaža, digitalni album sa svim porukama gostiju. Sačuvajte glasove najdražih zauvek.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
-    image: `${siteUrl}/images/og-image.jpg`,
+    image: `${siteUrl}/images/gallery/halo uspomene 2.png`,
     telephone: "+381601234567",
     email: "info@halouspomene.rs",
     address: {

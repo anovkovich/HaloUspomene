@@ -53,7 +53,7 @@ const Hero: React.FC = () => {
                 href="#book"
                 className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] btn-lg rounded-full px-12 shadow-2xl shadow-[#AE343F]/30 group border-none"
               >
-                Zakažite Besplatne Konsultacije
+                Zakažite konsultacije
                 <ArrowRight
                   size={20}
                   className="group-hover:translate-x-1.5 transition-transform"
@@ -63,7 +63,7 @@ const Hero: React.FC = () => {
                 href="#how-it-works"
                 className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] hover:border-[#232323] btn-lg rounded-full px-12"
               >
-                Otkrijte Kako
+                Otkrijte kako
               </a>
             </div>
           </div>

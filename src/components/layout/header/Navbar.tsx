@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Phone, Menu, X } from "lucide-react";
 
 const navLinks = [
-  { name: "Zašto Mi", href: "#concept" },
+  { name: "Zašto mi", href: "#concept" },
   { name: "Proces", href: "#how-it-works" },
   { name: "Paketi", href: "#packages" },
   { name: "Galerija", href: "#gallery" },
@@ -96,7 +96,7 @@ const Navbar: React.FC = () => {
               onClick={() => setIsMenuOpen(false)}
               className="btn bg-[#AE343F] hover:bg-[#8A2A32] w-full text-[#F5F4DC] rounded-xl text-lg border-none min-h-[48px]"
             >
-              Zakazite Razgovor
+              Zakažite razgovor
             </a>
           </li>
         </ul>
