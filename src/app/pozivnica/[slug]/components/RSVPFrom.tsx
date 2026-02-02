@@ -2,107 +2,226 @@
 
 import React, { useState } from "react";
 import { Heart, Check, Send, Users, MessageSquare, User } from "lucide-react";
+import { Entry_IDs } from "../types";
 
 interface RSVPFormProps {
   formUrl: string;
+  entry_IDs: Entry_IDs;
 }
 
-export const RSVPForm: React.FC<RSVPFormProps> = () => {
+export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    attending: "da",
+    attending: "Da",
     plusOnes: "1",
     details: "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const isAttending = formData.attending === "Da";
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const iframe = document.createElement("iframe");
+    iframe.name = "hidden_iframe";
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = formUrl;
+    form.target = "hidden_iframe";
+
+    const fields = [
+      { name: entry_IDs.name, value: formData.name },
+      { name: entry_IDs.attending, value: formData.attending },
+      {
+        name: entry_IDs.plusOnes,
+        value: isAttending ? formData.plusOnes : "0",
+      },
+      {
+        name: entry_IDs.details,
+        value: isAttending ? formData.details || "-" : "-",
+      },
+    ];
+
+    fields.forEach(({ name, value }) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+
     setTimeout(() => {
+      document.body.removeChild(form);
+      document.body.removeChild(iframe);
       setLoading(false);
       setSubmitted(true);
-    }, 1500);
+    }, 1000);
+  };
+
+  const resetForm = () => {
+    setSubmitted(false);
+    setFormData({ name: "", attending: "Da", plusOnes: "1", details: "" });
   };
 
   if (submitted) {
     return (
       <div className="max-w-xl mx-auto">
         <div
-          className="relative text-center py-16 px-8 overflow-hidden"
+          className="relative p-8 sm:p-12 overflow-hidden text-center"
           style={{
-            background: `linear-gradient(to bottom, var(--theme-background), var(--theme-surface))`,
+            backgroundColor: "var(--theme-background)",
             borderRadius: "var(--theme-radius)",
-            border: "1px solid var(--theme-border)",
             boxShadow: "var(--theme-shadow)",
+            border: "1px solid var(--theme-border-light)",
           }}
         >
-          {/* Background decoration */}
-          <div className="absolute inset-0 opacity-5">
-            <div
-              className="absolute top-10 left-10 w-32 h-32 rounded-full"
-              style={{ border: "1px solid var(--theme-primary)" }}
-            />
-            <div
-              className="absolute bottom-10 right-10 w-24 h-24 rounded-full"
-              style={{ border: "1px solid var(--theme-primary)" }}
-            />
-          </div>
+          <DecorativeCorners />
 
-          {/* Success icon */}
-          <div className="relative mb-8">
-            <div
-              className="w-20 h-20 mx-auto rounded-full flex items-center justify-center"
-              style={{
-                background: `linear-gradient(to bottom right, var(--theme-primary-muted), transparent)`,
-              }}
-            >
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
-                style={{ backgroundColor: "var(--theme-primary)" }}
-              >
-                <Check size={28} className="text-white" strokeWidth={3} />
-              </div>
+          {/* Animated success icon */}
+          <div
+            className="relative mx-auto mb-6 w-20 h-20 rounded-full flex items-center justify-center animate-[scale-in_0.5s_ease-out]"
+            style={{
+              backgroundColor: "var(--theme-primary-muted)",
+              border: "3px solid var(--theme-primary)",
+            }}
+          >
+            <div className="animate-[bounce-in_0.6s_ease-out_0.2s_both]">
+              {isAttending ? (
+                <Check
+                  size={40}
+                  strokeWidth={3}
+                  style={{ color: "var(--theme-primary)" }}
+                />
+              ) : (
+                <Heart
+                  size={36}
+                  strokeWidth={2}
+                  style={{ color: "var(--theme-primary)" }}
+                />
+              )}
             </div>
           </div>
 
-          <h3
-            className="text-5xl font-script mb-4"
-            style={{ color: "var(--theme-primary)" }}
-          >
-            Hvala vam!
-          </h3>
-          <p
-            className="font-serif text-lg leading-relaxed mb-2"
-            style={{ color: "var(--theme-text-muted)" }}
-          >
-            Vaš odgovor je uspešno zabeležen.
-          </p>
-          <p
-            className="font-light"
-            style={{ color: "var(--theme-text-light)" }}
-          >
-            Radujemo se što ćemo ovaj poseban dan podeliti sa vama.
-          </p>
+          {/* Thank you message */}
+          <div className="animate-[fade-in-up_0.5s_ease-out_0.3s_both]">
+            <h3
+              className="font-serif text-2xl sm:text-3xl mb-3"
+              style={{ color: "var(--theme-text)" }}
+            >
+              {isAttending ? "Hvala Vam!" : "Hvala na odgovoru!"}
+            </h3>
+            <p
+              className="font-light text-base sm:text-lg mb-2"
+              style={{ color: "var(--theme-text-muted)" }}
+            >
+              {isAttending
+                ? "Vaša potvrda je uspešno zabeležena."
+                : "Žao nam je što nećete moći da prisustvujete."}
+            </p>
+            <p className="text-sm" style={{ color: "var(--theme-text-light)" }}>
+              {isAttending
+                ? "Radujemo se što ćemo vas videti na proslavi!"
+                : "Nadamo se da ćemo se videti nekom drugom prilikom."}
+            </p>
+          </div>
 
+          {/* Decorative divider */}
+          <div className="flex items-center justify-center gap-4 my-8 animate-[fade-in_0.5s_ease-out_0.5s_both]">
+            <div
+              className="h-px w-16"
+              style={{ backgroundColor: "var(--theme-border)" }}
+            />
+            <Heart
+              size={16}
+              className="animate-pulse"
+              style={{ color: "var(--theme-primary)" }}
+            />
+            <div
+              className="h-px w-16"
+              style={{ backgroundColor: "var(--theme-border)" }}
+            />
+          </div>
+
+          {/* Guest info summary */}
           <div
-            className="flex items-center justify-center gap-3 mt-8"
-            style={{ color: "var(--theme-primary)", opacity: 0.6 }}
+            className="p-4 mb-6 animate-[fade-in-up_0.5s_ease-out_0.6s_both]"
+            style={{
+              backgroundColor: "var(--theme-surface)",
+              borderRadius: "var(--theme-radius)",
+            }}
           >
-            <div className="w-8 h-px bg-current"></div>
-            <Heart size={16} fill="currentColor" />
-            <div className="w-8 h-px bg-current"></div>
+            <p
+              className="text-sm font-medium mb-1"
+              style={{ color: "var(--theme-text)" }}
+            >
+              {formData.name}
+            </p>
+            <p className="text-xs" style={{ color: "var(--theme-text-light)" }}>
+              {isAttending
+                ? `${formData.plusOnes} ${parseInt(formData.plusOnes) === 1 ? "osoba" : parseInt(formData.plusOnes) < 5 ? "osobe" : "osoba"}`
+                : "Neće prisustvovati"}
+            </p>
           </div>
 
           <button
-            onClick={() => setSubmitted(false)}
-            className="mt-8 text-xs uppercase tracking-[0.2em] transition-colors"
+            onClick={resetForm}
+            className="text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:opacity-70 animate-[fade-in_0.5s_ease-out_0.7s_both]"
             style={{ color: "var(--theme-text-light)" }}
           >
             Pošalji novi odgovor
           </button>
         </div>
+
+        <style jsx>{`
+          @keyframes scale-in {
+            0% {
+              transform: scale(0);
+              opacity: 0;
+            }
+            100% {
+              transform: scale(1);
+              opacity: 1;
+            }
+          }
+          @keyframes bounce-in {
+            0% {
+              transform: scale(0);
+            }
+            50% {
+              transform: scale(1.2);
+            }
+            100% {
+              transform: scale(1);
+            }
+          }
+          @keyframes fade-in-up {
+            0% {
+              transform: translateY(20px);
+              opacity: 0;
+            }
+            100% {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+          @keyframes fade-in {
+            0% {
+              opacity: 0;
+            }
+            100% {
+              opacity: 1;
+            }
+          }
+        `}</style>
       </div>
     );
   }
@@ -118,43 +237,11 @@ export const RSVPForm: React.FC<RSVPFormProps> = () => {
           border: "1px solid var(--theme-border-light)",
         }}
       >
-        {/* Decorative corners */}
-        <div
-          className="hidden md:block absolute top-6 left-6 w-12 h-12"
-          style={{
-            borderTop: "2px solid var(--theme-border)",
-            borderLeft: "2px solid var(--theme-border)",
-            borderRadius: "var(--theme-radius) 0 0 0",
-          }}
-        />
-        <div
-          className="hidden md:block absolute top-6 right-6 w-12 h-12"
-          style={{
-            borderTop: "2px solid var(--theme-border)",
-            borderRight: "2px solid var(--theme-border)",
-            borderRadius: "0 var(--theme-radius) 0 0",
-          }}
-        />
-        <div
-          className="hidden md:block absolute bottom-6 left-6 w-12 h-12"
-          style={{
-            borderBottom: "2px solid var(--theme-border)",
-            borderLeft: "2px solid var(--theme-border)",
-            borderRadius: "0 0 0 var(--theme-radius)",
-          }}
-        />
-        <div
-          className="hidden md:block absolute bottom-6 right-6 w-12 h-12"
-          style={{
-            borderBottom: "2px solid var(--theme-border)",
-            borderRight: "2px solid var(--theme-border)",
-            borderRadius: "0 0 var(--theme-radius) 0",
-          }}
-        />
+        <DecorativeCorners />
 
         <form onSubmit={handleSubmit} className="relative space-y-8">
           {/* Name field */}
-          <div className="group">
+          <div>
             <label
               className="flex items-center gap-2 text-xs font-elegant uppercase tracking-[0.2em] mb-3"
               style={{ color: "var(--theme-text-light)" }}
@@ -196,85 +283,73 @@ export const RSVPForm: React.FC<RSVPFormProps> = () => {
             <div className="grid grid-cols-2 gap-4">
               {[
                 {
-                  value: "da",
+                  value: "Da",
                   label: "Dolazim",
                   sublabel: "Sa radošću!",
                   icon: Check,
                 },
                 {
-                  value: "ne",
+                  value: "Ne",
                   label: "Nažalost ne",
                   sublabel: "Sve najlepše!",
                   icon: Heart,
                 },
-              ].map((option) => (
-                <label
-                  key={option.value}
-                  className="relative flex flex-col items-center justify-center py-4 px-2 cursor-pointer transition-all duration-300"
-                  style={{
-                    borderRadius: "var(--theme-radius)",
-                    border:
-                      formData.attending === option.value
-                        ? "2px solid var(--theme-primary)"
-                        : "2px solid var(--theme-border-light)",
-                    backgroundColor:
-                      formData.attending === option.value
+              ].map((option) => {
+                const selected = formData.attending === option.value;
+                return (
+                  <label
+                    key={option.value}
+                    className="relative flex flex-col items-center justify-center py-4 px-2 cursor-pointer transition-all duration-300"
+                    style={{
+                      borderRadius: "var(--theme-radius)",
+                      border: `2px solid var(--theme-${selected ? "primary" : "border-light"})`,
+                      backgroundColor: selected
                         ? "var(--theme-primary-muted)"
                         : "transparent",
-                    boxShadow:
-                      formData.attending === option.value
-                        ? "var(--theme-shadow)"
-                        : "none",
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="attending"
-                    className="hidden"
-                    checked={formData.attending === option.value}
-                    onChange={() =>
-                      setFormData({ ...formData, attending: option.value })
-                    }
-                  />
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center mb-3 transition-colors"
-                    style={{
-                      backgroundColor:
-                        formData.attending === option.value
+                      boxShadow: selected ? "var(--theme-shadow)" : "none",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      className="hidden"
+                      checked={selected}
+                      onChange={() =>
+                        setFormData({ ...formData, attending: option.value })
+                      }
+                    />
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center mb-3 transition-colors"
+                      style={{
+                        backgroundColor: selected
                           ? "var(--theme-primary)"
                           : "var(--theme-surface)",
-                      color:
-                        formData.attending === option.value
-                          ? "white"
-                          : "var(--theme-text-light)",
-                    }}
-                  >
-                    <option.icon size={20} />
-                  </div>
-                  <span
-                    className="font-serif text-lg"
-                    style={{
-                      color:
-                        formData.attending === option.value
-                          ? "var(--theme-primary)"
-                          : "var(--theme-text-muted)",
-                    }}
-                  >
-                    {option.label}
-                  </span>
-                  <span
-                    className="text-xs mt-1"
-                    style={{ color: "var(--theme-text-light)" }}
-                  >
-                    {option.sublabel}
-                  </span>
-                </label>
-              ))}
+                        color: selected ? "white" : "var(--theme-text-light)",
+                      }}
+                    >
+                      <option.icon size={20} />
+                    </div>
+                    <span
+                      className="font-serif text-lg"
+                      style={{
+                        color: `var(--theme-${selected ? "primary" : "text-muted"})`,
+                      }}
+                    >
+                      {option.label}
+                    </span>
+                    <span
+                      className="text-xs mt-1"
+                      style={{ color: "var(--theme-text-light)" }}
+                    >
+                      {option.sublabel}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
           {/* Plus ones field */}
-          {formData.attending === "da" && (
+          {isAttending && (
             <div className="animate-fade-in-up">
               <label
                 className="flex items-center gap-2 text-xs font-elegant uppercase tracking-[0.2em] mb-3"
@@ -330,7 +405,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = () => {
           )}
 
           {/* Notes field */}
-          {formData.attending === "da" && (
+          {isAttending && (
             <div>
               <label
                 className="flex items-center gap-2 text-xs font-elegant uppercase tracking-[0.2em] mb-3"
@@ -400,3 +475,40 @@ export const RSVPForm: React.FC<RSVPFormProps> = () => {
     </div>
   );
 };
+
+const DecorativeCorners = () => (
+  <>
+    <div
+      className="hidden md:block absolute top-6 left-6 w-12 h-12"
+      style={{
+        borderTop: "2px solid var(--theme-border)",
+        borderLeft: "2px solid var(--theme-border)",
+        borderRadius: "var(--theme-radius) 0 0 0",
+      }}
+    />
+    <div
+      className="hidden md:block absolute top-6 right-6 w-12 h-12"
+      style={{
+        borderTop: "2px solid var(--theme-border)",
+        borderRight: "2px solid var(--theme-border)",
+        borderRadius: "0 var(--theme-radius) 0 0",
+      }}
+    />
+    <div
+      className="hidden md:block absolute bottom-6 left-6 w-12 h-12"
+      style={{
+        borderBottom: "2px solid var(--theme-border)",
+        borderLeft: "2px solid var(--theme-border)",
+        borderRadius: "0 0 0 var(--theme-radius)",
+      }}
+    />
+    <div
+      className="hidden md:block absolute bottom-6 right-6 w-12 h-12"
+      style={{
+        borderBottom: "2px solid var(--theme-border)",
+        borderRight: "2px solid var(--theme-border)",
+        borderRadius: "0 0 var(--theme-radius) 0",
+      }}
+    />
+  </>
+);

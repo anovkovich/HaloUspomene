@@ -2,6 +2,16 @@ import { WeddingData } from "@/app/pozivnica/[slug]/types";
 
 const weddingData: WeddingData = {
   theme: "minimal",
+
+  rsvp_form_url:
+    "https://docs.google.com/forms/d/e/1FAIpQLSeAhevdOrCIPXGvvOU-fmwm8g5BHFK-7uU-PuA97aYZMLbSBQ/formResponse",
+  entry_IDs: {
+    name: "entry.390802369",
+    attending: "entry.1092075394",
+    plusOnes: "entry.201124745",
+    details: "entry.934802230",
+  },
+
   couple_names: {
     bride: "Anastasija",
     groom: "Jovan",
@@ -41,7 +51,6 @@ const weddingData: WeddingData = {
       icon: "Music",
     },
   ],
-  rsvp_form_url: "#",
   countdown_enabled: true,
   map_enabled: true,
 };

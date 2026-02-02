@@ -17,8 +17,17 @@ export interface TimelineItem {
   icon: string;
 }
 
+export interface Entry_IDs {
+  name: string;
+  attending: string;
+  plusOnes: string;
+  details: string;
+}
+
 export interface WeddingData {
   theme: ThemeType;
+  rsvp_form_url: string;
+  entry_IDs: Entry_IDs;
   couple_names: {
     bride: string;
     groom: string;
@@ -28,7 +37,6 @@ export interface WeddingData {
   tagline?: string;
   locations: Location[];
   timeline: TimelineItem[];
-  rsvp_form_url: string;
   countdown_enabled: boolean;
   map_enabled: boolean;
 }

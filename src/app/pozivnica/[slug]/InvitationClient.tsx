@@ -530,7 +530,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               </span>
             </p>
           </div>
-          <RSVPForm formUrl={data.rsvp_form_url} />
+          <RSVPForm formUrl={data.rsvp_form_url} entry_IDs={data.entry_IDs} />
         </section>
 
         {/* Footer */}
