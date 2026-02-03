@@ -9,7 +9,7 @@ import {
   Allura,
   Marck_Script,
   Cormorant_Garamond,
-  Josefin_Sans
+  Josefin_Sans,
 } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/header/Navbar";
@@ -84,20 +84,18 @@ const josefinSans = Josefin_Sans({
   display: "swap",
 });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  "https://halouspomene.rs";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
   title: {
-    default: "HALO Uspomene | Uspomene koje ne blede",
+    default: "HALO Uspomene | Reči koje postaju uspomena",
     template: "%s | HALO Uspomene",
   },
 
   description:
-    "Sačuvajte glasove najdražih sa vašeg venčanja zauvek. Premium audio guest book servis sa ličnom dostavom, montažom i kompletnom brigom o svakom detalju. Jedinstven poklon koji nadživljava generacije.",
+    "Premium iskustvo za čuvanje uspomena sa venčanja i posebnih događaja. Sačuvajte glasove najdražih i vratite se tim trenucima kad god poželite. Dostava u celoj Srbiji i lična instalacija u Novom Sadu.",
 
   keywords: [
     "audio guest book venčanje",
@@ -129,9 +127,9 @@ export const metadata: Metadata = {
     locale: "sr_RS",
     url: siteUrl,
     siteName: "HALO Uspomene",
-    title: "HALO Uspomene | Uspomene koje ne blede",
+    title: "HALO Uspomene | Reči koje postaju uspomena",
     description:
-      "Premium audio guest book za Vaše događaje. Sačuvajte glasove najdražih zauvek. Dostava brzom poštom na teritoriji cele Srbije ili lična dostava sa montažom govornice u Novom Sadu.",
+      "Premium iskustvo za čuvanje uspomena sa venčanja i posebnih događaja. Sačuvajte glasove najdražih i vratite se tim trenucima kad god poželite. Dostava u celoj Srbiji i lična instalacija u Novom Sadu.",
     images: [
       {
         url: "/images/gallery/og-image.png",
@@ -144,7 +142,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "HALO Uspomene | Uspomene koje ne blede",
+    title: "HALO Uspomene | Reči koje postaju uspomena",
     description:
       "Zamislite da za nekoliko godina ponovo čujete kako vam baka čestita venčanje. Mi to omogućavamo.",
     images: ["/images/gallery/og-image.png"],
@@ -187,7 +185,7 @@ export default function RootLayout({
     "@id": `${siteUrl}/#business`,
     name: "HALO Uspomene",
     description:
-      "Premium audio guest book servis za venčanja u Srbiji. Lična dostava, profesionalna montaža, digitalni album sa svim porukama gostiju. Sačuvajte glasove najdražih zauvek.",
+      "Premium iskustvo za čuvanje uspomena sa venčanja i posebnih događaja. Sačuvajte glasove najdražih i vratite se tim trenucima kad god poželite. Dostava u celoj Srbiji i lična instalacija u Novom Sadu.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
     image: `${siteUrl}/images/gallery/og-image.png`,

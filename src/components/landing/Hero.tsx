@@ -34,11 +34,11 @@ const Hero: React.FC = () => {
               Vaš Dan Zaslužuje Više Od Fotografija
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-serif text-[#232323] leading-[1.05] mb-8">
-              Uspomene koje
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl  font-serif text-[#232323] leading-none mb-8">
+              Reči koje postaju
               <br />
               <span className="italic text-[#AE343F] font-medium">
-                ne blede.
+                uspomena
               </span>
             </h1>
 

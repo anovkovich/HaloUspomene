@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "HALO Uspomene - Audio Guest Book za Venčanja",
     short_name: "HALO Uspomene",
     description:
-      "Premium audio guest book servis za venčanja. Sačuvajte glasove najdražih zauvek.",
+      "Premium iskustvo za čuvanje uspomena sa venčanja i posebnih događaja. Sačuvajte glasove najdražih i vratite se tim trenucima kad god poželite.",
     start_url: "/",
     display: "standalone",
     background_color: "#F5F4DC",

@@ -20,7 +20,7 @@ interface InvitationClientProps {
 function formatEventDate(
   dateStr: string,
   months: string[],
-  days: string[]
+  days: string[],
 ): {
   display: string;
   short: string;
@@ -50,18 +50,18 @@ export default function InvitationClient({ data }: InvitationClientProps) {
   const themeConfig = useMemo(() => getThemeConfig(data.theme), [data.theme]);
   const formattedDate = useMemo(
     () => formatEventDate(data.event_date, t.months, t.days_week),
-    [data.event_date, t.months, t.days_week]
+    [data.event_date, t.months, t.days_week],
   );
   const mainLocation = useMemo(
     () => data.locations.find((l) => l.type === "hall"),
-    [data]
+    [data],
   );
   const eventTime = useMemo(
     () =>
       data.event_date.split("T")[1]?.split(":")[0] +
       ":" +
       data.event_date.split("T")[1]?.split(":")[1],
-    [data.event_date]
+    [data.event_date],
   );
 
   useEffect(() => {
@@ -73,7 +73,11 @@ export default function InvitationClient({ data }: InvitationClientProps) {
 
   if (isLoading) {
     return (
-      <ThemeProvider theme={data.theme} scriptFont={data.scriptFont} useCyrillic={useCyrillic}>
+      <ThemeProvider
+        theme={data.theme}
+        scriptFont={data.scriptFont}
+        useCyrillic={useCyrillic}
+      >
         <EnvelopeLoader
           names={data.couple_names.full_display}
           eventDate={formattedDate.short}
@@ -84,7 +88,11 @@ export default function InvitationClient({ data }: InvitationClientProps) {
   }
 
   return (
-    <ThemeProvider theme={data.theme} scriptFont={data.scriptFont} useCyrillic={useCyrillic}>
+    <ThemeProvider
+      theme={data.theme}
+      scriptFont={data.scriptFont}
+      useCyrillic={useCyrillic}
+    >
       <div
         className={`invitation-page min-h-screen transition-all duration-[2000ms] ease-out ${isRevealed ? "opacity-100" : "opacity-0"}`}
         style={{
@@ -515,7 +523,6 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               background: `linear-gradient(to right, transparent, var(--theme-border), transparent)`,
             }}
           />
-
           {themeConfig.style.ornaments && (
             <div
               className="absolute inset-0 opacity-[0.02]"
@@ -524,7 +531,6 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               }}
             />
           )}
-
           <div className="relative  pb-32 sm:pt-48">
             <p
               className="font-script text-5xl sm:text-8xl mb-8"
@@ -569,7 +575,6 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               {formattedDate.short}
             </p>
           </div>
-
           <Link
             href="/"
             className="mt-8 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity"
@@ -579,6 +584,14 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               alt="Halo Uspomene LOGO"
               className="h-8 mb-2"
             />
+          </Link>
+
+          <Link
+            href="/"
+            className="w-full flex font-serif text-center gap-1 mb-5 justify-center items-center text-[10px] sm:text-xs mt-2 sm:mt-4 opacity-50"
+          >
+            Made with <Heart size={10} className="text-[#AE343F]" /> | Halo
+            Uspomene
           </Link>
         </footer>
       </div>

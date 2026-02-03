@@ -33,12 +33,6 @@ const weddingData: WeddingData = {
     },
   ],
   timeline: [
-    // {
-    //   title: "Okupljanje svatova",
-    //   time: "12:00",
-    //   description: "Kod mladoženje",
-    //   icon: "Users",
-    // },
     {
       title: "Скуп сватова у свечаној сали",
       time: "16:00",
@@ -46,7 +40,7 @@ const weddingData: WeddingData = {
       icon: "HouseHeart",
     },
     {
-      title: "Градско венчање",
+      title: "Грађанско венчање",
       time: "17:30",
       description: "Арена Илић",
       icon: "CalendarHeart",

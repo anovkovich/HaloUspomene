@@ -31,13 +31,10 @@ const Navbar: React.FC = () => {
           <div className="flex-shrink-0">
             <a href="#" className="flex items-center gap-3 group">
               <img
-                src="/images/logo.png"
+                src="/images/full-logo.png"
                 alt="Halo Uspomene LOGO"
-                className="h-10 mb-1"
+                className="h-14 mb-1"
               />
-              <span className="text-2xl mb-[-10px] font-serif font-bold tracking-tight text-[#232323]">
-                <span className="text-[#AE343F]">Uspomene</span>
-              </span>
             </a>
           </div>
 
