@@ -72,7 +72,7 @@ const Hero: React.FC = () => {
             {/* <div className="relative z-10 rounded-[3rem] overflow-hidden border-[16px] border-white shadow-2xl transform hover:scale-[1.02] transition-transform duration-700"> */}
             <div className="transform rotate-0 md:hover:rotate-2 md:hover:scale-[1.05] transition-transform duration-700">
               <img
-                src="/HaloUspomene/images/phone.png"
+                src="/images/phone.png"
                 alt="Retro Red Telephone"
                 className="w-full h-auto object-cover"
               />

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Heart, Calendar, MapPin, Clock, Sparkles } from "lucide-react";
 import { WeddingData } from "./types";
 import { getThemeConfig } from "./constants";
+import { getTranslations } from "./translations";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { EnvelopeLoader } from "./components/EnvelopeLoader";
 import { Countdown } from "./components/Countdown";
@@ -15,36 +16,17 @@ interface InvitationClientProps {
   data: WeddingData;
 }
 
-// Helper to format date
-function formatEventDate(dateStr: string): {
+// Helper to format date with translation support
+function formatEventDate(
+  dateStr: string,
+  months: string[],
+  days: string[]
+): {
   display: string;
   short: string;
   dayName: string;
 } {
   const date = new Date(dateStr);
-  const months = [
-    "Januar",
-    "Februar",
-    "Mart",
-    "April",
-    "Maj",
-    "Jun",
-    "Jul",
-    "Avgust",
-    "Septembar",
-    "Oktobar",
-    "Novembar",
-    "Decembar",
-  ];
-  const days = [
-    "Nedelja",
-    "Ponedeljak",
-    "Utorak",
-    "Sreda",
-    "Četvrtak",
-    "Petak",
-    "Subota",
-  ];
 
   const day = date.getDate().toString().padStart(2, "0");
   const month = date.getMonth();
@@ -62,21 +44,24 @@ export default function InvitationClient({ data }: InvitationClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
 
+  const useCyrillic = data.useCyrillic ?? false;
+  const t = useMemo(() => getTranslations(useCyrillic), [useCyrillic]);
+
   const themeConfig = useMemo(() => getThemeConfig(data.theme), [data.theme]);
   const formattedDate = useMemo(
-    () => formatEventDate(data.event_date),
-    [data.event_date],
+    () => formatEventDate(data.event_date, t.months, t.days_week),
+    [data.event_date, t.months, t.days_week]
   );
   const mainLocation = useMemo(
     () => data.locations.find((l) => l.type === "hall"),
-    [data],
+    [data]
   );
   const eventTime = useMemo(
     () =>
       data.event_date.split("T")[1]?.split(":")[0] +
       ":" +
       data.event_date.split("T")[1]?.split(":")[1],
-    [data.event_date],
+    [data.event_date]
   );
 
   useEffect(() => {
@@ -88,7 +73,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
 
   if (isLoading) {
     return (
-      <ThemeProvider theme={data.theme} scriptFont={data.scriptFont}>
+      <ThemeProvider theme={data.theme} scriptFont={data.scriptFont} useCyrillic={useCyrillic}>
         <EnvelopeLoader
           names={data.couple_names.full_display}
           eventDate={formattedDate.short}
@@ -99,7 +84,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
   }
 
   return (
-    <ThemeProvider theme={data.theme} scriptFont={data.scriptFont}>
+    <ThemeProvider theme={data.theme} scriptFont={data.scriptFont} useCyrillic={useCyrillic}>
       <div
         className={`invitation-page min-h-screen transition-all duration-[2000ms] ease-out ${isRevealed ? "opacity-100" : "opacity-0"}`}
         style={{
@@ -161,7 +146,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
                 className="font-elegant uppercase tracking-[0.4em] text-[9px] sm:text-[11px]"
                 style={{ color: "var(--theme-text-light)" }}
               >
-                Slavimo ljubav
+                {t.celebrateLove}
               </p>
               {themeConfig.style.ornaments && (
                 <Sparkles
@@ -280,7 +265,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
                     className="font-elegant text-sm tracking-[0.2em]"
                     style={{ color: "var(--theme-text-muted)" }}
                   >
-                    Kada: {eventTime}
+                    {t.when} {eventTime}
                   </span>
                 </span>
               </div>
@@ -314,7 +299,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
                 className="text-5xl sm:text-8xl font-script mb-4"
                 style={{ color: "var(--theme-primary)" }}
               >
-                Odbrojavanje
+                {t.countdown}
               </h2>
               <p
                 className="font-elegant text-xs uppercase tracking-[0.4em] mb-12"
@@ -356,12 +341,12 @@ export default function InvitationClient({ data }: InvitationClientProps) {
             {[
               {
                 icon: MapPin,
-                title: "Gde",
+                title: t.where,
                 content: `${mainLocation?.name}\n${mainLocation?.address}`,
               },
               {
                 icon: Calendar,
-                title: "Kada",
+                title: t.whenLabel,
                 content: `${formattedDate.dayName}\n${formattedDate.short} ${eventTime}`,
               },
             ].map((item, idx) => (
@@ -433,13 +418,13 @@ export default function InvitationClient({ data }: InvitationClientProps) {
                 className="text-6xl sm:text-8xl font-script mb-4"
                 style={{ color: "var(--theme-primary)" }}
               >
-                Protokol
+                {t.protocol}
               </h2>
               <p
                 className="font-elegant text-xs uppercase tracking-[0.4em]"
                 style={{ color: "var(--theme-text-light)" }}
               >
-                Plan našeg zajedničkog dana
+                {t.ourDayPlan}
               </p>
             </div>
             <Timeline items={data.timeline} />
@@ -454,7 +439,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
                 className="text-5xl sm:text-8xl font-script mb-4"
                 style={{ color: "var(--theme-primary)" }}
               >
-                Lokacija
+                {t.location}
               </h2>
               <p
                 className="font-elegant text-xs uppercase tracking-[0.3em]"
@@ -501,13 +486,13 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               className="text-6xl sm:text-8xl font-script mb-4"
               style={{ color: "var(--theme-primary)" }}
             >
-              Potvrda dolaska
+              {t.rsvpTitle}
             </h2>
             <p
               className="font-serif text-sm sm:text-base leading-relaxed"
               style={{ color: "var(--theme-text-muted)" }}
             >
-              Molimo Vas da svoj dolazak potvrdite do{" "}
+              {t.rsvpSubtitle}{" "}
               <span
                 className="font-semibold"
                 style={{ color: "var(--theme-text)" }}
@@ -574,7 +559,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               className="font-elegant text-xs uppercase tracking-[0.4em]"
               style={{ color: "var(--theme-text-light)" }}
             >
-              Hvala Vam što ste deo naše sreće
+              {t.thankYouFooter}
             </p>
 
             <p
@@ -590,7 +575,6 @@ export default function InvitationClient({ data }: InvitationClientProps) {
             className="mt-8 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity"
           >
             <img
-              // src="/HaloUspomene/images/logo.png"
               src="/images/full-logo.png"
               alt="Halo Uspomene LOGO"
               className="h-8 mb-2"

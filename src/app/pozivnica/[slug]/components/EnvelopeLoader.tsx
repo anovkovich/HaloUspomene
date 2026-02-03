@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTheme } from "./ThemeProvider";
 
 interface EnvelopeLoaderProps {
   onComplete: () => void;
@@ -22,6 +23,7 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
   names,
   eventDate = "Jun 06, 2026",
 }) => {
+  const { config, t } = useTheme();
   const [stage, setStage] = useState<
     "sealed" | "opening" | "extracted" | "fadeout"
   >("sealed");
@@ -42,15 +44,21 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
     sequence();
   }, [onComplete]);
 
+  // Use theme colors
+  const primaryColor = config.colors.primary;
+  const waxSealColor = config.colors.waxSeal;
+  const waxSealDark = config.colors.waxSealDark;
+
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-[#fdfbf7] transition-all duration-[1200ms] cubic-bezier(0.4, 0, 0.2, 1) ${stage === "fadeout" ? "opacity-0 scale-110 blur-xl pointer-events-none" : "opacity-100"}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-[1200ms] cubic-bezier(0.4, 0, 0.2, 1) ${stage === "fadeout" ? "opacity-0 scale-110 blur-xl pointer-events-none" : "opacity-100"}`}
+      style={{ backgroundColor: config.colors.surface }}
     >
       {/* Background Texture */}
       <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${encodeURIComponent(primaryColor)}' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }}
       ></div>
 
@@ -59,8 +67,9 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-[#d4af37]/20 rounded-full animate-float"
+            className="absolute w-1 h-1 rounded-full animate-float"
             style={{
+              backgroundColor: `${primaryColor}33`,
               left: `${15 + i * 15}%`,
               top: `${20 + (i % 3) * 25}%`,
               animationDelay: `${i * 0.5}s`,
@@ -99,27 +108,63 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
             }}
           >
             {/* Decorative border */}
-            <div className="absolute inset-2 sm:inset-3 border border-[#d4af37]/20 pointer-events-none"></div>
-            <div className="absolute inset-3 sm:inset-4 border border-[#d4af37]/10 pointer-events-none"></div>
+            <div
+              className="absolute inset-2 sm:inset-3 pointer-events-none"
+              style={{ border: `1px solid ${primaryColor}33` }}
+            ></div>
+            <div
+              className="absolute inset-3 sm:inset-4 pointer-events-none"
+              style={{ border: `1px solid ${primaryColor}1a` }}
+            ></div>
 
             {/* Corner ornaments */}
-            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 w-4 h-4 sm:w-6 sm:h-6 border-t-2 border-l-2 border-[#d4af37]/30"></div>
-            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 w-4 h-4 sm:w-6 sm:h-6 border-t-2 border-r-2 border-[#d4af37]/30"></div>
-            <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 w-4 h-4 sm:w-6 sm:h-6 border-b-2 border-l-2 border-[#d4af37]/30"></div>
-            <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-4 h-4 sm:w-6 sm:h-6 border-b-2 border-r-2 border-[#d4af37]/30"></div>
+            <div
+              className="absolute top-3 left-3 sm:top-4 sm:left-4 w-4 h-4 sm:w-6 sm:h-6"
+              style={{ borderTop: `2px solid ${primaryColor}4d`, borderLeft: `2px solid ${primaryColor}4d` }}
+            ></div>
+            <div
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 w-4 h-4 sm:w-6 sm:h-6"
+              style={{ borderTop: `2px solid ${primaryColor}4d`, borderRight: `2px solid ${primaryColor}4d` }}
+            ></div>
+            <div
+              className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 w-4 h-4 sm:w-6 sm:h-6"
+              style={{ borderBottom: `2px solid ${primaryColor}4d`, borderLeft: `2px solid ${primaryColor}4d` }}
+            ></div>
+            <div
+              className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-4 h-4 sm:w-6 sm:h-6"
+              style={{ borderBottom: `2px solid ${primaryColor}4d`, borderRight: `2px solid ${primaryColor}4d` }}
+            ></div>
 
-            <p className="font-elegant uppercase tracking-[0.2em] sm:tracking-[0.5em] text-[6px] sm:text-[10px] text-stone-400 mb-2 sm:mb-4">
-              Pozivaju Vas na venčanje
+            <p
+              className="font-elegant uppercase tracking-[0.2em] sm:tracking-[0.5em] text-[6px] sm:text-[10px] mb-2 sm:mb-4"
+              style={{ color: config.colors.textLight }}
+            >
+              {t.inviteYou}
             </p>
-            <h2 className="font-script text-2xl sm:text-6xl text-[#d4af37] leading-tight px-2 sm:px-4 select-none drop-shadow-sm">
+            <h2
+              className="font-script text-2xl sm:text-6xl leading-tight px-2 sm:px-4 select-none drop-shadow-sm"
+              style={{ color: primaryColor }}
+            >
               {names}
             </h2>
             <div className="flex items-center gap-2 sm:gap-3 my-3 sm:my-6">
-              <div className="w-5 sm:w-8 h-px bg-gradient-to-r from-transparent to-[#d4af37]/40"></div>
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rotate-45 border border-[#d4af37]/40"></div>
-              <div className="w-5 sm:w-8 h-px bg-gradient-to-l from-transparent to-[#d4af37]/40"></div>
+              <div
+                className="w-5 sm:w-8 h-px"
+                style={{ background: `linear-gradient(to right, transparent, ${primaryColor}66)` }}
+              ></div>
+              <div
+                className="w-1.5 h-1.5 sm:w-2 sm:h-2 rotate-45"
+                style={{ border: `1px solid ${primaryColor}66` }}
+              ></div>
+              <div
+                className="w-5 sm:w-8 h-px"
+                style={{ background: `linear-gradient(to left, transparent, ${primaryColor}66)` }}
+              ></div>
             </div>
-            <p className="font-serif italic text-stone-500 text-[8px] sm:text-xs tracking-[0.15em] sm:tracking-[0.3em]">
+            <p
+              className="font-serif italic text-[8px] sm:text-xs tracking-[0.15em] sm:tracking-[0.3em]"
+              style={{ color: config.colors.textMuted }}
+            >
               {eventDate}
             </p>
           </div>
@@ -145,10 +190,22 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
             className={`absolute top-[56%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 sm:w-[70px] sm:h-[70px] z-[60] transition-all duration-1000 cubic-bezier(0.175, 0.885, 0.32, 1.275)
                  ${stage !== "sealed" ? "scale-0 opacity-0 blur-md" : "scale-100 opacity-100"}`}
           >
-            <div className="relative w-full h-full rounded-full bg-gradient-to-br from-[#b82828] to-[#8a1c1c] shadow-[0_8px_25px_rgba(0,0,0,0.4),inset_0_2px_4px_rgba(255,255,255,0.2),inset_0_-2px_4px_rgba(0,0,0,0.2)] flex items-center justify-center border border-[#6d1515]">
+            <div
+              className="relative w-full h-full rounded-full shadow-[0_8px_25px_rgba(0,0,0,0.4),inset_0_2px_4px_rgba(255,255,255,0.2),inset_0_-2px_4px_rgba(0,0,0,0.2)] flex items-center justify-center"
+              style={{
+                background: `linear-gradient(to bottom right, ${waxSealColor}, ${waxSealDark})`,
+                border: `1px solid ${waxSealDark}`,
+              }}
+            >
               {/* Wax seal texture */}
-              <div className="absolute inset-0.5 sm:inset-1 rounded-full border border-[#d4af37]/30"></div>
-              <span className="font-serif text-[#d4af37] text-base sm:text-2xl select-none drop-shadow-md">
+              <div
+                className="absolute inset-0.5 sm:inset-1 rounded-full"
+                style={{ border: `1px solid ${primaryColor}4d` }}
+              ></div>
+              <span
+                className="font-serif text-base sm:text-2xl select-none drop-shadow-md"
+                style={{ color: primaryColor }}
+              >
                 {initials}
               </span>
               <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.15),_transparent_50%)]"></div>

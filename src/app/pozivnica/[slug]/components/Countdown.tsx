@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useTheme } from "./ThemeProvider";
 
 interface CountdownProps {
   targetDate: string;
@@ -104,6 +105,7 @@ function calculateTimeLeft(targetDate: string) {
 }
 
 export const Countdown: React.FC<CountdownProps> = ({ targetDate }) => {
+  const { t } = useTheme();
   // Initialize with calculated value using lazy initializer
   const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(targetDate));
 
@@ -119,10 +121,10 @@ export const Countdown: React.FC<CountdownProps> = ({ targetDate }) => {
   }, [updateTime]);
 
   const timeData = [
-    { value: timeLeft.days, label: "Dana" },
-    { value: timeLeft.hours, label: "Sati" },
-    { value: timeLeft.minutes, label: "Minuta" },
-    { value: timeLeft.seconds, label: "Sekundi" },
+    { value: timeLeft.days, label: t.days },
+    { value: timeLeft.hours, label: t.hours },
+    { value: timeLeft.minutes, label: t.minutes },
+    { value: timeLeft.seconds, label: t.seconds },
   ];
 
   // coutdown layout

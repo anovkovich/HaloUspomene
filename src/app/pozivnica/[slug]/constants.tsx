@@ -33,6 +33,11 @@ export const SCRIPT_FONT_CONFIGS: Record<ScriptFontType, ScriptFontConfig> = {
     variable: "var(--font-allura)",
     description: "Classic formal script",
   },
+  "marck-script": {
+    name: "Marck Script",
+    variable: "var(--font-marck-script)",
+    description: "Elegant Cyrillic script",
+  },
 };
 
 export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {

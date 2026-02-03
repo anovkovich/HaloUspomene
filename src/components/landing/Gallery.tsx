@@ -2,22 +2,22 @@ import React from "react";
 
 const images = [
   {
-    src: "/HaloUspomene/images/gallery/halo uspomene 2.png",
+    src: "/images/gallery/halo uspomene 2.png",
     alt: "Vintage telefon za audio guest book na venčanju",
     span: "sm:col-span-2 md:col-span-2",
   },
   {
-    src: "/HaloUspomene/images/gallery/halo uspomene 3.png",
+    src: "/images/gallery/halo uspomene 3.png",
     alt: "Elegantna postavka audio guest book telefona",
     span: "sm:col-span-1 md:col-span-1",
   },
   {
-    src: "/HaloUspomene/images/gallery/halo uspomene 1.png",
+    src: "/images/gallery/halo uspomene 1.png",
     alt: "Gosti ostavljaju audio poruke na venčanju",
     span: "sm:col-span-1 md:col-span-1",
   },
   {
-    src: "/HaloUspomene/images/gallery/halo uspomene 4.png",
+    src: "/images/gallery/halo uspomene 4.png",
     alt: "Sačuvane audio uspomene sa venčanja",
     span: "sm:col-span-2 md:col-span-2",
   },

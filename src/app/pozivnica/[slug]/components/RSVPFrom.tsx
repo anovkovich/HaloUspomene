@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Heart, Check, Send, Users, MessageSquare, User } from "lucide-react";
 import { Entry_IDs } from "../types";
+import { useTheme } from "./ThemeProvider";
 
 interface RSVPFormProps {
   formUrl: string;
@@ -10,6 +11,7 @@ interface RSVPFormProps {
 }
 
 export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
+  const { t } = useTheme();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -72,6 +74,13 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
     setFormData({ name: "", attending: "Da", plusOnes: "1", details: "" });
   };
 
+  // Helper for pluralization
+  const getPersonLabel = (count: number) => {
+    if (count === 1) return t.person;
+    if (count < 5) return t.people;
+    return t.person;
+  };
+
   if (submitted) {
     return (
       <div className="max-w-xl mx-auto">
@@ -117,20 +126,20 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
               className="font-serif text-2xl sm:text-3xl mb-3"
               style={{ color: "var(--theme-text)" }}
             >
-              {isAttending ? "Hvala Vam!" : "Hvala na odgovoru!"}
+              {isAttending ? t.thankYou : t.thankYouResponse}
             </h3>
             <p
               className="font-light text-base sm:text-lg mb-2"
               style={{ color: "var(--theme-text-muted)" }}
             >
               {isAttending
-                ? "Vaša potvrda je uspešno zabeležena."
-                : "Žao nam je što nećete moći da prisustvujete."}
+                ? t.confirmationRecorded
+                : t.sorryNotAttending}
             </p>
             <p className="text-sm" style={{ color: "var(--theme-text-light)" }}>
               {isAttending
-                ? "Radujemo se što ćemo vas videti na proslavi!"
-                : "Nadamo se da ćemo se videti nekom drugom prilikom."}
+                ? t.lookingForward
+                : t.hopeToSee}
             </p>
           </div>
 
@@ -167,8 +176,8 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
             </p>
             <p className="text-xs" style={{ color: "var(--theme-text-light)" }}>
               {isAttending
-                ? `${formData.plusOnes} ${parseInt(formData.plusOnes) === 1 ? "osoba" : parseInt(formData.plusOnes) < 5 ? "osobe" : "osoba"}`
-                : "Neće prisustvovati"}
+                ? `${formData.plusOnes} ${getPersonLabel(parseInt(formData.plusOnes))}`
+                : t.notAttending}
             </p>
           </div>
 
@@ -177,7 +186,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
             className="text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:opacity-70 animate-[fade-in_0.5s_ease-out_0.7s_both]"
             style={{ color: "var(--theme-text-light)" }}
           >
-            Pošalji novi odgovor
+            {t.submitAnother}
           </button>
         </div>
 
@@ -247,7 +256,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
               style={{ color: "var(--theme-text-light)" }}
             >
               <User size={14} />
-              Ime i prezime
+              {t.nameLabel}
             </label>
             <input
               required
@@ -257,7 +266,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                 color: "var(--theme-text)",
                 borderBottom: "2px solid var(--theme-border-light)",
               }}
-              placeholder="Vaše ime"
+              placeholder={t.namePlaceholder}
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -278,20 +287,20 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
               style={{ color: "var(--theme-text-light)" }}
             >
               <Heart size={14} />
-              Da li dolazite?
+              {t.attendingLabel}
             </label>
             <div className="grid grid-cols-2 gap-4">
               {[
                 {
                   value: "Da",
-                  label: "Dolazim",
-                  sublabel: "Sa radošću!",
+                  label: t.attendingYes,
+                  sublabel: t.attendingYesSub,
                   icon: Check,
                 },
                 {
                   value: "Ne",
-                  label: "Nažalost ne",
-                  sublabel: "Sve najlepše!",
+                  label: t.attendingNo,
+                  sublabel: t.attendingNoSub,
                   icon: Heart,
                 },
               ].map((option) => {
@@ -356,7 +365,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                 style={{ color: "var(--theme-text-light)" }}
               >
                 <Users size={14} />
-                Broj osoba (uključujući Vas)
+                {t.guestCount}
               </label>
               <div className="flex items-center gap-4">
                 <button
@@ -412,7 +421,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                 style={{ color: "var(--theme-text-light)" }}
               >
                 <MessageSquare size={14} />
-                Dodatne napomene
+                {t.additionalNotes}
               </label>
               <textarea
                 className="w-full p-4 h-25 md:h-15 font-light outline-none transition-all duration-300 resize-none"
@@ -422,7 +431,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                   borderRadius: "var(--theme-radius)",
                   border: "2px solid transparent",
                 }}
-                placeholder="Alergije, posebni zahtevi, poruka mladencima..."
+                placeholder={t.notesPlaceholder}
                 value={formData.details}
                 onChange={(e) =>
                   setFormData({ ...formData, details: e.target.value })
@@ -461,12 +470,12 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                     borderTopColor: "transparent",
                   }}
                 />
-                Šaljem...
+                {t.sending}
               </>
             ) : (
               <>
                 <Send size={18} />
-                Potvrdi dolazak
+                {t.confirmAttendance}
               </>
             )}
           </button>

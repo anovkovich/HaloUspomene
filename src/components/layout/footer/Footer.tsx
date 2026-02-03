@@ -8,7 +8,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12 md:gap-16 mb-12 sm:mb-16 md:mb-24">
           <div className="lg:col-span-2">
             <img
-              src="/HaloUspomene/images/full-logo-white.png"
+              src="/images/full-logo-white.png"
               alt="Halo Uspomene Full-Logo"
               className="w-54 h-auto mb-6"
             />

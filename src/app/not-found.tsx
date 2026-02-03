@@ -290,7 +290,7 @@ export default function NotFound() {
 
       <Link href="/" className="mt-8 flex items-center justify-center">
         <img
-          // src="/HaloUspomene/images/logo.png"
+          // src="/images/logo.png"
           src="/images/full-logo.png"
           alt="Halo Uspomene LOGO"
           className="h-26 mb-1"

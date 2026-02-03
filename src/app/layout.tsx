@@ -7,6 +7,7 @@ import {
   Alex_Brush,
   Parisienne,
   Allura,
+  Marck_Script,
   Cormorant_Garamond,
   Josefin_Sans
 } from "next/font/google";
@@ -57,6 +58,14 @@ const allura = Allura({
   weight: "400",
   variable: "--font-allura",
   subsets: ["latin"],
+  display: "swap",
+});
+
+// Cyrillic script font
+const marckScript = Marck_Script({
+  weight: "400",
+  variable: "--font-marck-script",
+  subsets: ["latin", "cyrillic"],
   display: "swap",
 });
 
@@ -279,7 +288,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${cormorantGaramond.variable} ${josefinSans.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} antialiased`}
       >
         {children}
       </body>

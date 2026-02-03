@@ -31,7 +31,7 @@ const Navbar: React.FC = () => {
           <div className="flex-shrink-0">
             <a href="#" className="flex items-center gap-3 group">
               <img
-                src="/HaloUspomene/images/logo.png"
+                src="/images/logo.png"
                 alt="Halo Uspomene LOGO"
                 className="h-10 mb-1"
               />

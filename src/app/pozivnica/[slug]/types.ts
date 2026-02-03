@@ -1,5 +1,5 @@
 export type ThemeType = "classic" | "modern" | "minimal" | "luxury";
-export type ScriptFontType = "great-vibes" | "dancing-script" | "alex-brush" | "parisienne" | "allura";
+export type ScriptFontType = "great-vibes" | "dancing-script" | "alex-brush" | "parisienne" | "allura" | "marck-script";
 
 export interface Location {
   name: string;
@@ -28,6 +28,7 @@ export interface Entry_IDs {
 export interface WeddingData {
   theme: ThemeType;
   scriptFont?: ScriptFontType;
+  useCyrillic?: boolean; // Use Cyrillic script for static text
   rsvp_form_url: string;
   entry_IDs: Entry_IDs;
   couple_names: {
