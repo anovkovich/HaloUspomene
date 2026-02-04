@@ -27,6 +27,7 @@ const ContactForm: React.FC = () => {
     date: "",
     location: "",
     package: "premium",
+    acceptedTerms: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,6 +59,9 @@ const ContactForm: React.FC = () => {
           datum_dogadjaja: formattedDate,
           lokacija: formData.location,
           paket: formData.package === "premium" ? "Premium" : "Essential",
+          opsti_uslovi: formData.acceptedTerms
+            ? "Prihvaćeni"
+            : "Nisu prihvaćeni",
         }),
       });
 
@@ -88,6 +92,7 @@ const ContactForm: React.FC = () => {
       date: "",
       location: "",
       package: "premium",
+      acceptedTerms: false,
     });
   };
 
@@ -138,7 +143,7 @@ const ContactForm: React.FC = () => {
             required
             type="text"
             placeholder="Ime i Prezime"
-            className="w-full bg-transparent border-b border-white/10 py-4 px-1 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+            className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             disabled={isLoading}
@@ -146,7 +151,7 @@ const ContactForm: React.FC = () => {
         </div>
 
         {/* Date Input - Custom DatePicker */}
-        <div className="space-y-3">
+        <div className="space-y-3 mt-1">
           <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
             <Calendar size={14} className="text-[#AE343F]" /> Datum Događaja
           </label>
@@ -166,7 +171,7 @@ const ContactForm: React.FC = () => {
             required
             type="email"
             placeholder="primer@email.rs"
-            className="w-full bg-transparent border-b border-white/10 py-4 px-1 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+            className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
             value={formData.email}
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
@@ -184,7 +189,7 @@ const ContactForm: React.FC = () => {
             required
             type="text"
             placeholder="npr. Beograd, Sala XY"
-            className="w-full bg-transparent border-b border-white/10 py-4 px-1 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+            className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
             value={formData.location}
             onChange={(e) =>
               setFormData({ ...formData, location: e.target.value })
@@ -216,6 +221,35 @@ const ContactForm: React.FC = () => {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Terms & Conditions Checkbox */}
+      <div className="flex items-start gap-3">
+        <input
+          required
+          type="checkbox"
+          id="acceptedTerms"
+          checked={formData.acceptedTerms}
+          onChange={(e) =>
+            setFormData({ ...formData, acceptedTerms: e.target.checked })
+          }
+          disabled={isLoading}
+          className="mt-1 w-4 h-4 accent-[#AE343F] cursor-pointer shrink-0"
+        />
+        <label
+          htmlFor="acceptedTerms"
+          className="text-[#F5F4DC]/60 text-sm cursor-pointer leading-relaxed"
+        >
+          Pročitao/la sam i prihvatam{" "}
+          <a
+            href="/OP%C5%A0TI%20USLOVI%20NAJMA%20I%20KORI%C5%A0%C4%86ENJA%20AUDIO%20GUEST%20BOOK%20URE%C4%90AJA.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#AE343F] hover:text-[#c9454f] underline underline-offset-2 transition-colors"
+          >
+            opšte uslove najma i korišćenja uređaja
+          </a>
+        </label>
       </div>
 
       <button

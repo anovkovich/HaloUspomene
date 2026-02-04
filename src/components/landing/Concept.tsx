@@ -26,7 +26,7 @@ const points = [
 const Concept: React.FC = () => {
   return (
     <section
-      id="concept"
+      id="zasto-mi"
       className="py-16 sm:py-24 md:py-32 bg-white relative overflow-hidden"
     >
       <div className="container mx-auto px-4">

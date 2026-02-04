@@ -29,6 +29,15 @@ const Footer: React.FC = () => {
               Tu smo da sačuvate najdragocenije glasove sa svog venčanja. Jer
               ljubav zaslužuje da se čuje — zauvek.
             </p>
+
+            <a
+              href="/OP%C5%A0TI%20USLOVI%20NAJMA%20I%20KORI%C5%A0%C4%86ENJA%20AUDIO%20GUEST%20BOOK%20URE%C4%90AJA.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#AE343F] hover:text-[#c9454f] underline underline-offset-2 transition-colors"
+            >
+              Opšti uslovi najma i korišćenja uređaja
+            </a>
           </div>
         </div>
         <div className="pt-12 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest text-[#F5F4DC]/20">

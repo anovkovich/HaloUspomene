@@ -25,7 +25,7 @@ const images = [
 
 const Gallery: React.FC = () => {
   return (
-    <section id="gallery" className="py-16 sm:py-24 md:py-32 bg-white">
+    <section id="galerija" className="py-16 sm:py-24 md:py-32 bg-white">
       <div className="container mx-auto px-4">
         <div className=" mb-10 sm:mb-14 md:mb-20">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-6">

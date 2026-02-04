@@ -91,7 +91,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const handleDateClick = (day: number) => {
     const newDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
     if (newDate >= minDateObj) {
-      const dateStr = newDate.toISOString().split('T')[0];
+      const dateStr = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
       onChange(dateStr);
       setIsOpen(false);
     }
@@ -257,7 +257,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const todayStr = today.toISOString().split('T')[0];
+                  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                   onChange(todayStr);
                   setIsOpen(false);
                 }}
@@ -279,7 +279,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 onClick={() => {
                   const nextWeek = new Date(today);
                   nextWeek.setDate(nextWeek.getDate() + 7);
-                  onChange(nextWeek.toISOString().split('T')[0]);
+                  onChange(`${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, '0')}-${String(nextWeek.getDate()).padStart(2, '0')}`);
                   setIsOpen(false);
                 }}
                 className="flex-1 py-2 text-sm font-medium rounded-lg transition-colors"

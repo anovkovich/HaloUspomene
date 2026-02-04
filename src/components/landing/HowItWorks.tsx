@@ -1,4 +1,5 @@
 import React from "react";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 const steps = [
   {
@@ -24,7 +25,7 @@ const steps = [
 const HowItWorks: React.FC = () => {
   return (
     <section
-      id="how-it-works"
+      id="proces"
       className="py-16 sm:py-24 md:py-32 bg-[#AE343F] text-[#F5F4DC] overflow-hidden"
     >
       <div className="container mx-auto px-4">
@@ -42,7 +43,7 @@ const HowItWorks: React.FC = () => {
           <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-[#F5F4DC]/10"></div>
           <div className="space-y-16 sm:space-y-24 md:space-y-32">
             {steps.map((step, index) => (
-              <div
+              <ScrollReveal
                 key={step.number}
                 className={`flex flex-col ${index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"} items-center gap-12`}
               >
@@ -67,7 +68,7 @@ const HowItWorks: React.FC = () => {
                 </div>
                 <div className="w-6 h-6 rounded-full bg-[#232323] ring-[16px] ring-[#AE343F]"></div>
                 <div className="flex-1 hidden md:block"></div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>

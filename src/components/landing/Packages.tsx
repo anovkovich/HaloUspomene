@@ -32,7 +32,7 @@ const packages = [
 
 const Packages: React.FC = () => {
   return (
-    <section id="packages" className="py-16 sm:py-24 md:py-32 bg-[#F5F4DC]">
+    <section id="paketi" className="py-16 sm:py-24 md:py-32 bg-[#F5F4DC]">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 sm:mb-16 md:mb-24">
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-serif text-[#232323] mb-6">
@@ -72,7 +72,7 @@ const Packages: React.FC = () => {
                 ))}
               </ul>
               <a
-                href="#book"
+                href="#kontakt"
                 className={`btn btn-lg w-full rounded-2xl font-bold ${pkg.popular ? "bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] border-none" : "bg-[#232323] hover:bg-[#1a1a1a] text-[#F5F4DC] border-none"}`}
               >
                 {pkg.cta}
