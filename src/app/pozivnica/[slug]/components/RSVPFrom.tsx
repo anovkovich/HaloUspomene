@@ -23,50 +23,29 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
 
   const isAttending = formData.attending === "Da";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const iframe = document.createElement("iframe");
-    iframe.name = "hidden_iframe";
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
+    const params = new URLSearchParams();
+    params.append(entry_IDs.name, formData.name);
+    params.append(entry_IDs.attending, formData.attending);
+    params.append(entry_IDs.plusOnes, isAttending ? formData.plusOnes : "0");
+    params.append(entry_IDs.details, isAttending ? formData.details || "-" : "-");
 
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = formUrl;
-    form.target = "hidden_iframe";
+    try {
+      await fetch(formUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
+      });
+    } catch {
+      // no-cors responses are opaque, submission still goes through
+    }
 
-    const fields = [
-      { name: entry_IDs.name, value: formData.name },
-      { name: entry_IDs.attending, value: formData.attending },
-      {
-        name: entry_IDs.plusOnes,
-        value: isAttending ? formData.plusOnes : "0",
-      },
-      {
-        name: entry_IDs.details,
-        value: isAttending ? formData.details || "-" : "-",
-      },
-    ];
-
-    fields.forEach(({ name, value }) => {
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = name;
-      input.value = value;
-      form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-
-    setTimeout(() => {
-      document.body.removeChild(form);
-      document.body.removeChild(iframe);
-      setLoading(false);
-      setSubmitted(true);
-    }, 1000);
+    setLoading(false);
+    setSubmitted(true);
   };
 
   const resetForm = () => {
