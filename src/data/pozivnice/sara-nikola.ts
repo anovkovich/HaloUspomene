@@ -55,7 +55,7 @@ const weddingData: WeddingData = {
     },
   ],
 
-  countdown_enabled: false,
+  countdown_enabled: true,
   map_enabled: true,
 };
 
