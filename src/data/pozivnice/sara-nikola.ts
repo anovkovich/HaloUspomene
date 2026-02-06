@@ -5,7 +5,7 @@ const weddingData: WeddingData = {
   scriptFont: "great-vibes", // Options: "great-vibes" | "dancing-script" | "alex-brush" | "parisienne" | "allura" | "marck-script" | "caveat" | "bad-script"
 
   rsvp_form_url:
-    "https://docs.google.com/forms/d/e/1FAIpQLSebuARXf1ZQAAVnkkdxf6nvQZ7eGjWWT-f3WZENM_kioI-NuA/formResponse",
+    "https://docs.google.com/forms/d/e/1FAIpQLSebuARXf1ZQAAVnkkdxf6nvQZ7eGjWWT-f3WZENM_kioI-TtT/formResponse",
   entry_IDs: {
     name: "entry.1765465417",
     attending: "entry.1547193122",
