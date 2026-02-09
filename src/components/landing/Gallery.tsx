@@ -3,22 +3,22 @@ import React from "react";
 const images = [
   {
     src: "/images/gallery/halo uspomene 2.png",
-    alt: "Vintage telefon za audio guest book na venčanju",
+    alt: "HALO Uspomene vintage telefon za audio guest book postavljen na venčanju u Srbiji",
     span: "sm:col-span-2 md:col-span-2",
   },
   {
     src: "/images/gallery/halo uspomene 3.png",
-    alt: "Elegantna postavka audio guest book telefona",
+    alt: "Elegantna postavka audio guest book telefona sa drvenom govornicom na srpskom venčanju",
     span: "sm:col-span-1 md:col-span-1",
   },
   {
     src: "/images/gallery/halo uspomene 1.png",
-    alt: "Gosti ostavljaju audio poruke na venčanju",
+    alt: "Gosti ostavljaju audio poruke na venčanju koristeći HALO Uspomene retro telefon",
     span: "sm:col-span-1 md:col-span-1",
   },
   {
     src: "/images/gallery/halo uspomene 4.png",
-    alt: "Sačuvane audio uspomene sa venčanja",
+    alt: "Sačuvane audio uspomene sa venčanja - digitalni album glasovnih poruka gostiju",
     span: "sm:col-span-2 md:col-span-2",
   },
 ];

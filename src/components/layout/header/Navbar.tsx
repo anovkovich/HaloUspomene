@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Phone, Menu, X } from "lucide-react";
+import Link from "next/link";
+import { Menu, X } from "lucide-react";
 
 const navLinks = [
-  { name: "Zašto mi", href: "#zasto-mi" },
-  { name: "Proces", href: "#proces" },
-  { name: "Paketi", href: "#paketi" },
-  { name: "Galerija", href: "#galerija" },
+  { name: "Paketi", href: "/#paketi" },
+  { name: "Utisci", href: "/#utisci" },
+  { name: "FAQ", href: "/#faq" },
+  { name: "Blog", href: "/blog" },
+  { name: "Lokacije", href: "/lokacije" },
 ];
 
 const Navbar: React.FC = () => {
@@ -29,34 +31,34 @@ const Navbar: React.FC = () => {
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between">
           <div className="flex-shrink-0">
-            <a href="#" className="flex items-center gap-3 group">
+            <Link href="/" className="flex items-center gap-3 group">
               <img
                 src="/images/full-logo.png"
-                alt="Halo Uspomene LOGO"
+                alt="HALO Uspomene - Audio Guest Book za Venčanja u Srbiji"
                 className="h-14 mb-1"
               />
-            </a>
+            </Link>
           </div>
 
           <div className="hidden lg:flex items-center gap-10">
             <ul className="flex items-center gap-8">
               {navLinks.map((link) => (
                 <li key={link.name}>
-                  <a
+                  <Link
                     href={link.href}
                     className="text-sm font-semibold text-[#232323]/70 hover:text-[#AE343F] transition-colors tracking-widest uppercase"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
-            <a
-              href="#kontakt"
+            <Link
+              href="/#kontakt"
               className="btn bg-[#232323] hover:bg-[#AE343F] text-[#F5F4DC] rounded-full px-10 shadow-xl shadow-black/10 border-none transition-all"
             >
               KONTAKT
-            </a>
+            </Link>
           </div>
 
           <button
@@ -78,23 +80,23 @@ const Navbar: React.FC = () => {
         <ul className="p-4 sm:p-6 space-y-4">
           {navLinks.map((link) => (
             <li key={link.name}>
-              <a
+              <Link
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
                 className="block text-2xl font-serif text-[#232323] hover:text-[#AE343F] py-2 transition-colors min-h-[44px] flex items-center"
               >
                 {link.name}
-              </a>
+              </Link>
             </li>
           ))}
           <li className="pt-4">
-            <a
-              href="#kontakt"
+            <Link
+              href="/#kontakt"
               onClick={() => setIsMenuOpen(false)}
               className="btn bg-[#AE343F] hover:bg-[#8A2A32] w-full text-[#F5F4DC] rounded-xl text-lg border-none min-h-[48px]"
             >
               Zakažite razgovor
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

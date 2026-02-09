@@ -50,7 +50,7 @@ const Hero: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-5">
               <a
-                href="#kontakt"
+                href="/#kontakt"
                 className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] btn-lg rounded-full px-12 shadow-2xl shadow-[#AE343F]/30 group border-none"
               >
                 Zakažite konsultacije
@@ -60,7 +60,7 @@ const Hero: React.FC = () => {
                 />
               </a>
               <a
-                href="#proces"
+                href="/#proces"
                 className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] hover:border-[#232323] btn-lg rounded-full px-12"
               >
                 Otkrijte kako
@@ -73,7 +73,7 @@ const Hero: React.FC = () => {
             <div className="transform rotate-0 md:hover:rotate-2 md:hover:scale-[1.05] transition-transform duration-700">
               <img
                 src="/images/phone.png"
-                alt="Retro Red Telephone"
+                alt="HALO Uspomene vintage retro telefon za audio guest book na venčanju u Srbiji"
                 className="w-full h-auto object-cover"
               />
             </div>

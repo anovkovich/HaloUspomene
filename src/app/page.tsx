@@ -4,7 +4,8 @@ import Hero from "../components/landing/Hero";
 import Concept from "../components/landing/Concept";
 import HowItWorks from "../components/landing/HowItWorks";
 import Packages from "../components/landing/Packages";
-import Gallery from "../components/landing/Gallery";
+import Testimonials from "../components/landing/Testimonials";
+import FAQ from "../components/landing/FAQ";
 import ContactForm from "../components/landing/ContactForm";
 import Footer from "@/components/layout/footer/Footer";
 import { Header } from "@/components/layout";
@@ -19,7 +20,8 @@ export default function Home() {
         <Concept />
         <HowItWorks />
         <Packages />
-        <Gallery />
+        <Testimonials />
+        <FAQ />
 
         <section
           id="kontakt"

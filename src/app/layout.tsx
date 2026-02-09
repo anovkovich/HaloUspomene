@@ -14,8 +14,8 @@ import {
   Josefin_Sans,
 } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/header/Navbar";
-import Footer from "@/components/layout/footer/Footer";
+import Script from "next/script";
+import { testimonials } from "@/data/testimonials";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -101,6 +101,7 @@ const josefinSans = Josefin_Sans({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
+const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -293,6 +294,49 @@ export default function RootLayout({
     ],
   };
 
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${siteUrl}/#organization`,
+    name: "HALO Uspomene",
+    url: siteUrl,
+    logo: `${siteUrl}/images/logo.png`,
+    description:
+      "HALO Uspomene je premium audio guest book servis za venčanja i posebne događaje u Srbiji. Dostava u celoj Srbiji.",
+    sameAs: ["https://www.instagram.com/halo_uspomene"],
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer service",
+      availableLanguage: ["Serbian", "English"],
+    },
+  };
+
+  const webSiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
+    name: "HALO Uspomene",
+    url: siteUrl,
+    description:
+      "Audio guest book za venčanja u Srbiji — sačuvajte glasove najdražih zauvek.",
+    publisher: { "@id": `${siteUrl}/#organization` },
+    inLanguage: "sr",
+  };
+
+  const reviewSchemas = testimonials.map((t) => ({
+    "@context": "https://schema.org",
+    "@type": "Review",
+    author: { "@type": "Person", name: t.coupleName },
+    datePublished: `2025-${String(["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Avg", "Sep", "Okt", "Nov", "Dec"].indexOf(t.date.split(" ")[0].slice(0, 3)) + 1).padStart(2, "0")}-01`,
+    reviewBody: t.quote,
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: t.rating,
+      bestRating: 5,
+    },
+    itemReviewed: { "@id": `${siteUrl}/#business` },
+  }));
+
   return (
     <html lang="sr" data-theme="light">
       <head>
@@ -300,6 +344,36 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchemas) }}
+        />
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}');
+              `}
+            </Script>
+          </>
+        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} antialiased`}

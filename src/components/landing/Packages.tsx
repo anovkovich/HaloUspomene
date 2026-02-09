@@ -72,7 +72,7 @@ const Packages: React.FC = () => {
                 ))}
               </ul>
               <a
-                href="#kontakt"
+                href="/#kontakt"
                 className={`btn btn-lg w-full rounded-2xl font-bold ${pkg.popular ? "bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] border-none" : "bg-[#232323] hover:bg-[#1a1a1a] text-[#F5F4DC] border-none"}`}
               >
                 {pkg.cta}

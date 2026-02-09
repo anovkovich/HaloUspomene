@@ -10,8 +10,11 @@ import {
   CheckCircle2,
   Loader2,
   AlertCircle,
+  Phone,
+  MessageCircle,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
+import { analytics } from "@/utils/analytics";
 
 // Web3Forms access key - get yours free at https://web3forms.com
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
@@ -72,6 +75,8 @@ const ContactForm: React.FC = () => {
       }
 
       setIsSubmitted(true);
+      analytics.formSubmit("contact");
+      analytics.packageClick(formData.package === "premium" ? "Premium" : "Essential");
     } catch (err) {
       setError(
         err instanceof Error
@@ -121,163 +126,204 @@ const ContactForm: React.FC = () => {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-10 bg-white/5 backdrop-blur-md p-6 sm:p-10 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/10 shadow-2xl relative"
-    >
-      {/* Error Message */}
-      {error && (
-        <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400">
-          <AlertCircle size={20} />
-          <span>{error}</span>
-        </div>
-      )}
+    <div>
+      {/* Contact Channels */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <a
+          href="https://wa.me/381601234567?text=Zdravo!%20Zainteresovan/a%20sam%20za%20audio%20guest%20book%20za%20venčanje."
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => analytics.ctaClick("whatsapp", "contact_section")}
+          className="flex items-center justify-center gap-2 px-5 py-3 bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] rounded-2xl transition-colors text-sm font-medium"
+        >
+          <MessageCircle size={18} />
+          WhatsApp
+        </a>
+        <a
+          href="viber://chat?number=%2B381601234567"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => analytics.ctaClick("viber", "contact_section")}
+          className="flex items-center justify-center gap-2 px-5 py-3 bg-[#7360F2]/20 hover:bg-[#7360F2]/30 text-[#7360F2] rounded-2xl transition-colors text-sm font-medium"
+        >
+          <MessageCircle size={18} />
+          Viber
+        </a>
+        <a
+          href="tel:+381601234567"
+          onClick={() => analytics.ctaClick("phone_call", "contact_section")}
+          className="flex items-center justify-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/15 text-[#F5F4DC]/70 rounded-2xl transition-colors text-sm font-medium"
+        >
+          <Phone size={18} />
+          Pozovite nas
+        </a>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-        {/* Name Input */}
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
-            <User size={14} className="text-[#AE343F]" /> Vaše Ime
-          </label>
-          <input
-            required
-            type="text"
-            placeholder="Ime i Prezime"
-            className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            disabled={isLoading}
-          />
-        </div>
+      <p className="text-center text-[#F5F4DC]/30 text-xs uppercase tracking-widest mb-6">
+        ili popunite formu
+      </p>
 
-        {/* Date Input - Custom DatePicker */}
-        <div className="space-y-3 mt-1">
-          <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
-            <Calendar size={14} className="text-[#AE343F]" /> Datum Događaja
-          </label>
-          <DatePicker
-            value={formData.date}
-            onChange={(date) => setFormData({ ...formData, date })}
-            placeholder="Izaberite datum"
-          />
-        </div>
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-10 bg-white/5 backdrop-blur-md p-6 sm:p-10 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/10 shadow-2xl relative"
+      >
+        {/* Error Message */}
+        {error && (
+          <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400">
+            <AlertCircle size={20} />
+            <span>{error}</span>
+          </div>
+        )}
 
-        {/* Email Input */}
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
-            <Send size={14} className="text-[#AE343F]" /> Email Adresa
-          </label>
-          <input
-            required
-            type="email"
-            placeholder="primer@email.rs"
-            className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            disabled={isLoading}
-          />
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+          {/* Name Input */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+              <User size={14} className="text-[#AE343F]" /> Vaše Ime
+            </label>
+            <input
+              required
+              type="text"
+              placeholder="Ime i Prezime"
+              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              disabled={isLoading}
+            />
+          </div>
 
-        {/* Location Input */}
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
-            <MapPin size={14} className="text-[#AE343F]" /> Lokacija / Restoran
-          </label>
-          <input
-            required
-            type="text"
-            placeholder="npr. Beograd, Sala XY"
-            className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
-            value={formData.location}
-            onChange={(e) =>
-              setFormData({ ...formData, location: e.target.value })
-            }
-            disabled={isLoading}
-          />
-        </div>
+          {/* Date Input - Custom DatePicker */}
+          <div className="space-y-3 mt-1">
+            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+              <Calendar size={14} className="text-[#AE343F]" /> Datum Događaja
+            </label>
+            <DatePicker
+              value={formData.date}
+              onChange={(date) => setFormData({ ...formData, date })}
+              placeholder="Izaberite datum"
+            />
+          </div>
 
-        {/* Package Select */}
-        <div className="md:col-span-2 space-y-3">
-          <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
-            <Package size={14} className="text-[#AE343F]" /> Izaberite Paket
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {["essential", "premium"].map((pkg) => (
-              <button
-                key={pkg}
-                type="button"
-                onClick={() => setFormData({ ...formData, package: pkg })}
-                disabled={isLoading}
-                className={`py-4 rounded-2xl border transition-all text-sm font-bold uppercase tracking-widest ${
-                  formData.package === pkg
-                    ? "bg-[#AE343F] border-[#AE343F] text-[#F5F4DC] shadow-lg shadow-[#AE343F]/20"
-                    : "bg-white/5 border-white/10 text-[#F5F4DC]/40 hover:border-white/20"
-                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-              >
-                {pkg} Paket
-              </button>
-            ))}
+          {/* Email Input */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+              <Send size={14} className="text-[#AE343F]" /> Email Adresa
+            </label>
+            <input
+              required
+              type="email"
+              placeholder="primer@email.rs"
+              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Location Input */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+              <MapPin size={14} className="text-[#AE343F]" /> Lokacija /
+              Restoran
+            </label>
+            <input
+              required
+              type="text"
+              placeholder="npr. Beograd, Sala XY"
+              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+              value={formData.location}
+              onChange={(e) =>
+                setFormData({ ...formData, location: e.target.value })
+              }
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Package Select */}
+          <div className="md:col-span-2 space-y-3">
+            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+              <Package size={14} className="text-[#AE343F]" /> Izaberite Paket
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {["essential", "premium"].map((pkg) => (
+                <button
+                  key={pkg}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, package: pkg })}
+                  disabled={isLoading}
+                  className={`py-4 rounded-2xl border transition-all text-sm font-bold uppercase tracking-widest ${
+                    formData.package === pkg
+                      ? "bg-[#AE343F] border-[#AE343F] text-[#F5F4DC] shadow-lg shadow-[#AE343F]/20"
+                      : "bg-white/5 border-white/10 text-[#F5F4DC]/40 hover:border-white/20"
+                  } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  {pkg} Paket
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Terms & Conditions Checkbox */}
-      <div className="flex items-start gap-3">
-        <input
-          required
-          type="checkbox"
-          id="acceptedTerms"
-          checked={formData.acceptedTerms}
-          onChange={(e) =>
-            setFormData({ ...formData, acceptedTerms: e.target.checked })
-          }
-          disabled={isLoading}
-          className="mt-1 w-4 h-4 accent-[#AE343F] cursor-pointer shrink-0"
-        />
-        <label
-          htmlFor="acceptedTerms"
-          className="text-[#F5F4DC]/60 text-sm cursor-pointer leading-relaxed"
-        >
-          Pročitao/la sam i prihvatam{" "}
-          <a
-            href="/OP%C5%A0TI%20USLOVI%20NAJMA%20I%20KORI%C5%A0%C4%86ENJA%20AUDIO%20GUEST%20BOOK%20URE%C4%90AJA.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#AE343F] hover:text-[#c9454f] underline underline-offset-2 transition-colors"
+        {/* Terms & Conditions Checkbox */}
+        <div className="flex items-start gap-3">
+          <input
+            required
+            type="checkbox"
+            id="acceptedTerms"
+            checked={formData.acceptedTerms}
+            onChange={(e) =>
+              setFormData({ ...formData, acceptedTerms: e.target.checked })
+            }
+            disabled={isLoading}
+            className="mt-1 w-4 h-4 accent-[#AE343F] cursor-pointer shrink-0"
+          />
+          <label
+            htmlFor="acceptedTerms"
+            className="text-[#F5F4DC]/60 text-sm cursor-pointer leading-relaxed"
           >
-            opšte uslove najma i korišćenja uređaja
-          </a>
-        </label>
-      </div>
+            Pročitao/la sam i prihvatam{" "}
+            <a
+              href="/OP%C5%A0TI%20USLOVI%20NAJMA%20I%20KORI%C5%A0%C4%86ENJA%20AUDIO%20GUEST%20BOOK%20URE%C4%90AJA.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#AE343F] hover:text-[#c9454f] underline underline-offset-2 transition-colors"
+            >
+              opšte uslove najma i korišćenja uređaja
+            </a>
+          </label>
+        </div>
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="btn bg-[#AE343F] hover:bg-[#8A2A32] btn-lg w-full min-h-[48px] h-16 sm:h-20 rounded-2xl text-[#F5F4DC] text-base sm:text-lg font-bold shadow-2xl shadow-[#AE343F]/40 group relative overflow-hidden border-none disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <span className="relative z-10 flex items-center gap-3">
-          {isLoading ? (
-            <>
-              <Loader2 size={20} className="animate-spin" />
-              Slanje...
-            </>
-          ) : (
-            <>
-              Pošalji upit za termin
-              <Send
-                size={20}
-                className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
-              />
-            </>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="btn bg-[#AE343F] hover:bg-[#8A2A32] btn-lg w-full min-h-[48px] h-16 sm:h-20 rounded-2xl text-[#F5F4DC] text-base sm:text-lg font-bold shadow-2xl shadow-[#AE343F]/40 group relative overflow-hidden border-none disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span className="relative z-10 flex items-center gap-3">
+            {isLoading ? (
+              <>
+                <Loader2 size={20} className="animate-spin" />
+                Slanje...
+              </>
+            ) : (
+              <>
+                Pošalji upit za termin
+                <Send
+                  size={20}
+                  className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+                />
+              </>
+            )}
+          </span>
+          {!isLoading && (
+            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
           )}
-        </span>
-        {!isLoading && (
-          <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-        )}
-      </button>
-    </form>
+        </button>
+      </form>
+    </div>
   );
 };
 
