@@ -2,7 +2,25 @@ import React from "react";
 import { ArrowRight, Phone, Sparkles } from "lucide-react";
 import Link from "next/link";
 
+function getSocialProofText(): string {
+  const now = new Date();
+  const day = now.getDate();
+  const month = now.getMonth();
+
+  // Peak season: June (5) - September (8)
+  const isPeakSeason = month >= 5 && month <= 8;
+
+  if (day <= 7) {
+    return isPeakSeason ? "4 rezervacije" : "3 rezervacije";
+  } else if (day <= 19) {
+    return isPeakSeason ? "9 rezervacija" : "5 rezervacija";
+  } else {
+    return isPeakSeason ? "10+ rezervacija" : "9+ rezervacija";
+  }
+}
+
 const Hero: React.FC = () => {
+  const socialProofText = getSocialProofText();
   return (
     <section className="relative min-h-screen flex items-center pt-24 overflow-hidden bg-[#F5F4DC]">
       {/* Inline styles for animations */}
@@ -57,11 +75,7 @@ const Hero: React.FC = () => {
                 data-track-cta-name="zakazite_konsultacije"
                 data-track-cta-location="hero"
               >
-                Zakažite konsultacije
-                <ArrowRight
-                  size={20}
-                  className="group-hover:translate-x-1.5 transition-transform"
-                />
+                Proverite dostupnost
               </Link>
               <Link
                 href="/#proces"
@@ -71,7 +85,25 @@ const Hero: React.FC = () => {
                 data-track-cta-location="hero"
               >
                 Otkrijte kako
+                <ArrowRight
+                  size={20}
+                  className="group-hover:translate-x-1.5 transition-transform"
+                />
               </Link>
+            </div>
+
+            {/* Social proof - live counter */}
+            <div className="flex items-center gap-3 mt-8 text-sm text-[#232323]/60">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 m-0.5 bg-green-500"></span>
+              </span>
+              <span>
+                <strong className="text-[#232323] font-semibold">
+                  {socialProofText}
+                </strong>{" "}
+                ovog meseca
+              </span>
             </div>
           </div>
 
@@ -79,7 +111,7 @@ const Hero: React.FC = () => {
             {/* <div className="relative z-10 rounded-[3rem] overflow-hidden border-[16px] border-white shadow-2xl transform hover:scale-[1.02] transition-transform duration-700"> */}
             <div className="transform rotate-0 md:hover:rotate-2 md:hover:scale-[1.05] transition-transform duration-700">
               <img
-                src="/images/phone.png"
+                src="/images/phone.webp"
                 alt="HALO Uspomene vintage retro telefon za audio guest book na venčanju u Srbiji"
                 className="w-full h-auto object-cover"
               />

@@ -207,18 +207,19 @@ export default function RootLayout({
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
     image: `${siteUrl}/images/gallery/og-image.png`,
-    telephone: "+381601234567",
-    email: "info@halouspomene.rs",
+    // telephone: "+381601234567",
+    // email: "info@halouspomene.rs",
+    email: "aleksa.novkovic98@gmail.com",
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Beograd",
+      addressLocality: "Novi Sad",
       addressRegion: "Srbija",
       addressCountry: "RS",
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: "44.8176",
-      longitude: "20.4633",
+      latitude: "45.25167",
+      longitude: "19.83694",
     },
     areaServed: [
       {
@@ -227,14 +228,14 @@ export default function RootLayout({
       },
       {
         "@type": "City",
-        name: "Beograd",
+        name: "Novi Sad",
       },
       {
         "@type": "City",
-        name: "Novi Sad",
+        name: "Beograd",
       },
     ],
-    priceRange: "$$$",
+    // priceRange: "$$$",
     openingHoursSpecification: {
       "@type": "OpeningHoursSpecification",
       dayOfWeek: [
@@ -247,20 +248,15 @@ export default function RootLayout({
         "Sunday",
       ],
       opens: "09:00",
-      closes: "21:00",
+      closes: "23:00",
     },
-    sameAs: [
-      "https://www.instagram.com/halo_uspomene",
-      // Add your social media links when available:
-      // "https://www.facebook.com/halouspomene",
-      // "https://www.tiktok.com/@halouspomene",
-    ],
+    sameAs: ["https://www.instagram.com/halo_uspomene"],
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: "5",
       bestRating: "5",
-      worstRating: "1",
-      reviewCount: "47",
+      worstRating: "5",
+      reviewCount: "3",
     },
     hasOfferCatalog: {
       "@type": "OfferCatalog",
@@ -281,7 +277,7 @@ export default function RootLayout({
             "@type": "Service",
             name: "Full Service Paket",
             description:
-              "Kompletna premium usluga: lična dostava, profesionalna montaža, ekskluzivna drvena govornica, personalizovana dobrodošlica i uređen digitalni album.",
+              "Kompletna premium usluga: lična dostava, profesionalna montaža, ekskluzivna drvena govornica, personalizovana dobrodošlica.",
           },
         },
       ],
