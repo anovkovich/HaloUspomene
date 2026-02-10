@@ -9,24 +9,24 @@ const packages = [
     features: [
       "Autentični vintage telefon",
       "Dostava kurirskom službom",
-      "Elegantno uputstvo za goste",
-      "Svi audio snimci za 48h",
-      "Na vašoj adresi do 5 dana",
+      "Elegantno retro uputstvo i dekoracija",
+      "Svi audio snimci za 3 do 5 dana",
+      "Na vašoj adresi čak 5 dana",
     ],
     cta: "Izaberite Essential",
     popular: false,
   },
   {
-    name: "Premium",
+    name: "Full Service",
     icon: <PackageCheck className="text-[#AE343F]" size={48} />,
     features: [
       "Lična dostava i montaža u Novom Sadu",
       "Ekskluzivna drvena govornica",
-      "Elegantno uputstvo za goste",
+      "Elegantno retro uputstvo i dekoracija",
       "Svi audio snimci za 48h + highlights",
       "Personalizovana audio dobrodošlica",
     ],
-    cta: "Želim Premium paket",
+    cta: "Želim Full Service",
     popular: true,
   },
 ];
@@ -35,7 +35,7 @@ const Packages: React.FC = () => {
   return (
     <section id="paketi" className="py-16 sm:py-24 md:py-32 bg-[#F5F4DC]">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12 sm:mb-16 md:mb-24">
+        <div className="text-center mb-10 sm:mb-12 md:mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-serif text-[#232323] mb-6">
             Odaberite svoje iskustvo
           </h2>
@@ -43,7 +43,16 @@ const Packages: React.FC = () => {
             Oba paketa uključuju neograničen broj poruka i trajno vlasništvo nad
             svim snimcima.
           </p>
+
+          {/* Subtle discount note */}
+          <p className="text-center text-sm text-[#232323]/50 mt-4 mb-8 sm:mb-12">
+            Uz bilo koji paket ostvarite 20% popusta na{" "}
+            <span className="text-[#AE343F] font-medium">
+              digitalnu pozivnicu
+            </span>
+          </p>
         </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 max-w-6xl mx-auto">
           {packages.map((pkg) => (
             <div

@@ -29,7 +29,7 @@ const ContactForm: React.FC = () => {
     email: "",
     date: "",
     location: "",
-    package: "premium",
+    package: "Full Service",
     acceptedTerms: false,
   });
 
@@ -61,7 +61,8 @@ const ContactForm: React.FC = () => {
           email: formData.email,
           datum_dogadjaja: formattedDate,
           lokacija: formData.location,
-          paket: formData.package === "premium" ? "Premium" : "Essential",
+          paket:
+            formData.package === "Full Service" ? "Full Service" : "Essential",
           opsti_uslovi: formData.acceptedTerms
             ? "Prihvaćeni"
             : "Nisu prihvaćeni",
@@ -77,7 +78,7 @@ const ContactForm: React.FC = () => {
       setIsSubmitted(true);
       analytics.formSubmit("contact");
       analytics.packageClick(
-        formData.package === "premium" ? "Premium" : "Essential",
+        formData.package === "Full Service" ? "Full Service" : "Essential",
       );
     } catch (err) {
       setError(
@@ -98,7 +99,7 @@ const ContactForm: React.FC = () => {
       email: "",
       date: "",
       location: "",
-      package: "premium",
+      package: "Full Service",
       acceptedTerms: false,
     });
   };
@@ -215,7 +216,7 @@ const ContactForm: React.FC = () => {
               <Package size={14} className="text-[#AE343F]" /> Izaberite Paket
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {["essential", "premium"].map((pkg) => (
+              {["Essential", "Full Service"].map((pkg) => (
                 <button
                   key={pkg}
                   type="button"

@@ -53,7 +53,7 @@ export default function Home() {
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#d4af37]/5 rounded-full blur-3xl" />
 
           <div className="container mx-auto px-4 max-w-4xl relative z-10">
-            <div className="bg-white rounded-3xl p-8 sm:p-12 md:p-16 shadow-xl border border-stone-100 text-center">
+            <div className="bg-white rounded-3xl p-8 sm:p-10 md:p-12 shadow-xl border border-stone-100 text-center">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#d4af37]/10 rounded-full mb-6">
                 <Sparkles size={16} className="text-[#d4af37]" />
@@ -135,9 +135,16 @@ export default function Home() {
                 />
               </Link>
 
-              <p className="text-stone-400 text-sm mt-4">
-                Odgovaramo u roku od 24 sata
-              </p>
+              {/* Discount banner */}
+              <div className="mt-8 p-4 bg-gradient-to-r from-[#AE343F]/10 via-[#AE343F]/5 to-[#AE343F]/10 rounded-2xl border border-[#AE343F]/20">
+                <p className="text-[#AE343F] font-semibold">
+                  <span className="text-xl">-20%</span> na digitalnu pozivnicu
+                  uz HALO Uspomene telefon
+                </p>
+                <p className="text-stone-500 text-sm mt-1">
+                  Rezervišite audio guest book i ostvarite popust na pozivnicu
+                </p>
+              </div>
             </div>
           </div>
         </section>
