@@ -28,9 +28,22 @@ const faqData: FAQItem[] = [
   },
   {
     category: "Osnovno",
+    question: "Da li je ovo pravi telefon sa rotirajućim brojčanikom?",
+    answer:
+      "Ovo je autentičnan vintage telefone sa replikom rotirajućeg brojčanika koji su fabriči napravljeni za snimanje audio poruka. Ovakav retro telefon sa brojčanikom za svadbe je potpuno funkcionalan — gosti podižu slušalicu i ostavljaju poruku baš kao na pravom telefonu. To je upravo ono što stvara taj wow efekat i čini iskustvo nezaboravnim.",
+  },
+  {
+    category: "Osnovno",
     question: "Da li gosti znaju kako da koriste telefon?",
     answer:
       "Da! Uz svaki telefon ide elegantno uputstvo koje se postavlja pored aparata. Štaviše, vintage telefon je toliko intuitivan da gosti svih generacija — od dece do baka i deka — lako ostave poruku. To je upravo ono što čini iskustvo posebnim.",
+  },
+  {
+    category: "Osnovno",
+    question:
+      "Da li mogu da koristim audio guest book za rođendan ili drugi događaj?",
+    answer:
+      "Apsolutno! Iako su venčanja naš primarni fokus, audio guest book je savršen i za rođendane, godišnjice, proslave mature, korporativne događaje i svaku priliku gde želite da sačuvate glasove svojih najdražih.",
   },
   // Dostava
   {
@@ -51,12 +64,25 @@ const faqData: FAQItem[] = [
     answer:
       "Za Essential paket, telefon šaljete nazad kurirskom službom u istoj kutiji u kojoj ste ga primili — mi pokrivamo troškove povratne dostave. Za Full Service paket, lično dolazimo po telefon i brinemo o svemu.",
   },
+  {
+    category: "Dostava",
+    question:
+      "Gde mogu da iznajmim audio knjigu utisaka i kako funkcioniše rezervacija?",
+    answer:
+      "Audio guest book iliti knjigu utisaka možete iznajmiti direktnom rezervacijom putem forme na sajtu. Rezervacija audio telefona za venčanje je jednostavna: izaberete datum, potvrdite paket i mi vas kontaktiramo za sve dalje detalje. Gde god da ste u Srbiji — Beograd, Novi Sad, Niš ili bilo koji drugi grad — dostavljamo audio guest book do vas.",
+  },
   // Tehnička pitanja
   {
     category: "Tehnička pitanja",
     question: "U kom formatu dobijam audio snimke?",
     answer:
       "Sve poruke dobijate u digitalnom formatu visokog kvaliteta (MP3/WAV). Šaljemo ih putem linka za preuzimanje u roku od 3-5 radnih dana nakon venčanja. Full Service paket uključuje i uređen digitalni album sa izdvojenim highlights.",
+  },
+  {
+    category: "Tehnička pitanja",
+    question: "Koje boje retro telefona su dostupne?",
+    answer:
+      "Trenutno u ponudi imamo klasične vintage telefone u crnoj i beloj boji — elegantni model koji se savršeno uklapa u svaku dekoraciju. Oba modela su autentični dekorativni telefoni za poruke ali i za slikanje, izgledaju spektakularno na fotografijama.",
   },
   {
     category: "Tehnička pitanja",
@@ -76,13 +102,6 @@ const faqData: FAQItem[] = [
     question: "Da li postoji depozit ili kaucija?",
     answer:
       "Ne, depozit nije potreban ali je neophodno uplatiti uslugu unapred pre slanja telefona. U slučaju otkazivanja vraćamo novac nazad uz zadržavanje 20% na ime kapare. Sve detalje o uslovima možete pronaći u našim opštim uslovima najma.",
-  },
-  {
-    category: "Cene",
-    question:
-      "Da li mogu da koristim audio guest book za rođendan ili drugi događaj?",
-    answer:
-      "Apsolutno! Iako su venčanja naš primarni fokus, audio guest book je savršen i za rođendane, godišnjice, proslave mature, korporativne događaje i svaku priliku gde želite da sačuvate glasove svojih najdražih.",
   },
 ];
 

@@ -1,0 +1,20 @@
+name: Weekly Pages Rebuild
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Runs at 00:00 UTC every Sunday
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trigger Rebuild
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit --allow-empty -m "Weekly rebuild: $(date)"
+          git push

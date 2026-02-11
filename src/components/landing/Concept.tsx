@@ -39,6 +39,11 @@ const Concept: React.FC = () => {
             Jer znamo da je vaše venčanje jedinstveno i zaslužuje uspomene koje
             traju večno.
           </p>
+          <p className="text-sm text-[#232323]/30 mt-3">
+            To je moguće uz naš retro telefon poznat i kao audio knjiga utisaka,
+            telefon za poruke, audio spomenar ili retro telefon sa rotirajućim
+            brojčanikom.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-12">

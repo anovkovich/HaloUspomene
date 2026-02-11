@@ -3,7 +3,7 @@ export interface BlogPost {
   title: string;
   description: string;
   content: string;
-  category: "Vodič" | "Poređenje" | "Saveti" | "Trendovi";
+  category: "Vodič" | "Poređenje" | "Saveti" | "Trendovi" | "Checklista";
   tags: string[];
   publishDate: string;
   readTime: number;
