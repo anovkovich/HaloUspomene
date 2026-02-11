@@ -103,6 +103,7 @@ const josefinSans = Josefin_Sans({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 const gaId = process.env.NEXT_PUBLIC_GA_ID;
+const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -378,6 +379,17 @@ export default function RootLayout({
               `}
             </Script>
           </>
+        )}
+        {clarityId && (
+          <Script id="clarity-init" strategy="afterInteractive">
+            {`
+              (function(c,l,a,r,i){
+                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                  let t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                  let y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "${clarityId}");
+            `}
+          </Script>
         )}
       </head>
       <body

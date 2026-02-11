@@ -76,6 +76,7 @@ jobs:
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
         env:
+          NEXT_PUBLIC_CLARITY_ID: ${{ secrets.NEXT_PUBLIC_CLARITY_ID || vars.NEXT_PUBLIC_CLARITY_ID }}
           NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID || vars.NEXT_PUBLIC_GA_ID }}
           NEXT_PUBLIC_WEB3FORMS_KEY: ${{ secrets.NEXT_PUBLIC_WEB3FORMS_KEY || vars.NEXT_PUBLIC_WEB3FORMS_KEY }}
       - name: Upload artifact
