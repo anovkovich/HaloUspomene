@@ -130,7 +130,7 @@ HALO Uspomene nudi dva paketa prilagođena različitim potrebama:
 - Personalizovanu poruku dobrodošlice
 - Uređen digitalni album sa imenima govornika
 
-[Kontaktirajte nas](/kontakt) za tačne cene prilagođene vašem datumu i lokaciji.
+[Kontaktirajte nas](/#kontakt) za tačne cene prilagođene vašem datumu i lokaciji.
 
 ## Često postavljana pitanja
 
@@ -148,4 +148,4 @@ Naravno! Audio guest book je savršen za svaki poseban događaj — venčanja, v
 
 ---
 
-_Spremni ste da sačuvate glasove sa svog venčanja? [Rezervišite vaš termin](/kontakt) kod HALO Uspomene — dostava u celoj Srbiji._
+_Spremni ste da sačuvate glasove sa svog venčanja? [Rezervišite vaš termin](/#kontakt) kod HALO Uspomene — dostava u celoj Srbiji._

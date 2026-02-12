@@ -53,7 +53,7 @@ HALO Uspomene nudi dva paketa:
 - **Essential Paket** — vintage telefon sa kurirskom dostavom, elegantnim uputstvom i svim audio snimcima u digitalnom formatu
 - **Full Service Paket** — lična dostava, profesionalna montaža, ekskluzivna drvena govornica, personalizovana dobrodošlica i uređen digitalni album
 
-Tačne cene zavise od datuma i lokacije. [Kontaktirajte nas](/kontakt) za personalizovanu ponudu.
+Tačne cene zavise od datuma i lokacije. [Kontaktirajte nas](/#kontakt) za personalizovanu ponudu.
 
 ## Često postavljana pitanja
 
@@ -71,4 +71,4 @@ HALO Uspomene pokriva celu Srbiju — Beograd, Novi Sad, Niš, Kragujevac, Subot
 
 ---
 
-_Audio guest book nije samo trend — to je poklon koji ćete ceniti celog života. [Rezervišite vaš termin](/kontakt) kod HALO Uspomene i sačuvajte glasove onih koji su vam najvažniji._
+_Audio guest book nije samo trend — to je poklon koji ćete ceniti celog života. [Rezervišite vaš termin](/#kontakt) kod HALO Uspomene i sačuvajte glasove onih koji su vam najvažniji._

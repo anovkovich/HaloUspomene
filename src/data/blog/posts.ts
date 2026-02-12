@@ -92,6 +92,24 @@ const allBlogPosts: BlogPost[] = [
     content: loadContent("originalne-ideje-za-vencanja"),
   },
   {
+    slug: "planiranje-vencanja-checklista",
+    title: "Planiranje Venčanja 2026: Kompletna Checklista",
+    description:
+      "Kompletna checklista za planiranje venčanja u Srbiji 2026 — korak po korak od 12 meseci pre do dana venčanja. Budžet, lokacija, vendor-i, dekoracija i svi detalji na jednom mestu.",
+    category: "Checklista",
+    tags: [
+      "planiranje venčanja",
+      "checklista venčanje",
+      "organizacija svadbe",
+      "venčanje Srbija",
+      "audio guest book",
+    ],
+    publishDate: "2026-03-28",
+    readTime: 12,
+    featured: true,
+    content: loadContent("planiranje-vencanja-checklista"),
+  },
+  {
     slug: "najbolji-gadgeti-za-proslave",
     title: "Najbolji Gadgeti za Proslave i Venčanja u 2026 — Vodič za Parove",
     description:
@@ -105,28 +123,10 @@ const allBlogPosts: BlogPost[] = [
       "HALO Uspomene",
       "Srbija",
     ],
-    publishDate: "2026-03-28",
+    publishDate: "2026-04-25",
     readTime: 9,
     featured: true,
     content: loadContent("najbolji-gadgeti-za-proslave"),
-  },
-  {
-    slug: "planiranje-vencanja-checklista",
-    title: "Planiranje Venčanja 2026: Kompletna Checklista",
-    description:
-      "Kompletna checklista za planiranje venčanja u Srbiji 2026 — korak po korak od 12 meseci pre do dana venčanja. Budžet, lokacija, vendor-i, dekoracija i svi detalji na jednom mestu.",
-    category: "Checklista",
-    tags: [
-      "planiranje venčanja",
-      "checklista venčanje",
-      "organizacija svadbe",
-      "venčanje Srbija",
-      "audio guest book",
-    ],
-    publishDate: "2026-04-25",
-    readTime: 12,
-    featured: true,
-    content: loadContent("planiranje-vencanja-checklista"),
   },
   {
     slug: "ideje-za-vencanje-srbija",

@@ -5,9 +5,11 @@ Planirate venčanje u Srbiji i razmišljate o knjizi utisaka? Tradicionalna pisa
 ## Pregled: Šta je šta?
 
 ### Klasična knjiga utisaka
+
 Elegantna knjiga (najčešće kožna ili platnena) u kojoj gosti pišu poruke, čestitke i savete za mladence. Na srpskim svadbama je standard već decenijama.
 
 ### Audio guest book
+
 Vintage retro telefon koji snima glasovne poruke gostiju. Gost podigne slušalicu i govori — poruka se snima digitalno i čuva zauvek. HALO Uspomene je vodeći pružalac ove usluge u Srbiji.
 
 ## Detaljno poređenje
@@ -56,15 +58,15 @@ Vintage retro telefon koji snima glasovne poruke gostiju. Gost podigne slušalic
 
 ## Uporedna tabela
 
-| Kriterijum | Knjiga utisaka | Audio Guest Book |
-|---|---|---|
-| Emotivnost | ⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Pristupačnost | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Trajnost | ⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Angažovanost gostiju | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Vizuelni doprinos | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Cena | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
-| Praktičnost | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Kriterijum           | Knjiga utisaka | Audio Guest Book |
+| -------------------- | -------------- | ---------------- |
+| Emotivnost           | ⭐⭐           | ⭐⭐⭐⭐⭐       |
+| Pristupačnost        | ⭐⭐⭐         | ⭐⭐⭐⭐⭐       |
+| Trajnost             | ⭐⭐           | ⭐⭐⭐⭐⭐       |
+| Angažovanost gostiju | ⭐⭐⭐         | ⭐⭐⭐⭐⭐       |
+| Vizuelni doprinos    | ⭐⭐⭐         | ⭐⭐⭐⭐⭐       |
+| Cena                 | ⭐⭐⭐⭐⭐     | ⭐⭐⭐           |
+| Praktičnost          | ⭐⭐⭐⭐       | ⭐⭐⭐⭐         |
 
 ## Da li možete imati oboje?
 
@@ -95,4 +97,4 @@ Apsolutno! Audio guest book je savršen za svaki poseban događaj.
 
 ---
 
-*Zainteresovani ste za audio guest book na vašem venčanju? [Kontaktirajte HALO Uspomene](/kontakt) za besplatnu konsultaciju i ponudu prilagođenu vašem datumu i lokaciji.*
+_Zainteresovani ste za audio guest book na vašem venčanju? [Kontaktirajte HALO Uspomene](/#kontakt) za besplatnu konsultaciju i ponudu prilagođenu vašem datumu i lokaciji._

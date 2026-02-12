@@ -1,0 +1,21 @@
+Reel idea: "Lista" giveaway (pre-launch buzz for Post 1)
+
+  Hook (first 1-2 sec):
+  "Ovu checklistu bi svaki par u Srbiji trebalo da ima."
+
+  Concept (15-30 sec):
+  - Quick scroll through a beautifully designed PDF checklist (screen recording, zooming in on sections)
+  - Text overlays flashing key milestones: "12 meseci pre → budžet, lokacija, kum" ... "2 nedelje pre → cipele, spa,
+  vendor check"
+  - Background: trending audio or soft piano
+
+  Script/voiceover:
+  "Planiraš venčanje u 2026? Napravili smo checklistu koja pokriva SVE — od 12 meseci pre venčanja do poslednjeg dana.
+  Budžet, vendor-i, venčanica, raspored sedenja, čak i kad da razgaziš cipele. Komentariši LISTA i šaljemo ti je
+  besplatno u DM — pre nego što izađe na blogu."
+
+  CTA (end card):
+  Komentariši ✍️ LISTA
+  Zaprati za još svadbenog contenuta 💍
+
+  Automation: Use ManyChat or Instagram auto-reply to DM the PDF link when someone comments "lista".
