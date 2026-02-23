@@ -21,7 +21,7 @@ export const locations: Location[] = [
     description:
       "HALO Uspomene nudi audio guest book uslugu za venčanja u Beogradu i okolini. Kao glavni grad Srbije sa najvećim brojem venčanja godišnje, Beograd je naše najtraženije tržište. Dostava se vrši putem kurirske službe — telefon stiže direktno na vašu adresu.",
     shortDescription:
-      "Audio guest book za venčanja u Beogradu — telefon na adresi za 2 dana.",
+      "Audio guest book za venčanja u Beogradu — telefon na adresi za 2 dana!",
     popularVenues: [
       "Restoran Madera",
       "Hotel Hyatt Regency",
