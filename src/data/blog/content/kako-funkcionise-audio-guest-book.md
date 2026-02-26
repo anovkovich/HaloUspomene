@@ -6,8 +6,8 @@ Zainteresovani ste za audio guest book za vaše venčanje u Srbiji, ali niste si
 
 Sve počinje kontaktom sa HALO Uspomene timom. Možete nas kontaktirati putem:
 
-- Kontakt forme na sajtu
-- Instagram DM (@halo_uspomene)
+- Kontakt forme za rezervaciju i upit na sajtu
+- Instagram DM (@halo_uspomene) za sve detalje koji vas zanimaju
 
 Prilikom rezervacije, trebaju nam sledeće informacije:
 
@@ -16,14 +16,14 @@ Prilikom rezervacije, trebaju nam sledeće informacije:
 - **Željeni paket** — Essential ili Full Service
 - **Vaše ime i kontakt** — za komunikaciju
 
-Preporučujemo rezervaciju **3-4 nedelje unapred**, a u sezoni (maj-oktobar) i ranije.
+Preporučujemo rezervaciju **4-6 nedelje unapred**, a za proslave u sezoni (maj-septembar) i **dosta dosta ranije**.
 
 ## Korak 2: Priprema telefona
 
 Pre vašeg venčanja, naš tim priprema telefon:
 
 - Detaljna **tehnička provera** svakog aparata
-- **Punjenje baterije** na maksimum (traje 12+ sati)
+- **Punjenje baterije** na maksimum (traje 10+ sati)
 - **Testiranje snimanja** — kvalitet zvuka se proverava
 - Za Full Service: **personalizovana poruka dobrodošlice** koja se čuje kada gost podigne slušalicu
 
@@ -33,13 +33,12 @@ Pre vašeg venčanja, naš tim priprema telefon:
 
 - Telefon stiže u **zaštitnoj kutiji** 2-3 dana pre venčanja
 - Uz telefon dolazi **detaljno uputstvo** za postavljanje i korišćenje
-- Pošiljka je **osigurana** za ceo period najma
 - Pokrivamo celu Srbiju: Beograd, Novi Sad, Niš, Kragujevac, Subotica i sve ostale gradove
 
 ### Full Service Paket — Lična dostava
 
 - Naš tim **lično dolazi** na lokaciju venčanja
-- Donosimo telefon + **ekskluzivnu drvenu govornicu**
+- Donosimo telefon + **ekskluzivnu drvenu govornicu** ako se odlučita za nju
 - **Profesionalna instalacija** na idealnom mestu u sali
 - Postavljamo **dekorativno uputstvo** i proveravamo sve pre dolaska gostiju
 
@@ -66,12 +65,12 @@ Evo šta se dešava na samom venčanju:
 ### Essential Paket
 
 - Telefon pakujete u **istu kutiju** u kojoj je stigao
-- Šaljete ga nazad **kurirskom službom** (mi pokrivamo troškove)
-- Rok za povratak: **3 radna dana** nakon venčanja
+- Šaljete ga nazad **kurirskom službom** (ove troškove mi pokrivamo)
+- Rok za povratak: **3 radna dana** nakon događaja
 
 ### Full Service Paket
 
-- Naš tim **dolazi po telefon** dan nakon venčanja
+- Naš tim **dolazi po telefon** dan nakon proslave ili to veče (kako se dogovorimo)
 - Vi ne morate ništa da radite
 
 ## Korak 6: Obrada i isporuka snimaka
@@ -80,10 +79,8 @@ Ovo je deo koji svi jedva čekaju! Nakon povratka telefona:
 
 1. Naš tim **preuzima sve snimke** sa uređaja
 2. Svaki snimak se **proverava** kvalitet zvuka
-3. Essential Paket: dobijate **raw audio fajlove** (MP3/WAV) putem linka za preuzimanje
-4. Full Service Paket: dobijate **uređen digitalni album** — svaki snimak je imenovan i organizovan
 
-**Rok isporuke:** 3-5 radnih dana nakon povratka telefona.
+**Rok isporuke:** 2-5 radnih dana nakon povratka telefona.
 
 ## Tehnički detalji
 
@@ -91,15 +88,15 @@ Evo odgovora na najčešća tehnička pitanja:
 
 ### Baterija
 
-- Trajanje: **12+ sati** na jednom punjenju
+- Trajanje: **10+ sati** na jednom punjenju
 - Dovoljno za celo venčanje i prijem
 - Nema potrebe za strujom na licu mesta
 
 ### Kvalitet zvuka
 
 - Profesionalni mikrofon ugrađen u slušalicu
-- Snima **čist glas** čak i u bučnom okruženju
-- Format: MP3 ili WAV (po vašem izboru)
+- Snima **čist glas** čak i u bučnom okruženju (prevelika buka nije poželjna tako da je bolje da ne stoji blizu muzike i ozvučenja)
+- Format: MP3 ili WAV
 
 ### Kapacitet
 
@@ -130,22 +127,19 @@ HALO Uspomene nudi dva paketa prilagođena različitim potrebama:
 - Personalizovanu poruku dobrodošlice
 - Uređen digitalni album sa imenima govornika
 
-[Kontaktirajte nas](/#kontakt) za tačne cene prilagođene vašem datumu i lokaciji.
+Tačne cene možete pronaći na [ovom blog postu](/blog/audio-guest-book-cena/).
 
 ## Često postavljana pitanja
 
-**Šta ako se telefon pokvari na venčanju?**
-Naši telefoni prolaze rigoroznu proveru pre svake dostave. U slučaju problema, naš tim je dostupan telefonom 24/7 tokom vašeg događaja.
-
 **Da li mogu da biram model telefona?**
-Trenutno nudimo najkvalitetniji vintage rotacioni model. Radimo na proširenju kolekcije.
+Trenutno nudimo najkvalitetniji vintage rotacioni model u crnoj boji (kontaktiraj nas za dodatnu proveru).
 
 **Da li telefon zauzima puno prostora?**
-Ne! Sam telefon je kompaktan. Drvena govornica (Full Service) zauzima otprilike prostor jedne stolice.
+Sam telefon je kompaktan. Dok drvena MAXI govornica (Full Service) zauzima otprilike prostor dve stolice, MINI govornica se stavlja na neki ukrašen sto i to je to.
 
-**Mogu li da ga koristim i za veridbu?**
-Naravno! Audio guest book je savršen za svaki poseban događaj — venčanja, veridbe, rođendane, godišnjice.
+**Mogu li da ga koristim i za druge proslave osim venčanja?**
+Naravno! Audio guest book je savršen za svaki poseban događaj — venčanja, proslave, rođendane, godišnjice.
 
 ---
 
-_Spremni ste da sačuvate glasove sa svog venčanja? [Rezervišite vaš termin](/#kontakt) kod HALO Uspomene — dostava u celoj Srbiji._
+**Spremni ste da sačuvate glasove sa svog venčanja?** [Rezervišite vaš termin](/#kontakt) za HALO Uspomene — dostava u celoj Srbiji.

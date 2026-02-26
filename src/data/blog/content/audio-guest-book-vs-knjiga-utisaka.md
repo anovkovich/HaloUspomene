@@ -97,4 +97,4 @@ Apsolutno! Audio guest book je savršen za svaki poseban događaj.
 
 ---
 
-_Zainteresovani ste za audio guest book na vašem venčanju? [Kontaktirajte HALO Uspomene](/#kontakt) za besplatnu konsultaciju i ponudu prilagođenu vašem datumu i lokaciji._
+**Zainteresovani ste za audio guest book na vašem venčanju?** [Kontaktirajte HALO Uspomene](/#kontakt) za besplatnu konsultaciju i ponudu prilagođenu vašem datumu i lokaciji.

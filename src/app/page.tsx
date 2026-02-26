@@ -138,7 +138,7 @@ export default function Home() {
               {/* Discount banner */}
               <div className="mt-8 p-4 bg-gradient-to-r from-[#AE343F]/10 via-[#AE343F]/5 to-[#AE343F]/10 rounded-2xl border border-[#AE343F]/20">
                 <p className="text-[#AE343F] font-semibold">
-                  <span className="text-xl">-20%</span> na digitalnu pozivnicu
+                  <span className="text-xl">-30%</span> na digitalnu pozivnicu
                   uz HALO Uspomene telefon
                 </p>
                 <p className="text-stone-500 text-sm mt-1">

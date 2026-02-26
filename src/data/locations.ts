@@ -216,7 +216,7 @@ export const locations: Location[] = [
       {
         question: "Koliko unapred treba da rezervišem za venčanje u Nišu?",
         answer:
-          "Preporučujemo rezervaciju bar 3-4 nedelje unapred, a u sezoni (maj-septembar) i više, jer je broj telefona ograničen.",
+          "Preporučujemo rezervaciju bar 4-6 nedelje unapred, a u sezoni (maj-septembar) i više, jer je broj telefona ograničen.",
       },
       {
         question: "Kako se telefon vraća nakon venčanja u Nišu?",

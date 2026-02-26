@@ -1,6 +1,7 @@
 import React from "react";
-import { ArrowRight, Phone, Sparkles } from "lucide-react";
+import { ArrowRight, Award, Phone } from "lucide-react";
 import Link from "next/link";
+import HeroInfoBadge from "./HeroInfoBadge";
 
 function getSocialProofText(): string {
   const now = new Date();
@@ -23,6 +24,7 @@ function getSocialProofText(): string {
 
 const Hero: React.FC = () => {
   const socialProofText = getSocialProofText();
+
   return (
     <section className="relative min-h-screen flex items-center pt-24 overflow-hidden bg-[#F5F4DC]">
       {/* Inline styles for animations */}
@@ -50,12 +52,9 @@ const Hero: React.FC = () => {
       <div className="container mx-auto px-4 md:px-8">
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           <div className="hero-text">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#AE343F]/10 text-[#AE343F] rounded-full text-xs font-bold uppercase tracking-[0.2em] mb-8">
-              <Sparkles size={14} className="animate-pulse" />
-              Vaš Dan Zaslužuje Više Od Fotografija
-            </div>
+            <HeroInfoBadge />
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl  font-serif text-[#232323] leading-none mb-8">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-serif text-[#232323] leading-none mb-8">
               Reči koje postaju
               <br />
               <span className="italic text-[#AE343F] font-medium">
@@ -94,11 +93,25 @@ const Hero: React.FC = () => {
               </Link>
             </div>
 
-            {/* Social proof - live counter */}
+            {/* Trust signals */}
             <div className="flex items-center gap-3 mt-8 text-sm text-[#232323]/60">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 m-0.5 bg-green-500"></span>
+              <span className="relative flex w-4 h-4 items-center justify-center flex-shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d4af37] opacity-30"></span>
+                <Award size={14} className="relative text-[#d4af37]" />
+              </span>
+              <span>
+                <strong className="text-[#232323] font-semibold">
+                  Najpovoljniji <i>AGB</i>
+                </strong>{" "}
+                u Srbiji
+              </span>
+            </div>
+            <div className="flex items-center gap-3 mt-2 text-sm text-[#232323]/60">
+              <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 m-0.5 bg-green-500"></span>
+                </span>
               </span>
               <span>
                 <strong className="text-[#232323] font-semibold">
@@ -110,7 +123,6 @@ const Hero: React.FC = () => {
           </div>
 
           <div className="relative hero-image">
-            {/* <div className="relative z-10 rounded-[3rem] overflow-hidden border-[16px] border-white shadow-2xl transform hover:scale-[1.02] transition-transform duration-700"> */}
             <div className="transform rotate-0 md:hover:rotate-2 md:hover:scale-[1.05] transition-transform duration-700">
               <img
                 src="/images/phone.webp"
@@ -118,7 +130,6 @@ const Hero: React.FC = () => {
                 className="w-full h-auto object-cover"
               />
             </div>
-            {/* </div> */}
 
             <div className="hero-badge absolute hidden lg:flex -bottom-10 -left-10 z-20 bg-[#F5F4DC] p-6 rounded-[2rem] shadow-2xl items-center gap-5 border border-white/20 backdrop-blur-sm">
               <div className="w-16 h-16 bg-[#AE343F] rounded-2xl flex items-center justify-center text-[#F5F4DC] shadow-lg shadow-[#AE343F]/20">

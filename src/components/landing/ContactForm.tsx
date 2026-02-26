@@ -26,7 +26,7 @@ const ContactForm: React.FC = () => {
 
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
+    phone: "",
     date: "",
     location: "",
     package: "Full Service",
@@ -58,7 +58,7 @@ const ContactForm: React.FC = () => {
           subject: `Nova rezervacija - ${formData.name} - ${formattedDate}`,
           from_name: "HALO Uspomene",
           name: formData.name,
-          email: formData.email,
+          telefon: `+381${formData.phone}`,
           datum_dogadjaja: formattedDate,
           lokacija: formData.location,
           paket:
@@ -96,7 +96,7 @@ const ContactForm: React.FC = () => {
     setError(null);
     setFormData({
       name: "",
-      email: "",
+      phone: "",
       date: "",
       location: "",
       package: "Full Service",
@@ -173,22 +173,25 @@ const ContactForm: React.FC = () => {
             />
           </div>
 
-          {/* Email Input */}
+          {/* Phone Input */}
           <div className="space-y-3">
             <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
-              <Send size={14} className="text-[#AE343F]" /> Email Adresa
+              <Phone size={14} className="text-[#AE343F]" /> Broj Telefona
             </label>
-            <input
-              required
-              type="email"
-              placeholder="primer@email.rs"
-              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              disabled={isLoading}
-            />
+            <div className="flex items-center border-b border-white/10 focus-within:border-[#AE343F] transition-colors">
+              <span className="py-3 pl-4 pr-2 text-[#F5F4DC]/50 text-lg select-none">+381</span>
+              <input
+                required
+                type="tel"
+                placeholder="6X XXX XXXX"
+                className="flex-1 bg-transparent py-3 pr-4 text-[#F5F4DC] text-lg focus:outline-none placeholder:text-white/20"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value.replace(/^\+?381/, "") })
+                }
+                disabled={isLoading}
+              />
+            </div>
           </div>
 
           {/* Location Input */}

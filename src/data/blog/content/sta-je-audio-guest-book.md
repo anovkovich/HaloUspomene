@@ -10,7 +10,7 @@ Ovo nije običan rekvizit — ovo je **vremenska kapsula u audio formatu**. Zami
 
 ## Kako je audio guest book stigao u Srbiju?
 
-Trend audio guest book-a započeo je u Americi i Australiji oko 2020. godine, a brzo se proširio po Evropi. U Srbiju ga je doneo **HALO Uspomene** tim, prilagodivši koncept srpskom tržištu — sa dostavom u sve gradove, uputstvima na srpskom jeziku, i paketima dizajniranim za srpske svadbe.
+Trend audio guest book-a započeo je u Americi i Australiji oko 2022. godine, pa se potom brzo proširio po svetu. U Srbiju ga je doneo **HALO Uspomene** tim, prilagodivši koncept srpskom tržištu — sa dostavom u sve gradove i paketima dizajniranim za srpske svadbe i proslave.
 
 Danas HALO Uspomene pokriva **Beograd, Novi Sad, Niš, Kragujevac, Suboticu** i sve ostale gradove u Srbiji putem kurirske dostave, sa ličnom instalacijom dostupnom u Novom Sadu.
 
@@ -36,7 +36,7 @@ Digitalni audio fajlovi se čuvaju zauvek, za razliku od knjige utisaka koja mo�
 
 Tipičan setup na venčanju izgleda ovako:
 
-1. **Telefon** se postavlja na elegantan sto ili drvenu govornicu (koja dolazi uz Full Service paket)
+1. **Telefon** se postavlja na elegantan sto ili drvenu govornicu (koja je u ponudi uz Full Service paket)
 2. **Uputstvo** na srpskom jeziku stoji pored telefona
 3. Gosti prilaze, podižu slušalicu i ostavljaju poruku
 4. U proseku, **50-100 poruka** se snimi na venčanju sa 150-200 gostiju
@@ -53,7 +53,7 @@ HALO Uspomene nudi dva paketa:
 - **Essential Paket** — vintage telefon sa kurirskom dostavom, elegantnim uputstvom i svim audio snimcima u digitalnom formatu
 - **Full Service Paket** — lična dostava, profesionalna montaža, ekskluzivna drvena govornica, personalizovana dobrodošlica i uređen digitalni album
 
-Tačne cene zavise od datuma i lokacije. [Kontaktirajte nas](/#kontakt) za personalizovanu ponudu.
+Tačne cene možete pogledati u [ovom blog postu](/blog/audio-guest-book-cena/).
 
 ## Često postavljana pitanja
 
@@ -71,4 +71,4 @@ HALO Uspomene pokriva celu Srbiju — Beograd, Novi Sad, Niš, Kragujevac, Subot
 
 ---
 
-_Audio guest book nije samo trend — to je poklon koji ćete ceniti celog života. [Rezervišite vaš termin](/#kontakt) kod HALO Uspomene i sačuvajte glasove onih koji su vam najvažniji._
+**Audio guest book nije samo trend — to je poklon koji ćete ceniti celog života.** [Rezervišite vaš termin](/#kontakt) za HALO Uspomene i sačuvajte glasove onih koji su vam najvažniji.

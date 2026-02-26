@@ -56,7 +56,7 @@ export default function NotFound() {
           from_name: "HALO Uspomene - POZIVNICE",
           ime_mladenaca: `${formData.name}`,
           email: formData.email,
-          telefon: formData.phone || "Nije naveden",
+          telefon: `+381${formData.phone}`,
           datum_vencanja: formattedDate,
           poruka: formData.message || "Bez dodatne poruke",
         }),
@@ -207,18 +207,22 @@ export default function NotFound() {
                   <div>
                     <label className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-stone-400 mb-2">
                       <Phone size={14} className="text-[#d4af37]" />
-                      Telefon (opciono)
+                      Broj telefona
                     </label>
-                    <input
-                      type="tel"
-                      placeholder="+381 60 123 4567"
-                      className="w-full bg-[#faf9f6] border border-stone-200 rounded-xl py-3 px-4 text-[#1a1a1a] focus:outline-none focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 transition-all placeholder:text-stone-300"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      disabled={isLoading}
-                    />
+                    <div className="flex items-center bg-[#faf9f6] border border-stone-200 rounded-xl focus-within:border-[#d4af37] focus-within:ring-2 focus-within:ring-[#d4af37]/20 transition-all">
+                      <span className="py-3 pl-4 pr-2 text-stone-400 text-base select-none">+381</span>
+                      <input
+                        required
+                        type="tel"
+                        placeholder="6X XXX XXXX"
+                        className="flex-1 bg-transparent py-3 pr-4 text-[#1a1a1a] focus:outline-none placeholder:text-stone-300"
+                        value={formData.phone}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value.replace(/^\+?381/, "") })
+                        }
+                        disabled={isLoading}
+                      />
+                    </div>
                   </div>
 
                   {/* Wedding date */}

@@ -72,6 +72,24 @@ const allBlogPosts: BlogPost[] = [
     content: loadContent("kako-funkcionise-audio-guest-book"),
   },
   {
+    slug: "audio-guest-book-cena",
+    title: "Audio Guest Book Cena u Srbiji 2026: Koliko Košta?",
+    description:
+      "Transparentan pregled cena audio guest book usluge u Srbiji 2026. HALO Uspomene paketi, dodatne opcije, poređenja na tržištu i bundle popusti za digitalnu pozivnicu.",
+    category: "Vodič",
+    tags: [
+      "audio guest book cena",
+      "cena iznajmljivanja",
+      "koliko košta audio guest book",
+      "HALO Uspomene cene",
+      "venčanje budžet",
+    ],
+    publishDate: "2026-02-28",
+    readTime: 8,
+    featured: true,
+    content: loadContent("audio-guest-book-cena"),
+  },
+  {
     slug: "originalne-ideje-za-vencanja",
     title:
       "Originalne Ideje za Venčanja 2026/2027 — Trendovi koji Oduševljavaju",
@@ -86,7 +104,7 @@ const allBlogPosts: BlogPost[] = [
       "audio guest book",
       "HALO Uspomene",
     ],
-    publishDate: "2026-02-28",
+    publishDate: "2026-03-01",
     readTime: 10,
     featured: true,
     content: loadContent("originalne-ideje-za-vencanja"),
@@ -110,6 +128,25 @@ const allBlogPosts: BlogPost[] = [
     content: loadContent("planiranje-vencanja-checklista"),
   },
   {
+    slug: "ideje-za-vencanje-srbija",
+    title: "10 Originalnih Ideja za Venčanje u Srbiji 2026",
+    description:
+      "Originalne ideje za venčanje u Srbiji 2026 — od vojvođanskih salaša i Fruške Gore do beogradskih rooftop-ova i Zlatibora. Lokacije, food stanice, rakija bar i audio guest book.",
+    category: "Trendovi",
+    tags: [
+      "ideje za venčanje Srbija",
+      "srpska venčanja",
+      "originalna svadba",
+      "Vojvodina salaš",
+      "Fruška Gora",
+      "Zlatibor",
+    ],
+    publishDate: "2026-03-29",
+    readTime: 10,
+    featured: true,
+    content: loadContent("ideje-za-vencanje-srbija"),
+  },
+  {
     slug: "najbolji-gadgeti-za-proslave",
     title: "Najbolji Gadgeti za Proslave i Venčanja u 2026 — Vodič za Parove",
     description:
@@ -129,43 +166,6 @@ const allBlogPosts: BlogPost[] = [
     content: loadContent("najbolji-gadgeti-za-proslave"),
   },
   {
-    slug: "ideje-za-vencanje-srbija",
-    title: "10 Originalnih Ideja za Venčanje u Srbiji 2026",
-    description:
-      "Originalne ideje za venčanje u Srbiji 2026 — od vojvođanskih salaša i Fruške Gore do beogradskih rooftop-ova i Zlatibora. Lokacije, food stanice, rakija bar i audio guest book.",
-    category: "Trendovi",
-    tags: [
-      "ideje za venčanje Srbija",
-      "srpska venčanja",
-      "originalna svadba",
-      "Vojvodina salaš",
-      "Fruška Gora",
-      "Zlatibor",
-    ],
-    publishDate: "2026-05-30",
-    readTime: 10,
-    featured: true,
-    content: loadContent("ideje-za-vencanje-srbija"),
-  },
-  {
-    slug: "audio-guest-book-cena",
-    title: "Audio Guest Book Cena u Srbiji 2026: Koliko Košta?",
-    description:
-      "Transparentan pregled cena audio guest book usluge u Srbiji 2026. HALO Uspomene paketi, dodatne opcije, poređenje sa konkurencijom i bundle popusti za digitalnu pozivnicu.",
-    category: "Vodič",
-    tags: [
-      "audio guest book cena",
-      "cena iznajmljivanja",
-      "koliko košta audio guest book",
-      "HALO Uspomene cene",
-      "venčanje budžet",
-    ],
-    publishDate: "2026-06-27",
-    readTime: 8,
-    featured: true,
-    content: loadContent("audio-guest-book-cena"),
-  },
-  {
     slug: "audio-guest-book-iskustva",
     title: "Audio Guest Book Iskustva: Šta Kažu Parovi",
     description:
@@ -178,7 +178,7 @@ const allBlogPosts: BlogPost[] = [
       "HALO Uspomene utisci",
       "venčanje Srbija",
     ],
-    publishDate: "2026-07-25",
+    publishDate: "2026-04-26",
     readTime: 9,
     featured: true,
     content: loadContent("audio-guest-book-iskustva"),
@@ -187,7 +187,7 @@ const allBlogPosts: BlogPost[] = [
     slug: "digitalna-pozivnica-audio-guest-book",
     title: "Digitalna Pozivnica + Audio Guest Book: Savršena Kombinacija",
     description:
-      "Kako digitalna pozivnica i audio guest book zajedno čine savršen digitalni paket za venčanje. Prednosti, bundle popust od 20% i primeri iz prakse — HALO Uspomene vodič.",
+      "Kako digitalna pozivnica i audio guest book zajedno čine savršen digitalni paket za venčanje. Prednosti, bundle popust od 30% i primeri iz prakse — HALO Uspomene vodič.",
     category: "Saveti",
     tags: [
       "digitalna pozivnica venčanje",
@@ -196,7 +196,7 @@ const allBlogPosts: BlogPost[] = [
       "HALO Uspomene",
       "pozivnica i audio guest book",
     ],
-    publishDate: "2026-08-29",
+    publishDate: "2026-05-30",
     readTime: 8,
     featured: true,
     content: loadContent("digitalna-pozivnica-audio-guest-book"),
@@ -213,7 +213,7 @@ const allBlogPosts: BlogPost[] = [
       "srpska svadba",
       "tradicionalno venčanje Srbija",
     ],
-    publishDate: "2026-09-26",
+    publishDate: "2026-05-31",
     readTime: 10,
     featured: true,
     content: loadContent("srpske-svadbene-tradicije-moderni-trendovi"),

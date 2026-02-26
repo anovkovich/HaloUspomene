@@ -56,7 +56,7 @@ const faqData: FAQItem[] = [
     category: "Dostava",
     question: "Koliko unapred treba da rezervišem?",
     answer:
-      "Preporučujemo rezervaciju najmanje 3-4 nedelje pre venčanja kako bismo osigurali dostupnost za vaš datum. U sezoni venčanja (maj-septembar) je poželjno i ranije. Kontaktirajte nas čim odredite datum!",
+      "Preporučujemo rezervaciju najmanje 4-6 nedelja pre venčanja kako bismo osigurali dostupnost za vaš datum. U sezoni venčanja (maj-septembar) je poželjno i ranije. Kontaktirajte nas čim odredite datum!",
   },
   {
     category: "Dostava",
@@ -95,7 +95,7 @@ const faqData: FAQItem[] = [
     category: "Cene",
     question: "Koliko košta iznajmljivanje audio guest book telefona?",
     answer:
-      "Nudimo dva paketa: Essential paket sa kurirskom dostavom i osnovnom opremom, i Full Service paket sa ličnom dostavom, drvenom govornicom i personalizacijom. Tačne cene zavise od lokacije i datuma — kontaktirajte nas za ponudu.",
+      "HALO Uspomene nudi dva paketa: Essential (9.000 din) — kurirska dostava, vintage telefon, svi snimci za 3-5 dana; i Full Service u Novom Sadu (10.000 din) — lična dostava i montaža, personalizovana audio dobrodošlica i uređeni digitalni album. Slične usluge na tržištu Srbije koštaju preko 100€, i to obično bez ikakve uključene dostave ili personalizacije. Kod nas, dostava do vas je uvek uključena u cenu — troškove povratne dostave snosite vi. Cene su fiksne tokom cele godine, bez skrivenih troškova. Za one koji žele da sačuvaju uspomene i u fizičkom obliku, nudimo USB retro kasetu (2.500 din) i Uspomene u boci — USB u bočici (2.000 din). Dostupne su i govornice: MINI (3.000 din) i MAXI (5.000 din). Digitalna pozivnica košta 5.000 din, a uz bilo koji paket ostvarujete 30% popusta — samo 3.500 din.",
   },
   {
     category: "Cene",
