@@ -74,7 +74,7 @@ Naravno! Mnogi HALO Uspomene parovi imaju i klasičnu knjigu utisaka i audio gue
 
 ## Iskustva parova iz Srbije
 
-> "Imali smo i knjigu i audio guest book. Knjigu smo jednom prelistali, ali snimke slušamo stalno — posebno bakinu poruku." — Jelena & Marko, Beograd
+> "Imali smo i knjigu i audio guest book. Knjigu smo jednom prelistali, ali snimke slušamo stalno — posebno bakinu poruku." — Andrea & Marko, Beograd
 
 > "Gosti su se toliko zabavljali sa telefonom da je knjiga utisaka ostala skoro prazna!" — Ana & Stefan, Novi Sad
 
