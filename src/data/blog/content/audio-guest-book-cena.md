@@ -94,7 +94,7 @@ Na tržištu Srbije i regiona, audio guest book usluge se kreću od €100 pa na
 
 ### Lokacija venčanja
 
-Cena je **ista za celu Srbiju** — bez obzira da li je venčanje u Beogradu, Novom Sadu, Nišu ili bilo gde drugde. Kurirska dostava je uključena.
+Cena je **ista za celu Srbiju** — bez obzira da li je venčanje u Beogradu, Novom Sadu, Nišu ili bilo gde drugde. Troškovi povratka uređaja su uvek uključeni u cenu paketa — vi plaćate samo poštarinu pri preuzimanju.
 
 ### Datum
 

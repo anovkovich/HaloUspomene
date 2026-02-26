@@ -44,9 +44,6 @@ const HowItWorks: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
           {/* — Main card — */}
           <div className="md:col-span-2 bg-white/[0.07] border border-white/10 rounded-3xl p-7 sm:p-10 relative overflow-hidden group hover:border-white/20 transition-colors">
-            <div className="absolute -bottom-6 -right-6 text-[#F5F4DC]/[0.03] text-[180px] font-serif leading-none select-none pointer-events-none">
-              ☎
-            </div>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#AE343F] mb-4">
               Audio Guest Book
             </p>
@@ -92,7 +89,7 @@ const HowItWorks: React.FC = () => {
               </p>
               <div className="space-y-1.5 mt-4">
                 {[
-                  "Dostava do vas uvek uključena",
+                  "Troškovi povratka uređaja uključeni u cenu",
                   "Fiksne cene — bez skrivenih troškova",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2">
