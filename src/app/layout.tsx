@@ -254,7 +254,7 @@ export default function RootLayout({
     image: `${siteUrl}/images/gallery/og-image.png`,
     // telephone: "+381601234567",
     // email: "info@halouspomene.rs",
-    email: "aleksa.novkovic98@gmail.com",
+    email: "halouspomene@gmail.com",
     address: {
       "@type": "PostalAddress",
       addressLocality: "Novi Sad",

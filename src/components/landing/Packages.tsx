@@ -61,7 +61,7 @@ const Packages: React.FC = () => {
             >
               {pkg.popular && (
                 <div className="absolute text-center -top-4 sm:-top-5 md:-top-6 left-1/2 -translate-x-1/2 bg-[#AE343F] text-[#F5F4DC] px-4 sm:px-6 md:px-8 py-2 sm:py-3 rounded-full text-xs font-bold uppercase tracking-widest">
-                  Preporuka Mladenaca
+                  Dostupno u <br /> Novom Sadu
                 </div>
               )}
               <div className="mb-6 sm:mb-8 md:mb-10 w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-[#F5F4DC] rounded-2xl md:rounded-3xl flex items-center justify-center">

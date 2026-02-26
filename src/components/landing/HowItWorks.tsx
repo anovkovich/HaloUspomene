@@ -77,15 +77,22 @@ const HowItWorks: React.FC = () => {
 
           {/* — Award card — */}
           <div className="bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-3xl p-7 sm:p-8 flex flex-col justify-between hover:border-[#d4af37]/40 transition-colors">
-            <Award size={28} className="text-[#d4af37]" />
+            {/* Desktop: icon alone at top */}
+            <Award size={28} className="text-[#d4af37] hidden sm:block" />
             <div>
-              <p className="text-[#d4af37] text-[10px] font-black uppercase tracking-[0.25em] mb-3">
+              {/* Mobile: icon + label in one row */}
+              <div className="flex items-center gap-2 mb-3 sm:hidden">
+                <Award size={20} className="text-[#d4af37] shrink-0" />
+                <p className="text-[#d4af37] text-[10px] font-black uppercase tracking-[0.25em]">
+                  Najpovoljniji u Srbiji
+                </p>
+              </div>
+              {/* Desktop: label below icon */}
+              <p className="text-[#d4af37] text-[10px] font-black uppercase tracking-[0.25em] mb-3 hidden sm:block">
                 Najpovoljniji u Srbiji
               </p>
               <p className="text-[#F5F4DC] font-serif text-4xl font-bold leading-none mb-3">
-                Već od
-                <br />
-                9.000 din
+                Već od<span className="hidden sm:inline"><br /></span><span className="sm:hidden"> </span>9.000 din
               </p>
               <div className="space-y-1.5 mt-4">
                 {[
