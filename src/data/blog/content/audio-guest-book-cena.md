@@ -90,6 +90,13 @@ Na tržištu Srbije i regiona, audio guest book usluge se kreću od €100 pa na
 
 **Zaključak:** HALO Uspomene nudi **nižu cenu** sa **više uključenih opcija**. Dostava za povrat uređaja je uključena u cenu, govornice su dostupne kao pristupačan add-on, i digitalna pozivnica je savršen dodatak sa bundle popustom!
 
+## Kako smo ovo omogućili?
+
+- **Domaći biznis za domaće tržište** — bez uvoznih troškova, i bez dodatne marže.
+- **Mali tim, direktna komunikacija** — bez posrednika koji dodaje svoju maržu.
+
+Biramo manji prihod po rezervaciji, a veći broj parova kojima možemo pomoći.
+
 ## Šta utiče na cenu?
 
 ### Lokacija venčanja
