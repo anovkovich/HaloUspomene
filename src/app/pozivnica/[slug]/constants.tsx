@@ -52,18 +52,18 @@ export const SCRIPT_FONT_CONFIGS: Record<ScriptFontType, ScriptFontConfig> = {
 
 export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
   // Elegant gold theme - traditional luxury wedding
-  luxury: {
+  luxury_gold: {
     name: "Luxury Gold",
     colors: {
       primary: "#d4af37", // Gold
       primaryLight: "#e8d48a",
       primaryMuted: "rgba(212, 175, 55, 0.15)",
-      background: "#ffffff",
-      surface: "#fffff",
-      surfaceAlt: "#f5f3ee",
+      background: "#fffdf5", // Warm ivory
+      surface: "#faf7e8",
+      surfaceAlt: "#f5f0d8",
       text: "#1a1a1a",
-      textMuted: "#78716c", // stone-500
-      textLight: "#a8a29e", // stone-400
+      textMuted: "#78716c",
+      textLight: "#a8a29e",
       border: "rgba(212, 175, 55, 0.2)",
       borderLight: "rgba(212, 175, 55, 0.1)",
       waxSeal: "#b82828",
@@ -73,11 +73,12 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       radius: "sm",
       ornaments: true,
       shadows: "lg",
+      dividerStyle: "diamond",
     },
   },
 
   // Romantic rose theme - warm and timeless
-  classic: {
+  classic_rose: {
     name: "Classic Rose",
     colors: {
       primary: "#9e4a5d", // Dusty rose
@@ -98,36 +99,38 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       radius: "md",
       ornaments: false,
       shadows: "md",
+      dividerStyle: "gradient",
     },
   },
 
-  // Bold contemporary theme - minimalist and striking
-  modern: {
-    name: "Modern Mono",
+  // Contemporary blue theme - calm and modern
+  modern_mono: {
+    name: "Modern Blue",
     colors: {
-      primary: "#1a1a1a", // Black
-      primaryLight: "#404040",
-      primaryMuted: "rgba(26, 26, 26, 0.08)",
-      background: "#ffffff",
-      surface: "#fafafa",
-      surfaceAlt: "#f5f5f5",
-      text: "#0a0a0a",
-      textMuted: "#525252", // neutral-600
-      textLight: "#a3a3a3", // neutral-400
-      border: "rgba(0, 0, 0, 0.1)",
-      borderLight: "rgba(0, 0, 0, 0.05)",
-      waxSeal: "#1a1a1a",
-      waxSealDark: "#000000",
+      primary: "#3D6B9C", // Dusty steel blue
+      primaryLight: "#6B97C4",
+      primaryMuted: "rgba(61, 107, 156, 0.1)",
+      background: "#F6F8FB", // Very pale blue-white
+      surface: "#EEF3F9",
+      surfaceAlt: "#E4EDF6",
+      text: "#1A2A3A",
+      textMuted: "#4E6578",
+      textLight: "#8AA0B4",
+      border: "rgba(61, 107, 156, 0.18)",
+      borderLight: "rgba(61, 107, 156, 0.08)",
+      waxSeal: "#3D6B9C",
+      waxSealDark: "#2A4E78",
     },
     style: {
-      radius: "none",
+      radius: "sm",
       ornaments: false,
       shadows: "sm",
+      dividerStyle: "dots",
     },
   },
 
   // Soft natural theme - organic and understated
-  minimal: {
+  minimal_sage: {
     name: "Minimal Sage",
     colors: {
       primary: "#7c9a72", // Sage green
@@ -148,6 +151,33 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       radius: "lg",
       ornaments: false,
       shadows: "sm",
+      dividerStyle: "clean",
+    },
+  },
+
+  // Warm terracotta theme - earthy and romantic
+  romance_wine: {
+    name: "Romance Wine",
+    colors: {
+      primary: "#C0622A", // Warm terracotta-orange
+      primaryLight: "#E08A55",
+      primaryMuted: "rgba(192, 98, 42, 0.12)",
+      background: "#FDF8F2", // Warm cream
+      surface: "#FAF0E4",
+      surfaceAlt: "#F4E5D2",
+      text: "#2C1A0E",
+      textMuted: "#7A5840",
+      textLight: "#B09070",
+      border: "rgba(192, 98, 42, 0.2)",
+      borderLight: "rgba(192, 98, 42, 0.1)",
+      waxSeal: "#A84E1E",
+      waxSealDark: "#7E3810",
+    },
+    style: {
+      radius: "lg",
+      ornaments: false,
+      shadows: "md",
+      dividerStyle: "flourish",
     },
   },
 };

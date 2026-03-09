@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DatePickerProps {
@@ -9,6 +9,7 @@ interface DatePickerProps {
   minDate?: string;
   placeholder?: string;
   variant?: "dark" | "light";
+  showQuickActions?: boolean;
 }
 
 const MONTHS = [
@@ -23,7 +24,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   onChange,
   minDate,
   placeholder = "Izaberite datum",
-  variant = "dark"
+  variant = "dark",
+  showQuickActions = true,
 }) => {
   const isLight = variant === "light";
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +33,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
     if (value) return new Date(value);
     return new Date();
   });
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const selectedDate = value ? new Date(value) : null;
   const today = new Date();
@@ -43,15 +46,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
   // Colors based on variant
   const colors = isLight
     ? {
-        accent: "#d4af37",
-        accentHover: "#b8972f",
+        accent: "#9e4a5d",
+        accentHover: "#7a3a4a",
         text: "#1a1a1a",
         textMuted: "#78716c",
         textPlaceholder: "#a8a29e",
         bg: "#faf9f6",
         bgDropdown: "#ffffff",
         border: "#e7e5e4",
-        borderFocus: "#d4af37",
+        borderFocus: "#9e4a5d",
       }
     : {
         accent: "#AE343F",
@@ -96,6 +99,30 @@ const DatePicker: React.FC<DatePickerProps> = ({
       setIsOpen(false);
     }
   };
+
+  const handleOpen = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownPos({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+    setIsOpen(true);
+  };
+
+  // Close on scroll or resize
+  useEffect(() => {
+    if (!isOpen) return;
+    const close = () => setIsOpen(false);
+    window.addEventListener("scroll", close, { passive: true, capture: true });
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, { capture: true });
+      window.removeEventListener("resize", close);
+    };
+  }, [isOpen]);
 
   const renderCalendar = () => {
     const year = viewDate.getFullYear();
@@ -166,16 +193,17 @@ const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   return (
-    <div ref={containerRef} className="relative">
-      {/* Display Input */}
+    <div className="relative">
+      {/* Trigger button */}
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => (isOpen ? setIsOpen(false) : handleOpen())}
         className={`w-full flex items-center justify-between py-3 px-4 text-left focus:outline-none transition-all group ${
           isLight
-            ? "bg-[#faf9f6] border border-stone-200 rounded-xl focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20"
+            ? "bg-[#faf9f6] border border-stone-200 rounded-xl focus:border-[#9e4a5d] focus:ring-2 focus:ring-[#9e4a5d]/10"
             : "bg-transparent border-b border-white/10 focus:border-[#AE343F]"
-        }`}
+        } ${isOpen && isLight ? "border-[#9e4a5d] ring-2 ring-[#9e4a5d]/10" : ""}`}
       >
         <span style={{ color: value ? colors.text : colors.textPlaceholder }}>
           {value ? formatDisplayDate(value) : placeholder}
@@ -187,17 +215,21 @@ const DatePicker: React.FC<DatePickerProps> = ({
         />
       </button>
 
-      {/* Calendar Dropdown */}
+      {/* Dropdown — fixed positioned to escape overflow-hidden parents */}
       {isOpen && (
         <>
+          {/* Backdrop */}
           <div
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
 
           <div
-            className="absolute top-full left-0 right-0 mt-2 z-50 rounded-2xl shadow-2xl p-4"
+            className="fixed z-50 rounded-2xl shadow-2xl p-4"
             style={{
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              width: dropdownPos.width,
               backgroundColor: colors.bgDropdown,
               border: `1px solid ${colors.border}`,
             }}
@@ -231,7 +263,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
               </button>
             </div>
 
-            {/* Day Headers */}
+            {/* Day headers */}
             <div className="grid grid-cols-7 gap-1 mb-2">
               {DAYS.map(day => (
                 <div
@@ -244,58 +276,60 @@ const DatePicker: React.FC<DatePickerProps> = ({
               ))}
             </div>
 
-            {/* Calendar Grid */}
+            {/* Calendar grid */}
             <div className="grid grid-cols-7 gap-1">
               {renderCalendar()}
             </div>
 
-            {/* Quick Actions */}
-            <div
-              className="mt-4 pt-4 flex gap-2"
-              style={{ borderTop: `1px solid ${colors.border}` }}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-                  onChange(todayStr);
-                  setIsOpen(false);
-                }}
-                className="flex-1 py-2 text-sm font-medium rounded-lg transition-colors"
-                style={{ color: colors.textMuted }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.text;
-                  e.currentTarget.style.backgroundColor = isLight ? "#f5f5f4" : "rgba(255,255,255,0.05)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.textMuted;
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
+            {/* Quick actions — only when enabled */}
+            {showQuickActions && (
+              <div
+                className="mt-4 pt-4 flex gap-2"
+                style={{ borderTop: `1px solid ${colors.border}` }}
               >
-                Danas
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const nextWeek = new Date(today);
-                  nextWeek.setDate(nextWeek.getDate() + 7);
-                  onChange(`${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, '0')}-${String(nextWeek.getDate()).padStart(2, '0')}`);
-                  setIsOpen(false);
-                }}
-                className="flex-1 py-2 text-sm font-medium rounded-lg transition-colors"
-                style={{ color: colors.textMuted }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.text;
-                  e.currentTarget.style.backgroundColor = isLight ? "#f5f5f4" : "rgba(255,255,255,0.05)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.textMuted;
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                Za nedelju dana
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    onChange(todayStr);
+                    setIsOpen(false);
+                  }}
+                  className="flex-1 py-2 text-sm font-medium rounded-lg transition-colors"
+                  style={{ color: colors.textMuted }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = colors.text;
+                    e.currentTarget.style.backgroundColor = isLight ? "#f5f5f4" : "rgba(255,255,255,0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = colors.textMuted;
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  Danas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextWeek = new Date(today);
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    onChange(`${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, '0')}-${String(nextWeek.getDate()).padStart(2, '0')}`);
+                    setIsOpen(false);
+                  }}
+                  className="flex-1 py-2 text-sm font-medium rounded-lg transition-colors"
+                  style={{ color: colors.textMuted }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = colors.text;
+                    e.currentTarget.style.backgroundColor = isLight ? "#f5f5f4" : "rgba(255,255,255,0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = colors.textMuted;
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  Za nedelju dana
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}

@@ -1,4 +1,9 @@
-export type ThemeType = "classic" | "modern" | "minimal" | "luxury";
+export type ThemeType =
+  | "classic_rose"
+  | "modern_mono"
+  | "minimal_sage"
+  | "luxury_gold"
+  | "romance_wine";
 export type ScriptFontType =
   | "great-vibes"
   | "dancing-script"
@@ -84,6 +89,8 @@ export interface ThemeConfig {
     ornaments: boolean;
     // Shadow intensity: "none" | "sm" | "md" | "lg"
     shadows: string;
+    // Section divider style: "gradient" | "dots" | "diamond" | "clean" | "flourish"
+    dividerStyle: "gradient" | "dots" | "diamond" | "clean" | "flourish";
   };
 }
 

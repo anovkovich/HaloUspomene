@@ -80,6 +80,64 @@ export default function InvitationClient({ data }: InvitationClientProps) {
     }
   }, [isLoading]);
 
+  // Renders section dividers based on the theme's dividerStyle
+  const renderDivider = (position: "top" | "bottom" = "top") => {
+    const style = themeConfig.style.dividerStyle ?? "gradient";
+    const posClass = `absolute ${position}-0 left-0 w-full`;
+
+    if (style === "dots") {
+      return (
+        <div className={`${posClass} flex justify-center ${position === "top" ? "-translate-y-1/2" : "translate-y-1/2"}`} style={{ zIndex: 1 }}>
+          <div className="flex gap-[6px] items-center">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className={`rounded-full ${i === 1 ? "w-[5px] h-[5px]" : "w-[3px] h-[3px]"}`}
+                style={{ backgroundColor: "var(--theme-border)", opacity: i === 1 ? 0.8 : 0.4 }}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (style === "diamond") {
+      return (
+        <>
+          <div className={`${posClass} h-px`} style={{ background: `linear-gradient(to right, transparent, var(--theme-border), transparent)` }} />
+          <div
+            className={`absolute ${position}-0 left-1/2 -translate-x-1/2 ${position === "top" ? "-translate-y-1/2" : "translate-y-1/2"} w-[7px] h-[7px] rotate-45`}
+            style={{ backgroundColor: "var(--theme-primary)", opacity: 0.35 }}
+          />
+        </>
+      );
+    }
+
+    if (style === "flourish") {
+      return (
+        <>
+          <div className={`${posClass} h-px`} style={{ background: `linear-gradient(to right, transparent, var(--theme-border), transparent)` }} />
+          <div className={`absolute ${position}-0 left-1/2 -translate-x-1/2 ${position === "top" ? "-translate-y-1/2" : "translate-y-1/2"} flex items-center gap-1`} style={{ zIndex: 1 }}>
+            <div className="w-[3px] h-[3px] rounded-full" style={{ backgroundColor: "var(--theme-primary)", opacity: 0.3 }} />
+            <Heart size={10} style={{ color: "var(--theme-primary)", opacity: 0.4 }} fill="currentColor" />
+            <div className="w-[3px] h-[3px] rounded-full" style={{ backgroundColor: "var(--theme-primary)", opacity: 0.3 }} />
+          </div>
+        </>
+      );
+    }
+
+    if (style === "clean") {
+      return (
+        <div className={`${posClass} h-px`} style={{ backgroundColor: "var(--theme-border)", opacity: 0.6 }} />
+      );
+    }
+
+    // Default: gradient
+    return (
+      <div className={`${posClass} h-px`} style={{ background: `linear-gradient(to right, transparent, var(--theme-border), transparent)` }} />
+    );
+  };
+
   if (isLoading) {
     return (
       <ThemeProvider
@@ -294,18 +352,8 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               background: `linear-gradient(to bottom, var(--theme-background), var(--theme-surface-alt), var(--theme-background))`,
             }}
           >
-            <div
-              className="absolute top-0 left-0 w-full h-px"
-              style={{
-                background: `linear-gradient(to right, transparent, var(--theme-border), transparent)`,
-              }}
-            />
-            <div
-              className="absolute bottom-0 left-0 w-full h-px"
-              style={{
-                background: `linear-gradient(to right, transparent, var(--theme-border), transparent)`,
-              }}
-            />
+            {renderDivider("top")}
+            {renderDivider("bottom")}
 
             <div className="max-w-4xl mx-auto text-center">
               <h2
@@ -425,12 +473,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               background: `linear-gradient(to bottom, var(--theme-surface), var(--theme-surface-alt), var(--theme-surface))`,
             }}
           >
-            <div
-              className="absolute top-0 left-0 w-full h-px"
-              style={{
-                background: `linear-gradient(to right, transparent, var(--theme-border), transparent)`,
-              }}
-            />
+            {renderDivider("top")}
 
             <div className="text-center mb-16 sm:mb-24">
               <h2
@@ -493,12 +536,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
             background: `linear-gradient(to bottom, var(--theme-background), var(--theme-surface-alt), var(--theme-background))`,
           }}
         >
-          <div
-            className="absolute top-0 left-0 w-full h-px"
-            style={{
-              background: `linear-gradient(to right, transparent, var(--theme-border), transparent)`,
-            }}
-          />
+          {renderDivider("top")}
 
           <div className="max-w-2xl mx-auto text-center mb-16">
             <h2
@@ -528,12 +566,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
           className="relative pt-32 sm:pt-48 text-center overflow-hidden"
           style={{ backgroundColor: "var(--theme-surface)" }}
         >
-          <div
-            className="absolute top-0 left-0 w-full h-px"
-            style={{
-              background: `linear-gradient(to right, transparent, var(--theme-border), transparent)`,
-            }}
-          />
+          {renderDivider("top")}
           {themeConfig.style.ornaments && (
             <div
               className="absolute inset-0 opacity-[0.02]"
