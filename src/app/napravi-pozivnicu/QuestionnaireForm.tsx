@@ -229,7 +229,9 @@ function Toggle({
           className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? "sm:translate-x-6 translate-x-5" : "translate-x-1"}`}
         />
       </div>
-      <span className="text-stone-600 text-xs sm:text-sm leading-tight">{label}</span>
+      <span className="text-stone-600 text-xs sm:text-sm leading-tight">
+        {label}
+      </span>
     </label>
   );
 }
@@ -407,7 +409,7 @@ function Step1({
   return (
     <div>
       {/* Pricing section */}
-      <div className="mb-6 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
+      <div className="mb-3 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
         <p className="text-2xl font-bold align-end text-[#AE343F]">
           Redovna cena pozivnice je 5.000 din 💰
         </p>
@@ -418,6 +420,32 @@ function Step1({
           </small>
         </p>
       </div>
+
+      {/* Live preview section */}
+      <a
+        href="/pozivnica/sara-nikola"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mb-6 inline-flex justify-between w-full gap-2 px-4 py-2.5 bg-[#AE343F] text-white rounded-lg hover:bg-[#932d35] transition-colors text-sm font-medium"
+      >
+        <span>🎁 Pogledajte primer live pozivnice:</span>
+        <span className="inline-flex items-center gap-2">
+          Otvori u novom tabu
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            />
+          </svg>
+        </span>
+      </a>
 
       <StepHeading
         title="Informacije o paru"

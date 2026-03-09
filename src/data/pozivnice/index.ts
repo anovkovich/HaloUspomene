@@ -6,7 +6,6 @@ import anastasijaJovan from "./anastasija-jovan";
 import saraNikola from "./sara-nikola";
 import jelenaMarko from "./jelena-marko";
 import marinaAleksandar from "./marina-aleksandar";
-import emaAca from "./ema-aca";
 
 // Map slugs to their wedding data
 const weddingDataMap: Record<string, WeddingData> = {
@@ -15,7 +14,6 @@ const weddingDataMap: Record<string, WeddingData> = {
   "sara-nikola": saraNikola,
   "jelena-marko": jelenaMarko,
   "marina-aleksandar": marinaAleksandar,
-  "ema-aca": emaAca,
   // Add more weddings here as needed:
   // "marko-ana": markoAna,
 };
