@@ -161,6 +161,48 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* SEO Hidden Content - Keyword optimization */}
+        <section className="sr-only">
+          <h2>Dodatne Usluge - Audio Uspomene i Digitalne Pozivnice</h2>
+          <p>
+            HALO Uspomene nudi dva komplementarna servisa za vaše venčanje:
+            digitalne pozivnice sa RSVP formom i audio uspomene putem retro
+            telefona. Kreirajte personalizovane web pozivnice (e-pozivnice) sa
+            interaktivnim mogućnostima ili iznajmite telefon uspomena za
+            glasovne poruke gostiju. Naš telefon uspomena kombinuje klasičan
+            retro telefon sa modernom tehnologijom, omogućavajući gostima da
+            ostave audio poruke koje će biti trajne uspomene sa vaše svadbe.
+            Audio guest book servis dostupan je sa profesionalnom montažom,
+            dostavom u Beograd, Novi Sad, Niš, Kragujevac i sve ostale gradove u
+            Srbiji. Odaberite između audio uspomene putem telefona, digitalne
+            pozivnice sa odbrojavanje, ili kombinovane pakete koji uključuju i
+            web pozivnice i audio guest book.
+          </p>
+          <p>
+            Naše digitalne pozivnice omogućavaju vam da kreirate jedinstvene
+            online pozivnice sa kustomnim dizajnom, RSVP praćenjem, mapom,
+            odbrojavanje, i galerijom fotografija. Web invitations sa svim
+            funkcijama za samo 5.000 dinara. Dodatne opcije: audio uspomene
+            (retro telefon za poruke), videonos, i interaktivne osobine.
+          </p>
+          <p>
+            Audio guest book (audio knjiga uspomena, audio knjiga utisaka, audio
+            spomenar) je originalan poklon za mladence koji omogućava gostima da
+            snime poruke na vintage telefonu. Retro telefon sa rotirajućim
+            brojčanikom postaje ključna dekoracija na venčanju dok funkcioniše
+            kao uređaj za snimanje glasovnih poruka. Svi audio snimci se čuvaju
+            u digitalnom formatu kao neprocenjive uspomene sa vašeg velikog
+            dana.
+          </p>
+          <p>
+            Specijalni paketi: kombinovana usluga digitalne pozivnice + audio
+            guest book sa 30% popusta. Zaboravite na klasične pozivnice —
+            moderni digitalni i audio servisi za nezaboravne venčanju. Dostava i
+            profesionalna montaža u svim večim gradovima: Beograd, Novi Sad,
+            Niš, Kragujevac, Subotica, Čačak, Smederevo, i drugi.
+          </p>
+        </section>
       </main>
       <Footer />
     </>

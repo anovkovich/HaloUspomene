@@ -15,9 +15,10 @@ const Footer: React.FC = () => {
               className="w-54 h-auto mb-6"
             />
             <p className="text-[#F5F4DC]/40 leading-relaxed mb-4">
-              Iznajmljivanje vintage retro telefona za audio poruke na
-              venčanjima. Audio knjiga uspomena — sačuvajte glasove jer ljubav
-              zaslužuje da se čuje zauvek.
+              HALO Uspomene — kreirajte digitalne pozivnice ili iznajmite
+              vintage retro telefon za audio uspomene sa venčanja. Audio guest
+              book ili telefon uspomena — sačuvajte glasove jer ljubav zaslužuje
+              da se čuje zauvek.
             </p>
             <a
               href="https://www.instagram.com/halo_uspomene"
@@ -67,6 +68,10 @@ const Footer: React.FC = () => {
             <ul className="space-y-3">
               {[
                 { name: "Blog", href: "/blog" },
+                {
+                  name: "Digitalne Pozivnice",
+                  href: "/napravi-pozivnicu",
+                },
                 {
                   name: "Šta je Audio Guest Book?",
                   href: "/blog/sta-je-audio-guest-book",

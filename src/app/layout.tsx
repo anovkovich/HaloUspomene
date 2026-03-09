@@ -110,54 +110,77 @@ export const metadata: Metadata = {
 
   title: {
     default:
-      "Audio Guest Book Srbija — Iznajmljivanje Retro Telefona za Venčanje | HALO Uspomene",
+      "Digitalne Pozivnice i Audio Knjiga Uspomena Srbija | Audio Guest Book + Digitalne pozivnice | HALO Uspomene",
     template: "%s | HALO Uspomene",
   },
 
   description:
-    "Iznajmljivanje audio guest book telefona za venčanja i proslave u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga uspomena u Novom Sadu sa dostavom u Beograd, Čačak, Niš i sve druge gradove. Rezervacija i cena - kontakt.",
+    "HALO Uspomene — digitalne pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte personalizovane web pozivnice i iznajmite retro telefon za glasovne poruke gostiju. Audio guest book (telefon uspomena), i interaktivne pozivnice sa odbrojavanje. Dostava u Beograd, i sve gradove.",
 
   keywords: [
+    // Audio uspomene / Audio Guest Book
+    "audio uspomene",
     "audio guest book venčanje",
     "audio guestbook Srbija",
-    "knjiga utisaka za venčanje",
+    "telefon uspomena",
+    "telefon uspomena Beograd",
+    "audio uspomene Beograd",
+    "audio uspomene Novi Sad",
+    "retro telefon",
+    "retro telefon za venčanje",
+    "retro telefon za svadbe",
     "vintage telefon venčanje",
-    "wedding guest book Serbia",
+    "telefon za glasovne poruke",
+    "audio guest book",
     "iznajmljivanje retro telefona",
     "audio poruke sa venčanja",
-    "uspomene sa venčanja",
-    "originalan poklon za mladence",
     "sačuvaj glasove sa svadbe",
-    "audio uspomene Beograd",
-    "venčanje ideje Srbija",
     "telefon za poruke na svadbi",
     "audio knjiga utisaka",
     "audio knjiga uspomena",
-    "retro telefon za svadbe",
-    "iznajmljivanje audio guest book-a",
+    "audio guestbook rental Serbia",
+    "retro phone guest book",
     "audio guest book cena",
     "cena iznajmljivanja telefona za svadbu",
-    "gde iznajmiti audio knjigu utisaka",
     "rezervacija audio telefona za venčanje",
     "telefon sa rotirajućim brojčanikom za svadbe",
-    "telefon za ostavljanje poruka",
     "svadbeni telefon za glasovne poruke",
     "audio spomenar za venčanja",
     "beli retro telefon za venčanje",
     "telefon govornica za svadbe",
     "dekorativni telefon za slikanje i poruke",
-    "audio guestbook rental Serbia",
-    "retro phone guest book",
-    "originalne ideje za venčanja",
-    "moderne ideje za venčanja 2026",
-    "najbolji gadgeti za proslave i venčanja",
-    "audio guest book za rođendan",
-    "telefon za snimanje poruka na svadbi",
-    "vintage telefon za venčanje iznajmljivanje",
     "audio guest book Beograd",
     "audio guest book Novi Sad",
     "retro telefon za poruke gostiju",
     "audio uspomene sa venčanja",
+    "kjiga utisaka za venčanje",
+    "telefon za snimanje poruka na svadbi",
+    "vintage telefon za venčanje iznajmljivanje",
+
+    // Digitalne pozivnice / Web invitations
+    "digitalne pozivnice",
+    "digitalne pozivnice Srbija",
+    "digitalne pozivnice za venčanje",
+    "web pozivnice",
+    "web invitations",
+    "elektronske pozivnice",
+    "pozivnice sa RSVP",
+    "interaktivne pozivnice",
+    "personalizovane pozivnice",
+    "pozivnice sa odbrojavanje",
+    "dinamičke pozivnice",
+    "online pozivnice",
+    "digitalne pozivnice sa audio",
+    "pozivnice sa glasovnom porukom",
+    "e-pozivnice",
+    "smernice za digitalne pozivnice",
+    "originalne ideje za venčanja",
+
+    // Combined / General
+    "moderne ideje za venčanja 2026",
+    "venčanje ideje Srbija",
+    "audio guest book za rođendan",
+    "wedding phone Serbia",
   ],
 
   authors: [{ name: "HALO Uspomene" }],
@@ -176,9 +199,9 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: "HALO Uspomene",
     title:
-      "Audio Guest Book Srbija — Iznajmljivanje Retro Telefona za Venčanje | HALO Uspomene",
+      "Digitalne Pozivnice i Audio Knjiga Uspomena za Venčanja | HALO Uspomene Srbija",
     description:
-      "Iznajmljivanje audio guest book telefona za venčanja i proslave u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga uspomena u Novom Sadu sa dostavom u Beograd, Čačak, Niš i sve druge gradove. Rezervacija i cena - kontakt.",
+      "HALO Uspomene — digitalne pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte personalizovane web pozivnice i iznajmite retro telefon za glasovne poruke gostiju. Audio guest book (telefon uspomena), i interaktivne pozivnice sa odbrojavanje. Dostava u Beograd, i sve gradove.",
     images: [
       {
         url: "/images/gallery/og-image.png",
@@ -191,10 +214,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title:
-      "Audio Guest Book Srbija — Iznajmljivanje Retro Telefona za Venčanje | HALO Uspomene",
+    title: "Digitalne Pozivnice i Audio Knjiga Uspomena | HALO Uspomene Srbija",
     description:
-      "Iznajmljivanje audio guest book telefona za venčanja i proslave u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga uspomena u Novom Sadu sa dostavom u Beograd, Čačak, Niš i sve druge gradove. Rezervacija i cena - kontakt.",
+      "Digitalne pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte web pozivnice sa RSVP ili iznajmite retro telefon za glasovne poruke. Audio guest book dostava u Beograd, i sve gradove.",
     images: ["/images/gallery/og-image.png"],
   },
 
@@ -246,11 +268,16 @@ export default function RootLayout({
       "Audio Guest Book Srbija",
       "Audio Knjiga Utisaka",
       "Audio Knjiga Uspomena",
+      "Audio Uspomene",
+      "Telefon Uspomena",
       "Telefon za Poruke na Svadbi",
       "Retro Telefon za Venčanja",
+      "Digitalne Pozivnice",
+      "Web Pozivnice",
+      "E-Pozivnice",
     ],
     description:
-      "Iznajmljivanje audio guest book telefona za venčanja u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga uspomena sa dostavom u Beograd, Novi Sad i sve gradove. Rezervacija i cena.",
+      "HALO Uspomene — premium servisi za venčanja: kreirajte digitalne pozivnice sa RSVP ili iznajmite audio guest book za glasovne poruke gostiju. Audio uspomene, web pozivnice, telefon uspomena sa dostavom u celoj Srbiji.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
     image: `${siteUrl}/images/gallery/og-image.png`,
@@ -305,56 +332,101 @@ export default function RootLayout({
       worstRating: "5",
       reviewCount: "3",
     },
-    hasOfferCatalog: {
-      "@type": "OfferCatalog",
-      name: "Audio Guest Book Paketi za Venčanja",
-      itemListElement: [
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "Service",
-            name: "Essential Paket",
-            description:
-              "Iznajmljivanje retro telefona sa rotirajućim brojčanikom za venčanja. Audio knjiga uspomena sa kurirskom dostavom, elegantno uputstvo i svi audio snimci u digitalnom formatu.",
+    hasOfferCatalog: [
+      {
+        "@type": "OfferCatalog",
+        name: "Audio Guest Book Paketi za Venčanja",
+        itemListElement: [
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "Essential Paket",
+              description:
+                "Iznajmljivanje retro telefona sa rotirajućim brojčanikom za venčanja. Audio knjiga uspomena, audio uspomene sa kurirskom dostavom, elegantno uputstvo i svi audio snimci u digitalnom formatu.",
+            },
           },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "Service",
-            name: "Full Service Paket",
-            description:
-              "Premium audio guest book sa telefon govornicom — lična dostava, profesionalna montaža, audio spomenar sa personalizovanom dobrodošlicom. Svadbeni telefon za glasovne poruke gostiju.",
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "Full Service Paket",
+              description:
+                "Premium audio guest book sa telefon govornicom — lična dostava, profesionalna montaža, audio spomenar sa personalizovanom dobrodošlicom. Svadbeni telefon za glasovne poruke gostiju. Telefon uspomena sa stojaćom pozicijom.",
+            },
           },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "Service",
-            name: "Rezervacija Audio Telefona za Venčanje",
-            description:
-              "Rezervišite vintage retro telefon za poruke gostiju na venčanju. Dostava u Beograd, Novi Sad, Niš, Kragujevac, Suboticu i sve gradove u Srbiji. Audio guest book cena po dogovoru.",
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "Rezervacija Audio Telefona za Venčanje",
+              description:
+                "Rezervišite vintage retro telefon za poruke gostiju na venčanju. Dostava u Beograd, Novi Sad, Niš, Kragujevac, Suboticu i sve gradove u Srbiji. Audio uspomene cena po dogovoru.",
+            },
           },
-        },
-      ],
-    },
+        ],
+      },
+      {
+        "@type": "OfferCatalog",
+        name: "Digitalne Pozivnice Paketi za Venčanja",
+        itemListElement: [
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "Digitalna Pozivnica",
+              description:
+                "Kreirajte personalizovanu digitalnu pozivnicu za venčanje sa RSVP formom, odbrojavanjem, galerijom fotografija i mapom lokacije. Web pozivnice sa integrisanom glasovnom porukom.",
+            },
+          },
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "Interaktivna Web Pozivnica",
+              description:
+                "Premium digitalna pozivnica sa temama, kustomnim fontovima, animacijama i mogućnostima za gostiju da ostave poruke. E-pozivnice sa RSVP praćenjem.",
+            },
+          },
+        ],
+      },
+    ],
     knowsAbout: [
+      // Audio memories service
+      "Audio uspomene",
       "Audio guest book",
       "Audio knjiga utisaka",
       "Audio knjiga uspomena",
       "Audio spomenar",
+      "Telefon uspomena",
       "Telefon za poruke na svadbi",
       "Vintage telefon sa rotirajućim brojčanikom",
       "Telefon govornica za svadbe",
       "Svadbeni telefon za glasovne poruke",
       "Dekorativni telefon za venčanja",
       "Retro phone guest book",
+      "Retro telefon",
+      "Iznajmljivanje retro telefona za svadbe",
+      "Beli retro telefon za venčanje",
+
+      // Digital invitations service
+      "Digitalne pozivnice",
+      "Web pozivnice",
+      "E-pozivnice",
+      "Elektronske pozivnice",
+      "RSVP forma",
+      "Pozivnice sa odbrojavanje",
+      "Interaktivne pozivnice",
+      "Personalizovane pozivnice",
+      "Online pozivnice",
+      "Digital wedding invitations",
+      "Web invitations with RSVP",
+
+      // General
       "Wedding services",
       "Event planning",
       "Audio recording",
       "Vintage telephone rental",
-      "Iznajmljivanje retro telefona za svadbe",
-      "Beli retro telefon za venčanje",
     ],
   };
 
@@ -366,7 +438,7 @@ export default function RootLayout({
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
     description:
-      "HALO Uspomene je premium audio guest book servis za venčanja i posebne događaje u Srbiji. Dostava u celoj Srbiji.",
+      "HALO Uspomene — kreirajte digitalne pozivnice sa RSVP formom i audio uspomene (audio guest book) za venčanja u Srbiji. Telefon uspomena, web pozivnice sa odbrojavanje i interaktivnim mogućnostima. Dostava u celoj Srbiji.",
     sameAs: ["https://www.instagram.com/halo_uspomene"],
     contactPoint: {
       "@type": "ContactPoint",
@@ -382,7 +454,15 @@ export default function RootLayout({
     name: "HALO Uspomene",
     url: siteUrl,
     description:
-      "Audio guest book za venčanja u Srbiji — sačuvajte glasove najdražih zauvek.",
+      "HALO Uspomene — kreirajte digitalne pozivnice sa RSVP formom ili iznajmite audio guest book za venčanja. Audio uspomene i web pozivnice u Srbiji.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteUrl}/?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
     publisher: { "@id": `${siteUrl}/#organization` },
     inLanguage: "sr",
   };

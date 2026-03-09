@@ -411,7 +411,7 @@ function Step1({
       {/* Pricing section */}
       <div className="mb-3 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
         <p className="text-2xl font-bold align-end text-[#AE343F]">
-          Redovna cena pozivnice je 5.000 din 💰
+          Redovna cena pozivnice je 5.000 din
         </p>
         <p className="font-semibold text-sm text-[#8B2833] mt-2">
           Iskomuniciraćemo{" "}
