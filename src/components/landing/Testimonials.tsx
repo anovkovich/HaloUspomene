@@ -3,6 +3,7 @@ import { Star, MapPin, Package, BadgeCheck } from "lucide-react";
 import { testimonials } from "@/data/testimonials";
 
 const Testimonials: React.FC = () => {
+
   return (
     <section
       id="utisci"
@@ -24,7 +25,64 @@ const Testimonials: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        {/* Mobile & Tablet: Horizontal scrolling */}
+        <div className="lg:hidden">
+          <div className="flex gap-6 sm:gap-8 overflow-x-auto pb-4 scroll-pl-4 scroll-pr-4">
+            {testimonials.map((t) => (
+              <div
+                key={t.id}
+                className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-100 hover:shadow-lg transition-shadow duration-300 flex flex-col"
+              >
+                {/* Header: Avatar + Info */}
+                <div className="flex items-start gap-4 mb-5">
+                  <div className="w-12 h-12 bg-[#AE343F]/10 rounded-2xl flex items-center justify-center text-[#AE343F] font-bold text-sm shrink-0">
+                    {t.initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-serif font-semibold text-[#232323] truncate">
+                        {t.coupleName}
+                      </h3>
+                      <BadgeCheck size={16} className="text-[#AE343F] shrink-0" />
+                    </div>
+                    <p className="text-sm text-[#232323]/40">{t.date}</p>
+                  </div>
+                </div>
+
+                {/* Stars */}
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: t.rating }).map((_, i) => (
+                    <Star
+                      key={i}
+                      size={16}
+                      className="text-[#d4af37] fill-[#d4af37]"
+                    />
+                  ))}
+                </div>
+
+                {/* Quote */}
+                <p className="text-[#232323]/70 leading-relaxed flex-1 mb-5">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+
+                {/* Badges */}
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
+                    <MapPin size={12} />
+                    {t.city}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
+                    <Package size={12} />
+                    {t.packageType}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop: Grid layout */}
+        <div className="hidden lg:grid lg:grid-cols-3 lg:gap-8">
           {testimonials.map((t) => (
             <div
               key={t.id}

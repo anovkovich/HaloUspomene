@@ -19,7 +19,7 @@ export const testimonials: Testimonial[] = [
     rating: 5,
     packageType: "Full Service",
     quote:
-      "Govornica je izgledala fantastično u našem restoranu. Gosti su bili oduševljeni — čak i oni koji nisu znali šta je audio guest book. Dobili smo preko 80 poruka!",
+      "Digitalna pozivnica je bila impresivna i dosta gostiju je pohvalilo dizajn, mi smo imali jasnu listu potvrđenih gostiju. Mapa sa lokacijom restorana je nekim gostima bila od pomoći!",
   },
   {
     id: 2,
