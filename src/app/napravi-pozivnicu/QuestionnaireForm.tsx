@@ -220,16 +220,16 @@ function Toggle({
   label: string;
 }) {
   return (
-    <label className="flex items-center gap-3 cursor-pointer">
+    <label className="flex items-start gap-2 sm:gap-3 cursor-pointer">
       <div
         onClick={() => onChange(!checked)}
-        className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${checked ? "bg-[#AE343F]" : "bg-stone-200"}`}
+        className={`relative w-10 h-6 sm:w-11 sm:h-6 rounded-full transition-colors duration-200 flex-shrink-0 mt-0.5 flex items-center ${checked ? "bg-[#AE343F]" : "bg-stone-200"}`}
       >
         <div
-          className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? "translate-x-6" : "translate-x-1"}`}
+          className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? "sm:translate-x-6 translate-x-5" : "translate-x-1"}`}
         />
       </div>
-      <span className="text-stone-600 text-sm">{label}</span>
+      <span className="text-stone-600 text-xs sm:text-sm leading-tight">{label}</span>
     </label>
   );
 }
