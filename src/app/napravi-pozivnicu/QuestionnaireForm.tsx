@@ -164,7 +164,7 @@ const defaultFormData: FormData = {
 // ─── Shared UI helpers ────────────────────────────────────────────────────────
 
 const inputCls =
-  "w-full border-b border-stone-200 focus:border-[#9e4a5d] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300";
+  "w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300";
 
 const labelCls =
   "block text-xs font-bold uppercase tracking-[0.18em] text-stone-400 mb-1.5";
@@ -223,7 +223,7 @@ function Toggle({
     <label className="flex items-center gap-3 cursor-pointer">
       <div
         onClick={() => onChange(!checked)}
-        className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${checked ? "bg-[#9e4a5d]" : "bg-stone-200"}`}
+        className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${checked ? "bg-[#AE343F]" : "bg-stone-200"}`}
       >
         <div
           className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? "translate-x-6" : "translate-x-1"}`}
@@ -406,10 +406,24 @@ function Step1({
 }) {
   return (
     <div>
+      {/* Pricing section */}
+      <div className="mb-6 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
+        <p className="text-2xl font-bold align-end text-[#AE343F]">
+          Redovna cena pozivnice je 5.000 din 💰
+        </p>
+        <p className="font-semibold text-sm text-[#8B2833] mt-2">
+          Iskomuniciraćemo{" "}
+          <small>
+            ukoliko imate kupon ili ostvarujete pravo na neki popust
+          </small>
+        </p>
+      </div>
+
       <StepHeading
         title="Informacije o paru"
         desc="Unesite ime i prezime mladenaca."
       />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
         <Field label="Ime mlade">
           <TextInput
@@ -446,7 +460,7 @@ function Step1({
               onClick={() => updateField("useCyrillic", val)}
               className={`px-5 py-2.5 rounded-xl border text-sm font-medium transition-all ${
                 formData.useCyrillic === val
-                  ? "bg-[#9e4a5d] border-[#9e4a5d] text-white"
+                  ? "bg-[#AE343F] border-[#AE343F] text-white"
                   : "border-stone-200 text-stone-500 hover:border-stone-300"
               }`}
             >
@@ -467,7 +481,7 @@ function Step1({
 
 // ─── Step 2 ───────────────────────────────────────────────────────────────────
 
-const HOURS = Array.from({ length: 18 }, (_, i) => i + 6); // 06–23
+const HOURS = Array.from({ length: 13 }, (_, i) => i + 9); // 09–21
 const MINUTES = ["00", "15", "30", "45"];
 
 function TimePicker({
@@ -480,7 +494,7 @@ function TimePicker({
   const [h, m] = value.split(":") ?? ["18", "00"];
 
   const selectCls =
-    "bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-stone-800 text-base outline-none focus:border-[#9e4a5d] transition-colors cursor-pointer appearance-none text-center font-medium";
+    "bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-stone-800 text-base outline-none focus:border-[#AE343F] transition-colors cursor-pointer appearance-none text-center font-medium";
 
   return (
     <div className="flex items-center gap-2">
@@ -565,7 +579,7 @@ function Step2({
 
         {/* Deadline */}
         <div>
-          <p className={labelCls}>Rok za RSVP prijavu</p>
+          <p className={labelCls}>Rok za potvrdu dolaska</p>
           <DatePicker
             value={formData.submit_until_date}
             onChange={handleDeadlineDateChange}
@@ -587,7 +601,7 @@ function Step2({
 
         {/* Contact phone */}
         <Field label="Vaš kontakt telefon (za naš tim, nije na pozivnici)">
-          <div className="flex items-center border-b border-stone-200 focus-within:border-[#9e4a5d] transition-colors">
+          <div className="flex items-center border-b border-stone-200 focus-within:border-[#AE343F] transition-colors">
             <span className="py-2.5 pl-1 pr-2 text-stone-400 text-base select-none">
               +381
             </span>
@@ -658,7 +672,8 @@ function Step3({
         />
         {formData.useCyrillic && (
           <p className="text-xs text-stone-400 mt-2">
-            * Ukoliko niste uneli podatke ćirilicom, mi ćemo ih konvertovati za finalni proizvod — ovo je samo pregled.
+            * Ukoliko niste uneli podatke ćirilicom, mi ćemo ih konvertovati za
+            finalni proizvod — ovo je samo pregled.
           </p>
         )}
       </div>
@@ -672,7 +687,7 @@ function Step3({
             onChange={(e) =>
               updateField("scriptFont", e.target.value as ScriptFontType)
             }
-            className="w-full appearance-none bg-white border border-stone-200 rounded-xl px-4 py-3 pr-10 text-stone-800 text-sm font-medium outline-none focus:border-[#9e4a5d] focus:ring-2 focus:ring-[#9e4a5d]/10 transition-all cursor-pointer"
+            className="w-full appearance-none bg-white border border-stone-200 rounded-xl px-4 py-3 pr-10 text-stone-800 text-sm font-medium outline-none focus:border-[#AE343F] focus:ring-2 focus:ring-[#AE343F]/10 transition-all cursor-pointer"
           >
             {availableFonts.map(([key, cfg]) => (
               <option key={key} value={key}>
@@ -710,7 +725,7 @@ function Step3({
             onClick={() => updateField("theme", key)}
             className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
               formData.theme === key
-                ? "border-[#9e4a5d] shadow-md"
+                ? "border-[#AE343F] shadow-md"
                 : "border-stone-100 hover:border-stone-200"
             }`}
           >
@@ -721,7 +736,7 @@ function Step3({
             <p className="text-sm font-semibold text-stone-700">{cfg.name}</p>
             <p className="text-xs text-stone-400 capitalize">{key}</p>
             {formData.theme === key && (
-              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#9e4a5d] flex items-center justify-center">
+              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-white" />
               </div>
             )}
@@ -747,8 +762,8 @@ const VENUE_DEFS: {
     type: "home",
     emoji: "🏠",
     title: "Polazak od kuće",
-    subtitle: "Skup i polazak mladenaca ili svekrve od porodičnog doma",
-    namePlaceholder: "npr. Kuća Jovanović",
+    subtitle: "Polazak svatova od porodičnog doma",
+    namePlaceholder: "npr. Kuća Jovanovića",
     addressPlaceholder: "npr. Cara Dušana 12, Novi Sad",
     timePlaceholder: "npr. 14:00",
   },
@@ -764,9 +779,9 @@ const VENUE_DEFS: {
   {
     type: "ceremony",
     emoji: "💍",
-    title: "Civilno venčanje",
-    subtitle: "Zvanično ili outdoor ceremonijalno venčanje",
-    namePlaceholder: "npr. Matičarska služba / Vila Mir",
+    title: "Građansko venčanje",
+    subtitle: "Ceremonijalno venčanje kod matičara",
+    namePlaceholder: "npr. Matičarska služba / restoran Vila Mir",
     addressPlaceholder: "npr. Bulevar Mihajla Pupina 25",
     timePlaceholder: "npr. 16:00",
   },
@@ -774,7 +789,7 @@ const VENUE_DEFS: {
     type: "hall",
     emoji: "🎊",
     title: "Svečana sala / restoran",
-    subtitle: "Proslava sa večerom, muzikom i plesom",
+    subtitle: "Proslava u sali uz muziku i ples",
     namePlaceholder: "npr. Restoran Elegance",
     addressPlaceholder: "npr. Futoška 44, Novi Sad",
     timePlaceholder: "npr. 18:00",
@@ -810,7 +825,7 @@ function Step4({
             <div
               key={def.type}
               className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
-                active ? "border-[#9e4a5d]/30 shadow-sm" : "border-stone-100"
+                active ? "border-[#AE343F]/30 shadow-sm" : "border-stone-100"
               }`}
             >
               {/* Header row — always visible, click to toggle */}
@@ -818,14 +833,14 @@ function Step4({
                 type="button"
                 onClick={() => toggleLocation(i)}
                 className={`w-full flex items-center gap-4 px-5 py-4 text-left transition-colors ${
-                  active ? "bg-[#9e4a5d]/5" : "bg-stone-50/60 hover:bg-stone-50"
+                  active ? "bg-[#AE343F]/5" : "bg-stone-50/60 hover:bg-stone-50"
                 }`}
               >
                 {/* Toggle circle */}
                 <div
                   className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
                     active
-                      ? "border-[#9e4a5d] bg-[#9e4a5d]"
+                      ? "border-[#AE343F] bg-[#AE343F]"
                       : "border-stone-300 bg-white"
                   }`}
                 >
@@ -847,7 +862,7 @@ function Step4({
 
                 {/* Time badge when filled */}
                 {active && loc.time && (
-                  <span className="text-xs font-bold text-[#9e4a5d] bg-[#9e4a5d]/10 px-2.5 py-1 rounded-full shrink-0">
+                  <span className="text-xs font-bold text-[#AE343F] bg-[#AE343F]/10 px-2.5 py-1 rounded-full shrink-0">
                     {loc.time}
                   </span>
                 )}
@@ -914,7 +929,7 @@ function Step5({
       <div className="space-y-6">
         <Field label="Tagline (citat / poruka u heroju pozivnice)">
           <textarea
-            className="w-full border-b border-stone-200 focus:border-[#9e4a5d] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
+            className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
             value={formData.tagline}
             onChange={(e) => updateField("tagline", e.target.value)}
@@ -923,7 +938,7 @@ function Step5({
         </Field>
         <Field label="Zahvalnica (poruka na dnu pozivnice)">
           <textarea
-            className="w-full border-b border-stone-200 focus:border-[#9e4a5d] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
+            className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
             value={formData.thankYouFooter}
             onChange={(e) => updateField("thankYouFooter", e.target.value)}
@@ -948,41 +963,42 @@ function Step6({
     <div>
       <StepHeading
         title="Poslednji korak!"
-        desc="Izaberite šta želite da se prikaže na pozivnici. RSVP formu ćemo podesiti mi."
+        desc="Izaberite šta želite da se prikaže na pozivnici. RSVP formu za potvrdu dolaska ćemo podesiti mi."
       />
       <div className="space-y-6">
         {/* Info box */}
-        <div className="bg-[#9e4a5d]/5 border border-[#9e4a5d]/15 rounded-2xl px-5 py-4 text-sm text-[#7a3a4a] leading-relaxed">
-          <p className="font-semibold mb-1">🎉 Gotovo je skoro gotovo!</p>
+        <div className="bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl px-5 py-4 text-sm text-[#8B2833] leading-relaxed">
+          <p className="font-semibold mb-1">🎉 Skoro sve je spremno!</p>
           <p>
             Google formu za prijavljivanje gostiju, odbrojavanje i mapu ćemo
-            podesiti sami — vi samo kliknite <em>Pošalji pozivnicu</em> i mi
-            ćemo se pobrinuti za sve tehničke detalje.
+            podesiti sami — vi samo kliknite <em>Pošalji zahtev</em> i mi ćemo
+            se pobrinuti za sve tehničke detalje.
           </p>
         </div>
 
         <div className="space-y-5">
           <p className={labelCls}>Šta prikazati gostima?</p>
+          <div></div>
 
           <Toggle
             checked={formData.countdown_enabled}
             onChange={(v) => updateField("countdown_enabled", v)}
-            label="Odbrojavanje do venčanja (sat, minuti, dani)"
+            label="Odbrojavanje do venčanja (dani, sati, minuti, sekunde)"
           />
           <Toggle
             checked={formData.map_enabled}
             onChange={(v) => updateField("map_enabled", v)}
-            label="Interaktivna mapa do lokacije"
+            label="Interaktivna google mapa do lokacije sale"
           />
         </div>
 
         <Field label="Posebne napomene ili zahtevi (opciono)">
           <textarea
-            className="w-full border-b border-stone-200 focus:border-[#9e4a5d] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
+            className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
             value={formData.wishes}
             onChange={(e) => updateField("wishes", e.target.value)}
-            placeholder="npr. Zelim da pozivnica bude na ćirilici, ili posebne boje koje volim..."
+            placeholder="Ovde napišite ukoliko imate posebne zahteve ili napomene..."
           />
         </Field>
       </div>
@@ -993,15 +1009,33 @@ function Step6({
 // ─── Raw JSON generator ───────────────────────────────────────────────────────
 
 function generateRawJson(formData: FormData): string {
-  const locStr = formData.locations
-    .filter((l) => l.enabled)
+  // Only hall location
+  const hallLocStr = formData.locations
+    .filter((l) => l.enabled && l.type === "hall")
     .map(
       (l) =>
         `    { name: "${l.name}", time: "${l.time}", address: "${l.address}", map_url: "TODO", type: "${l.type}" }`,
     )
     .join(",\n");
 
+  // Timeline from all enabled locations
+  const timelineStr = formData.locations
+    .filter((l) => l.enabled)
+    .map((l) => {
+      const typeToIcon: Record<string, string> = {
+        home: "Home",
+        church: "Church",
+        ceremony: "Heart",
+        hall: "Utensils",
+      };
+      const icon = typeToIcon[l.type] || "MapPin";
+      return `    { title: "${l.name}", time: "${l.time}", description: "", icon: "${icon}" }`;
+    })
+    .join(",\n");
+
   const lines = [
+    `import { WeddingData } from "@/app/pozivnica/[slug]/types";`,
+    ``,
     `const weddingData: WeddingData = {`,
     `  theme: "${formData.theme}",`,
     `  scriptFont: "${formData.scriptFont}",`,
@@ -1013,11 +1047,13 @@ function generateRawJson(formData: FormData): string {
     `  submit_until: "${formData.submit_until}",`,
     `  tagline: "${formData.tagline}",`,
     `  thankYouFooter: "${formData.thankYouFooter}",`,
-    `  locations: [\n${locStr}\n  ],`,
-    `  timeline: [], // TODO: build from locations`,
+    `  locations: [\n${hallLocStr}\n  ],`,
+    `  timeline: [\n${timelineStr}\n  ],`,
     `  countdown_enabled: ${formData.countdown_enabled},`,
     `  map_enabled: ${formData.map_enabled},`,
     `};`,
+    ``,
+    `export default weddingData;`,
   ];
   return lines.join("\n");
 }
@@ -1031,6 +1067,22 @@ export default function QuestionnaireForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Prepopulate hall venue time if it's already enabled
+  React.useEffect(() => {
+    const hallVenue = formData.locations[3];
+    if (
+      hallVenue.enabled &&
+      formData.event_time &&
+      hallVenue.time !== formData.event_time
+    ) {
+      setFormData((prev) => {
+        const locations = [...prev.locations];
+        locations[3] = { ...locations[3], time: prev.event_time };
+        return { ...prev, locations };
+      });
+    }
+  }, [formData.event_time]);
 
   const updateField = <K extends keyof FormData>(
     key: K,
@@ -1075,7 +1127,12 @@ export default function QuestionnaireForm() {
   const toggleLocation = (idx: number) =>
     setFormData((prev) => {
       const locations = [...prev.locations];
+      const wasEnabled = locations[idx].enabled;
       locations[idx] = { ...locations[idx], enabled: !locations[idx].enabled };
+      // Prepopulate time for hall venue when enabling
+      if (!wasEnabled && idx === 3 && formData.event_time) {
+        locations[idx] = { ...locations[idx], time: formData.event_time };
+      }
       return { ...prev, locations };
     });
 
@@ -1159,17 +1216,17 @@ export default function QuestionnaireForm() {
   if (isSubmitted) {
     return (
       <div className="bg-white rounded-3xl shadow-sm border border-stone-100 p-12 text-center max-w-2xl mx-auto">
-        <div className="w-20 h-20 bg-[#9e4a5d] rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-[#9e4a5d]/25">
+        <div className="w-20 h-20 bg-[#AE343F] rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-[#AE343F]/25">
           <CheckCircle2 size={40} className="text-white" />
         </div>
-        <h2 className="text-3xl font-serif text-stone-800 mb-4">
+        <h2 className="text-3xl font-serif text-[#AE343F] mb-4">
           Hvala, {formData.bride} i {formData.groom}!
         </h2>
-        <p className="text-stone-500 text-lg mb-3">
+        <p className="text-[#8B2833] text-lg mb-3">
           Uspešno smo primili sve podatke za vašu pozivnicu.
         </p>
         {formData.event_date_only && (
-          <p className="text-stone-400 mb-8">
+          <p className="text-[#AE343F]/70 mb-8">
             Venčanje:{" "}
             {new Date(
               formData.event_date_only + "T12:00:00",
@@ -1180,7 +1237,7 @@ export default function QuestionnaireForm() {
             })}
           </p>
         )}
-        <p className="text-stone-400 text-sm">
+        <p className="text-[#8B2833] text-sm">
           Uskoro ćemo napraviti vašu pozivnicu i kontaktirati vas.
         </p>
       </div>
@@ -1194,16 +1251,16 @@ export default function QuestionnaireForm() {
       {/* Progress indicator */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-3">
-          <span className="text-sm font-medium text-stone-500">
+          <span className="text-sm font-medium text-[#8B2833]">
             {STEP_TITLES[step - 1]}
           </span>
-          <span className="text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
+          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#AE343F]">
             Korak {step} od {TOTAL_STEPS}
           </span>
         </div>
-        <div className="w-full h-1 bg-stone-100 rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-[#AE343F]/15 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-[#9e4a5d] rounded-full"
+            className="h-full bg-[#AE343F] rounded-full"
             initial={false}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.4 }}
@@ -1213,8 +1270,8 @@ export default function QuestionnaireForm() {
           {Array.from({ length: TOTAL_STEPS }, (_, i) => (
             <div
               key={i}
-              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                i + 1 <= step ? "bg-[#9e4a5d]" : "bg-stone-200"
+              className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${
+                i + 1 <= step ? "bg-[#AE343F]" : "bg-[#AE343F]/25"
               }`}
             />
           ))}
@@ -1280,7 +1337,7 @@ export default function QuestionnaireForm() {
             <button
               type="button"
               onClick={goNext}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#9e4a5d] text-white hover:bg-[#7a3a4a] transition-all font-medium text-sm shadow-md shadow-[#9e4a5d]/20"
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#8B2833] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20"
             >
               Dalje
               <ChevronRight size={16} />
@@ -1290,7 +1347,7 @@ export default function QuestionnaireForm() {
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#9e4a5d] text-white hover:bg-[#7a3a4a] transition-all font-medium text-sm shadow-md shadow-[#9e4a5d]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#8B2833] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
@@ -1299,7 +1356,7 @@ export default function QuestionnaireForm() {
                 </>
               ) : (
                 <>
-                  Pošalji pozivnicu
+                  Pošalji zahtev
                   <Send size={16} />
                 </>
               )}

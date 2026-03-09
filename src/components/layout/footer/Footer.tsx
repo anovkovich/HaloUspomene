@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
             />
             <p className="text-[#F5F4DC]/40 leading-relaxed mb-4">
               Iznajmljivanje vintage retro telefona za audio poruke na
-              venčanjima. Audio knjiga utisaka — sačuvajte glasove jer ljubav
+              venčanjima. Audio knjiga uspomena — sačuvajte glasove jer ljubav
               zaslužuje da se čuje zauvek.
             </p>
             <a

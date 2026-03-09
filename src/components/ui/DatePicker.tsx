@@ -46,15 +46,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
   // Colors based on variant
   const colors = isLight
     ? {
-        accent: "#9e4a5d",
-        accentHover: "#7a3a4a",
+        accent: "#AE343F",
+        accentHover: "#8B2833",
         text: "#1a1a1a",
         textMuted: "#78716c",
         textPlaceholder: "#a8a29e",
         bg: "#faf9f6",
         bgDropdown: "#ffffff",
         border: "#e7e5e4",
-        borderFocus: "#9e4a5d",
+        borderFocus: "#AE343F",
       }
     : {
         accent: "#AE343F",
@@ -104,8 +104,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       setDropdownPos({
-        top: rect.bottom + window.scrollY + 8,
-        left: rect.left + window.scrollX,
+        top: rect.bottom + 8,
+        left: rect.left,
         width: rect.width,
       });
     }
@@ -201,9 +201,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
         onClick={() => (isOpen ? setIsOpen(false) : handleOpen())}
         className={`w-full flex items-center justify-between py-3 px-4 text-left focus:outline-none transition-all group ${
           isLight
-            ? "bg-[#faf9f6] border border-stone-200 rounded-xl focus:border-[#9e4a5d] focus:ring-2 focus:ring-[#9e4a5d]/10"
+            ? "bg-[#faf9f6] border border-stone-200 rounded-xl focus:border-[#AE343F] focus:ring-2 focus:ring-[#AE343F]/10"
             : "bg-transparent border-b border-white/10 focus:border-[#AE343F]"
-        } ${isOpen && isLight ? "border-[#9e4a5d] ring-2 ring-[#9e4a5d]/10" : ""}`}
+        } ${isOpen && isLight ? "border-[#AE343F] ring-2 ring-[#AE343F]/10" : ""}`}
       >
         <span style={{ color: value ? colors.text : colors.textPlaceholder }}>
           {value ? formatDisplayDate(value) : placeholder}

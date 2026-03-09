@@ -1,6 +1,7 @@
 # @halo_uspomene — Full Strategy & 30-Day Content Calendar
 
 ## Business Profile
+
 - **Name:** HALO uspomene & pozivnice
 - **Instagram:** @halo_uspomene
 - **Website:** halouspomene.rs
@@ -9,15 +10,18 @@
 - **Language:** Serbian (Latin script)
 
 ## Products
+
 1. **AudioGuestBook** — retro rotary phone rental for weddings; guests call and leave voice messages; premium emotional product
 2. **Digital web invitations** — modern digital wedding/event invitations; low-cost entry product
 
 ## Target Audience
+
 - Young women (20–35) recently engaged, planning a wedding in Serbia/ex-YU
 - Trend-aware, Pinterest/Instagram-active, budget-conscious but willing to pay for unique experiences
 - Emotional buyers — they want their wedding to feel special and memorable
 
 ## Account Status (Feb 23, 2026)
+
 - 180 followers, 1.5 months old
 - 15 posts (faceless carousels, 1 Reel)
 - Giveaway Reel: ~100 likes, 200+ comments → grew from 41 to ~180 followers
@@ -27,17 +31,20 @@
 - Stories: ~1/day
 
 ## What Works
+
 - Giveaway Reels with follow+tag mechanic
 - Niche pairing (AudioGuestBook + invitations = same audience, different price points)
 - Daily Stories
 
 ## What Doesn't Work
+
 - Faceless explainer carousels
 - No pricing = conversion killer
 - No social proof
 - Too many highlights (wrong categories)
 
 ## Strategic Priorities
+
 1. Add pricing visibility immediately (bio or pinned Story)
 2. Run monthly giveaways (digital invitations = zero cost)
 3. Stop explainer carousels → pivot to emotional Reels + proof-based carousels
@@ -54,14 +61,17 @@
 ---
 
 ## WEEK 1 — Awareness & Hook (Days 1–7)
-*Goal: Stop the scroll. Make people ask "wait, what is this?"*
+
+_Goal: Stop the scroll. Make people ask "wait, what is this?"_
 
 ---
 
 ### Day 1
-**Post 1: [R] — Hook Reel: "Šta je audio gostinska knjiga?"**
+
+**Post 1: [R] — Hook Reel: "Šta je audio knjiga uspomena?"**
 Format: Text on screen + B-roll retro telefona, tiha emotivna muzika
 Caption:
+
 ```
 Zamislite ovo 👇
 
@@ -71,7 +81,7 @@ i ostave vam glasovnu poruku koju ćete čuvati zauvek. 🎙️
 Smeh. Suze. Saveti. Šale.
 Sve u glasu onih koje volite.
 
-To je HALO audio gostinska knjiga. 📞✨
+To je HALO audio knjiga uspomena. 📞✨
 
 Sačuvajte ovaj post ako planirate venčanje 💍
 👇 Tagujte verenika/cu ispod!
@@ -80,14 +90,16 @@ Sačuvajte ovaj post ako planirate venčanje 💍
 ```
 
 **Post 2: [S] — Story: Poll**
-"Da li si čula za audio gostinsku knjigu?"
+"Da li si čula za audio knjigu uspomena?"
+
 - Da, znam šta je ✅
 - Prvi put čujem 👀
 
 ---
 
 ### Day 2
-**Post 1: [C] — Carousel: "5 razloga zašto je audio gostinska knjiga savršena za tvoje venčanje"**
+
+**Post 1: [C] — Carousel: "5 razloga zašto je audio knjiga uspomena savršena za tvoje venčanje"**
 Slide 1: "5 razloga zašto sve mlade žele ovo na venčanju 👇"
 Slide 2: "1. Čuvaš glasove zauvek — ne samo fotografije"
 Slide 3: "2. Gosti ne znaju šta da pišu u knjizi — ali uvek znaju šta da kažu"
@@ -97,11 +109,12 @@ Slide 6: "5. Slušaš poruke na godišnjicu i plačeš od sreće 🥹"
 Slide 7: "Tvoje venčanje zaslužuje uspomene koje traju. Javi nam se 💌"
 
 Caption:
+
 ```
 Fotografije izblede. Videi se retko gledaju.
 Ali glas... glas ostaje. 🎙️
 
-Evo 5 razloga zašto audio gostinska knjiga postaje must-have na srpskim venčanjima 👆
+Evo 5 razloga zašto audio knjiga uspomena postaje must-have na srpskim venčanjima 👆
 
 Koji razlog te je najviše ubedio? Komentariši broj! 👇
 
@@ -114,15 +127,17 @@ Koji razlog te je najviše ubedio? Komentariši broj! 👇
 ---
 
 ### Day 3
+
 **Post 1: [R] — Reel: "POV: Tvoj gost uzima slušalicu..."**
 Format: Tekst na ekranu, POV kadar ruke koja diže slušalicu retro telefona, emotivna muzika
 Caption:
+
 ```
 POV: Tvoja baka uzima slušalicu i ostavlja ti poruku na venčanju 🥹📞
 
 Nećeš moći da je slušaš a da ne zaplačeš.
 
-Ovo je HALO audio gostinska knjiga — iznajmljujemo retro telefone za venčanja i posebne događaje u Srbiji.
+Ovo je HALO audio knjiga uspomena — iznajmljujemo retro telefone za venčanja i posebne događaje u Srbiji.
 
 💌 Pišite nam u DM za rezervaciju i cene.
 
@@ -135,6 +150,7 @@ Pokaži sam telefon izbliza — dugme, slušalica, detalji. "Ovo je naš retro t
 ---
 
 ### Day 4
+
 **Post 1: [C] — Carousel: "Digitalne pozivnice vs. štampane — šta je bolje?"**
 Slide 1: "Digitalne ili štampane pozivnice? 🤔"
 Slide 2: "Štampane: skuplje, traju duže da se naprave, gosti ih gube"
@@ -144,6 +160,7 @@ Slide 5: "Mi pravimo digitalne web pozivnice koje ostavljaju goste bez daha 💌
 Slide 6: "Pogledaj naše dizajne — link u biju 👆"
 
 Caption:
+
 ```
 Štampane pozivnice su lepe. Ali digitalne?
 
@@ -161,6 +178,7 @@ Prevucite desno i vidite razliku 👉
 
 **Story: Poll**
 "Kakve pozivnice planiraš?"
+
 - Štampane 📄
 - Digitalne 💻
 - Još nisam odlučila 🤷‍♀️
@@ -168,9 +186,11 @@ Prevucite desno i vidite razliku 👉
 ---
 
 ### Day 5
+
 **Post 1: [R] — Reel: Unboxing/reveal retro telefona**
 Format: Slow reveal telefona, detalji, estetski kadrovi
 Caption:
+
 ```
 Ovako izgleda naš retro telefon koji stiže na tvoje venčanje 📞✨
 
@@ -186,6 +206,7 @@ Zamislite slušati te poruke na prvu godišnjicu...
 
 **Story: Quiz**
 "Koliko dugo obično traje poruka gostiju na audio gostinskoj knjizi?"
+
 - 10 sekundi
 - 30 sekundi — 1 minut ✅ (tačno)
 - 5 minuta
@@ -193,6 +214,7 @@ Zamislite slušati te poruke na prvu godišnjicu...
 ---
 
 ### Day 6
+
 **Post 1: [C] — Carousel: "Kako izgleda HALO digitalna pozivnica?"**
 Slide 1: "Tvoja pozivnica — kao mini veb sajt 🌐💌"
 Slide 2-5: Mockupi različitih dizajna pozivnica (screenshot ili grafika)
@@ -200,6 +222,7 @@ Slide 6: "Svaka je jedinstvena, rađena po vašoj temi i bojama"
 Slide 7: "DM nam za cene i slobodne termine 💌"
 
 Caption:
+
 ```
 Zaboravite na PDF koji se jedva otvara.
 
@@ -225,9 +248,11 @@ Svaki dizajn radimo po vašim bojama i temi. 🎨
 ---
 
 ### Day 7
+
 **Post 1: [R] — Motivacioni Reel: "Tvoje venčanje = najvažniji dan"**
 Format: Emotivni tekst na ekranu, muzika koja gradi napetost
 Caption:
+
 ```
 Tvoje venčanje je jedan dan.
 
@@ -241,7 +266,7 @@ Glas bake koja ti želi sreću?
 
 Taj glas ostaje. 🎙️
 
-HALO audio gostinska knjiga — uspomene koje traju zauvek.
+HALO audio knjiga uspomena — uspomene koje traju zauvek.
 
 💌 DM za rezervaciju
 📞 halouspomene.rs
@@ -255,13 +280,15 @@ HALO audio gostinska knjiga — uspomene koje traju zauvek.
 ---
 
 ## WEEK 2 — Education & Trust (Days 8–14)
-*Goal: Become the expert they trust. Answer every question before they ask.*
+
+_Goal: Become the expert they trust. Answer every question before they ask._
 
 ---
 
 ### Day 8
-**Post 1: [C] — Carousel: "Kako funkcioniše audio gostinska knjiga? Korak po korak"**
-Slide 1: "Kako funkcioniše HALO audio gostinska knjiga? 📞"
+
+**Post 1: [C] — Carousel: "Kako funkcioniše audio knjiga uspomena? Korak po korak"**
+Slide 1: "Kako funkcioniše HALO audio knjiga uspomena? 📞"
 Slide 2: "1. Rezervišeš telefon — dogovorimo datum i dostavu"
 Slide 3: "2. Telefon stiže na tvoje venčanje, postavimo ga za 5 minuta"
 Slide 4: "3. Gosti dižu slušalicu i ostavljaju poruku"
@@ -270,6 +297,7 @@ Slide 6: "5. Posle venčanja dobijaš sve snimke u jednoj datoteci 🎁"
 Slide 7: "Jednostavno. Emotivno. Nezaboravno."
 
 Caption:
+
 ```
 Puno vas pita: "A kako to uopšte funkcioniše?"
 
@@ -291,9 +319,11 @@ Najteži deo? Odlučiti gde ćete ga postaviti na stolu 😄
 ---
 
 ### Day 9
+
 **Post 1: [R] — Reel: "3 pitanja koja nam se najviše postavljaju"**
 Format: Tekst na ekranu, brze smene slajdova
 Caption:
+
 ```
 3 pitanja koja nam svaki dan stižu u DM 📲
 
@@ -308,6 +338,7 @@ Imate još pitanja? Komentarišite ispod 👇
 
 **Story: Poll**
 "Da li znaš koliko gostiju prosečno ostavi poruku na venčanju?"
+
 - Manje od 20
 - 20–50 ✅ (tačno za prosek)
 - Više od 50
@@ -315,6 +346,7 @@ Imate još pitanja? Komentarišite ispod 👇
 ---
 
 ### Day 10
+
 **Post 1: [C] — Carousel: "Šta dobijamo u paketu?"**
 Slide 1: "Šta tačno dobijate kada iznajmite HALO telefon? 📦"
 Slide 2: "✅ Retro telefon (dostavimo i pokupimo)"
@@ -324,10 +356,11 @@ Slide 5: "✅ Podršku na dan venčanja — uvek smo dostupni"
 Slide 6: "💌 DM za cene i pakete"
 
 Caption:
+
 ```
 Mnogi misle da je komplikovano. Nije. 😊
 
-Evo tačno šta dobijate kada rezervišete HALO audio gostinsku knjigu 👆
+Evo tačno šta dobijate kada rezervišete HALO audio knjigu uspomena 👆
 
 Mi se brinemo o svemu — vi se samo radujete. 🥂
 
@@ -342,9 +375,11 @@ Mi se brinemo o svemu — vi se samo radujete. 🥂
 ---
 
 ### Day 11
+
 **Post 1: [R] — Reel: "Digitalna pozivnica koja ostavlja goste bez daha"**
 Format: Screen recording ili animacija digitalne pozivnice
 Caption:
+
 ```
 Ovako izgleda kada gost otvori vašu digitalnu pozivnicu 💌
 
@@ -367,8 +402,9 @@ Prikaži "stara PDF pozivnica" vs. "naša digitalna pozivnica" — visual compar
 ---
 
 ### Day 12
-**Post 1: [C] — Carousel: "Za koga je audio gostinska knjiga?"**
-Slide 1: "Da li je audio gostinska knjiga za tebe? 🤔"
+
+**Post 1: [C] — Carousel: "Za koga je audio knjiga uspomena?"**
+Slide 1: "Da li je audio knjiga uspomena za tebe? 🤔"
 Slide 2: "Za tebe je ako... voliš jedinstvene detalje na venčanju"
 Slide 3: "Za tebe je ako... imaš goste koji ne koriste društvene mreže"
 Slide 4: "Za tebe je ako... želiš uspomenu koja nije samo fotografija"
@@ -377,8 +413,9 @@ Slide 6: "Nije za tebe ako... nisi za emocije 😄 (šalimo se, to je za svakoga
 Slide 7: "💌 Javi nam se — razgovorimo o tvom venčanju"
 
 Caption:
+
 ```
-Audio gostinska knjiga nije za svako venčanje.
+Audio knjiga uspomena nije za svako venčanje.
 
 Ali ako čitaš ovo i kuca ti srce — verovatno je za tvoje. 🥹
 
@@ -395,8 +432,10 @@ Prevucite i proverite 👉
 ---
 
 ### Day 13
+
 **Post 1: [R] — Reel: "Ideja za devojačku veče koja ih neće zaboraviti"**
 Caption:
+
 ```
 Ideja za devojačko veče koje drugarice nikad neće zaboraviti 👇🎉
 
@@ -417,6 +456,7 @@ Nema boljeg poklona od reči iz srca.
 
 **Story: Poll**
 "Jesi li već planirala devojačko? 🎉"
+
 - Da, imam ideju! ✅
 - Još nisam 🤷‍♀️
 - Neko drugi organizuje 😄
@@ -424,6 +464,7 @@ Nema boljeg poklona od reči iz srca.
 ---
 
 ### Day 14
+
 **Post 1: [C] — Carousel: "5 grešaka koje mlade prave pri izboru pozivnica"**
 Slide 1: "5 grešaka koje mlade prave pri izboru pozivnica 👇"
 Slide 2: "1. Čekaju predugo — dizajner nema slobodnih termina"
@@ -434,6 +475,7 @@ Slide 6: "5. Plaćaju previše za štampu — digitalna je jednako lepa, mnogo j
 Slide 7: "Naše digitalne pozivnice rešavaju sve ovo. 💌"
 
 Caption:
+
 ```
 Greška broj 1 je najčešća — i najskuplja. 😬
 
@@ -450,14 +492,17 @@ Prevucite i proverite da li pravite neku od ovih grešaka 👉
 ---
 
 ## WEEK 3 — Desire & Social Proof (Days 15–21)
-*Goal: Make them want it. Use emotion, visuals, and storytelling.*
+
+_Goal: Make them want it. Use emotion, visuals, and storytelling._
 
 ---
 
 ### Day 15
+
 **Post 1: [R] — Reel: Emotivna priča — "Zamislite..."**
 Format: Tekst na ekranu, spor tempo, emotivna muzika
 Caption:
+
 ```
 Zamislite ovo... 🥹
 
@@ -471,7 +516,7 @@ Smeh prijatelja koji nije znao šta da kaže.
 To nije fantazija.
 To je ono što naši klijenti dobijaju. 📞🎙️
 
-HALO audio gostinska knjiga.
+HALO audio knjiga uspomena.
 Iznajmljujemo u Srbiji. 💌 DM za rezervaciju.
 
 #venčanje #audiouspomene #halouspomene #venčanje2026 #uspomene #emotivnovenčanje
@@ -483,6 +528,7 @@ Naljepnica "Koliko meseci do vašeg venčanja?" — slider
 ---
 
 ### Day 16
+
 **Post 1: [C] — Carousel: "Naše omiljene ideje za postavljanje retro telefona na venčanju"**
 Slide 1: "Gde postaviti HALO telefon na venčanju? 📍"
 Slide 2: "Na ulazu u salu — prvi utisak je sve"
@@ -493,6 +539,7 @@ Slide 6: "Gde god — vaši gosti će ga naći 😄"
 Slide 7: "💌 DM za rezervaciju i savete"
 
 Caption:
+
 ```
 Gde postaviti telefon? Pitanje koje uvek dobijamo! 😄
 
@@ -507,6 +554,7 @@ Gosti vide telefon, nemogu da odole da ne uzmu slušalicu. 🎙️
 
 **Story: Poll**
 "Gde bi stavila retro telefon? 📍"
+
 - Na ulazu
 - Na foto-stolu 📸
 - Pored potpisne knjige
@@ -514,8 +562,10 @@ Gosti vide telefon, nemogu da odole da ne uzmu slušalicu. 🎙️
 ---
 
 ### Day 17
+
 **Post 1: [R] — Reel: "Za nju" — direktno obraćanje mladi**
 Caption:
+
 ```
 Ovo je za tebe, buduća mlado 👰
 
@@ -529,7 +579,7 @@ Ali šta ćeš imati od reči?
 Od glasova?
 Od onih trenutaka koji se ne vide na slikama?
 
-HALO audio gostinska knjiga to čuva za tebe.
+HALO audio knjiga uspomena to čuva za tebe.
 Zauvek. 🎙️💌
 
 📞 Rezerviši danas — link u biju.
@@ -543,6 +593,7 @@ Zauvek. 🎙️💌
 ---
 
 ### Day 18
+
 **Post 1: [C] — Carousel: "Primer digitalne pozivnice — korak po korak"**
 Slide 1: "Ovako nastaje vaša digitalna pozivnica 💌"
 Slide 2: "Korak 1: Šaljete nam temu, boje, i detalje venčanja"
@@ -553,6 +604,7 @@ Slide 6: "Gotovo! Brzo, lako, i prelepo. ✨"
 Slide 7: "💌 DM za cene i narudžbinu"
 
 Caption:
+
 ```
 Ceo proces traje manje od 48 sati. ⚡
 
@@ -572,8 +624,10 @@ Prevucite i vidite kako 👉
 ---
 
 ### Day 19
+
 **Post 1: [R] — Reel: "3 stvari koje mlade žale što nisu uradile na venčanju"**
 Caption:
+
 ```
 3 stvari koje mlade najčešće kažu da žale što nisu uradile 👇
 
@@ -583,7 +637,7 @@ Caption:
 
 HALO rešava sva tri. 📞💌
 
-Audio gostinska knjiga + digitalne pozivnice.
+Audio knjiga uspomena + digitalne pozivnice.
 Jedan poziv — kompletan paket.
 
 💌 DM za paket ponudu.
@@ -592,11 +646,12 @@ Jedan poziv — kompletan paket.
 ```
 
 **Story: Bundle promo**
-"Znate li da nudimo PAKET — audio gostinska knjiga + digitalna pozivnica? 💌📞 Pišite nam za posebnu cenu!"
+"Znate li da nudimo PAKET — audio knjiga uspomena + digitalna pozivnica? 💌📞 Pišite nam za posebnu cenu!"
 
 ---
 
 ### Day 20
+
 **Post 1: [C] — Carousel: "Zašto baš retro telefon?"**
 Slide 1: "Zašto baš RETRO telefon? 📞✨"
 Slide 2: "Jer izgleda neverovatno na fotografijama 📸"
@@ -607,6 +662,7 @@ Slide 6: "Jer niko drugi na venčanju neće imati ovo"
 Slide 7: "💌 Rezerviši pre nego što se popunimo"
 
 Caption:
+
 ```
 Retro telefon nije samo ukrasan detalj.
 
@@ -626,8 +682,10 @@ Close-up kadrovi telefona — za estetiku
 ---
 
 ### Day 21
+
 **Post 1: [R] — Giveaway Reel #2**
 Caption:
+
 ```
 POKLON ZA BUDUĆU MLADU 🎁💍
 
@@ -649,11 +707,13 @@ Countdown sticker do kraja nagradne igre
 ---
 
 ## WEEK 4 — Action & Conversion (Days 22–30)
-*Goal: Turn followers into leads. Make it easy to buy.*
+
+_Goal: Turn followers into leads. Make it easy to buy._
 
 ---
 
 ### Day 22
+
 **Post 1: [C] — Carousel: "Naši paketi i cene" (OBAVEZNO — pricing reveal)**
 Slide 1: "Konačno — cene su tu! 💌"
 Slide 2: "PAKET POZIVNICE — [cena] din / Digitalna web pozivnica po vašoj temi"
@@ -663,6 +723,7 @@ Slide 5: "Šta je uključeno u svaki paket? 👆 Prevucite nazad"
 Slide 6: "💌 Pišite nam — rezervišemo u roku od 24h"
 
 Caption:
+
 ```
 Puno vas je pitalo — evo odgovora! 💌
 
@@ -681,8 +742,10 @@ Dodajte sve slidove u Highlight "Cene & paketi"
 ---
 
 ### Day 23
+
 **Post 1: [R] — Reel: "Kako da rezervišeš?"**
 Caption:
+
 ```
 Rezervacija je lakša nego što misliš 👇
 
@@ -704,6 +767,7 @@ To je sve. 😊
 ---
 
 ### Day 24
+
 **Post 1: [C] — Carousel: "FAQ — Sve što ste hteli da znate"**
 Slide 1: "Odgovaramo na vaša pitanja 📬"
 Slide 2: "P: Da li dostavljate van Beograda? O: Da, dostavljamo širom Srbije!"
@@ -714,6 +778,7 @@ Slide 6: "P: Mogu li pre da testiram? O: Naravno! DM nam pa dogovorimo"
 Slide 7: "Još pitanja? Komentarišite ispod! 👇"
 
 Caption:
+
 ```
 Sakupili smo najčešća pitanja i konačno odgovorili na sva! 📬
 
@@ -730,8 +795,10 @@ Nema ga? Pitajte u komentarima — odgovaramo na svaki! 💬
 ---
 
 ### Day 25
+
 **Post 1: [R] — Reel: "Šta kažu buduće mlade" (simuliran testimonijal ili direct address)**
 Caption:
+
 ```
 Svaki dan nam stižu poruke poput ovih 💌
 
@@ -753,7 +820,8 @@ Ako i ti planiraš venčanje — mi smo tu. 💌
 ---
 
 ### Day 26
-**Post 1: [C] — Carousel: "Devojačko veče + audio gostinska knjiga = 🔥"**
+
+**Post 1: [C] — Carousel: "Devojačko veče + audio knjiga uspomena = 🔥"**
 Slide 1: "Ideja za devojačko koja će ostaviti mladu bez teksta 🎉"
 Slide 2: "Postavite retro telefon usred stola"
 Slide 3: "Svaka drugarica snima poruku za mladu"
@@ -762,6 +830,7 @@ Slide 5: "Garantovane suze. Garantovan smeh. Garantovano nezaboravno."
 Slide 6: "💌 DM za rezervaciju za devojačko"
 
 Caption:
+
 ```
 Organizuješ devojačko? 🎉
 
@@ -776,6 +845,7 @@ Prevucite i vidite kako 👉
 
 **Story: Poll**
 "Organizuješ nečije devojačko? 🎉"
+
 - Da!
 - Uskoro planiram
 - Nisam
@@ -783,13 +853,15 @@ Prevucite i vidite kako 👉
 ---
 
 ### Day 27
+
 **Post 1: [R] — Reel: "Jedan detalj koji menja sve"**
 Caption:
+
 ```
 Jedan detalj. Toliko pamćenja. 📞
 
 Fotografije kažu "kako ste izgledali".
-Audio gostinska knjiga kaže "kako su se svi osećali".
+Audio knjiga uspomena kaže "kako su se svi osećali".
 
 To je razlika. 🥹
 
@@ -806,6 +878,7 @@ HALO uspomene — iznajmljujemo retro telefone za venčanja u Srbiji.
 ---
 
 ### Day 28
+
 **Post 1: [C] — Carousel: "Top 3 kombinacije pozivnica + detalja venčanja"**
 Slide 1: "Top 3 kombinacije za savršeno venčanje ✨"
 Slide 2: "Boho tema 🌿 + digitalna pozivnica u zemljanim bojama + retro telefon"
@@ -815,6 +888,7 @@ Slide 5: "Koja kombinacija odgovara vašoj temi? 💬"
 Slide 6: "💌 DM — kreiramo po vašim bojama"
 
 Caption:
+
 ```
 Svako venčanje priča svoju priču. 📖
 
@@ -833,8 +907,10 @@ Prevucite i nađite svoju kombinaciju 👉
 ---
 
 ### Day 29
+
 **Post 1: [R] — Reel: "Za kraj meseca — zahvalnost + poziv na akciju"**
 Caption:
+
 ```
 Hvala vam svima koji pratite HALO od prvog dana. 🥹
 
@@ -859,6 +935,7 @@ Ako tražite savršenu pozivnicu — to je naš posao.
 ---
 
 ### Day 30
+
 **Post 1: [C] — Carousel: "30 dana HALO — šta smo naučili"**
 Slide 1: "30 dana HALO-a. Evo šta smo naučili. 🥹"
 Slide 2: "Naučili smo da buduće mlade žele nešto posebno — ne samo standard"
@@ -868,6 +945,7 @@ Slide 5: "I naučili smo da ste vi — naša zajednica — neverovatni 💌"
 Slide 6: "Hvala. Do sledećeg meseca — biće još lepše. 🥂"
 
 Caption:
+
 ```
 30 dana. 180+ pratilaca. Bezbroj poruka i komentara.
 
@@ -889,7 +967,9 @@ Mesec 2 — počinje. 🚀
 ---
 
 ## Daily Story Framework (every day)
+
 Pored postova, svaki dan jedna od ovih Story ideja:
+
 - Poll o temama venčanja
 - Question box za pitanja
 - "Tip dana" za planiranje venčanja
@@ -902,6 +982,7 @@ Pored postova, svaki dan jedna od ovih Story ideja:
 ---
 
 ## Hashtag banka
+
 **Primarni:** #venčanje #venčanje2026 #halouspomene #audiogostainska #digitalnepozivnice
 **Sekundarni:** #mladagodiname #detaljivenčanja #venčanjeideje #modernomladenstvo #srpskamladagodiname
 **Niche:** #audiogostainska #retrotelefon #uspomene #emotivnovenčanje #devojačko #idejezadevojačko

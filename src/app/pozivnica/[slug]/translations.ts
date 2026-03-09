@@ -98,7 +98,7 @@ export const latinTranslations: Translations = {
   attendingNoSub: "Sve najlepše!",
   guestCount: "Broj osoba (uključujući Vas)",
   additionalNotes: "Dodatne napomene",
-  notesPlaceholder: "Alergije, posebni zahtevi, poruka mladencima...",
+  notesPlaceholder: "Posebni zahtevi ili poruka mladencima...",
   sending: "Šaljem...",
   confirmAttendance: "Potvrdi dolazak",
 
@@ -181,7 +181,7 @@ export const cyrillicTranslations: Translations = {
   attendingNoSub: "Све најлепше!",
   guestCount: "Број особа (укључујући Вас)",
   additionalNotes: "Додатне напомене",
-  notesPlaceholder: "Алергије, посебни захтеви, порука младенцима...",
+  notesPlaceholder: "Посебни захтеви или порука младенцима...",
   sending: "Шаљем...",
   confirmAttendance: "Потврди долазак",
 

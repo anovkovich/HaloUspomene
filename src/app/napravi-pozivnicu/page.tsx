@@ -14,18 +14,15 @@ export default function NapraviPozivnicuPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[#faf9f6] pt-28 pb-20">
+      <main className="min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6] pt-28 pb-20">
         <div className="container mx-auto px-4 max-w-3xl">
           <div className="text-center mb-12">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#9e4a5d] mb-4">
-              Halo Pozivnice
-            </p>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-stone-800 mb-5">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#AE343F] mb-5">
               Napravite svoju pozivnicu
             </h1>
-            <p className="text-stone-400 text-lg max-w-xl mx-auto">
-              Popunite upitnik u 7 koraka — mi ćemo sve ostalo uraditi i
-              pozivnica će biti gotova za 24h.
+            <p className="text-[#8B2833] text-lg max-w-xl mx-auto">
+              Popunite upitnik u 6 koraka — mi ćemo sve ostalo uraditi i Vaša
+              pozivnica će biti gotova za 24h
             </p>
           </div>
 

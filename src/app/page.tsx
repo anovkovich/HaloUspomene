@@ -17,8 +17,8 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
-        <Concept />
         <HowItWorks />
+        <Concept />
         <Packages />
         <Testimonials />
         <FAQ />
@@ -47,75 +47,78 @@ export default function Home() {
         </section>
 
         {/* Wedding Invitation Promo Section */}
-        <section className="py-16 sm:py-20 bg-gradient-to-b from-[#faf9f6] to-[#f5f0eb] relative overflow-hidden">
+        <section className="py-16 sm:py-20 bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6] relative overflow-hidden">
           {/* Decorative elements */}
           <div className="absolute top-0 left-1/4 w-64 h-64 bg-[#d4af37]/5 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#d4af37]/5 rounded-full blur-3xl" />
 
           <div className="container mx-auto px-4 max-w-4xl relative z-10">
             <div className="bg-white rounded-3xl p-8 sm:p-10 md:p-12 shadow-xl border border-stone-100 text-center">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#d4af37]/10 rounded-full mb-6">
-                <Sparkles size={16} className="text-[#d4af37]" />
-                <span className="text-sm font-medium text-[#d4af37] uppercase tracking-widest">
-                  Novo u ponudi
-                </span>
-                <Sparkles size={16} className="text-[#d4af37]" />
-              </div>
-
               {/* Hearts decoration */}
               <div className="flex items-center justify-center gap-3 mb-6">
                 <Heart
                   size={24}
-                  className="text-[#d4af37]/30"
+                  className="text-[#AE343F]/30"
                   fill="currentColor"
                 />
                 <Heart
                   size={32}
-                  className="text-[#d4af37]"
+                  className="text-[#AE343F]"
                   fill="currentColor"
                 />
                 <Heart
                   size={24}
-                  className="text-[#d4af37]/30"
+                  className="text-[#AE343F]/30"
                   fill="currentColor"
                 />
               </div>
 
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#1a1a1a] mb-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#AE343F] mb-4">
                 Digitalne Pozivnice
               </h2>
 
-              <p className="text-stone-500 text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-                Želite jedinstvenu digitalnu pozivnicu za Vaše venčanje?
-                Kreiramo personalizovanu web stranicu sa svim detaljima koju
-                možete podeliti sa gostima jednim klikom.
+              <p className="text-[#8B2833] text-base max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+                Zaboravite na klasične pozivnice — naša digitalna rešenja
+                omogućavaju vam da ostavite trajan utisak. Gosti mogu lako
+                potvrditi dolazak, saznati sve detalje, brzo i lako.
               </p>
 
               {/* Features */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
                 {[
                   {
-                    title: "Personalizovan dizajn",
-                    desc: "U dogovoru sa vama",
+                    title: "🎨 Personalizovan dizajn",
+                    desc: "Odaberite temu, boju i font po želji",
                   },
                   {
-                    title: "Forma za potvrđivanje",
-                    desc: "Pratite potvrde gostiju",
+                    title: "📝 RSVP forma",
+                    desc: "Pratite potvrde za dolazak gostiju",
                   },
                   {
-                    title: "Jedan link za deljenje",
-                    desc: "Sva magija na jednom mestu",
+                    title: "⏱️ Odbrojavanje",
+                    desc: "Interaktivni brojač do vašeg velikog dana",
+                  },
+                  {
+                    title: "🗺️ Google mapa",
+                    desc: "Pregled lokacija i vreme svečanog dana",
+                  },
+                  {
+                    title: "🔗 Jedan link",
+                    desc: "Sve informacije na jednoj web stranici",
+                  },
+                  {
+                    title: "📱 Mobile first",
+                    desc: "Savršeno izgleda na svim uređajima",
                   },
                 ].map((feature) => (
                   <div
                     key={feature.title}
-                    className="p-4 bg-[#faf9f6] rounded-2xl"
+                    className="p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl"
                   >
-                    <p className="font-medium text-[#1a1a1a]">
+                    <p className="font-semibold text-[#AE343F] mb-1">
                       {feature.title}
                     </p>
-                    <p className="text-sm text-stone-400">{feature.desc}</p>
+                    <p className="text-sm text-[#8B2833]">{feature.desc}</p>
                   </div>
                 ))}
               </div>
@@ -123,7 +126,7 @@ export default function Home() {
               {/* CTA Button */}
               <Link
                 href="/napravi-pozivnicu"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-[#1a1a1a] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#333] transition-all rounded-full group"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full group"
                 data-track="cta_click"
                 data-track-cta-name="pozivnica_cta"
                 data-track-cta-location="promo_section"
@@ -135,15 +138,25 @@ export default function Home() {
                 />
               </Link>
 
-              {/* Discount banner */}
-              <div className="mt-8 p-4 bg-gradient-to-r from-[#AE343F]/10 via-[#AE343F]/5 to-[#AE343F]/10 rounded-2xl border border-[#AE343F]/20">
-                <p className="text-[#AE343F] font-semibold">
-                  <span className="text-xl">-30%</span> na digitalnu pozivnicu
-                  uz HALO Uspomene telefon
-                </p>
-                <p className="text-stone-500 text-sm mt-1">
-                  Rezervišite audio guest book i ostvarite popust na pozivnicu
-                </p>
+              {/* Pricing & Discount banner */}
+              <div className="mt-10 space-y-4">
+                <div className="p-5 bg-[#AE343F] text-white rounded-2xl text-center">
+                  <p className="text-sm opacity-90 mb-1">Redovna cena svega:</p>
+                  <p className="text-3xl font-bold">5.000 din</p>
+                  <p className="text-sm opacity-75 mt-2">
+                    Kompletna digitalna pozivnica sa svim funkcijama
+                  </p>
+                </div>
+                <div className="p-4 bg-gradient-to-r from-[#AE343F]/10 via-[#AE343F]/5 to-[#AE343F]/10 rounded-2xl border border-[#AE343F]/20">
+                  <p className="text-[#AE343F] font-semibold">
+                    <span className="text-lg">-30%</span> popusta uz Audio
+                    Knjigu Uspomena → 3.500 din
+                  </p>
+                  <p className="text-[#8B2833] text-sm mt-1">
+                    Audio Retro Telefon + Digitalna Pozivnica = Nerocenljiva
+                    vrednost
+                  </p>
+                </div>
               </div>
             </div>
           </div>

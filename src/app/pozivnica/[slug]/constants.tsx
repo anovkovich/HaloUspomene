@@ -81,7 +81,7 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
   classic_rose: {
     name: "Classic Rose",
     colors: {
-      primary: "#9e4a5d", // Dusty rose
+      primary: "#AE343F", // Dusty rose
       primaryLight: "#c4899a",
       primaryMuted: "rgba(158, 74, 93, 0.12)",
       background: "#ffffff",
@@ -92,8 +92,8 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       textLight: "#9a8b8f",
       border: "rgba(158, 74, 93, 0.2)",
       borderLight: "rgba(158, 74, 93, 0.1)",
-      waxSeal: "#9e4a5d",
-      waxSealDark: "#7a3a4a",
+      waxSeal: "#AE343F",
+      waxSealDark: "#8B2833",
     },
     style: {
       radius: "md",

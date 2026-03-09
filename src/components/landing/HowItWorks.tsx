@@ -1,5 +1,6 @@
 import React from "react";
-import { Award, Check } from "lucide-react";
+import { Award, Check, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const HowItWorks: React.FC = () => {
   return (
@@ -92,7 +93,11 @@ const HowItWorks: React.FC = () => {
                 Najpovoljniji u Srbiji
               </p>
               <p className="text-[#F5F4DC] font-serif text-4xl font-bold leading-none mb-3">
-                Već od<span className="hidden sm:inline"><br /></span><span className="sm:hidden"> </span>9.000 din
+                Već od
+                <span className="hidden sm:inline">
+                  <br />
+                </span>
+                <span className="sm:hidden"> </span>9.000 din
               </p>
               <div className="space-y-1.5 mt-4">
                 {[
@@ -188,26 +193,40 @@ const HowItWorks: React.FC = () => {
           </div>
 
           {/* — Digital invite card — */}
-          <div className="bg-[#AE343F]/10 border border-[#AE343F]/20 rounded-3xl p-7 sm:p-8 flex flex-col justify-between hover:border-[#AE343F]/40 transition-colors">
+          <div className="bg-gradient-to-br from-[#AE343F]/30 to-[#8B2833]/40 border border-[#AE343F]/60 rounded-3xl p-7 sm:p-8 flex flex-col justify-between hover:border-[#AE343F]/80 transition-colors group shadow-lg shadow-[#AE343F]/20">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#AE343F] mb-4">
                 Digitalna pozivnica
               </p>
-              <h3 className="text-[#F5F4DC] font-serif text-2xl leading-tight mb-3">
-                Web pozivnica sa RSVP sistemom
-              </h3>
-              <p className="text-[#F5F4DC]/70 text-sm leading-relaxed">
-                Personalizovana stranica za Vaše venčanje — odbrojavanje, mapa,
-                potvrda dolaska.
+              <p className="text-[#F5F4DC]/70 text-sm leading-relaxed mb-4">
+                Personalizovana web stranica sa svim detaljima Vašeg venčanja —
+                RSVP forma za potvrdu dolaska, interaktivna mapa lokacija,
+                odbrojavanje do velikog dana.
               </p>
+              <div className="space-y-2 mb-6">
+                {[
+                  "6 dizajnerskih tema na izbor",
+                  "Brzo i jednostavno konfigurisanje",
+                ].map((feature) => (
+                  <div key={feature} className="flex items-center gap-2">
+                    <Check size={14} className="text-[#AE343F] shrink-0" />
+                    <span className="text-[#F5F4DC]/60 text-xs">{feature}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="mt-6 flex items-center justify-between">
-              <span className="text-[#F5F4DC]/60 text-sm line-through">
-                5.000 din
-              </span>
-              <span className="px-3 py-1.5 bg-[#AE343F]/20 border border-[#AE343F]/30 rounded-full text-[#AE343F] text-xs font-bold">
-                3.500 din uz AGB − 30%
-              </span>
+            <div className="space-y-4 mt-auto">
+              <div className="flex gap-4 items-center justify-between">
+                <span className=" text-[#F5F4DC] text-xs font-bold">
+                  3.500 din uz bundle popust!
+                </span>
+                <Link
+                  href="/napravi-pozivnicu"
+                  className="w-full py-3 px-4 bg-[#AE343F] text-white text-sm font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 hover:bg-white hover:text-[#AE343F] transition-all shadow-lg shadow-[#AE343F]/40"
+                >
+                  Kreirajte Vašu pozivnicu
+                </Link>
+              </div>
             </div>
           </div>
         </div>

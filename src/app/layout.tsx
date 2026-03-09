@@ -115,7 +115,7 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Iznajmljivanje audio guest book telefona za venčanja i proslave u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga utisaka u Novom Sadu sa dostavom u Beograd, Čačak, Niš i sve druge gradove. Rezervacija i cena - kontakt.",
+    "Iznajmljivanje audio guest book telefona za venčanja i proslave u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga uspomena u Novom Sadu sa dostavom u Beograd, Čačak, Niš i sve druge gradove. Rezervacija i cena - kontakt.",
 
   keywords: [
     "audio guest book venčanje",
@@ -132,6 +132,7 @@ export const metadata: Metadata = {
     "venčanje ideje Srbija",
     "telefon za poruke na svadbi",
     "audio knjiga utisaka",
+    "audio knjiga uspomena",
     "retro telefon za svadbe",
     "iznajmljivanje audio guest book-a",
     "audio guest book cena",
@@ -177,7 +178,7 @@ export const metadata: Metadata = {
     title:
       "Audio Guest Book Srbija — Iznajmljivanje Retro Telefona za Venčanje | HALO Uspomene",
     description:
-      "Iznajmljivanje audio guest book telefona za venčanja i proslave u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga utisaka u Novom Sadu sa dostavom u Beograd, Čačak, Niš i sve druge gradove. Rezervacija i cena - kontakt.",
+      "Iznajmljivanje audio guest book telefona za venčanja i proslave u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga uspomena u Novom Sadu sa dostavom u Beograd, Čačak, Niš i sve druge gradove. Rezervacija i cena - kontakt.",
     images: [
       {
         url: "/images/gallery/og-image.png",
@@ -193,7 +194,7 @@ export const metadata: Metadata = {
     title:
       "Audio Guest Book Srbija — Iznajmljivanje Retro Telefona za Venčanje | HALO Uspomene",
     description:
-      "Iznajmljivanje audio guest book telefona za venčanja i proslave u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga utisaka u Novom Sadu sa dostavom u Beograd, Čačak, Niš i sve druge gradove. Rezervacija i cena - kontakt.",
+      "Iznajmljivanje audio guest book telefona za venčanja i proslave u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga uspomena u Novom Sadu sa dostavom u Beograd, Čačak, Niš i sve druge gradove. Rezervacija i cena - kontakt.",
     images: ["/images/gallery/og-image.png"],
   },
 
@@ -244,11 +245,12 @@ export default function RootLayout({
     alternateName: [
       "Audio Guest Book Srbija",
       "Audio Knjiga Utisaka",
+      "Audio Knjiga Uspomena",
       "Telefon za Poruke na Svadbi",
       "Retro Telefon za Venčanja",
     ],
     description:
-      "Iznajmljivanje audio guest book telefona za venčanja u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga utisaka sa dostavom u Beograd, Novi Sad i sve gradove. Rezervacija i cena.",
+      "Iznajmljivanje audio guest book telefona za venčanja u Srbiji. Vintage retro telefon za poruke gostiju — audio knjiga uspomena sa dostavom u Beograd, Novi Sad i sve gradove. Rezervacija i cena.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
     image: `${siteUrl}/images/gallery/og-image.png`,
@@ -313,7 +315,7 @@ export default function RootLayout({
             "@type": "Service",
             name: "Essential Paket",
             description:
-              "Iznajmljivanje retro telefona sa rotirajućim brojčanikom za venčanja. Audio knjiga utisaka sa kurirskom dostavom, elegantno uputstvo i svi audio snimci u digitalnom formatu.",
+              "Iznajmljivanje retro telefona sa rotirajućim brojčanikom za venčanja. Audio knjiga uspomena sa kurirskom dostavom, elegantno uputstvo i svi audio snimci u digitalnom formatu.",
           },
         },
         {
@@ -339,6 +341,7 @@ export default function RootLayout({
     knowsAbout: [
       "Audio guest book",
       "Audio knjiga utisaka",
+      "Audio knjiga uspomena",
       "Audio spomenar",
       "Telefon za poruke na svadbi",
       "Vintage telefon sa rotirajućim brojčanikom",

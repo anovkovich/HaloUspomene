@@ -124,7 +124,7 @@ const FAQ: React.FC = () => {
   return (
     <section
       id="faq"
-      className="py-16 sm:py-24 md:py-32 bg-white relative overflow-hidden"
+      className="py-16 sm:py-24 md:py-32 bg-white border-t-4 border-[#AE343F]/20 relative overflow-hidden"
     >
       <script
         type="application/ld+json"

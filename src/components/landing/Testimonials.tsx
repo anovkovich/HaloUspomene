@@ -6,9 +6,8 @@ const Testimonials: React.FC = () => {
   return (
     <section
       id="utisci"
-      className="py-16 sm:py-24 md:py-32 bg-[#faf9f6] relative overflow-hidden"
+      className="py-16 sm:py-24 md:py-32 bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6] relative overflow-hidden"
     >
-      <div className="absolute top-0 left-0 w-64 h-64 bg-[#AE343F]/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4af37]/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
 
       <div className="container mx-auto px-4 relative z-10">
@@ -41,10 +40,7 @@ const Testimonials: React.FC = () => {
                     <h3 className="font-serif font-semibold text-[#232323] truncate">
                       {t.coupleName}
                     </h3>
-                    <BadgeCheck
-                      size={16}
-                      className="text-[#AE343F] shrink-0"
-                    />
+                    <BadgeCheck size={16} className="text-[#AE343F] shrink-0" />
                   </div>
                   <p className="text-sm text-[#232323]/40">{t.date}</p>
                 </div>
