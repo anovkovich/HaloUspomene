@@ -428,7 +428,7 @@ function Step1({
         rel="noopener noreferrer"
         className="mb-6 inline-flex justify-between w-full gap-2 px-4 py-2.5 bg-[#AE343F] text-white rounded-lg hover:bg-[#932d35] transition-colors text-sm font-medium"
       >
-        <span>🎁 Pogledajte primer live pozivnice:</span>
+        <span>🎁 Pogledajte live primer pozivnice:</span>
         <span className="inline-flex items-center gap-2">
           Otvori u novom tabu
           <svg
