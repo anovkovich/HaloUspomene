@@ -3,7 +3,7 @@ export type ThemeType =
   | "modern_mono"
   | "minimal_sage"
   | "luxury_gold"
-  | "romance_wine";
+  | "warm_terracotta";
 export type ScriptFontType =
   | "great-vibes"
   | "dancing-script"
@@ -62,6 +62,7 @@ export interface WeddingData {
 // Comprehensive theme configuration
 export interface ThemeConfig {
   name: string;
+  symbolism: string;
   colors: {
     // Primary accent color (gold, rose, black, sage)
     primary: string;

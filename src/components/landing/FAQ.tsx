@@ -1,4 +1,5 @@
 import React from "react";
+import { pricing, formatPrice } from "@/data/pricing";
 
 interface FAQItem {
   question: string;
@@ -95,7 +96,7 @@ const faqData: FAQItem[] = [
     category: "Cene",
     question: "Koliko košta iznajmljivanje audio guest book telefona?",
     answer:
-      "HALO Uspomene nudi dva paketa: Essential (9.000 din) — kurirska dostava, vintage telefon, svi snimci za 3-5 dana; i Full Service u Novom Sadu (10.000 din) — lična dostava i montaža, personalizovana audio dobrodošlica i uređeni digitalni album. Slične usluge na tržištu Srbije koštaju preko 100€, i to obično bez ikakve uključene dostave ili personalizacije. Troškovi povratka uređaja su uvek uključeni u cenu — vi plaćate samo poštarinu pri preuzimanju. Cene su fiksne tokom cele godine, bez skrivenih troškova. Za one koji žele da sačuvaju uspomene i u fizičkom obliku, nudimo USB retro kasetu (2.500 din) i Uspomene u boci — USB u bočici (2.000 din). Dostupne su i govornice: MINI (3.000 din) i MAXI (5.000 din). Digitalna pozivnica košta 5.000 din, a uz bilo koji paket ostvarujete 30% popusta — samo 3.500 din. Biramo manji prihod po rezervaciji, a veći broj parova kojima možemo pružiti uslugu.",
+      `HALO Uspomene nudi dva paketa: Essential (${formatPrice(pricing.packages.essential.price)}) — kurirska dostava, vintage telefon, svi snimci za 3-5 dana; i Full Service u Novom Sadu (${formatPrice(pricing.packages.fullService.price)}) — lična dostava i montaža, personalizovana audio dobrodošlica i uređeni digitalni album. Slične usluge na tržištu Srbije koštaju preko 100€, i to obično bez ikakve uključene dostave ili personalizacije. Troškovi povratka uređaja su uvek uključeni u cenu — vi plaćate samo poštarinu pri preuzimanju. Cene su fiksne tokom cele godine, bez skrivenih troškova. Za one koji žele da sačuvaju uspomene i u fizičkom obliku, nudimo USB retro kasetu (${formatPrice(pricing.addons.find(a => a.id === "usb_kaseta")!.price)}) i Uspomene u boci — USB u bočici (${formatPrice(pricing.addons.find(a => a.id === "usb_bocica")!.price)}). Dostupne su i govornice: MINI (${formatPrice(pricing.addons.find(a => a.id === "mini_govornica")!.price)}) i MAXI (${formatPrice(pricing.addons.find(a => a.id === "maxi_govornica")!.price)}). Digitalna pozivnica košta ${formatPrice(pricing.addons.find(a => a.id === "digitalna_pozivnica")!.price)}, a uz bilo koji paket ostvarujete ${pricing.discounts.bundlePozivnica.percent}% popusta — samo ${formatPrice(pricing.discounts.bundlePozivnica.discountedPrice)}. Biramo manji prihod po rezervaciji, a veći broj parova kojima možemo pružiti uslugu.`,
   },
   {
     category: "Cene",

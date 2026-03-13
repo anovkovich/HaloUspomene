@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"C:/Users/Aleksa/Documents/_nextjs_start/HaloUspomene\" && npx tsc --noEmit 2>&1 | head -50)"
+    ]
+  }
+}

@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
+import { pricing, formatPrice } from "@/data/pricing";
 import {
   THEME_CONFIGS,
   SCRIPT_FONT_CONFIGS,
@@ -25,15 +26,16 @@ const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 
 // ─── Font categorization ──────────────────────────────────────────────────────
 
-const LATIN_FONTS = new Set<ScriptFontType>([
-  "great-vibes",
+// Fonts hidden in Cyrillic mode (Latin-only; great-vibes works for both)
+const LATIN_ONLY_FONTS = new Set<ScriptFontType>([
   "dancing-script",
   "alex-brush",
   "parisienne",
   "allura",
 ]);
 
-const CYRILLIC_FONTS = new Set<ScriptFontType>([
+// Fonts hidden in Latin mode (Cyrillic-specific)
+const CYRILLIC_ONLY_FONTS = new Set<ScriptFontType>([
   "marck-script",
   "caveat",
   "bad-script",
@@ -411,7 +413,10 @@ function Step1({
       {/* Pricing section */}
       <div className="mb-3 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
         <p className="text-2xl font-bold align-end text-[#AE343F]">
-          Redovna cena pozivnice je 5.000 din
+          Redovna cena pozivnice je{" "}
+          {formatPrice(
+            pricing.addons.find((a) => a.id === "digitalna_pozivnica")!.price,
+          )}
         </p>
         <p className="font-semibold text-sm text-[#8B2833] mt-2">
           Iskomuniciraćemo{" "}
@@ -498,7 +503,7 @@ function Step1({
         </div>
         {formData.useCyrillic && (
           <p className="text-xs text-stone-400 mt-2">
-            Za ćirilicu je dostupan ograničen broj kaligrafskih fontova (3
+            Za ćirilicu je dostupan ograničen broj kaligrafskih fontova (4
             umesto 5).
           </p>
         )}
@@ -673,8 +678,8 @@ function Step3({
   const isCyrillic = formData.useCyrillic;
 
   const isFontDisabled = (fontKey: ScriptFontType) => {
-    if (isCyrillic) return LATIN_FONTS.has(fontKey);
-    return CYRILLIC_FONTS.has(fontKey);
+    if (isCyrillic) return LATIN_ONLY_FONTS.has(fontKey);
+    return CYRILLIC_ONLY_FONTS.has(fontKey);
   };
 
   const availableFonts = fonts.filter(([key]) => !isFontDisabled(key));
@@ -762,7 +767,7 @@ function Step3({
               style={{ backgroundColor: cfg.colors.primary }}
             />
             <p className="text-sm font-semibold text-stone-700">{cfg.name}</p>
-            <p className="text-xs text-stone-400 capitalize">{key}</p>
+            <p className="text-xs text-stone-400">{cfg.symbolism}</p>
             {formData.theme === key && (
               <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-white" />
@@ -790,7 +795,8 @@ const VENUE_DEFS: {
     type: "home",
     emoji: "🏠",
     title: "Polazak od kuće",
-    subtitle: "Polazak svatova od porodičnog doma",
+    subtitle:
+      "Ukoliko imate dva polaska, drugi unesite u napomeni na poslednjem koraku",
     namePlaceholder: "npr. Kuća Jovanovića",
     addressPlaceholder: "npr. Cara Dušana 12, Novi Sad",
     timePlaceholder: "npr. 14:00",
@@ -1057,7 +1063,7 @@ function generateRawJson(formData: FormData): string {
         hall: "Utensils",
       };
       const icon = typeToIcon[l.type] || "MapPin";
-      return `    { title: "${l.name}", time: "${l.time}", description: "", icon: "${icon}" }`;
+      return `    { title: "${l.name}", time: "${l.time}", description: "${l.address}", icon: "${icon}" }`;
     })
     .join(",\n");
 
@@ -1132,9 +1138,9 @@ export default function QuestionnaireForm() {
       // Auto-switch font when language changes
       if (key === "useCyrillic") {
         const toCyrillic = value as boolean;
-        if (toCyrillic && LATIN_FONTS.has(prev.scriptFont)) {
+        if (toCyrillic && LATIN_ONLY_FONTS.has(prev.scriptFont)) {
           updated.scriptFont = "marck-script";
-        } else if (!toCyrillic && CYRILLIC_FONTS.has(prev.scriptFont)) {
+        } else if (!toCyrillic && CYRILLIC_ONLY_FONTS.has(prev.scriptFont)) {
           updated.scriptFont = "great-vibes";
         }
       }

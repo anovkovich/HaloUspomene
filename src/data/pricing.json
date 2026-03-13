@@ -1,0 +1,52 @@
+{
+  "packages": {
+    "essential": {
+      "name": "Essential",
+      "price": 9000
+    },
+    "fullService": {
+      "name": "Full Service",
+      "price": 10000
+    }
+  },
+  "addons": [
+    {
+      "id": "usb_kaseta",
+      "label": "USB retro kaseta",
+      "price": 2500,
+      "note": "Fizički suvenir"
+    },
+    {
+      "id": "usb_bocica",
+      "label": "Uspomene u boci — USB u bočici",
+      "price": 2000,
+      "note": "Fizički suvenir"
+    },
+    {
+      "id": "mini_govornica",
+      "label": "MINI govornica",
+      "price": 3000,
+      "note": "Drvena, kompaktna"
+    },
+    {
+      "id": "maxi_govornica",
+      "label": "MAXI govornica",
+      "price": 5000,
+      "note": "Centralni detalj sale"
+    },
+    {
+      "id": "digitalna_pozivnica",
+      "label": "Digitalna pozivnica",
+      "price": 5000,
+      "note": ""
+    }
+  ],
+  "discounts": {
+    "bundlePozivnica": {
+      "label": "Digitalna pozivnica uz Audio Uspomene paket",
+      "active": true,
+      "percent": 30,
+      "discountedPrice": 3500
+    }
+  }
+}

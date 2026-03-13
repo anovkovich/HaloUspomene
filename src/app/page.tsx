@@ -10,6 +10,7 @@ import ContactForm from "../components/landing/ContactForm";
 import Footer from "@/components/layout/footer/Footer";
 import { Header } from "@/components/layout";
 import { Heart, Sparkles, ArrowRight } from "lucide-react";
+import { pricing, formatPrice } from "@/data/pricing";
 
 export default function Home() {
   return (
@@ -142,7 +143,7 @@ export default function Home() {
               <div className="mt-10 space-y-4">
                 <div className="p-5 bg-[#AE343F] text-white rounded-2xl text-center">
                   <p className="text-sm opacity-90 mb-1">Redovna cena svega:</p>
-                  <p className="text-3xl font-bold">5.000 din</p>
+                  <p className="text-3xl font-bold">{formatPrice(pricing.addons.find(a => a.id === "digitalna_pozivnica")!.price)}</p>
                   <p className="text-sm opacity-75 mt-2">
                     Kompletna digitalna pozivnica sa svim funkcijama
                   </p>
@@ -150,7 +151,7 @@ export default function Home() {
                 <div className="p-4 bg-gradient-to-r from-[#AE343F]/10 via-[#AE343F]/5 to-[#AE343F]/10 rounded-2xl border border-[#AE343F]/20">
                   <p className="text-[#AE343F] font-semibold">
                     <span className="text-lg">-30%</span> popusta uz Audio
-                    Knjigu Uspomena → 3.500 din
+                    Knjigu Uspomena → {formatPrice(pricing.discounts.bundlePozivnica.discountedPrice)}
                   </p>
                   <p className="text-[#8B2833] text-sm mt-1">
                     Audio Retro Telefon + Digitalna Pozivnica = Nerocenljiva

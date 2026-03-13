@@ -11,7 +11,7 @@ export const SCRIPT_FONT_CONFIGS: Record<ScriptFontType, ScriptFontConfig> = {
   "great-vibes": {
     name: "Great Vibes",
     variable: "var(--font-great-vibes)",
-    description: "Elegant flowing script",
+    description: "Elegant flowing script (Latin & Cyrillic)",
   },
   "dancing-script": {
     name: "Dancing Script",
@@ -54,6 +54,7 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
   // Elegant gold theme - traditional luxury wedding
   luxury_gold: {
     name: "Luxury Gold",
+    symbolism: "Večna ljubav, bogatstvo i raskošna elegancija",
     colors: {
       primary: "#d4af37", // Gold
       primaryLight: "#e8d48a",
@@ -80,6 +81,7 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
   // Romantic rose theme - warm and timeless
   classic_rose: {
     name: "Classic Rose",
+    symbolism: "Romantična ljubav, strast i nežnost čistog srca",
     colors: {
       primary: "#AE343F", // Dusty rose
       primaryLight: "#c4899a",
@@ -106,6 +108,7 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
   // Contemporary blue theme - calm and modern
   modern_mono: {
     name: "Modern Blue",
+    symbolism: "Vernost, spokojstvo i vedro nebo iznad ljubavi",
     colors: {
       primary: "#3D6B9C", // Dusty steel blue
       primaryLight: "#6B97C4",
@@ -132,6 +135,7 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
   // Soft natural theme - organic and understated
   minimal_sage: {
     name: "Minimal Sage",
+    symbolism: "Novi početak, napredak i prirodna harmonija",
     colors: {
       primary: "#7c9a72", // Sage green
       primaryLight: "#a8c4a0",
@@ -156,8 +160,9 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
   },
 
   // Warm terracotta theme - earthy and romantic
-  romance_wine: {
-    name: "Romance Wine",
+  warm_terracotta: {
+    name: "Warm Terracotta",
+    symbolism: "Stabilnost, mir i romantika iz starih vremena",
     colors: {
       primary: "#C0622A", // Warm terracotta-orange
       primaryLight: "#E08A55",

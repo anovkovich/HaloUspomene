@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { Award, Check, Sparkles, X } from "lucide-react";
 import Link from "next/link";
+import { pricing, formatPrice } from "@/data/pricing";
 
 const HeroInfoBadge: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -49,7 +50,7 @@ const HeroInfoBadge: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   {[
-                    "Već od 9.000 din — najpovoljnije cene u Srbiji",
+                    `Već od ${formatPrice(pricing.packages.essential.price)} — najpovoljnije cene u Srbiji`,
                     "Dostava do vas uvek uključena u cenu",
                     "Svi snimci digitalno — fizički oblici dostupni kao dodaci",
                     "Fiksne cene tokom cele godine, bez skrivenih troškova",
@@ -69,7 +70,7 @@ const HeroInfoBadge: React.FC = () => {
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <div className="bg-[#faf9f6] border border-[#ae343f]/20 rounded-2xl p-4">
                   <p className="font-bold text-[#232323] text-sm mb-1">Essential</p>
-                  <p className="text-xl font-serif text-[#AE343F] font-bold">9.000 din</p>
+                  <p className="text-xl font-serif text-[#AE343F] font-bold">{formatPrice(pricing.packages.essential.price)}</p>
                   <p className="text-xs text-[#232323]/70 mt-1 leading-relaxed">
                     Kurirska dostava, vintage telefon, svi snimci za 3–5 dana,
                     popusti za digitalne pozivnice!
@@ -80,7 +81,7 @@ const HeroInfoBadge: React.FC = () => {
                     Preporuka
                   </div>
                   <p className="font-bold text-[#232323] text-sm mb-1">Full Service</p>
-                  <p className="text-xl font-serif text-[#AE343F] font-bold">10.000 din</p>
+                  <p className="text-xl font-serif text-[#AE343F] font-bold">{formatPrice(pricing.packages.fullService.price)}</p>
                   <p className="text-xs text-[#232323]/70 mt-1 leading-relaxed">
                     Lična dostava, mogućnost postavljanja govornice,
                     personalizovana dobrodošlica...
@@ -96,23 +97,21 @@ const HeroInfoBadge: React.FC = () => {
                 Dodaci
               </p>
               <div className="space-y-2 mb-8">
-                {[
-                  { label: "USB retro kaseta", price: "2.500 din", note: "Fizički suvenir" },
-                  { label: "Uspomene u boci — USB u bočici", price: "2.000 din", note: "Fizički suvenir" },
-                  { label: "MINI govornica", price: "3.000 din", note: "Drvena, kompaktna" },
-                  { label: "MAXI govornica", price: "5.000 din", note: "Centralni detalj sale" },
-                  { label: "Digitalna pozivnica", price: "5.000 din", note: "3.500 din uz paket (−30%)" },
-                ].map((addon) => (
+                {pricing.addons.map((addon) => (
                   <div
                     key={addon.label}
                     className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0"
                   >
                     <div>
                       <p className="text-sm font-medium text-[#232323]">{addon.label}</p>
-                      <p className="text-xs text-[#232323]/60">{addon.note}</p>
+                      <p className="text-xs text-[#232323]/60">
+                        {addon.id === "digitalna_pozivnica" && pricing.discounts.bundlePozivnica.active
+                          ? `${formatPrice(pricing.discounts.bundlePozivnica.discountedPrice)} uz paket (−${pricing.discounts.bundlePozivnica.percent}%)`
+                          : addon.note}
+                      </p>
                     </div>
                     <p className="text-sm font-bold text-[#AE343F] ml-4 whitespace-nowrap">
-                      +{addon.price}
+                      +{formatPrice(addon.price)}
                     </p>
                   </div>
                 ))}

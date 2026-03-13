@@ -1,6 +1,7 @@
 import React from "react";
 import { Award, Check, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { pricing, formatPrice } from "@/data/pricing";
 
 const HowItWorks: React.FC = () => {
   return (
@@ -97,7 +98,7 @@ const HowItWorks: React.FC = () => {
                 <span className="hidden sm:inline">
                   <br />
                 </span>
-                <span className="sm:hidden"> </span>9.000 din
+                <span className="sm:hidden"> </span>{formatPrice(pricing.packages.essential.price)}
               </p>
               <div className="space-y-1.5 mt-4">
                 {[
@@ -161,12 +162,12 @@ const HowItWorks: React.FC = () => {
                 {
                   label: "USB retro kaseta",
                   desc: "Snimci na vintage kasetnoj USB memoriji",
-                  price: "+2.500 din",
+                  price: `+${formatPrice(pricing.addons.find(a => a.id === "usb_kaseta")!.price)}`,
                 },
                 {
                   label: "Uspomene u boci",
                   desc: "USB poruke elegantno spakovane u mini bočicu",
-                  price: "+2.000 din",
+                  price: `+${formatPrice(pricing.addons.find(a => a.id === "usb_bocica")!.price)}`,
                 },
                 {
                   label: "MINI & MAXI govornice",
@@ -218,7 +219,7 @@ const HowItWorks: React.FC = () => {
             <div className="space-y-4 mt-auto">
               <div className="flex gap-4 items-center justify-between">
                 <span className=" text-[#F5F4DC] text-xs font-bold">
-                  3.500 din uz bundle popust!
+                  {formatPrice(pricing.discounts.bundlePozivnica.discountedPrice)} uz bundle popust!
                 </span>
                 <Link
                   href="/napravi-pozivnicu"
