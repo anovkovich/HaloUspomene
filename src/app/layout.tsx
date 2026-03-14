@@ -110,12 +110,12 @@ export const metadata: Metadata = {
 
   title: {
     default:
-      "Digitalne Pozivnice i Audio Knjiga Uspomena Srbija | Audio Guest Book + Digitalne pozivnice | HALO Uspomene",
+      "Website Pozivnice i Audio Knjiga Uspomena Srbija | Audio Guest Book + Website pozivnice | HALO Uspomene",
     template: "%s | HALO Uspomene",
   },
 
   description:
-    "HALO Uspomene — digitalne pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte personalizovane web pozivnice i iznajmite retro telefon za glasovne poruke gostiju. Audio guest book (telefon uspomena), i interaktivne pozivnice sa odbrojavanje. Dostava u Beograd, i sve gradove.",
+    "HALO Uspomene — website pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte personalizovane web pozivnice i iznajmite retro telefon za glasovne poruke gostiju. Audio guest book (telefon uspomena), i interaktivne pozivnice sa odbrojavanje. Dostava u Beograd, i sve gradove.",
 
   keywords: [
     // Audio uspomene / Audio Guest Book
@@ -157,10 +157,10 @@ export const metadata: Metadata = {
     "telefon za snimanje poruka na svadbi",
     "vintage telefon za venčanje iznajmljivanje",
 
-    // Digitalne pozivnice / Web invitations
-    "digitalne pozivnice",
-    "digitalne pozivnice Srbija",
-    "digitalne pozivnice za venčanje",
+    // Website pozivnice / Web invitations
+    "website pozivnice",
+    "website pozivnice Srbija",
+    "website pozivnice za venčanje",
     "web pozivnice",
     "web invitations",
     "elektronske pozivnice",
@@ -170,10 +170,10 @@ export const metadata: Metadata = {
     "pozivnice sa odbrojavanje",
     "dinamičke pozivnice",
     "online pozivnice",
-    "digitalne pozivnice sa audio",
+    "website pozivnice sa audio",
     "pozivnice sa glasovnom porukom",
     "e-pozivnice",
-    "smernice za digitalne pozivnice",
+    "smernice za website pozivnice",
     "originalne ideje za venčanja",
 
     // Combined / General
@@ -199,9 +199,9 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: "HALO Uspomene",
     title:
-      "Digitalne Pozivnice i Audio Knjiga Uspomena za Venčanja | HALO Uspomene Srbija",
+      "Website Pozivnice i Audio Knjiga Uspomena za Venčanja | HALO Uspomene Srbija",
     description:
-      "HALO Uspomene — digitalne pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte personalizovane web pozivnice i iznajmite retro telefon za glasovne poruke gostiju. Audio guest book (telefon uspomena), i interaktivne pozivnice sa odbrojavanje. Dostava u Beograd, i sve gradove.",
+      "HALO Uspomene — website pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte personalizovane web pozivnice i iznajmite retro telefon za glasovne poruke gostiju. Audio guest book (telefon uspomena), i interaktivne pozivnice sa odbrojavanje. Dostava u Beograd, i sve gradove.",
     images: [
       {
         url: "/images/gallery/og-image.png",
@@ -214,9 +214,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Digitalne Pozivnice i Audio Knjiga Uspomena | HALO Uspomene Srbija",
+    title: "Website Pozivnice i Audio Knjiga Uspomena | HALO Uspomene Srbija",
     description:
-      "Digitalne pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte web pozivnice sa RSVP ili iznajmite retro telefon za glasovne poruke. Audio guest book dostava u Beograd, i sve gradove.",
+      "Website pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte web pozivnice sa RSVP ili iznajmite retro telefon za glasovne poruke. Audio guest book dostava u Beograd, i sve gradove.",
     images: ["/images/gallery/og-image.png"],
   },
 
@@ -272,12 +272,12 @@ export default function RootLayout({
       "Telefon Uspomena",
       "Telefon za Poruke na Svadbi",
       "Retro Telefon za Venčanja",
-      "Digitalne Pozivnice",
+      "Website Pozivnice",
       "Web Pozivnice",
       "E-Pozivnice",
     ],
     description:
-      "HALO Uspomene — premium servisi za venčanja: kreirajte digitalne pozivnice sa RSVP ili iznajmite audio guest book za glasovne poruke gostiju. Audio uspomene, web pozivnice, telefon uspomena sa dostavom u celoj Srbiji.",
+      "HALO Uspomene — premium servisi za venčanja: kreirajte website pozivnice sa RSVP ili iznajmite audio guest book za glasovne poruke gostiju. Audio uspomene, web pozivnice, telefon uspomena sa dostavom u celoj Srbiji.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
     image: `${siteUrl}/images/gallery/og-image.png`,
@@ -368,15 +368,15 @@ export default function RootLayout({
       },
       {
         "@type": "OfferCatalog",
-        name: "Digitalne Pozivnice Paketi za Venčanja",
+        name: "Website Pozivnice Paketi za Venčanja",
         itemListElement: [
           {
             "@type": "Offer",
             itemOffered: {
               "@type": "Service",
-              name: "Digitalna Pozivnica",
+              name: "Website Pozivnica",
               description:
-                "Kreirajte personalizovanu digitalnu pozivnicu za venčanje sa RSVP formom, odbrojavanjem, galerijom fotografija i mapom lokacije. Web pozivnice sa integrisanom glasovnom porukom.",
+                "Kreirajte personalizovanu website pozivnicu za venčanje sa RSVP formom, odbrojavanjem, galerijom fotografija i mapom lokacije. Web pozivnice sa integrisanom glasovnom porukom.",
             },
           },
           {
@@ -385,7 +385,7 @@ export default function RootLayout({
               "@type": "Service",
               name: "Interaktivna Web Pozivnica",
               description:
-                "Premium digitalna pozivnica sa temama, kustomnim fontovima, animacijama i mogućnostima za gostiju da ostave poruke. E-pozivnice sa RSVP praćenjem.",
+                "Premium website pozivnica sa temama, kustomnim fontovima, animacijama i mogućnostima za gostiju da ostave poruke. E-pozivnice sa RSVP praćenjem.",
             },
           },
         ],
@@ -410,7 +410,7 @@ export default function RootLayout({
       "Beli retro telefon za venčanje",
 
       // Digital invitations service
-      "Digitalne pozivnice",
+      "Website pozivnice",
       "Web pozivnice",
       "E-pozivnice",
       "Elektronske pozivnice",
@@ -438,7 +438,7 @@ export default function RootLayout({
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
     description:
-      "HALO Uspomene — kreirajte digitalne pozivnice sa RSVP formom i audio uspomene (audio guest book) za venčanja u Srbiji. Telefon uspomena, web pozivnice sa odbrojavanje i interaktivnim mogućnostima. Dostava u celoj Srbiji.",
+      "HALO Uspomene — kreirajte website pozivnice sa RSVP formom i audio uspomene (audio guest book) za venčanja u Srbiji. Telefon uspomena, web pozivnice sa odbrojavanje i interaktivnim mogućnostima. Dostava u celoj Srbiji.",
     sameAs: ["https://www.instagram.com/halo_uspomene"],
     contactPoint: {
       "@type": "ContactPoint",
@@ -454,7 +454,7 @@ export default function RootLayout({
     name: "HALO Uspomene",
     url: siteUrl,
     description:
-      "HALO Uspomene — kreirajte digitalne pozivnice sa RSVP formom ili iznajmite audio guest book za venčanja. Audio uspomene i web pozivnice u Srbiji.",
+      "HALO Uspomene — kreirajte website pozivnice sa RSVP formom ili iznajmite audio guest book za venčanja. Audio uspomene i web pozivnice u Srbiji.",
     potentialAction: {
       "@type": "SearchAction",
       target: {

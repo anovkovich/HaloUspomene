@@ -98,7 +98,8 @@ const HowItWorks: React.FC = () => {
                 <span className="hidden sm:inline">
                   <br />
                 </span>
-                <span className="sm:hidden"> </span>{formatPrice(pricing.packages.essential.price)}
+                <span className="sm:hidden"> </span>
+                {formatPrice(pricing.packages.essential.price)}
               </p>
               <div className="space-y-1.5 mt-4">
                 {[
@@ -162,12 +163,12 @@ const HowItWorks: React.FC = () => {
                 {
                   label: "USB retro kaseta",
                   desc: "Snimci na vintage kasetnoj USB memoriji",
-                  price: `+${formatPrice(pricing.addons.find(a => a.id === "usb_kaseta")!.price)}`,
+                  price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}`,
                 },
                 {
                   label: "Uspomene u boci",
                   desc: "USB poruke elegantno spakovane u mini bočicu",
-                  price: `+${formatPrice(pricing.addons.find(a => a.id === "usb_bocica")!.price)}`,
+                  price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}`,
                 },
                 {
                   label: "MINI & MAXI govornice",
@@ -197,12 +198,12 @@ const HowItWorks: React.FC = () => {
           <div className="bg-gradient-to-br from-[#AE343F]/30 to-[#8B2833]/40 border border-[#AE343F]/60 rounded-3xl p-7 sm:p-8 flex flex-col justify-between hover:border-[#AE343F]/80 transition-colors group shadow-lg shadow-[#AE343F]/20">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#AE343F] mb-4">
-                Digitalna pozivnica
+                Website pozivnica
               </p>
               <p className="text-[#F5F4DC]/70 text-sm leading-relaxed mb-4">
-                Personalizovana web stranica sa svim detaljima Vašeg venčanja —
-                RSVP forma za potvrdu dolaska, interaktivna mapa lokacija,
-                odbrojavanje do velikog dana.
+                Najpovoljnija personalizovana website pozivnica na tržištu sa
+                svim detaljima Vašeg venčanja — RSVP forma za potvrdu dolaska,
+                interaktivna mapa lokacija, odbrojavanje do velikog dana.
               </p>
               <div className="space-y-2 mb-6">
                 {[
@@ -219,7 +220,10 @@ const HowItWorks: React.FC = () => {
             <div className="space-y-4 mt-auto">
               <div className="flex gap-4 items-center justify-between">
                 <span className=" text-[#F5F4DC] text-xs font-bold">
-                  {formatPrice(pricing.discounts.bundlePozivnica.discountedPrice)} uz bundle popust!
+                  {formatPrice(
+                    pricing.discounts.bundleWebsitePozivnica.discountedPrice,
+                  )}{" "}
+                  uz bundle popust!
                 </span>
                 <Link
                   href="/napravi-pozivnicu"

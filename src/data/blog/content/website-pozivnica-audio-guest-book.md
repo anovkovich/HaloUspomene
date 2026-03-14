@@ -1,14 +1,14 @@
-# Digitalna Pozivnica + Audio Guest Book: Savršena Kombinacija
+# Website Pozivnica + Audio Guest Book: Savršena Kombinacija
 
-U eri pametnih telefona i digitalnog života, sve više parova u Srbiji bira moderne alternative za svoje venčanje. Dva trenda koja savršeno idu zajedno su **digitalna pozivnica** i **audio guest book**. Zajedno čine kompletni digitalni paket koji vaše venčanje čini organizovanijim, ekološkijim i nezaboravnijim. **HALO Uspomene** nudi oba — i sa bundle popustom.
+U eri pametnih telefona i digitalnog života, sve više parova u Srbiji bira moderne alternative za svoje venčanje. Dva trenda koja savršeno idu zajedno su **website pozivnica** i **audio guest book**. Zajedno čine kompletni digitalni paket koji vaše venčanje čini organizovanijim, ekološkijim i nezaboravnijim. **HALO Uspomene** nudi oba — i sa bundle popustom.
 
-## Šta je digitalna pozivnica?
+## Šta je website pozivnica?
 
-Digitalna pozivnica je personalizovana web stranica kreirana specijalno za vaše venčanje. Umesto klasične papirne pozivnice, gosti dobijaju link koji ih vodi na elegantnu stranicu sa svim informacijama.
+Website pozivnica je personalizovana web stranica kreirana specijalno za vaše venčanje. Umesto klasične papirne pozivnice, gosti dobijaju link koji ih vodi na elegantnu stranicu sa svim informacijama.
 
 ### Pogledajte uživo primer
 
-Najbolji način da razumete digitalnu pozivnicu je da je vidite na delu. Pogledajte primer koji smo kreirali: [digitalna web pozivnica](/pozivnica/sara-nikola)
+Najbolji način da razumete website pozivnicu je da je vidite na delu. Pogledajte primer koji smo kreirali: [website pozivnica](/pozivnica/sara-nikola)
 
 ### Šta sve sadrži?
 
@@ -18,15 +18,15 @@ Najbolji način da razumete digitalnu pozivnicu je da je vidite na delu. Pogleda
 - **Informacije o venčanju** — datum, vreme, dress code, parking, smeštaj za goste iz drugih gradova
 - **Personalizovani dizajn** — boje, fontovi i stil koji odgovaraju temi vašeg venčanja
 
-## Zašto birati digitalnu pozivnicu?
+## Zašto birati website pozivnicu?
 
 ### Ekološki prihvatljivije
 
-Prosečno srpsko venčanje sa 200 gostiju zahteva minimum 100 štampanih pozivnica (za parove i porodice). To je dosta papira, mastila i plastike. Digitalna pozivnica — nula otpada.
+Prosečno srpsko venčanje sa 200 gostiju zahteva minimum 100 štampanih pozivnica (za parove i porodice). To je dosta papira, mastila i plastike. Website pozivnica — nula otpada.
 
 ### Interaktivnost
 
-Papirna pozivnica je jednosmerna komunikacija. Digitalna pozivnica omogućava:
+Papirna pozivnica je jednosmerna komunikacija. Website pozivnica omogućava:
 
 - Gosti potvrđuju dolazak direktno
 - Ažuriranje informacija u realnom vremenu (promena lokacije? Samo update-ujete stranicu)
@@ -34,7 +34,7 @@ Papirna pozivnica je jednosmerna komunikacija. Digitalna pozivnica omogućava:
 
 ### Praćenje RSVP-a u realnom vremenu
 
-Digitalna pozivnica vam daje pregled ko je potvrdio, ko je otkazao, i ko još nije odgovorio — sve na jednom mestu.
+Website pozivnica vam daje pregled ko je potvrdio, ko je otkazao, i ko još nije odgovorio — sve na jednom mestu.
 
 ### Lako deljenje
 
@@ -42,13 +42,13 @@ Jedan link — pošaljite putem Viber-a, WhatsApp-a, SMS-a, email-a ili društve
 
 ### Ušteda novca
 
-Kvalitetne štampane pozivnice koštaju €1-3 po komadu. Za 100 pozivnica, to je €100-300 samo za papir. Digitalna pozivnica od **HALO Uspomene** košta **5.000 din** (ili **3.500 din** sa bundle popustom) i izgleda profesionalnije.
+Kvalitetne štampane pozivnice koštaju €1-3 po komadu. Za 100 pozivnica, to je €100-300 samo za papir. Website pozivnica od **HALO Uspomene** košta **5.000 din** (ili **3.500 din** sa bundle popustom) i izgleda profesionalnije.
 
-## Kako se digitalna pozivnica i audio guest book dopunjuju?
+## Kako se website pozivnica i audio guest book dopunjuju?
 
-Digitalna pozivnica i audio guest book su deo istog koncepta: **moderna tehnologija u službi emocija i praktičnosti**.
+Website pozivnica i audio guest book su deo istog koncepta: **moderna tehnologija u službi emocija i praktičnosti**.
 
-### Pre venčanja: Digitalna pozivnica
+### Pre venčanja: Website pozivnica
 
 - Stvara uzbuđenje i iščekivanje
 - Organizuje logistiku (RSVP, lokacija, informacije)
@@ -62,19 +62,19 @@ Digitalna pozivnica i audio guest book su deo istog koncepta: **moderna tehnolog
 
 ### Posle venčanja: Zajedničke uspomene
 
-- Digitalna pozivnica ostaje kao online uspomena na vaš dan
+- Website pozivnica ostaje kao online uspomena na vaš dan
 - Audio snimci postaju najdragoceniji suvenir sa venčanja
 - Zajedno čine kompletnu digitalnu kapsulu vremena vašeg venčanja
 
 ## Bundle ponuda: Uštedite 30%
 
-Kada rezervišete audio guest book (Essential ili Full Service paket) zajedno sa digitalnom pozivnicom, dobijate **30% popusta na pozivnicu**:
+Kada rezervišete audio guest book (Essential ili Full Service paket) zajedno sa website pozivnicom, dobijate **30% popusta na pozivnicu**:
 
 | Stavka                          | Pojedinačno | U bundleu     |
 | ------------------------------- | ----------- | ------------- |
 | Audio guest book (Essential)    | 9.000 din   | 9.000 din     |
 | Audio guest book (Full Service) | 10.000 din  | 10.000 din    |
-| Digitalna pozivnica             | 5.000 din   | **3.500 din** |
+| Website pozivnica             | 5.000 din   | **3.500 din** |
 
 ### Primeri bundle cena:
 
@@ -90,11 +90,11 @@ Koji cene tehnologiju i žele da njihovo venčanje bude organizovano i savremeno
 
 ### Ekološki svesni parovi
 
-Koji žele da smanje otpad na svom venčanju. Digitalna pozivnica + audio guest book = papirna knjiga utisaka i štampane pozivnice više nisu potrebne.
+Koji žele da smanje otpad na svom venčanju. Website pozivnica + audio guest book = papirna knjiga utisaka i štampane pozivnice više nisu potrebne.
 
 ### Parovi koji planiraju iz daljine
 
-Ako živite u inostranstvu a venčanje je u Srbiji, digitalna pozivnica omogućava laku organizaciju sa distance, a audio guest book ne zahteva vašu prisutnost za postavljanje (Essential paket).
+Ako živite u inostranstvu a venčanje je u Srbiji, website pozivnica omogućava laku organizaciju sa distance, a audio guest book ne zahteva vašu prisutnost za postavljanje (Essential paket).
 
 ### Budžet-svesni parovi
 
@@ -109,4 +109,4 @@ Koji žele premium iskustvo po razumnoj ceni. Bundle popust čini ovu kombinacij
 
 ---
 
-**Spremni za kompletni digitalni paket za vaše venčanje?** [Kontaktirajte HALO Uspomene](/#contact) i saznajte kako digitalna pozivnica i audio guest book mogu učiniti vaše venčanje organizovanijim i nezaboravnijim — uz uštedu.
+**Spremni za kompletni digitalni paket za vaše venčanje?** [Kontaktirajte HALO Uspomene](/#contact) i saznajte kako website pozivnica i audio guest book mogu učiniti vaše venčanje organizovanijim i nezaboravnijim — uz uštedu.

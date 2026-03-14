@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
               className="w-54 h-auto mb-6"
             />
             <p className="text-[#F5F4DC]/40 leading-relaxed mb-4">
-              HALO Uspomene — kreirajte digitalne pozivnice ili iznajmite
+              HALO Uspomene — kreirajte website pozivnice ili iznajmite
               vintage retro telefon za audio uspomene sa venčanja. Audio guest
               book ili telefon uspomena — sačuvajte glasove jer ljubav zaslužuje
               da se čuje zauvek.
@@ -69,7 +69,7 @@ const Footer: React.FC = () => {
               {[
                 { name: "Blog", href: "/blog" },
                 {
-                  name: "Digitalne Pozivnice",
+                  name: "Website Pozivnice",
                   href: "/napravi-pozivnicu",
                 },
                 {

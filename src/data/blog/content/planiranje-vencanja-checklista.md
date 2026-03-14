@@ -22,7 +22,7 @@ Sada je vreme da obezbedite najvažnije dobavljače.
 - **Venčanicu i odelo** — Venčanica zahteva 4-6 meseci za nabavku plus vreme za prepravke. Počnite rano
 - **Pripremite dokumentaciju** — Proverite šta vam je potrebno za matičara (izvod iz matične knjige rođenih, uverenje o slobodnom bračnom stanju)
 - **Audio guest book** — Rezervišite [HALO Uspomene](/) audio guest book na vreme. Full Service paket uključuje ličnu dostavu i montažu govornice, dok Essential paket stiže kurirskom dostavom sa detaljnim uputstvom
-- **Digitalna pozivnica** — Razmotriti [digitalnu pozivnicu](/pozivnica/sara-nikola) kao modernu alternativu — interaktivna web stranica sa RSVP-om, odbrojavanjem i mapom
+- **Website pozivnica** — Razmotriti [website pozivnicu](/pozivnica/sara-nikola) kao modernu alternativu — interaktivna web stranica sa RSVP-om, odbrojavanjem i mapom
 
 ## 6–9 meseci pre venčanja: Detalji koji prave razliku
 
@@ -76,7 +76,7 @@ Sada je vreme da obezbedite najvažnije dobavljače.
 ### Budžet trikovi za srpska venčanja
 - Petak ili nedelja umesto subote može uštedeti 20-30% na lokaciji
 - Svadbena sezona je maj–oktobar. Mart, april i novembar nude niže cene
-- Digitalna pozivnica umesto štampane štedi novac i omogućava lak RSVP
+- Website pozivnica umesto štampane štedi novac i omogućava lak RSVP
 
 ### Ne zaboravite na sebe
 Planiranje venčanja može biti stresno. Dogovorite se sa partnerom da imate redovne "date night" večeri bez pričanja o svadbi. Vaša veza je razlog za venčanje — ne dozvolite da planiranje zasenite to.

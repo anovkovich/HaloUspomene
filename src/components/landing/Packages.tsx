@@ -48,7 +48,7 @@ const Packages: React.FC = () => {
           <p className="text-center text-sm text-[#232323]/50 mt-4 mb-8 sm:mb-12">
             Uz bilo koji paket ostvarite 30% popusta na{" "}
             <span className="text-[#AE343F] font-medium">
-              digitalnu pozivnicu
+              website pozivnicu
             </span>
           </p>
         </div>

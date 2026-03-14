@@ -83,16 +83,6 @@ export interface ThemeConfig {
     waxSeal: string;
     waxSealDark: string;
   };
-  style: {
-    // Border radius: "none" | "sm" | "md" | "lg" | "full"
-    radius: string;
-    // Show decorative ornaments
-    ornaments: boolean;
-    // Shadow intensity: "none" | "sm" | "md" | "lg"
-    shadows: string;
-    // Section divider style: "gradient" | "dots" | "diamond" | "clean" | "flourish"
-    dividerStyle: "gradient" | "dots" | "diamond" | "clean" | "flourish";
-  };
 }
 
 // Legacy interface for backwards compatibility

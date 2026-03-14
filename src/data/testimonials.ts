@@ -19,7 +19,7 @@ export const testimonials: Testimonial[] = [
     rating: 5,
     packageType: "Full Service",
     quote:
-      "Digitalna pozivnica je bila impresivna i dosta gostiju je pohvalilo dizajn, mi smo imali jasnu listu potvrđenih gostiju. Mapa sa lokacijom restorana je nekim gostima bila od pomoći!",
+      "Website pozivnica je bila impresivna i dosta gostiju je pohvalilo dizajn, mi smo imali jasnu listu potvrđenih gostiju. Mapa sa lokacijom restorana je nekim gostima bila od pomoći!",
   },
   {
     id: 2,

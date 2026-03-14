@@ -75,7 +75,7 @@ const allBlogPosts: BlogPost[] = [
     slug: "audio-guest-book-cena",
     title: "Audio Guest Book Cena u Srbiji 2026: Koliko Košta?",
     description:
-      "Transparentan pregled cena audio guest book usluge u Srbiji 2026. HALO Uspomene paketi, dodatne opcije, poređenja na tržištu i bundle popusti za digitalnu pozivnicu.",
+      "Transparentan pregled cena audio guest book usluge u Srbiji 2026. HALO Uspomene paketi, dodatne opcije, poređenja na tržištu i bundle popusti za website pozivnicu.",
     category: "Vodič",
     tags: [
       "audio guest book cena",
@@ -184,13 +184,13 @@ const allBlogPosts: BlogPost[] = [
     content: loadContent("audio-guest-book-iskustva"),
   },
   {
-    slug: "digitalna-pozivnica-audio-guest-book",
-    title: "Digitalna Pozivnica + Audio Guest Book: Savršena Kombinacija",
+    slug: "website-pozivnica-audio-guest-book",
+    title: "Website Pozivnica + Audio Guest Book: Savršena Kombinacija",
     description:
-      "Kako digitalna pozivnica i audio guest book zajedno čine savršen digitalni paket za venčanje. Prednosti, bundle popust od 30% i primeri iz prakse — HALO Uspomene vodič.",
+      "Kako website pozivnica i audio guest book zajedno čine savršen digitalni paket za venčanje. Prednosti, bundle popust od 30% i primeri iz prakse — HALO Uspomene vodič.",
     category: "Saveti",
     tags: [
-      "digitalna pozivnica venčanje",
+      "website pozivnica venčanje",
       "online pozivnica",
       "audio guest book",
       "HALO Uspomene",
@@ -199,7 +199,7 @@ const allBlogPosts: BlogPost[] = [
     publishDate: "2026-05-30",
     readTime: 8,
     featured: true,
-    content: loadContent("digitalna-pozivnica-audio-guest-book"),
+    content: loadContent("website-pozivnica-audio-guest-book"),
   },
   {
     slug: "srpske-svadbene-tradicije-moderni-trendovi",

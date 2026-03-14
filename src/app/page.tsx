@@ -75,7 +75,7 @@ export default function Home() {
               </div>
 
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#AE343F] mb-4">
-                Digitalne Pozivnice
+                Website Pozivnice
               </h2>
 
               <p className="text-[#8B2833] text-base max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
@@ -143,18 +143,18 @@ export default function Home() {
               <div className="mt-10 space-y-4">
                 <div className="p-5 bg-[#AE343F] text-white rounded-2xl text-center">
                   <p className="text-sm opacity-90 mb-1">Redovna cena svega:</p>
-                  <p className="text-3xl font-bold">{formatPrice(pricing.addons.find(a => a.id === "digitalna_pozivnica")!.price)}</p>
+                  <p className="text-3xl font-bold">{formatPrice(pricing.addons.find(a => a.id === "website_pozivnica")!.price)}</p>
                   <p className="text-sm opacity-75 mt-2">
-                    Kompletna digitalna pozivnica sa svim funkcijama
+                    Kompletna website pozivnica sa svim funkcijama
                   </p>
                 </div>
                 <div className="p-4 bg-gradient-to-r from-[#AE343F]/10 via-[#AE343F]/5 to-[#AE343F]/10 rounded-2xl border border-[#AE343F]/20">
                   <p className="text-[#AE343F] font-semibold">
                     <span className="text-lg">-30%</span> popusta uz Audio
-                    Knjigu Uspomena → {formatPrice(pricing.discounts.bundlePozivnica.discountedPrice)}
+                    Knjigu Uspomena → {formatPrice(pricing.discounts.bundleWebsitePozivnica.discountedPrice)}
                   </p>
                   <p className="text-[#8B2833] text-sm mt-1">
-                    Audio Retro Telefon + Digitalna Pozivnica = Nerocenljiva
+                    Audio Retro Telefon + Website Pozivnica = Nerocenljiva
                     vrednost
                   </p>
                 </div>
@@ -165,10 +165,10 @@ export default function Home() {
 
         {/* SEO Hidden Content - Keyword optimization */}
         <section className="sr-only">
-          <h2>Dodatne Usluge - Audio Uspomene i Digitalne Pozivnice</h2>
+          <h2>Dodatne Usluge - Audio Uspomene i Website Pozivnice</h2>
           <p>
             HALO Uspomene nudi dva komplementarna servisa za vaše venčanje:
-            digitalne pozivnice sa RSVP formom i audio uspomene putem retro
+            website pozivnice sa RSVP formom i audio uspomene putem retro
             telefona. Kreirajte personalizovane web pozivnice (e-pozivnice) sa
             interaktivnim mogućnostima ili iznajmite telefon uspomena za
             glasovne poruke gostiju. Naš telefon uspomena kombinuje klasičan
@@ -181,7 +181,7 @@ export default function Home() {
             web pozivnice i audio guest book.
           </p>
           <p>
-            Naše digitalne pozivnice omogućavaju vam da kreirate jedinstvene
+            Naše website pozivnice omogućavaju vam da kreirate jedinstvene
             online pozivnice sa kustomnim dizajnom, RSVP praćenjem, mapom,
             odbrojavanje, i galerijom fotografija. Web invitations sa svim
             funkcijama za samo 5.000 dinara. Dodatne opcije: audio uspomene
@@ -197,7 +197,7 @@ export default function Home() {
             dana.
           </p>
           <p>
-            Specijalni paketi: kombinovana usluga digitalne pozivnice + audio
+            Specijalni paketi: kombinovana usluga website pozivnice + audio
             guest book sa 30% popusta. Zaboravite na klasične pozivnice —
             moderni digitalni i audio servisi za nezaboravne venčanju. Dostava i
             profesionalna montaža u svim večim gradovima: Beograd, Novi Sad,

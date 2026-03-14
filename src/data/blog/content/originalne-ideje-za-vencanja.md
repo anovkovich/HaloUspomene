@@ -69,7 +69,7 @@ Gosti ubacuju pisma, fotografije i male poklone u kutiju koju par otvara na prvu
 
 Održiva venčanja su sve popularnija:
 
-- Pozivnice od recikliranog papira ili digitalne pozivnice ([primer](/pozivnica/sara-nikola))
+- Pozivnice od recikliranog papira ili website pozivnice ([primer](/pozivnica/sara-nikola))
 - Cveće iz lokalnih bašti
 - Vintage i second-hand dekoracija
 

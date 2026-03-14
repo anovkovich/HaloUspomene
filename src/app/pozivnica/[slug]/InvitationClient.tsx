@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Heart, Calendar, MapPin, Clock, Sparkles } from "lucide-react";
+import { Heart, Calendar, MapPin, Clock } from "lucide-react";
 import { WeddingData } from "./types";
 import { getThemeConfig } from "./constants";
 import { getTranslations } from "./translations";
@@ -80,61 +80,68 @@ export default function InvitationClient({ data }: InvitationClientProps) {
     }
   }, [isLoading]);
 
-  // Renders section dividers based on the theme's dividerStyle
+  // Grand full-width ornamental SVG divider
   const renderDivider = (position: "top" | "bottom" = "top") => {
-    const style = themeConfig.style.dividerStyle ?? "gradient";
-    const posClass = `absolute ${position}-0 left-0 w-full`;
-
-    if (style === "dots") {
-      return (
-        <div className={`${posClass} flex justify-center ${position === "top" ? "-translate-y-1/2" : "translate-y-1/2"}`} style={{ zIndex: 1 }}>
-          <div className="flex gap-[6px] items-center">
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className={`rounded-full ${i === 1 ? "w-[5px] h-[5px]" : "w-[3px] h-[3px]"}`}
-                style={{ backgroundColor: "var(--theme-border)", opacity: i === 1 ? 0.8 : 0.4 }}
-              />
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    if (style === "diamond") {
-      return (
-        <>
-          <div className={`${posClass} h-px`} style={{ background: `linear-gradient(to right, transparent, var(--theme-border), transparent)` }} />
-          <div
-            className={`absolute ${position}-0 left-1/2 -translate-x-1/2 ${position === "top" ? "-translate-y-1/2" : "translate-y-1/2"} w-[7px] h-[7px] rotate-45`}
-            style={{ backgroundColor: "var(--theme-primary)", opacity: 0.35 }}
-          />
-        </>
-      );
-    }
-
-    if (style === "flourish") {
-      return (
-        <>
-          <div className={`${posClass} h-px`} style={{ background: `linear-gradient(to right, transparent, var(--theme-border), transparent)` }} />
-          <div className={`absolute ${position}-0 left-1/2 -translate-x-1/2 ${position === "top" ? "-translate-y-1/2" : "translate-y-1/2"} flex items-center gap-1`} style={{ zIndex: 1 }}>
-            <div className="w-[3px] h-[3px] rounded-full" style={{ backgroundColor: "var(--theme-primary)", opacity: 0.3 }} />
-            <Heart size={10} style={{ color: "var(--theme-primary)", opacity: 0.4 }} fill="currentColor" />
-            <div className="w-[3px] h-[3px] rounded-full" style={{ backgroundColor: "var(--theme-primary)", opacity: 0.3 }} />
-          </div>
-        </>
-      );
-    }
-
-    if (style === "clean") {
-      return (
-        <div className={`${posClass} h-px`} style={{ backgroundColor: "var(--theme-border)", opacity: 0.6 }} />
-      );
-    }
-
-    // Default: gradient
+    const shift = position === "top" ? "-translate-y-1/2" : "translate-y-1/2";
+    const gid  = `dg-${position}`;
     return (
-      <div className={`${posClass} h-px`} style={{ background: `linear-gradient(to right, transparent, var(--theme-border), transparent)` }} />
+      <>
+      <div
+        className={`absolute ${position}-0 left-0 w-full pointer-events-none`}
+        style={{ height: "2px", backgroundColor: "var(--theme-primary)", opacity: 0.22, zIndex: 2 }}
+      />
+      <div
+        className={`absolute ${position}-0 left-0 w-full ${shift} pointer-events-none`}
+        style={{ zIndex: 1, overflow: "visible" }}
+      >
+        <svg
+          viewBox="0 0 1200 120"
+          preserveAspectRatio="xMidYMid meet"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full"
+          style={{ height: "120px", overflow: "visible" }}
+        >
+          <defs>
+            {/* Gradient: fade in from edges, dip to 0 at center (behind flower) */}
+            <linearGradient id={gid} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="var(--theme-primary)" stopOpacity="0"/>
+              <stop offset="5%"   stopColor="var(--theme-primary)" stopOpacity="0.55"/>
+              <stop offset="38%"  stopColor="var(--theme-primary)" stopOpacity="0.6"/>
+              <stop offset="44%"  stopColor="var(--theme-primary)" stopOpacity="0"/>
+              <stop offset="56%"  stopColor="var(--theme-primary)" stopOpacity="0"/>
+              <stop offset="62%"  stopColor="var(--theme-primary)" stopOpacity="0.6"/>
+              <stop offset="95%"  stopColor="var(--theme-primary)" stopOpacity="0.55"/>
+              <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity="0"/>
+            </linearGradient>
+          </defs>
+
+          {/* ══ Single clean horizontal line ══ */}
+          <line x1="0" y1="60" x2="1200" y2="60" stroke={`url(#${gid})`} strokeWidth="1"/>
+
+
+        </svg>
+
+        {/* ══ Flower illustration — CSS mask colors it with --theme-primary ══ */}
+        <div style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "min(600px, 90vw)",
+          aspectRatio: "842 / 232",
+          backgroundColor: "var(--theme-primary)",
+          maskImage: "url(/flower-divider.svg)",
+          WebkitMaskImage: "url(/flower-divider.svg)",
+          maskSize: "100% 100%",
+          WebkitMaskSize: "100% 100%",
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+          opacity: 0.78,
+          zIndex: 2,
+          pointerEvents: "none",
+        }}/>
+      </div>
+      </>
     );
   };
 
@@ -172,59 +179,18 @@ export default function InvitationClient({ data }: InvitationClientProps) {
           className="relative min-h-[100svh] flex flex-col items-center justify-center text-center px-4 overflow-hidden"
           style={{ backgroundColor: "var(--theme-surface)" }}
         >
-          {/* Background pattern - only show if ornaments enabled */}
-          {themeConfig.style.ornaments && (
-            <div
-              className="absolute inset-0 opacity-[0.02]"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${encodeURIComponent(themeConfig.colors.primary)}' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-              }}
-            />
-          )}
-
-          {/* Decorative frame - only show if ornaments enabled */}
-          {themeConfig.style.ornaments && (
-            <>
-              <div
-                className={`absolute top-6 left-6 sm:top-10 sm:left-10 md:top-16 md:left-16 w-10 h-10 sm:w-20 sm:h-20 md:w-28 md:h-28 pointer-events-none transition-all duration-[2000ms] delay-700 ${isRevealed ? "opacity-100 translate-x-0 translate-y-0" : "opacity-0 -translate-x-10 -translate-y-10"}`}
-                style={{
-                  borderTop: `2px solid var(--theme-border)`,
-                  borderLeft: `2px solid var(--theme-border)`,
-                }}
-              />
-              <div
-                className={`absolute bottom-6 right-6 sm:bottom-10 sm:right-10 md:bottom-16 md:right-16 w-10 h-10 sm:w-20 sm:h-20 md:w-28 md:h-28 pointer-events-none transition-all duration-[2000ms] delay-700 ${isRevealed ? "opacity-100 translate-x-0 translate-y-0" : "opacity-0 translate-x-10 translate-y-10"}`}
-                style={{
-                  borderBottom: `2px solid var(--theme-border)`,
-                  borderRight: `2px solid var(--theme-border)`,
-                }}
-              />
-            </>
-          )}
 
           <div className="relative z-10 w-full my-10 max-h-full max-w-5xl mx-auto flex flex-col items-center space-y-10 sm:space-y-16">
             {/* Subtitle */}
             <div
               className={`flex items-center gap-3 transition-all duration-1000 delay-300 ${isRevealed ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
             >
-              {themeConfig.style.ornaments && (
-                <Sparkles
-                  size={12}
-                  style={{ color: "var(--theme-primary)", opacity: 0.5 }}
-                />
-              )}
               <p
                 className="font-elegant uppercase tracking-[0.4em] text-[9px] sm:text-[11px]"
                 style={{ color: "var(--theme-text-light)" }}
               >
                 {t.celebrateLove}
               </p>
-              {themeConfig.style.ornaments && (
-                <Sparkles
-                  size={12}
-                  style={{ color: "var(--theme-primary)", opacity: 0.5 }}
-                />
-              )}
             </div>
 
             {/* Names */}
@@ -248,7 +214,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
                 />
                 <Heart
                   size={24}
-                  style={{ color: "var(--theme-primary)", opacity: 0.6 }}
+                  style={{ color: "var(--theme-primary)" }}
                   fill="currentColor"
                 />
                 <div
@@ -281,25 +247,6 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               className={`pt-0 flex flex-col items-center gap-6 sm:gap-10 transition-all duration-[2000ms] delay-[1200ms] ${isRevealed ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
             >
               <div className="relative">
-                {themeConfig.style.ornaments && (
-                  <>
-                    <div
-                      className="absolute -inset-4"
-                      style={{ border: `1px solid var(--theme-border-light)` }}
-                    />
-                    <div
-                      className="absolute -top-2 left-1/2 -translate-x-1/2 px-4"
-                      style={{ backgroundColor: "var(--theme-surface)" }}
-                    >
-                      <span
-                        className="font-elegant text-[10px] uppercase tracking-[0.3em]"
-                        style={{ color: "var(--theme-primary)" }}
-                      >
-                        {formattedDate.dayName}
-                      </span>
-                    </div>
-                  </>
-                )}
                 <span
                   className="text-2xl sm:text-5xl font-serif tracking-[0.15em] px-8 sm:px-16 py-6 sm:py-8 block"
                   style={{ color: "var(--theme-text)" }}
@@ -349,12 +296,12 @@ export default function InvitationClient({ data }: InvitationClientProps) {
           <section
             className="relative py-24 sm:py-40 px-6 overflow-hidden"
             style={{
-              background: `linear-gradient(to bottom, var(--theme-background), var(--theme-surface-alt), var(--theme-background))`,
+              backgroundColor: "var(--theme-surface)",
+              backgroundImage: `radial-gradient(ellipse 70% 100% at 50% 50%, color-mix(in srgb, var(--theme-primary) 14%, var(--theme-surface)), var(--theme-surface))`,
             }}
           >
             {renderDivider("top")}
             {renderDivider("bottom")}
-
             <div className="max-w-4xl mx-auto text-center">
               <h2
                 className="text-5xl sm:text-8xl font-script mb-4"
@@ -368,29 +315,6 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               >
                 -
               </p>
-              {themeConfig.style.ornaments && (
-                <div className="flex items-center justify-center gap-4 mb-12">
-                  <div
-                    className="w-16 h-px"
-                    style={{
-                      background: `linear-gradient(to right, transparent, var(--theme-primary))`,
-                      opacity: 0.3,
-                    }}
-                  />
-                  <Heart
-                    size={14}
-                    style={{ color: "var(--theme-primary)", opacity: 0.4 }}
-                    fill="currentColor"
-                  />
-                  <div
-                    className="w-16 h-px"
-                    style={{
-                      background: `linear-gradient(to left, transparent, var(--theme-primary))`,
-                      opacity: 0.3,
-                    }}
-                  />
-                </div>
-              )}
               <Countdown targetDate={data.event_date} />
             </div>
           </section>
@@ -490,6 +414,7 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               </p>
             </div>
             <Timeline items={data.timeline} />
+            {renderDivider("bottom")}
           </section>
         )}
 
@@ -536,8 +461,6 @@ export default function InvitationClient({ data }: InvitationClientProps) {
             background: `linear-gradient(to bottom, var(--theme-background), var(--theme-surface-alt), var(--theme-background))`,
           }}
         >
-          {renderDivider("top")}
-
           <div className="max-w-2xl mx-auto text-center mb-16">
             <h2
               className="text-6xl sm:text-8xl font-script mb-5"
@@ -567,14 +490,6 @@ export default function InvitationClient({ data }: InvitationClientProps) {
           style={{ backgroundColor: "var(--theme-surface)" }}
         >
           {renderDivider("top")}
-          {themeConfig.style.ornaments && (
-            <div
-              className="absolute inset-0 opacity-[0.02]"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${encodeURIComponent(themeConfig.colors.primary)}' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-              }}
-            />
-          )}
           <div className="relative  pb-32 sm:pt-48">
             <p
               className="font-script text-5xl sm:text-8xl mb-8"

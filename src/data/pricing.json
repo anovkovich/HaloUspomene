@@ -35,15 +35,15 @@
       "note": "Centralni detalj sale"
     },
     {
-      "id": "digitalna_pozivnica",
-      "label": "Digitalna pozivnica",
+      "id": "website_pozivnica",
+      "label": "Website pozivnica",
       "price": 5000,
       "note": ""
     }
   ],
   "discounts": {
-    "bundlePozivnica": {
-      "label": "Digitalna pozivnica uz Audio Uspomene paket",
+    "bundleWebsitePozivnica": {
+      "label": "Website pozivnica uz Audio Uspomene paket",
       "active": true,
       "percent": 30,
       "discountedPrice": 3500

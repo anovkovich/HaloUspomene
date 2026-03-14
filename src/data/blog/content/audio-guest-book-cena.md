@@ -44,9 +44,9 @@ Kompaktna drvena govornica koja daje telefonu profesionalni izgled. Savršena za
 
 Velika drvena govornica koja postaje centralni detalj dekoracije. Gosti je odmah primete i privlači ih da ostave poruku. Idealna za veća venčanja i otvorene prostore.
 
-### Digitalna Web pozivnica — 5.000 din (ili 3.500 din uz audio guest book)
+### Website pozivnica — 5.000 din (ili 3.500 din uz audio guest book)
 
-Personalizovana [digitalna pozivnica](/pozivnica/sara-nikola) — interaktivna web stranica sa:
+Personalizovana [website pozivnica](/pozivnica/sara-nikola) — interaktivna web stranica sa:
 
 - Odbrojavanjem do venčanja
 - RSVP funkcijom - potvrdom dolaska
@@ -65,7 +65,7 @@ Personalizovana [digitalna pozivnica](/pozivnica/sara-nikola) — interaktivna w
 | Uspomene u boci (USB) | +2.000 din                   |
 | MINI govornica        | +3.000 din                   |
 | MAXI govornica        | +5.000 din                   |
-| Digitalna pozivnica   | 5.000 din (3.500 din sa AGB) |
+| Website pozivnica   | 5.000 din (3.500 din sa AGB) |
 
 ### Najpopularnija kombinacija
 
@@ -73,7 +73,7 @@ Personalizovana [digitalna pozivnica](/pozivnica/sara-nikola) — interaktivna w
 
 ### Najbolja vrednost
 
-**Full Service + MINI govornica + Digitalna pozivnica = 16.500 din** — Ušteda od 1.500 din na pozivnici, a dobijate kompletni digitalni paket za venčanje.
+**Full Service + MINI govornica + Website pozivnica = 16.500 din** — Ušteda od 1.500 din na pozivnici, a dobijate kompletni digitalni paket za venčanje.
 
 ## Poređenja na tržištu
 
@@ -86,9 +86,9 @@ Na tržištu Srbije i regiona, audio guest book usluge se kreću od €100 pa na
 | Govornica opcija             | Od 3.000 din       | Često nedostupna ili preskupa                      |
 | Personalizovana dobrodošlica | Da (Full Service)  | Retko uključeno, ili Vas upošljavaju da je snimite |
 | Snimci u fizičkom obliku     | Da, više opcija    | Samo link za preuzimanje                           |
-| Digitalna pozivnica          | Da (bundle popust) | Ne nude                                            |
+| Website pozivnica          | Da (bundle popust) | Ne nude                                            |
 
-**Zaključak:** HALO Uspomene nudi **nižu cenu** sa **više uključenih opcija**. Dostava za povrat uređaja je uključena u cenu, govornice su dostupne kao pristupačan add-on, i digitalna pozivnica je savršen dodatak sa bundle popustom!
+**Zaključak:** HALO Uspomene nudi **nižu cenu** sa **više uključenih opcija**. Dostava za povrat uređaja je uključena u cenu, govornice su dostupne kao pristupačan add-on, i website pozivnica je savršen dodatak sa bundle popustom!
 
 ## Kako smo ovo omogućili?
 

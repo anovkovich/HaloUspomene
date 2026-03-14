@@ -52,32 +52,8 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
   return (
     <div
       className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-[1200ms] cubic-bezier(0.4, 0, 0.2, 1) ${stage === "fadeout" ? "opacity-0 scale-110 blur-xl pointer-events-none" : "opacity-100"}`}
-      style={{ backgroundColor: config.colors.surface }}
+      style={{ backgroundColor: "#ffffff" }}
     >
-      {/* Background Texture */}
-      <div
-        className="absolute inset-0 opacity-[0.02]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${encodeURIComponent(primaryColor)}' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
-      ></div>
-
-      {/* Floating particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 rounded-full animate-float"
-            style={{
-              backgroundColor: `${primaryColor}33`,
-              left: `${15 + i * 15}%`,
-              top: `${20 + (i % 3) * 25}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${4 + i}s`,
-            }}
-          />
-        ))}
-      </div>
 
       {/* 3D Scene - moved down slightly so card doesn't go off screen */}
       <div className="relative w-[300px] h-[200px] sm:w-[480px] sm:h-[310px] perspective-[1500px] mt-8 sm:mt-0">

@@ -70,12 +70,6 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       waxSeal: "#b82828",
       waxSealDark: "#8a1c1c",
     },
-    style: {
-      radius: "sm",
-      ornaments: true,
-      shadows: "lg",
-      dividerStyle: "diamond",
-    },
   },
 
   // Romantic rose theme - warm and timeless
@@ -96,12 +90,6 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       borderLight: "rgba(158, 74, 93, 0.1)",
       waxSeal: "#AE343F",
       waxSealDark: "#8B2833",
-    },
-    style: {
-      radius: "md",
-      ornaments: false,
-      shadows: "md",
-      dividerStyle: "gradient",
     },
   },
 
@@ -124,12 +112,6 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       waxSeal: "#3D6B9C",
       waxSealDark: "#2A4E78",
     },
-    style: {
-      radius: "sm",
-      ornaments: false,
-      shadows: "sm",
-      dividerStyle: "dots",
-    },
   },
 
   // Soft natural theme - organic and understated
@@ -151,12 +133,6 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       waxSeal: "#5a7352",
       waxSealDark: "#435542",
     },
-    style: {
-      radius: "lg",
-      ornaments: false,
-      shadows: "sm",
-      dividerStyle: "clean",
-    },
   },
 
   // Warm terracotta theme - earthy and romantic
@@ -177,12 +153,6 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       borderLight: "rgba(192, 98, 42, 0.1)",
       waxSeal: "#A84E1E",
       waxSealDark: "#7E3810",
-    },
-    style: {
-      radius: "lg",
-      ornaments: false,
-      shadows: "md",
-      dividerStyle: "flourish",
     },
   },
 };
@@ -208,24 +178,8 @@ export function getThemeCSSVariables(
     "--theme-border-light": config.colors.borderLight,
     "--theme-wax-seal": config.colors.waxSeal,
     "--theme-wax-seal-dark": config.colors.waxSealDark,
-    "--theme-radius":
-      config.style.radius === "none"
-        ? "0"
-        : config.style.radius === "sm"
-          ? "0.375rem"
-          : config.style.radius === "md"
-            ? "0.75rem"
-            : config.style.radius === "lg"
-              ? "1rem"
-              : "9999px",
-    "--theme-shadow":
-      config.style.shadows === "none"
-        ? "none"
-        : config.style.shadows === "sm"
-          ? "0 1px 2px rgba(0,0,0,0.05)"
-          : config.style.shadows === "md"
-            ? "0 4px 6px -1px rgba(0,0,0,0.1)"
-            : "0 10px 15px -3px rgba(0,0,0,0.1)",
+    "--theme-radius": "0.75rem",
+    "--theme-shadow": "0 4px 6px -1px rgba(0,0,0,0.1)",
     "--theme-script-font": fontConfig.variable,
   };
 }

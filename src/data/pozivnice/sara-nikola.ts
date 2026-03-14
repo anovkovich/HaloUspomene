@@ -36,20 +36,26 @@ const weddingData: WeddingData = {
 
   timeline: [
     {
-      title: "Okupljanje gostiju",
-      time: "16:30",
-      description: "Sala Elegance",
+      title: "Skup kod mladoženje",
+      time: "12:00",
+      description: "",
       icon: "HouseHeart",
     },
     {
-      title: "Građansko venčanje",
-      time: "18:00",
+      title: "Crkveno venčanje",
+      time: "13:00",
+      description: "Manastir Krušedol",
+      icon: "Church",
+    },
+    {
+      title: "Skup u svečanoj sali",
+      time: "15:30",
       description: "Sala Elegance",
       icon: "CalendarHeart",
     },
     {
-      title: "Svečana večera i slavlje",
-      time: "19:00",
+      title: "Građansko venčanje",
+      time: "16:30",
       description: "Sala Elegance",
       icon: "PartyPopper",
     },

@@ -95,8 +95,7 @@ const faqData: FAQItem[] = [
   {
     category: "Cene",
     question: "Koliko košta iznajmljivanje audio guest book telefona?",
-    answer:
-      `HALO Uspomene nudi dva paketa: Essential (${formatPrice(pricing.packages.essential.price)}) — kurirska dostava, vintage telefon, svi snimci za 3-5 dana; i Full Service u Novom Sadu (${formatPrice(pricing.packages.fullService.price)}) — lična dostava i montaža, personalizovana audio dobrodošlica i uređeni digitalni album. Slične usluge na tržištu Srbije koštaju preko 100€, i to obično bez ikakve uključene dostave ili personalizacije. Troškovi povratka uređaja su uvek uključeni u cenu — vi plaćate samo poštarinu pri preuzimanju. Cene su fiksne tokom cele godine, bez skrivenih troškova. Za one koji žele da sačuvaju uspomene i u fizičkom obliku, nudimo USB retro kasetu (${formatPrice(pricing.addons.find(a => a.id === "usb_kaseta")!.price)}) i Uspomene u boci — USB u bočici (${formatPrice(pricing.addons.find(a => a.id === "usb_bocica")!.price)}). Dostupne su i govornice: MINI (${formatPrice(pricing.addons.find(a => a.id === "mini_govornica")!.price)}) i MAXI (${formatPrice(pricing.addons.find(a => a.id === "maxi_govornica")!.price)}). Digitalna pozivnica košta ${formatPrice(pricing.addons.find(a => a.id === "digitalna_pozivnica")!.price)}, a uz bilo koji paket ostvarujete ${pricing.discounts.bundlePozivnica.percent}% popusta — samo ${formatPrice(pricing.discounts.bundlePozivnica.discountedPrice)}. Biramo manji prihod po rezervaciji, a veći broj parova kojima možemo pružiti uslugu.`,
+    answer: `HALO Uspomene nudi dva paketa: Essential (${formatPrice(pricing.packages.essential.price)}) — kurirska dostava, vintage telefon, svi snimci za 3-5 dana; i Full Service u Novom Sadu (${formatPrice(pricing.packages.fullService.price)}) — lična dostava i montaža, personalizovana audio dobrodošlica i uređeni digitalni album. Slične usluge na tržištu Srbije koštaju preko 100€, i to obično bez ikakve uključene dostave ili personalizacije. Troškovi povratka uređaja su uvek uključeni u cenu — vi plaćate samo poštarinu pri preuzimanju. Cene su fiksne tokom cele godine, bez skrivenih troškova. Za one koji žele da sačuvaju uspomene i u fizičkom obliku, nudimo USB retro kasetu (${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}) i Uspomene u boci — USB u bočici (${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}). Dostupne su i govornice: MINI (${formatPrice(pricing.addons.find((a) => a.id === "mini_govornica")!.price)}) i MAXI (${formatPrice(pricing.addons.find((a) => a.id === "maxi_govornica")!.price)}). Website pozivnica košta ${formatPrice(pricing.addons.find((a) => a.id === "website_pozivnica")!.price)}, a uz bilo koji paket ostvarujete ${pricing.discounts.bundleWebsitePozivnica.percent}% popusta — samo ${formatPrice(pricing.discounts.bundleWebsitePozivnica.discountedPrice)}. Biramo manji prihod po rezervaciji, a veći broj parova kojima možemo pružiti uslugu.`,
   },
   {
     category: "Cene",
@@ -125,7 +124,7 @@ const FAQ: React.FC = () => {
   return (
     <section
       id="faq"
-      className="py-16 sm:py-24 md:py-32 bg-white border-t-4 border-[#AE343F]/20 relative overflow-hidden"
+      className="py-16 sm:py-24 md:py-32 bg-gradient-to-t from-[#faf9f6] to-[#AE343F]/10 border-t-4 border-[#AE343F]/20 relative overflow-hidden"
     >
       <script
         type="application/ld+json"
@@ -159,7 +158,7 @@ const FAQ: React.FC = () => {
                 .map((item, index) => (
                   <div
                     key={index}
-                    className="collapse collapse-arrow bg-[#faf9f6] rounded-2xl border border-stone-100"
+                    className="collapse collapse-arrow bg-[#faf9f6] rounded-2xl border border-stone-200"
                   >
                     <input type="checkbox" />
                     <div className="collapse-title text-base sm:text-lg font-medium text-[#232323] pr-12">

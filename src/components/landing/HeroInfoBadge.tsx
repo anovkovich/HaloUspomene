@@ -73,7 +73,7 @@ const HeroInfoBadge: React.FC = () => {
                   <p className="text-xl font-serif text-[#AE343F] font-bold">{formatPrice(pricing.packages.essential.price)}</p>
                   <p className="text-xs text-[#232323]/70 mt-1 leading-relaxed">
                     Kurirska dostava, vintage telefon, svi snimci za 3–5 dana,
-                    popusti za digitalne pozivnice!
+                    popusti za website pozivnice!
                   </p>
                 </div>
                 <div className="bg-[#faf9f6] border border-[#ae343f]/20 rounded-2xl p-4 relative">
@@ -105,8 +105,8 @@ const HeroInfoBadge: React.FC = () => {
                     <div>
                       <p className="text-sm font-medium text-[#232323]">{addon.label}</p>
                       <p className="text-xs text-[#232323]/60">
-                        {addon.id === "digitalna_pozivnica" && pricing.discounts.bundlePozivnica.active
-                          ? `${formatPrice(pricing.discounts.bundlePozivnica.discountedPrice)} uz paket (−${pricing.discounts.bundlePozivnica.percent}%)`
+                        {addon.id === "website_pozivnica" && pricing.discounts.bundleWebsitePozivnica.active
+                          ? `${formatPrice(pricing.discounts.bundleWebsitePozivnica.discountedPrice)} uz paket (−${pricing.discounts.bundleWebsitePozivnica.percent}%)`
                           : addon.note}
                       </p>
                     </div>

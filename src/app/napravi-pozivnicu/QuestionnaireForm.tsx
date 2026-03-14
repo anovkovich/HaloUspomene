@@ -10,7 +10,6 @@ import {
   Loader2,
   AlertCircle,
   Heart,
-  Sparkles,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
 import { pricing, formatPrice } from "@/data/pricing";
@@ -281,25 +280,6 @@ function InvitationPreview({
         minHeight: "300px",
       }}
     >
-      {/* Corner ornaments */}
-      {config.style.ornaments && (
-        <>
-          <div
-            className="absolute top-5 left-5 w-8 h-8 pointer-events-none"
-            style={{
-              borderTop: "1.5px solid var(--theme-border)",
-              borderLeft: "1.5px solid var(--theme-border)",
-            }}
-          />
-          <div
-            className="absolute bottom-5 right-5 w-8 h-8 pointer-events-none"
-            style={{
-              borderBottom: "1.5px solid var(--theme-border)",
-              borderRight: "1.5px solid var(--theme-border)",
-            }}
-          />
-        </>
-      )}
 
       {/* Preview label */}
       <div className="absolute top-3 right-3 z-10">
@@ -318,24 +298,12 @@ function InvitationPreview({
       <div className="relative flex flex-col items-center justify-center min-h-[300px] py-10 px-6 text-center">
         {/* Subtitle */}
         <div className="flex items-center gap-2 mb-7">
-          {config.style.ornaments && (
-            <Sparkles
-              size={10}
-              style={{ color: "var(--theme-primary)", opacity: 0.5 }}
-            />
-          )}
           <p
             className="font-elegant uppercase tracking-[0.4em] text-[9px]"
             style={{ color: "var(--theme-text-light)" }}
           >
             {celebrateLove}
           </p>
-          {config.style.ornaments && (
-            <Sparkles
-              size={10}
-              style={{ color: "var(--theme-primary)", opacity: 0.5 }}
-            />
-          )}
         </div>
 
         {/* Names */}
@@ -381,12 +349,6 @@ function InvitationPreview({
 
         {/* Date */}
         <div className="mt-8 relative">
-          {config.style.ornaments && (
-            <div
-              className="absolute -inset-3"
-              style={{ border: "1px solid var(--theme-border-light)" }}
-            />
-          )}
           <span
             className="font-serif tracking-[0.15em] text-lg px-8 py-4 block"
             style={{ color: "var(--theme-text)" }}
@@ -415,7 +377,7 @@ function Step1({
         <p className="text-2xl font-bold align-end text-[#AE343F]">
           Redovna cena pozivnice je{" "}
           {formatPrice(
-            pricing.addons.find((a) => a.id === "digitalna_pozivnica")!.price,
+            pricing.addons.find((a) => a.id === "website_pozivnica")!.price,
           )}
         </p>
         <p className="font-semibold text-sm text-[#8B2833] mt-2">

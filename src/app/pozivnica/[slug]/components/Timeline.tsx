@@ -46,7 +46,7 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
         <div
           className="h-full w-full"
           style={{
-            background: `linear-gradient(to bottom, transparent, var(--theme-border), transparent)`,
+            background: `linear-gradient(to bottom, transparent, var(--theme-primary), transparent)`,
           }}
         />
       </div>
@@ -77,7 +77,7 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
                   <div
                     className="relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white group-hover:shadow-xl transition-all duration-300"
                     style={{
-                      border: "2px solid var(--theme-border)",
+                      border: "2px solid var(--theme-primary)",
                       boxShadow: "var(--theme-shadow)",
                     }}
                   >

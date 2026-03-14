@@ -29,7 +29,7 @@ export async function generateMetadata({
   }
 
   const title = `${weddingData.couple_names.full_display} - Pozivnica`;
-  const description = `Digitalna pozivnica za venčanje - ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`;
+  const description = `Website pozivnica za venčanje - ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`;
 
   return {
     title,
@@ -39,7 +39,7 @@ export async function generateMetadata({
       description,
       images: [
         {
-          url: `${BASE_URL}/images/gallery/digitalna-pozivnica.png`,
+          url: `${BASE_URL}/images/gallery/website-pozivnica.png`,
           width: 1200,
           height: 630,
           alt: title,
@@ -51,7 +51,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: [`${BASE_URL}/images/gallery/digitalna-pozivnica.png`],
+      images: [`${BASE_URL}/images/gallery/website-pozivnica.png`],
     },
   };
 }

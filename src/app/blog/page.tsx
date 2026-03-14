@@ -23,7 +23,7 @@ export default function BlogPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[#faf9f6] pt-28 pb-16 sm:pb-24">
+      <main className="min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6] pt-28 pb-16 sm:pb-24">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="mb-8">
             <Breadcrumbs

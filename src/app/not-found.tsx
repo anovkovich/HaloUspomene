@@ -105,7 +105,7 @@ export default function NotFound() {
           </h1>
           <p className="text-[#8B2833] text-lg leading-relaxed">
             Stranica na kojoj ste tražili ne postoji. Ako Vas zanima jedan od
-            naših servisa — Audio Knjiga Uspomena ili Digitalna Pozivnica —
+            naših servisa — Audio Knjiga Uspomena ili Website Pozivnica —
             ispunite formu i javićemo Vam se.
           </p>
         </div>
@@ -267,8 +267,8 @@ export default function NotFound() {
                     <option value="Audio Knjiga Uspomena">
                       Audio Knjiga Uspomena
                     </option>
-                    <option value="Digitalna Pozivnica">
-                      Digitalna Pozivnica
+                    <option value="Website Pozivnica">
+                      Website Pozivnica
                     </option>
                     <option value="Oboje / Nisam siguran">
                       Oboje / Nisam siguran
