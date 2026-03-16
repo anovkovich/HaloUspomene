@@ -43,6 +43,7 @@ export interface WeddingData {
   scriptFont?: ScriptFontType;
   useCyrillic?: boolean; // Use Cyrillic script for static text
   rsvp_form_url: string;
+  responses_spreadsheet_id?: string; // Google Sheets ID for RSVP responses
   entry_IDs: Entry_IDs;
   couple_names: {
     bride: string;
