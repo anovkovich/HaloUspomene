@@ -57,6 +57,35 @@ export async function getRSVPResponses(
     .filter((entry) => entry.name.trim() !== "");
 }
 
+export async function saveRasporedSedenja(
+  spreadsheetId: string,
+  json: string,
+): Promise<void> {
+  const auth = getAuth(false);
+  const sheets = google.sheets({ version: "v4", auth });
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: "H1",
+    valueInputOption: "RAW",
+    requestBody: { values: [[json]] },
+  });
+}
+
+export async function loadRasporedSedenja(
+  spreadsheetId: string,
+): Promise<string | null> {
+  const auth = getAuth(true);
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: "H1",
+  });
+
+  return response.data.values?.[0]?.[0] ?? null;
+}
+
 export async function setEntryCategory(
   spreadsheetId: string,
   rowIndex: number,

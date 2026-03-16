@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
@@ -11,6 +12,7 @@ import {
   UserPlus,
   Loader2,
   RefreshCw,
+  LayoutDashboard,
 } from "lucide-react";
 import type { RSVPEntry } from "@/lib/google-sheets";
 import type { Entry_IDs } from "../types";
@@ -194,6 +196,7 @@ interface PotvrdeClientProps {
   formUrl: string;
   entry_IDs: Entry_IDs;
   spreadsheetId: string;
+  slug: string;
 }
 
 export default function PotvrdeClient({
@@ -203,6 +206,7 @@ export default function PotvrdeClient({
   formUrl,
   entry_IDs,
   spreadsheetId,
+  slug,
 }: PotvrdeClientProps) {
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState(""); // "" = all
@@ -321,8 +325,20 @@ export default function PotvrdeClient({
 
   return (
     <>
-      {/* Refresh */}
-      <div className="flex justify-end mb-4">
+      {/* Toolbar: refresh + seating chart link */}
+      <div className="flex items-center justify-between mb-4 gap-2">
+        <Link
+          href={`/pozivnica/${slug}/raspored-sedenja`}
+          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded transition-opacity hover:opacity-80"
+          style={{
+            backgroundColor: "var(--theme-primary)",
+            color: "white",
+          }}
+        >
+          <LayoutDashboard size={13} />
+          Raspored sedenja
+        </Link>
+
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}

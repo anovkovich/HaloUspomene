@@ -136,6 +136,7 @@ export default async function PotvrdeePage({ params }: PageProps) {
               formUrl={weddingData.rsvp_form_url}
               entry_IDs={weddingData.entry_IDs}
               spreadsheetId={weddingData.responses_spreadsheet_id!}
+              slug={slug}
             />
           )}
         </div>

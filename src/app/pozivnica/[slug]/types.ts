@@ -59,6 +59,7 @@ export interface WeddingData {
   timeline: TimelineItem[];
   countdown_enabled: boolean;
   map_enabled: boolean;
+  paid_for_raspored?: boolean; // Unlocks full seating chart (default: false = demo, 1 seat only)
 }
 
 // Comprehensive theme configuration

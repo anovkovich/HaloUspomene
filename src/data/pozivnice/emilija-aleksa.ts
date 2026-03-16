@@ -1,6 +1,7 @@
 import { WeddingData } from "@/app/pozivnica/[slug]/types";
 
 const weddingData: WeddingData = {
+  paid_for_raspored: true, // Unlocks full seating chart (default: false = demo, 1 seat only)
   theme: "luxury_gold", // Options: "classic_rose" | "modern_mono" | "minimal_sage" | "luxury_gold" | "warm_terracotta"
   scriptFont: "alex-brush", // Options: "great-vibes" | "dancing-script" | "alex-brush" | "parisienne" | "allura"
   rsvp_form_url:
