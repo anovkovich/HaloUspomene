@@ -20,7 +20,7 @@ export default async function PotvrdeePage({ params }: PageProps) {
 
   if (!weddingData) notFound();
 
-  let responses = [];
+  let responses: import("@/lib/google-sheets").RSVPEntry[] = [];
   let fetchError = false;
 
   if (weddingData.responses_spreadsheet_id) {
