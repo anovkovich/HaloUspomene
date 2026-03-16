@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DatePickerProps {
@@ -103,10 +104,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const handleOpen = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      const calendarWidth = Math.max(rect.width, 320);
+      const overflowsRight = rect.left + calendarWidth > window.innerWidth - 8;
+      const left = overflowsRight
+        ? Math.max(8, rect.right - calendarWidth)
+        : rect.left;
       setDropdownPos({
         top: rect.bottom + 8,
-        left: rect.left,
-        width: rect.width,
+        left,
+        width: calendarWidth,
       });
     }
     setIsOpen(true);
@@ -215,8 +221,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
         />
       </button>
 
-      {/* Dropdown — fixed positioned to escape overflow-hidden parents */}
-      {isOpen && (
+      {/* Dropdown — portalled to body to escape backdrop-filter ancestors */}
+      {isOpen && typeof document !== "undefined" && createPortal(
         <>
           {/* Backdrop */}
           <div
@@ -331,7 +337,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
               </div>
             )}
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );
