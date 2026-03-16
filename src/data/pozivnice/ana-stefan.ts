@@ -6,6 +6,8 @@ const weddingData: WeddingData = {
   useCyrillic: true,
   rsvp_form_url:
     "https://docs.google.com/forms/d/e/1FAIpQLSdiQ1LSoOJ9nb1oATP2qbC2hv2US3wjZ28JNpSIbpKG3VCjuQ/formResponse",
+  responses_spreadsheet_id: "1LBi98SA4HoKnNnwAlODo7toA9H0hn5dWIhJvI0rp9Bk",
+  potvrde_password: "Stefan1503",
   entry_IDs: {
     name: "entry.390802369",
     attending: "entry.1092075394",

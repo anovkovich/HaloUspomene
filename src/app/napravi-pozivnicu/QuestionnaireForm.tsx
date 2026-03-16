@@ -266,8 +266,8 @@ function InvitationPreview({
   const cssVars = getThemeCSSVariables(theme, scriptFont);
   const config = getThemeConfig(theme);
 
-  const brideName = bride || "Mlada";
-  const groomName = groom || "Mladoženja";
+  const brideName = bride || "Mladini";
+  const groomName = groom || "Mladoženjini";
   const dateDisplay = formatPreviewDate(eventDate.split("T")[0]);
   const celebrateLove = useCyrillic ? "Прославите Љубав" : "Celebrate Love";
 
@@ -280,7 +280,6 @@ function InvitationPreview({
         minHeight: "300px",
       }}
     >
-
       {/* Preview label */}
       <div className="absolute top-3 right-3 z-10">
         <span
@@ -1029,6 +1028,11 @@ function generateRawJson(formData: FormData): string {
     })
     .join(",\n");
 
+  const eventDate = new Date(formData.event_date);
+  const dd = String(eventDate.getDate()).padStart(2, "0");
+  const mm = String(eventDate.getMonth() + 1).padStart(2, "0");
+  const autoPassword = `${formData.groom}${dd}${mm}`;
+
   const lines = [
     `import { WeddingData } from "@/app/pozivnica/[slug]/types";`,
     ``,
@@ -1038,8 +1042,9 @@ function generateRawJson(formData: FormData): string {
     `  useCyrillic: ${formData.useCyrillic},`,
     `  rsvp_form_url: "TODO",`,
     `  // responses_spreadsheet_id: Google Sheets ID from the Forms response spreadsheet URL`,
-    `  // Share the sheet with: halouspomeneacc@halouspomene-490410.iam.gserviceaccount.com (Viewer)`,
+    `  // Share the sheet with: halouspomeneacc@halouspomene-490410.iam.gserviceaccount.com (Editor)`,
     `  responses_spreadsheet_id: "TODO",`,
+    `  potvrde_password: "${autoPassword}", // Password for /potvrde admin page`,
     `  entry_IDs: { name: "entry.TODO", attending: "entry.TODO", plusOnes: "entry.TODO", details: "entry.TODO" },`,
     `  couple_names: { bride: "${formData.bride}", groom: "${formData.groom}", full_display: "${formData.full_display}" },`,
     `  event_date: "${formData.event_date}",`,

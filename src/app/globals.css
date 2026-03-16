@@ -35,6 +35,10 @@ html {
   font-family: var(--font-elegant), sans-serif;
 }
 
+.font-raleway {
+  font-family: var(--font-raleway), sans-serif;
+}
+
 /* Smooth animations */
 @keyframes fadeInUp {
   from {

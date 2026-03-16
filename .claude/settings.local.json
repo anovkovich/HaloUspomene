@@ -3,7 +3,8 @@
     "allow": [
       "Bash(cd \"C:/Users/Aleksa/Documents/_nextjs_start/HaloUspomene\" && npx tsc --noEmit 2>&1 | head -50)",
       "Bash(# Rename blog content file\nmv \"src/data/blog/content/digitalna-pozivnica-audio-guest-book.md\" \"src/data/blog/content/website-pozivnica-audio-guest-book.md\"\n\n# Find and rename the image\nfind . -name \"digitalna-pozivnica.png\" -not -path \"*/node_modules/*\")",
-      "Bash(mv \"./public/images/gallery/digitalna-pozivnica.png\" \"./public/images/gallery/website-pozivnica.png\"\nmv \"./out/images/gallery/digitalna-pozivnica.png\" \"./out/images/gallery/website-pozivnica.png\")"
+      "Bash(mv \"./public/images/gallery/digitalna-pozivnica.png\" \"./public/images/gallery/website-pozivnica.png\"\nmv \"./out/images/gallery/digitalna-pozivnica.png\" \"./out/images/gallery/website-pozivnica.png\")",
+      "Bash(cd \"C:\\\\Users\\\\Aleksa\\\\Documents\\\\_nextjs_start\\\\HaloUspomene\" && npm install googleapis)"
     ]
   }
 }

@@ -6,6 +6,7 @@ const weddingData: WeddingData = {
 
   rsvp_form_url:
     "https://docs.google.com/forms/d/e/1FAIpQLSebuARXf1ZQAAVnkkdxf6nvQZ7eGjWWT-f3WZENM_kioI-TtT/formResponse",
+  potvrde_password: "Nikola1605",
   entry_IDs: {
     name: "entry.1765465417",
     attending: "entry.1547193122",

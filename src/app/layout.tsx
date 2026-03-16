@@ -12,6 +12,7 @@ import {
   Bad_Script,
   Cormorant_Garamond,
   Josefin_Sans,
+  Raleway,
 } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
@@ -98,6 +99,13 @@ const josefinSans = Josefin_Sans({
   weight: ["300", "400"],
   variable: "--font-elegant",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const raleway = Raleway({
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-raleway",
+  subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
@@ -531,7 +539,7 @@ export default function RootLayout({
         )}
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} ${raleway.variable} antialiased`}
       >
         {children}
         {gaId && <AnalyticsProvider />}
