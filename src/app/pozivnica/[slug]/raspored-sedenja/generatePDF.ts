@@ -98,6 +98,12 @@ export async function generateAndDownloadPDF(
   const guestMap = Object.fromEntries(attending.map((g) => [g.rowIndex, g]));
   const seatingTables = tables
     .filter((t) => t.type !== "decoration")
+    .sort((a, b) => {
+      const special = (l: string) => l.toLowerCase().includes("mladen") ? -1 : 0;
+      const sa = special(a.label), sb = special(b.label);
+      if (sa !== sb) return sa - sb;
+      return a.label.localeCompare(b.label, "sr");
+    })
     .map((table) => {
       const guestSeats: Record<number, { name: string; here: number; total: number }> = {};
       for (const seat of table.assignments) {
@@ -160,55 +166,141 @@ export async function generateAndDownloadPDF(
   const fW = imgWmm * fitScale, fH = imgHmm * fitScale;
   doc.addImage(svgImgData, "PNG", MARGIN + (CW - fW) / 2, y, fW, fH);
 
-  // ── Guest list page ────────────────────────────────────────────────────────
-  doc.addPage();
-  y = MARGIN;
-  doc.setFontSize(10);
-  doc.setTextColor(100, 100, 100);
-  doc.text("RASPORED GOSTIJU PO STOLOVIMA", MARGIN, y);
-  y += 9;
+  // ── Guest list pages via SVG rendering ────────────────────────────────────
+  // SVG→canvas→PNG so the browser font engine handles all Unicode (diacritics)
+  const escXml = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  const COL_GAP = 5, COL_W = (CW - COL_GAP) / 2;
-  const col1X = MARGIN, col2X = MARGIN + COL_W + COL_GAP;
-  let colY = [y, y], col = 0;
-  const PAGE_H = 297;
+  const GW = 1160; // SVG px width, maps to CW mm in PDF
+  const GSCALE = GW / CW; // px per mm
+  const gmm = (n: number) => Math.round(n * GSCALE);
+  const gpt = (n: number) => Math.round(n * GSCALE * 0.353); // pt → SVG px
 
-  for (const table of seatingTables) {
-    const blockH = 7 + table.guests.length * 6 + 3;
-    if (colY[col] + blockH > PAGE_H - MARGIN) {
-      if (col === 0 && colY[1] + blockH <= PAGE_H - MARGIN) {
-        col = 1;
-      } else {
-        doc.addPage();
-        colY = [MARGIN, MARGIN];
-        col = 0;
+  const G_colGap = gmm(5);
+  const G = {
+    rowH: gmm(6), labelH: gmm(8.5), gap: gmm(3),
+    colGap: G_colGap, colW: Math.floor((GW - G_colGap) / 2),
+    pageH: gmm(267), titleH: gmm(10),
+    fsTitle: gpt(9), fsLabel: gpt(11), fsGuest: gpt(10),
+  };
+
+  const svgImg = (svg: string, w: number, h: number): Promise<string> =>
+    new Promise(resolve => {
+      const c = document.createElement("canvas");
+      c.width = w * 2; c.height = h * 2;
+      const ctx = c.getContext("2d")!;
+      ctx.scale(2, 2); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+      const img = new Image();
+      const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+      img.onload = () => { ctx.drawImage(img, 0, 0, w, h); URL.revokeObjectURL(url); resolve(c.toDataURL("image/png")); };
+      img.src = url;
+    });
+
+  type GBlock = { x: number; y: number; t: { label: string; guests: { name: string; here: number; total: number }[] } };
+  const gPages: GBlock[][] = [];
+  let gPage: GBlock[] = [];
+  let gColY = [G.titleH, G.titleH];
+
+  for (const t of seatingTables) {
+    const bh = G.labelH + t.guests.length * G.rowH + G.gap;
+    let c = gColY[0] <= gColY[1] ? 0 : 1;
+    if (gColY[c] + bh > G.pageH) {
+      const oc = 1 - c;
+      if (gColY[oc] + bh <= G.pageH) { c = oc; }
+      else { gPages.push(gPage); gPage = []; gColY = [0, 0]; c = 0; }
+    }
+    gPage.push({ x: c === 0 ? 0 : G.colW + G.colGap, y: gColY[c], t });
+    gColY[c] += bh;
+  }
+  if (gPage.length) gPages.push(gPage);
+
+  for (let pi = 0; pi < gPages.length; pi++) {
+    const blocks = gPages[pi];
+    const maxY = Math.max(...blocks.map(b => b.y + G.labelH + b.t.guests.length * G.rowH + G.gap));
+    const svgH = Math.max(100, maxY);
+
+    let inner = "";
+    if (pi === 0) {
+      inner += `<text x="0" y="${Math.round(G.titleH * 0.72)}" font-size="${G.fsTitle}" font-family="Arial,sans-serif" fill="#aaa" letter-spacing="3">${escXml("RASPORED GOSTIJU PO STOLOVIMA")}</text>`;
+    }
+
+    for (const { x, y: by, t } of blocks) {
+      inner += `<text x="${x}" y="${by + Math.round(G.labelH * 0.72)}" font-size="${G.fsLabel}" font-family="Arial,sans-serif" fill="#232323" font-weight="700">${escXml(t.label.toUpperCase())}</text>`;
+      inner += `<line x1="${x}" y1="${by + G.labelH}" x2="${x + G.colW}" y2="${by + G.labelH}" stroke="#ddd" stroke-width="1.5"/>`;
+      let gy = by + G.labelH;
+      for (const g of t.guests) {
+        const ty = gy + Math.round(G.rowH * 0.68);
+        inner += `<text x="${x + 3}" y="${ty}" font-size="${G.fsGuest}" font-family="Arial,sans-serif" fill="#232323">${escXml(g.name)}</text>`;
+        inner += `<text x="${x + G.colW - 3}" y="${ty}" font-size="${G.fsGuest}" font-family="Arial,sans-serif" fill="#aaa" text-anchor="end">${g.here}/${g.total}</text>`;
+        gy += G.rowH;
+        inner += `<line x1="${x}" y1="${gy}" x2="${x + G.colW}" y2="${gy}" stroke="#f0f0f0" stroke-width="1"/>`;
       }
     }
-    const x = col === 0 ? col1X : col2X;
-    let by = colY[col];
 
-    doc.setFontSize(11);
-    doc.setTextColor(35, 35, 35);
-    doc.setFont("helvetica", "bold");
-    doc.text(table.label.toUpperCase(), x, by);
-    doc.setDrawColor(210, 210, 210);
-    doc.setLineWidth(0.2);
-    doc.line(x, by + 1.5, x + COL_W, by + 1.5);
-    by += 6.5;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${GW}" height="${svgH}">${inner}</svg>`;
+    const gImgData = await svgImg(svg, GW, svgH);
+    doc.addPage();
+    doc.addImage(gImgData, "PNG", MARGIN, MARGIN, CW, svgH / GSCALE);
+  }
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    for (const g of table.guests) {
-      doc.setTextColor(35, 35, 35);
-      doc.text(g.name, x, by);
-      doc.setTextColor(160, 160, 160);
-      doc.text(`${g.here}/${g.total}`, x + COL_W, by, { align: "right" });
-      doc.setDrawColor(245, 245, 245);
-      doc.line(x, by + 1, x + COL_W, by + 1);
-      by += 6;
+  // ── Alphabetical guest index page ──────────────────────────────────────────
+  // Build flat list: guest name → table label(s)
+  const guestTableMap: Record<string, Set<string>> = {};
+  for (const t of seatingTables) {
+    for (const g of t.guests) {
+      if (!guestTableMap[g.name]) guestTableMap[g.name] = new Set();
+      guestTableMap[g.name].add(t.label);
     }
-    colY[col] = by + 3;
-    col = colY[0] <= colY[1] ? 0 : 1;
+  }
+  const allGuests = Object.entries(guestTableMap)
+    .map(([name, tableSet]) => ({ name, tables: [...tableSet].join(", ") }))
+    .sort((a, b) => a.name.localeCompare(b.name, "sr"));
+
+  if (allGuests.length > 0) {
+    // Reuse same SVG helpers (GW, GSCALE, gmm, gpt, G, svgImg, escXml)
+    type ABlock = { x: number; y: number; g: { name: string; tables: string } };
+    const aPages: ABlock[][] = [];
+    let aPage: ABlock[] = [];
+    let aColY = [G.titleH, G.titleH];
+    let aCol = 0; // always fill col 0 first, then col 1
+
+    for (const g of allGuests) {
+      const bh = G.rowH;
+      if (aColY[aCol] + bh > G.pageH) {
+        if (aCol === 0) {
+          aCol = 1; // switch to second column
+        } else {
+          aPages.push(aPage); aPage = []; aColY = [0, 0]; aCol = 0;
+        }
+      }
+      const c = aCol;
+      aPage.push({ x: c === 0 ? 0 : G.colW + G.colGap, y: aColY[c], g });
+      aColY[c] += bh;
+    }
+    if (aPage.length) aPages.push(aPage);
+
+    for (let pi = 0; pi < aPages.length; pi++) {
+      const blocks = aPages[pi];
+      const maxY = Math.max(...blocks.map(b => b.y + G.rowH));
+      const svgH = Math.max(100, maxY);
+
+      let inner = "";
+      if (pi === 0) {
+        inner += `<text x="0" y="${Math.round(G.titleH * 0.72)}" font-size="${G.fsTitle}" font-family="Arial,sans-serif" fill="#aaa" letter-spacing="3">${escXml("ABECEDNI SPISAK GOSTIJU")}</text>`;
+      }
+
+      for (const { x, y: by, g } of blocks) {
+        const ty = by + Math.round(G.rowH * 0.68);
+        inner += `<text x="${x + 3}" y="${ty}" font-size="${G.fsGuest}" font-family="Arial,sans-serif" fill="#232323">${escXml(g.name)}</text>`;
+        inner += `<text x="${x + G.colW - 3}" y="${ty}" font-size="${G.fsGuest}" font-family="Arial,sans-serif" fill="#aaa" text-anchor="end">${escXml(g.tables)}</text>`;
+        inner += `<line x1="${x}" y1="${by + G.rowH}" x2="${x + G.colW}" y2="${by + G.rowH}" stroke="#f0f0f0" stroke-width="1"/>`;
+      }
+
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${GW}" height="${svgH}">${inner}</svg>`;
+      const aImgData = await svgImg(svg, GW, svgH);
+      doc.addPage();
+      doc.addImage(aImgData, "PNG", MARGIN, MARGIN, CW, svgH / GSCALE);
+    }
   }
 
   doc.save(`raspored-sedenja-${coupleNames.replace(/[\s/\\]+/g, "-")}.pdf`);

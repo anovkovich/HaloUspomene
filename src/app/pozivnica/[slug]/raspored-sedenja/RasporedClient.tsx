@@ -38,6 +38,7 @@ export default function RasporedClient({
   spreadsheetId,
   paidForRaspored,
 }: Props) {
+  const [isMobileWarning, setIsMobileWarning] = useState(false);
   const [tables, setTables] = useState<TableData[]>([]);
   const [selectedGuest, setSelectedGuest] = useState<RSVPEntry | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -47,6 +48,11 @@ export default function RasporedClient({
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, startSave] = useTransition();
   const initialLoadDone = useRef(false);
+
+  // Show mobile warning once per session
+  useEffect(() => {
+    if (window.innerWidth < 1024) setIsMobileWarning(true);
+  }, []);
 
   // Load from Google Sheets on mount (Sheets is the single source of truth)
   useEffect(() => {
@@ -178,6 +184,46 @@ export default function RasporedClient({
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: "var(--theme-background)" }}>
+
+      {isMobileWarning && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-7 flex flex-col items-center gap-4 text-center shadow-2xl"
+            style={{ backgroundColor: "var(--theme-surface)", border: "1px solid var(--theme-border-light)" }}
+          >
+            <div className="text-4xl">💻</div>
+            <h2
+              className="font-raleway font-semibold text-base leading-snug"
+              style={{ color: "var(--theme-text)" }}
+            >
+              Ova stranica je optimizovana za računar
+            </h2>
+            <p
+              className="font-raleway text-sm leading-relaxed"
+              style={{ color: "var(--theme-text-light)" }}
+            >
+              Raspored sedenja je interaktivna alatka koja najboije funkcioniše na laptopu ili desktop računaru. Preporučujemo da je otvorite sa većeg uređaja.
+            </p>
+            <a
+              href={`/pozivnica/${slug}/potvrde`}
+              className="mt-1 w-full py-2.5 rounded-xl font-raleway text-sm font-medium transition-opacity hover:opacity-80 text-center"
+              style={{ backgroundColor: "var(--theme-primary)", color: "white" }}
+            >
+              Vrati se na pregled potvrda
+            </a>
+            <button
+              onClick={() => setIsMobileWarning(false)}
+              className="font-raleway text-xs transition-opacity hover:opacity-60"
+              style={{ color: "var(--theme-text-light)" }}
+            >
+              Svejedno nastavi
+            </button>
+          </div>
+        </div>
+      )}
       <GuestSidebar
         attending={attending}
         selectedGuest={selectedGuest}
@@ -200,7 +246,12 @@ export default function RasporedClient({
         />
 
         <div className="flex-1 relative overflow-hidden">
-          <AddTablePanel onAddTable={addTable} onAddDecoration={addDecoration} />
+          <AddTablePanel
+            onAddTable={addTable}
+            onAddDecoration={addDecoration}
+            totalSeats={tables.reduce((s, t) => s + (t.type !== "decoration" ? t.seats : 0), 0)}
+            occupiedSeats={tables.reduce((s, t) => s + t.assignments.filter(Boolean).length, 0)}
+          />
 
           {/* Scrollable canvas */}
           <div

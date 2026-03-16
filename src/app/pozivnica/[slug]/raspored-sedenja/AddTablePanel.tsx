@@ -16,16 +16,29 @@ import type { TableData } from "./types";
 
 interface Props {
   onAddTable: (type: TableType, label?: string, seats?: number) => void;
-  onAddDecoration: (label: string, decorationType: TableData["decorationType"]) => void;
+  onAddDecoration: (
+    label: string,
+    decorationType: TableData["decorationType"],
+  ) => void;
+  totalSeats: number;
+  occupiedSeats: number;
 }
 
-export default function AddTablePanel({ onAddTable, onAddDecoration }: Props) {
+export default function AddTablePanel({
+  onAddTable,
+  onAddDecoration,
+  totalSeats,
+  occupiedSeats,
+}: Props) {
   const [specialOpen, setSpecialOpen] = useState(false);
   const specialRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (specialRef.current && !specialRef.current.contains(e.target as Node)) {
+      if (
+        specialRef.current &&
+        !specialRef.current.contains(e.target as Node)
+      ) {
         setSpecialOpen(false);
       }
     };
@@ -42,22 +55,34 @@ export default function AddTablePanel({ onAddTable, onAddDecoration }: Props) {
     {
       icon: <Crown size={13} />,
       label: "Mladenački sto",
-      action: () => { onAddTable("single-sided", "Mladenački sto", 6); setSpecialOpen(false); },
+      action: () => {
+        onAddTable("single-sided", "Mladenački sto", 6);
+        setSpecialOpen(false);
+      },
     },
     {
       icon: <Music size={13} />,
       label: "Mesto za muziku",
-      action: () => { onAddDecoration("Mesto za muziku", "music"); setSpecialOpen(false); },
+      action: () => {
+        onAddDecoration("Mesto za muziku", "music");
+        setSpecialOpen(false);
+      },
     },
     {
       icon: <Disc3 size={13} />,
-      label: "Plesni podium",
-      action: () => { onAddDecoration("Plesni podium", "dancing"); setSpecialOpen(false); },
+      label: "Plesni podijum",
+      action: () => {
+        onAddDecoration("Plesni podijum", "dancing");
+        setSpecialOpen(false);
+      },
     },
     {
       icon: <DoorOpen size={13} />,
       label: "Ulaz",
-      action: () => { onAddDecoration("Ulaz", "entrance"); setSpecialOpen(false); },
+      action: () => {
+        onAddDecoration("Ulaz", "entrance");
+        setSpecialOpen(false);
+      },
     },
   ];
 
@@ -115,16 +140,37 @@ export default function AddTablePanel({ onAddTable, onAddDecoration }: Props) {
                 className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs font-raleway text-left transition-colors hover:opacity-70"
                 style={{
                   color: "var(--theme-text)",
-                  borderBottom: idx < arr.length - 1 ? "1px solid var(--theme-border-light)" : "none",
+                  borderBottom:
+                    idx < arr.length - 1
+                      ? "1px solid var(--theme-border-light)"
+                      : "none",
                 }}
               >
-                <span style={{ color: "var(--theme-primary)" }}>{item.icon}</span>
+                <span style={{ color: "var(--theme-primary)" }}>
+                  {item.icon}
+                </span>
                 {item.label}
               </button>
             ))}
           </div>
         )}
       </div>
+
+      {totalSeats > 0 && (
+        <div
+          className="flex items-center px-3 py-2 rounded text-xs font-raleway shadow-sm"
+          style={{
+            backgroundColor: "var(--theme-surface)",
+            border: "1px solid var(--theme-border-light)",
+            color: "var(--theme-text-light)",
+          }}
+        >
+          Slobodnih mesta:&nbsp;
+          <span style={{ color: "var(--theme-text)", fontWeight: 500 }}>
+            {totalSeats - occupiedSeats}&nbsp;/&nbsp;{totalSeats}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
