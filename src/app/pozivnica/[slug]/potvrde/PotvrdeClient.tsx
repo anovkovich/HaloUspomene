@@ -501,7 +501,7 @@ export default function PotvrdeClient({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Pretraži..."
-          className="w-full bg-transparent pl-11 pr-4 py-3 text-sm placeholder:opacity-40 outline-none transition-colors duration-300"
+          className="w-full bg-transparent pl-11 pr-10 py-3 text-sm placeholder:opacity-40 outline-none transition-colors duration-300"
           style={{
             color: "var(--theme-text)",
             backgroundColor: "var(--theme-surface)",
@@ -513,6 +513,15 @@ export default function PotvrdeClient({
             (e.target.style.borderColor = "var(--theme-border-light)")
           }
         />
+        {query && (
+          <button
+            onClick={() => setQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer transition-opacity hover:opacity-60"
+            style={{ color: "var(--theme-text-light)" }}
+          >
+            <X size={15} />
+          </button>
+        )}
       </div>
 
       {/* Inline add guest form */}
@@ -660,7 +669,7 @@ export default function PotvrdeClient({
               {onlyWithNotes ? "Sve potvrde" : "Samo sa napomenom"}
             </button>
           </div>
-          {filteredAttending.length === 0 ? (
+          {filteredAttending.length === 0 && onlyWithNotes && !q ? (
             <div
               className="text-center py-10"
               style={{
