@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -7,8 +8,34 @@ import { getThemeCSSVariables } from "../constants";
 import type { TableData } from "../raspored-sedenja/types";
 import GdeSedimClient from "./GdeSedimClient";
 
+const BASE_URL = "https://halouspomene.rs";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const weddingData = getWeddingData(slug);
+  if (!weddingData) return {};
+  const title = `${weddingData.couple_names.full_display} - Gde sedim?`;
+  const description = `Pronađite svoje mesto sedenja za venčanje - ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: `${BASE_URL}/images/gallery/website-pozivnica.png`, width: 1200, height: 630, alt: title }],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`${BASE_URL}/images/gallery/website-pozivnica.png`],
+    },
+  };
 }
 
 export async function generateStaticParams() {

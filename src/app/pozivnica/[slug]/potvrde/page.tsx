@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Heart } from "lucide-react";
 import { getWeddingData, getAllWeddingSlugs } from "@/data/pozivnice";
@@ -6,8 +7,34 @@ import { getThemeCSSVariables } from "../constants";
 import PotvrdeClient from "./PotvrdeClient";
 import PotvrdeGate from "./PotvrdeGate";
 
+const BASE_URL = "https://halouspomene.rs";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const weddingData = getWeddingData(slug);
+  if (!weddingData) return {};
+  const title = `${weddingData.couple_names.full_display} - Potvrde dolaska`;
+  const description = `Pregled potvrda dolaska za venčanje - ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: `${BASE_URL}/images/gallery/website-pozivnica.png`, width: 1200, height: 630, alt: title }],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`${BASE_URL}/images/gallery/website-pozivnica.png`],
+    },
+  };
 }
 
 export async function generateStaticParams() {
