@@ -1,16 +1,16 @@
 import { WeddingData } from "@/app/pozivnica/[slug]/types";
 
 // Import all wedding data files
-import emilijaAleksa from "./emilija-aleksa";
 import anastasijaJovan from "./anastasija-jovan";
 import saraNikola from "./sara-nikola";
 import jelenaMarko from "./jelena-marko";
 import marinaAleksandar from "./marina-aleksandar";
 import anaStefan from "./ana-stefan";
+import anaDejan from "./ana-dejan";
 
 // Map slugs to their wedding data
 const weddingDataMap: Record<string, WeddingData> = {
-  "emilija-aleksa": emilijaAleksa,
+  "ana-dejan": anaDejan,
   "anastasija-jovan": anastasijaJovan,
   "sara-nikola": saraNikola,
   "jelena-marko": jelenaMarko,

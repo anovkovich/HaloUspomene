@@ -354,7 +354,14 @@ export default function InvitationClient({
                       style={{ color: "var(--theme-primary)" }}
                       fill="currentColor"
                     />
-                    {t.confirmAttendance ?? "Potvrdite dolazak"}
+                    <span className="flex mt-1">
+                      {t.confirmAttendance ?? "Potvrdite dolazak"}
+                    </span>
+                    <Heart
+                      size={14}
+                      style={{ color: "var(--theme-primary)" }}
+                      fill="currentColor"
+                    />
                   </button>
                 )}
               </div>
