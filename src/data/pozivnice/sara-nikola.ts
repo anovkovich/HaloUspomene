@@ -20,7 +20,7 @@ const weddingData: WeddingData = {
     full_display: "Sara & Nikola",
   },
   event_date: "2026-05-16T16:30:00",
-  submit_until: "1. Maj 2026.",
+  submit_until: "2026-05-01",
   tagline:
     "Radujemo se da zajedno sa vama proslavimo početak našeg zajedničkog puta.",
 

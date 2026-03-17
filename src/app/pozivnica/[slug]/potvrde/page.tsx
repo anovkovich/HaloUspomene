@@ -43,8 +43,8 @@ export default async function PotvrdeePage({ params }: PageProps) {
   const pageContent = (
     <div className="min-h-screen" style={cssVars as React.CSSProperties}>
       <div
-        className="min-h-screen"
-        style={{ backgroundColor: "var(--theme-background)", color: "var(--theme-text)" }}
+        className="min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6]"
+        style={{ color: "var(--theme-text)" }}
       >
         <div className="max-w-3xl mx-auto px-4 py-12 sm:py-16">
           {/* Title */}

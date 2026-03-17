@@ -22,7 +22,7 @@ const weddingData: WeddingData = {
     full_display: "Анастасија & Јован",
   },
   event_date: "2026-09-13T16:00:00",
-  submit_until: "31. Августа 2026.",
+  submit_until: "2026-08-31",
   tagline:
     "Најлепше приче се не пишу саме - помозите нам да наше ново поглавље отворимо на најлепши начин!",
   thankYouFooter:

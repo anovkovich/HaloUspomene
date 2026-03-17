@@ -55,6 +55,14 @@ export interface Translations {
   // Footer
   thankYouFooter: string;
 
+  // RSVP closed
+  rsvpClosed: string;
+  rsvpClosedSub: string;
+
+  // Seating lookup
+  findSeating: string;
+  seatingAvailableNote: string;
+
   // Envelope
   inviteYou: string;
 
@@ -100,7 +108,7 @@ export const latinTranslations: Translations = {
   additionalNotes: "Dodatne napomene",
   notesPlaceholder: "Posebni zahtevi ili poruka mladencima...",
   sending: "Šaljem...",
-  confirmAttendance: "Potvrdi dolazak",
+  confirmAttendance: "Potvrdite dolazak",
 
   // Success messages
   thankYou: "Hvala Vam!",
@@ -113,6 +121,15 @@ export const latinTranslations: Translations = {
   person: "osoba",
   people: "osobe",
   notAttending: "Neće prisustvovati",
+
+  // RSVP closed
+  rsvpClosed: "Prijave su zatvorene",
+  rsvpClosedSub: "Rok za prijavu je istekao.",
+
+  // Seating lookup
+  findSeating: "✦ Pronađite mesto sedenja ✦",
+  seatingAvailableNote:
+    "Dan pre proslave biće dostupna provera gde ste raspoređeni sa sedenjem - ukoliko host uradi online raspored sedenja.",
 
   // Footer
   thankYouFooter: "Hvala Vam što ste deo naše sreće",
@@ -183,7 +200,7 @@ export const cyrillicTranslations: Translations = {
   additionalNotes: "Додатне напомене",
   notesPlaceholder: "Посебни захтеви или порука младенцима...",
   sending: "Шаљем...",
-  confirmAttendance: "Потврди долазак",
+  confirmAttendance: "Потврдите долазак",
 
   // Success messages
   thankYou: "Хвала Вам!",
@@ -196,6 +213,15 @@ export const cyrillicTranslations: Translations = {
   person: "особа",
   people: "особе",
   notAttending: "Неће присуствовати",
+
+  // RSVP closed
+  rsvpClosed: "Пријаве су затворене",
+  rsvpClosedSub: "Рок за пријаву је истекао.",
+
+  // Seating lookup
+  findSeating: "✦ Пронађите место седења ✦",
+  seatingAvailableNote:
+    "Дан пре прославе биће доступна провера где сте распоређени са седењем - уколико хост уради онлајн распоред седења.",
 
   // Footer
   thankYouFooter: "Хвала Вам што сте део наше среће",

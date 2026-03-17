@@ -19,8 +19,8 @@ const weddingData: WeddingData = {
     groom: "Aleksa",
     full_display: "Emilija & Aleksa",
   },
-  event_date: "2026-08-29T16:00:00",
-  submit_until: "05. Avgusta 2026.",
+  event_date: "2026-03-17T16:00:00",
+  submit_until: "2026-03-17",
   tagline: "Započnimo naše zajedničko poglavlje uz vaše prisustvo i osmehe.",
   locations: [
     {

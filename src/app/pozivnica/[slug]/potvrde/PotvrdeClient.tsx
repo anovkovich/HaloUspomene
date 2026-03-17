@@ -69,40 +69,32 @@ function ResponseCard({
         boxShadow: "var(--theme-shadow)",
       }}
     >
-      <div className="flex items-start gap-4">
-        <div
-          className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mt-0.5"
-          style={{
-            backgroundColor: isAttending
-              ? "var(--theme-primary-muted)"
-              : "rgba(0,0,0,0.05)",
-            border: `2px solid ${isAttending ? "var(--theme-primary)" : "var(--theme-border)"}`,
-          }}
-        >
-          {isAttending ? (
-            <Check
-              size={16}
-              style={{ color: "var(--theme-primary)" }}
-              strokeWidth={2.5}
-            />
-          ) : (
-            <X
-              size={16}
-              style={{ color: "var(--theme-text-light)" }}
-              strokeWidth={2.5}
-            />
-          )}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          {/* Top row: name + badge */}
-          <div className="flex items-start justify-between gap-2">
-            <p
-              className="text-base font-medium leading-tight"
-              style={{ color: "var(--theme-text)" }}
-            >
-              {entry.name}
-            </p>
+      <div className="space-y-2">
+          {/* Top row: icon + name + badge */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div
+                className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                style={{
+                  backgroundColor: isAttending
+                    ? "var(--theme-primary-muted)"
+                    : "rgba(0,0,0,0.05)",
+                  border: `1.5px solid ${isAttending ? "var(--theme-primary)" : "var(--theme-border)"}`,
+                }}
+              >
+                {isAttending ? (
+                  <Check size={10} style={{ color: "var(--theme-primary)" }} strokeWidth={2.5} />
+                ) : (
+                  <X size={10} style={{ color: "var(--theme-text-light)" }} strokeWidth={2.5} />
+                )}
+              </div>
+              <p
+                className="text-base font-medium leading-tight"
+                style={{ color: "var(--theme-text)" }}
+              >
+                {entry.name}
+              </p>
+            </div>
             {isAttending ? (
               <span
                 className="flex items-center gap-1.5 text-xs font-raleway font-medium rounded-full flex-shrink-0 leading-none"
@@ -133,7 +125,7 @@ function ResponseCard({
 
           {/* Category toggle — below name, attending only */}
           {isAttending && (
-            <div className="flex gap-1 mt-2">
+            <div className="flex gap-1">
               {CATEGORIES.map((cat) => {
                 const active = category === cat.value;
                 return (
@@ -163,7 +155,7 @@ function ResponseCard({
 
           {entry.details && entry.details !== "-" && (
             <p
-              className="mt-2 text-sm leading-relaxed flex items-start gap-1.5"
+              className="text-sm leading-relaxed flex items-start gap-1.5"
               style={{ color: "var(--theme-text-muted)" }}
             >
               <MessageSquare
@@ -177,13 +169,12 @@ function ResponseCard({
 
           {entry.timestamp && (
             <p
-              className="mt-2 text-xs font-raleway opacity-60"
+              className="text-xs font-raleway opacity-60"
               style={{ color: "var(--theme-text-light)" }}
             >
               {formatTimestamp(entry.timestamp)}
             </p>
           )}
-        </div>
       </div>
     </div>
   );
@@ -505,41 +496,6 @@ export default function PotvrdeClient({
         </div>
       )}
 
-      {/* Search */}
-      <div className="relative mb-4">
-        <Search
-          size={15}
-          className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ color: "var(--theme-text-light)" }}
-        />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Pretraži..."
-          className="w-full bg-transparent pl-11 pr-10 py-3 text-sm placeholder:opacity-40 outline-none transition-colors duration-300"
-          style={{
-            color: "var(--theme-text)",
-            backgroundColor: "var(--theme-surface)",
-            borderRadius: "var(--theme-radius)",
-            border: "1px solid var(--theme-border-light)",
-          }}
-          onFocus={(e) => (e.target.style.borderColor = "var(--theme-primary)")}
-          onBlur={(e) =>
-            (e.target.style.borderColor = "var(--theme-border-light)")
-          }
-        />
-        {query && (
-          <button
-            onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer transition-opacity hover:opacity-60"
-            style={{ color: "var(--theme-text-light)" }}
-          >
-            <X size={15} />
-          </button>
-        )}
-      </div>
-
       {/* Inline add guest form */}
       <div
         className="mb-8 p-4"
@@ -651,6 +607,41 @@ export default function PotvrdeClient({
             </motion.p>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search
+          size={15}
+          className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ color: "var(--theme-text-light)" }}
+        />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Pretraži..."
+          className="w-full bg-transparent pl-11 pr-10 py-3 text-sm placeholder:opacity-40 outline-none transition-colors duration-300"
+          style={{
+            color: "var(--theme-text)",
+            backgroundColor: "var(--theme-surface)",
+            borderRadius: "var(--theme-radius)",
+            border: "1px solid var(--theme-border-light)",
+          }}
+          onFocus={(e) => (e.target.style.borderColor = "var(--theme-primary)")}
+          onBlur={(e) =>
+            (e.target.style.borderColor = "var(--theme-border-light)")
+          }
+        />
+        {query && (
+          <button
+            onClick={() => setQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer transition-opacity hover:opacity-60"
+            style={{ color: "var(--theme-text-light)" }}
+          >
+            <X size={15} />
+          </button>
+        )}
       </div>
 
       {/* Attending */}
@@ -776,7 +767,7 @@ export default function PotvrdeClient({
             }}
           >
             <p className="text-sm" style={{ color: "var(--theme-text-muted)" }}>
-              Nema rezultata za „{query}"
+              {`Nema rezultata za „${query}"`}
             </p>
           </div>
         )}

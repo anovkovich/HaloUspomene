@@ -64,5 +64,5 @@ export default async function InvitationPage({ params }: PageProps) {
     notFound();
   }
 
-  return <InvitationClient data={weddingData} />;
+  return <InvitationClient data={weddingData} slug={slug} />;
 }

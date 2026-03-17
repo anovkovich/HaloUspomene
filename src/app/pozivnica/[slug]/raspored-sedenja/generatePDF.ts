@@ -5,6 +5,7 @@ export async function generateAndDownloadPDF(
   tables: TableData[],
   attending: RSVPEntry[],
   coupleNames: string,
+  slug: string,
 ) {
   // ── Floor plan SVG ────────────────────────────────────────────────────────
   const SEAT_SZ = 30, ORBIT_R = 68, HEADER_H = 28, SURFACE_H = 60, SEAT_ZONE = SEAT_SZ + 10;
@@ -165,6 +166,36 @@ export async function generateAndDownloadPDF(
   const fitScale = Math.min(CW / imgWmm, maxH / imgHmm, 1);
   const fW = imgWmm * fitScale, fH = imgHmm * fitScale;
   doc.addImage(svgImgData, "PNG", MARGIN + (CW - fW) / 2, y, fW, fH);
+  y += fH + 8;
+
+  // ── QR code for /gde-sedim ─────────────────────────────────────────────────
+  try {
+    const QRCode = await import("qrcode");
+    const qrUrl = `https://halouspomene.rs/pozivnica/${slug}/gde-sedim`;
+    const qrDataUrl = await QRCode.toDataURL(qrUrl, { width: 512, margin: 1, color: { dark: "#232323", light: "#ffffff" } });
+    const qrSizeInline = 28; // mm — when it fits on page 1
+    const qrSizePage  = 50; // mm — when it gets its own last page
+    const remainingH = 297 - MARGIN - y;
+    if (remainingH >= qrSizeInline + 12) {
+      // Fits on the hall-schema page
+      const qrX = PW / 2 - qrSizeInline / 2;
+      doc.addImage(qrDataUrl, "PNG", qrX, y, qrSizeInline, qrSizeInline);
+      doc.setFontSize(7);
+      doc.setTextColor(160, 160, 160);
+      doc.text("Skenirajte za pregled rasporeda sedenja", PW / 2, y + qrSizeInline + 4, { align: "center" });
+    } else {
+      // Doesn't fit — add as the very last page
+      doc.addPage();
+      const qrX = PW / 2 - qrSizePage / 2;
+      const qrY = 297 / 2 - qrSizePage / 2 - 10;
+      doc.addImage(qrDataUrl, "PNG", qrX, qrY, qrSizePage, qrSizePage);
+      doc.setFontSize(9);
+      doc.setTextColor(160, 160, 160);
+      doc.text("Skenirajte za pregled rasporeda sedenja", PW / 2, qrY + qrSizePage + 6, { align: "center" });
+    }
+  } catch {
+    // QR generation is non-critical — skip silently
+  }
 
   // ── Guest list pages via SVG rendering ────────────────────────────────────
   // SVG→canvas→PNG so the browser font engine handles all Unicode (diacritics)

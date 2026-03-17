@@ -242,7 +242,7 @@ export default function RasporedClient({
           saveSuccess={saveSuccess}
           saveError={saveError}
           onSave={handleSave}
-          onDownloadPDF={() => generateAndDownloadPDF(tables, attending, coupleNames)}
+          onDownloadPDF={() => generateAndDownloadPDF(tables, attending, coupleNames, slug)}
         />
 
         <div className="flex-1 relative overflow-hidden">

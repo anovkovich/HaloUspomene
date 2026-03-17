@@ -16,7 +16,7 @@ const weddingData: WeddingData = {
   },
   couple_names: { bride: "Ана", groom: "Стефан", full_display: "Ана & Стефан" },
   event_date: "2026-06-06T15:30",
-  submit_until: "15. Маја 2026.",
+  submit_until: "2026-05-15",
   tagline:
     "Најлепши тренуци су они које делимо са драгим људима – зато желимо да будете део нашег посебног дана.",
   thankYouFooter: "Хвала Вам што сте део наше среће",

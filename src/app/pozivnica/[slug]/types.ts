@@ -51,8 +51,8 @@ export interface WeddingData {
     groom: string;
     full_display: string;
   };
-  event_date: string; // ISO string or YYYY-MM-DD
-  submit_until: string;
+  event_date: string;   // ISO string: YYYY-MM-DDTHH:mm:ss
+  submit_until: string; // ISO date: YYYY-MM-DD — deadline for RSVP submissions
   tagline?: string;
   thankYouFooter?: string;
   locations: Location[];

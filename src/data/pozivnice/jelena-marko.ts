@@ -21,7 +21,7 @@ const weddingData: WeddingData = {
   },
 
   event_date: "2026-05-09T13:00:00",
-  submit_until: "15. april 2026.",
+  submit_until: "2026-04-15",
   tagline:
     "Sa radošću vas pozivamo da budete deo dana koji će zauvek ostati u našim srcima.",
 

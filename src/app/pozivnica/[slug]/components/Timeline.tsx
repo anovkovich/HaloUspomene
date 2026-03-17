@@ -41,15 +41,15 @@ interface TimelineProps {
 export const Timeline: React.FC<TimelineProps> = ({ items }) => {
   return (
     <div className="relative max-w-3xl mx-auto px-6 py-12">
-      {/* Central Line with gradient */}
-      <div className="absolute left-8 md:left-1/2 transform -translate-x-1/2 h-full w-px top-0">
-        <div
-          className="h-full w-full"
-          style={{
-            background: `linear-gradient(to bottom, transparent, var(--theme-primary), transparent)`,
-          }}
-        />
-      </div>
+      {/* Central Line */}
+      <div
+        className="absolute left-8 md:left-1/2 -translate-x-1/2 w-px"
+        style={{
+          top: 0,
+          bottom: 0,
+          background: `linear-gradient(to bottom, transparent, var(--theme-primary) 12%, var(--theme-primary) 88%, transparent)`,
+        }}
+      />
 
       <div className="space-y-12 sm:space-y-16">
         {items.map((item, index) => {
@@ -166,28 +166,6 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
         })}
       </div>
 
-      {/* End ornament */}
-      <div className="flex justify-center mt-16">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-12 h-px"
-            style={{
-              background: `linear-gradient(to right, transparent, var(--theme-border))`,
-            }}
-          />
-          <Heart
-            size={16}
-            style={{ color: "var(--theme-primary)", opacity: 0.4 }}
-            strokeWidth={1}
-          />
-          <div
-            className="w-12 h-px"
-            style={{
-              background: `linear-gradient(to left, transparent, var(--theme-border))`,
-            }}
-          />
-        </div>
-      </div>
     </div>
   );
 };
