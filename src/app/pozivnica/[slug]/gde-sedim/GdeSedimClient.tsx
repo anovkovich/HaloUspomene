@@ -193,6 +193,12 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
           }}
         >
           <p
+            className="font-serif text-lg"
+            style={{ color: "var(--theme-text)" }}
+          >
+            {selected.guestName}
+          </p>
+          <p
             className="font-raleway text-sm uppercase tracking-wider"
             style={{ color: "var(--theme-text-light)" }}
           >
