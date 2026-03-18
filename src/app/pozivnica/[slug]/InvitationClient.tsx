@@ -339,7 +339,7 @@ export default function InvitationClient({
                   data.paid_for_raspored ? (
                     <Link
                       href={`/pozivnica/${slug}/gde-sedim`}
-                      className="flex items-center gap-3 px-8 py-3.5 rounded-full font-elegant text-sm tracking-[0.2em] uppercase transition-all hover:opacity-80"
+                      className="flex items-center justify-center gap-2 sm:gap-3 px-5 sm:px-8 py-3.5 rounded-full font-elegant text-xs sm:text-sm tracking-[0.12em] sm:tracking-[0.2em] uppercase transition-all hover:opacity-80 whitespace-nowrap"
                       style={{
                         backgroundColor: "var(--theme-primary)",
                         color: "#fff",
@@ -352,7 +352,7 @@ export default function InvitationClient({
                 ) : (
                   <button
                     onClick={() => scrollTo("rsvp")}
-                    className="flex items-center gap-3 px-8 py-3.5 rounded-full font-elegant text-sm tracking-[0.2em] uppercase transition-all hover:opacity-80 cursor-pointer"
+                    className="flex items-center justify-center gap-2 sm:gap-3 px-5 sm:px-8 py-3.5 rounded-full font-elegant text-xs sm:text-sm tracking-[0.12em] sm:tracking-[0.2em] uppercase transition-all hover:opacity-80 cursor-pointer whitespace-nowrap"
                     style={{
                       backgroundColor: "rgba(255,255,255,0.5)",
                       border: `1px solid var(--theme-border-light)`,

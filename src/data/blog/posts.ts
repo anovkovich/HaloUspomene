@@ -206,18 +206,21 @@ const allBlogPosts: BlogPost[] = [
     title:
       "Od Pozivnice do Rasporeda Sedenja: Kako smo rešili celu organizaciju venčanja",
     description:
-      "Kompletan vodič kroz HALO Uspomene website pozivnicu — od slanja linka gostima, praćenja RSVP odgovora, rasporeda sedenja sa PDF-om, do Gde-Sedim stranice na dan venčanja.",
+      "Kompletan vodič kroz HALO Uspomene — od slanja linka gostima, RSVP-a, rasporeda sedenja, PDF pozivnice za štampu, do Audio Knjige Utisaka i Retro Telefona Uspomena.",
     category: "Vodič",
     tags: [
       "website pozivnica venčanje",
       "online pozivnica",
       "RSVP forma venčanje",
       "raspored sedenja venčanje",
+      "audio guest book venčanje",
+      "retro telefon uspomena",
+      "PDF pozivnica",
       "organizacija venčanja",
       "HALO Uspomene",
     ],
     publishDate: "2026-03-15",
-    readTime: 11,
+    readTime: 14,
     featured: true,
     content: loadContent("website-pozivnica-kompletan-vodic"),
   },
