@@ -38,12 +38,12 @@ export default function Toolbar({
       }}
     >
       <Link
-        href={`/pozivnica/${slug}/potvrde`}
+        href={`/pozivnica/${slug}/portal`}
         className="flex items-center gap-1.5 text-xs font-raleway transition-opacity hover:opacity-60"
         style={{ color: "var(--theme-text-light)" }}
       >
         <ArrowLeft size={13} />
-        Potvrde
+        Portal
       </Link>
 
       <div className="h-4 w-px" style={{ backgroundColor: "var(--theme-border-light)" }} />

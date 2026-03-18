@@ -69,6 +69,24 @@ export interface Translations {
   // Envelope
   inviteYou: string;
 
+  // Audio guest book
+  audioGuestBook: string;
+  audioRecordMessage: string;
+  audioRecordButton: string;
+  audioStopButton: string;
+  audioYourName: string;
+  audioSendMessage: string;
+  audioThankYou: string;
+  audioRecordAnother: string;
+  audioMaxDuration: string;
+  audioNotAvailableYet: string;
+  audioDemoTitle: string;
+  audioDemoDescription: string;
+  audioListenTitle: string;
+  audioNoMessages: string;
+  audioBeFirst: string;
+  audioDownloadAll: string;
+
   // Date labels
   months: string[];
   days_week: string[];
@@ -142,6 +160,24 @@ export const latinTranslations: Translations = {
 
   // Envelope
   inviteYou: "Pozivaju Vas na venčanje",
+
+  // Audio guest book
+  audioGuestBook: "Audio knjiga utisaka",
+  audioRecordMessage: "Ostavite audio poruku mladencima",
+  audioRecordButton: "Snimite poruku",
+  audioStopButton: "Zaustavite",
+  audioYourName: "Vaše ime",
+  audioSendMessage: "Pošaljite poruku",
+  audioThankYou: "Hvala na poruci!",
+  audioRecordAnother: "Snimite još jednu",
+  audioMaxDuration: "Maksimalno trajanje: 60 sekundi",
+  audioNotAvailableYet: "Audio knjiga utisaka biće dostupna na dan venčanja",
+  audioDemoTitle: "Audio knjiga utisaka — Demo",
+  audioDemoDescription: "Ovo je demo verzija. Kontaktirajte nas za aktivaciju.",
+  audioListenTitle: "Audio poruke gostiju",
+  audioNoMessages: "Još uvek nema audio poruka",
+  audioBeFirst: "Budite prvi koji će ostaviti poruku!",
+  audioDownloadAll: "Preuzmi sve poruke",
 
   // Date labels
   months: [
@@ -237,6 +273,24 @@ export const cyrillicTranslations: Translations = {
 
   // Envelope
   inviteYou: "Позивају Вас на венчање",
+
+  // Audio guest book
+  audioGuestBook: "Audio knjiga utisaka",
+  audioRecordMessage: "Ostavite audio poruku mladencima",
+  audioRecordButton: "Snimite poruku",
+  audioStopButton: "Zaustavite",
+  audioYourName: "Vaše ime",
+  audioSendMessage: "Pošaljite poruku",
+  audioThankYou: "Hvala na poruci!",
+  audioRecordAnother: "Snimite još jednu",
+  audioMaxDuration: "Maksimalno trajanje: 60 sekundi",
+  audioNotAvailableYet: "Audio knjiga utisaka biće dostupna na dan venčanja",
+  audioDemoTitle: "Audio knjiga utisaka — Demo",
+  audioDemoDescription: "Ovo je demo verzija. Kontaktirajte nas za aktivaciju.",
+  audioListenTitle: "Audio poruke gostiju",
+  audioNoMessages: "Još uvek nema audio poruka",
+  audioBeFirst: "Budite prvi koji će ostaviti poruku!",
+  audioDownloadAll: "Preuzmi sve poruke",
 
   // Date labels
   months: [

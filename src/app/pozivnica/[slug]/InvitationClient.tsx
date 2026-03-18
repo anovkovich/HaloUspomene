@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { Heart, Calendar, MapPin, Clock } from "lucide-react";
+import { Heart, Calendar, MapPin, Clock, Mic } from "lucide-react";
 // MapPin and Clock retained for Feature Cards section below
 import { WeddingData } from "./types";
 import { getThemeConfig } from "./constants";
@@ -81,7 +81,7 @@ export default function InvitationClient({
   );
 
   // RSVP deadline & seating lookup availability
-  const { isPastDeadline, showGdeSedimLink, submitUntilDisplay } =
+  const { isPastDeadline, showGdeSedimLink, isWeddingDay, submitUntilDisplay } =
     useMemo(() => {
       const now = new Date();
       const deadline = new Date(data.submit_until);
@@ -90,6 +90,12 @@ export default function InvitationClient({
       const dayBefore = new Date(eventDate);
       dayBefore.setDate(dayBefore.getDate() - 1);
       dayBefore.setHours(0, 0, 0, 0);
+      // Wedding day gate: event day + day after
+      const eventStart = new Date(eventDate);
+      eventStart.setHours(0, 0, 0, 0);
+      const dayAfterEnd = new Date(eventStart);
+      dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
+      dayAfterEnd.setHours(23, 59, 59, 999);
       // Format submit_until as "DD. MMMM YYYY."
       const d = new Date(data.submit_until);
       const day = d.getDate().toString().padStart(2, "0");
@@ -98,6 +104,7 @@ export default function InvitationClient({
       return {
         isPastDeadline: now > deadline,
         showGdeSedimLink: now >= dayBefore,
+        isWeddingDay: now >= eventStart && now <= dayAfterEnd,
         submitUntilDisplay: `${day}. ${month} ${year}.`,
       };
     }, [data.submit_until, data.event_date, t.months]);
@@ -610,6 +617,20 @@ export default function InvitationClient({
               </p>
             )}
           </div>
+
+          {/* Audio guest book link — wedding day only */}
+          {isWeddingDay && data.paid_for_audio && (
+            <div className="max-w-xl mx-auto mt-6 text-center">
+              <Link
+                href={`/pozivnica/${slug}/audio-knjiga`}
+                className="inline-flex items-center gap-2 font-elegant text-sm uppercase tracking-widest transition-opacity hover:opacity-70"
+                style={{ color: "var(--theme-primary)" }}
+              >
+                <Mic size={14} />
+                {t.audioGuestBook}
+              </Link>
+            </div>
+          )}
         </section>
 
         {/* Footer */}

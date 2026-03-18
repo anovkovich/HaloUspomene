@@ -222,7 +222,7 @@ export default function RasporedClient({
               Raspored sedenja je interaktivna alatka koja najboije funkcioniše na laptopu ili desktop računaru. Preporučujemo da je otvorite sa većeg uređaja.
             </p>
             <a
-              href={`/pozivnica/${slug}/potvrde`}
+              href={`/pozivnica/${slug}/portal`}
               className="mt-1 w-full py-2.5 rounded-xl font-raleway text-sm font-medium transition-opacity hover:opacity-80 text-center"
               style={{ backgroundColor: "var(--theme-primary)", color: "white" }}
             >

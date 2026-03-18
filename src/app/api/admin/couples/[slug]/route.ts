@@ -3,6 +3,8 @@ import { jwtVerify } from "jose";
 import { upsertCouple, deleteCouple, patchCouple } from "@/lib/couples";
 import { deleteRSVPResponses } from "@/lib/rsvp";
 import { deleteSeatingLayout } from "@/lib/seating";
+import { getAudioMessages, deleteAllAudioMessages } from "@/lib/audio";
+import { del } from "@vercel/blob";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
@@ -51,10 +53,24 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { slug } = await params;
+
+  // Delete audio blobs from Vercel Blob before clearing metadata
+  try {
+    const audioMessages = await getAudioMessages(slug);
+    if (audioMessages.length > 0) {
+      await Promise.allSettled(
+        audioMessages.map((m) => del(m.blobUrl))
+      );
+    }
+  } catch {
+    // Continue with deletion even if blob cleanup fails
+  }
+
   await Promise.all([
     deleteCouple(slug),
     deleteRSVPResponses(slug),
     deleteSeatingLayout(slug),
+    deleteAllAudioMessages(slug),
   ]);
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,7 +13,13 @@ import {
   Loader2,
   RefreshCw,
   LayoutDashboard,
+  Download,
+  Mic,
+  AlertTriangle,
+  ExternalLink,
 } from "lucide-react";
+import type { WeddingData } from "../types";
+import { generateInvitationPDF } from "../generateInvitationPDF";
 import type { RSVPEntry } from "@/lib/rsvp";
 import {
   addManualGuest,
@@ -184,6 +190,7 @@ interface PotvrdeClientProps {
   notAttending: RSVPEntry[];
   totalGuests: number;
   slug: string;
+  weddingData: WeddingData;
 }
 
 export default function PotvrdeClient({
@@ -191,6 +198,7 @@ export default function PotvrdeClient({
   notAttending,
   totalGuests: initialTotalGuests,
   slug,
+  weddingData,
 }: PotvrdeClientProps) {
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState(""); // "" = all
@@ -207,6 +215,21 @@ export default function PotvrdeClient({
   const [categories, setCategories] = useState<Record<string, string>>(() =>
     Object.fromEntries(initialAttending.map((e) => [e.id, e.category])),
   );
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  const expiryBanner = useMemo(() => {
+    const now = new Date();
+    const eventDate = new Date(weddingData.event_date);
+    if (now <= eventDate) return null; // event hasn't passed yet
+    const expiryDate = new Date(eventDate);
+    expiryDate.setDate(expiryDate.getDate() + 5);
+    const daysLeft = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const expiryStr = expiryDate.toLocaleDateString("sr-RS", { day: "numeric", month: "long" });
+    if (daysLeft > 0) {
+      return { urgent: false, text: `Pristup portalu je aktivan još ${daysLeft} ${daysLeft === 1 ? "dan" : "dana"} (do ${expiryStr}). Nakon toga vaši podaci mogu biti obrisani.` };
+    }
+    return { urgent: true, text: `Rok od 5 dana od venčanja je istekao. Vaši podaci mogu biti obrisani u svakom trenutku.` };
+  }, [weddingData.event_date]);
 
   const handleAddGuest = (e: React.FormEvent) => {
     e.preventDefault();
@@ -309,8 +332,35 @@ export default function PotvrdeClient({
 
   return (
     <>
-      {/* Toolbar: refresh + seating chart link */}
-      <div className="flex items-center justify-between mb-4 gap-2">
+      {/* 5-day expiry banner */}
+      {expiryBanner && !bannerDismissed && (
+        <div
+          className="flex items-start gap-3 px-4 py-3 rounded-xl mb-5 text-sm font-raleway"
+          style={{
+            backgroundColor: expiryBanner.urgent ? "rgba(174,52,63,0.1)" : "rgba(212,175,55,0.12)",
+            border: `1px solid ${expiryBanner.urgent ? "rgba(174,52,63,0.3)" : "rgba(212,175,55,0.3)"}`,
+            color: "var(--theme-text)",
+          }}
+        >
+          <AlertTriangle
+            size={15}
+            className="flex-shrink-0 mt-0.5"
+            style={{ color: expiryBanner.urgent ? "var(--theme-primary)" : "#b8972a" }}
+          />
+          <p className="flex-1 leading-relaxed" style={{ color: "var(--theme-text-muted)" }}>
+            {expiryBanner.text}
+          </p>
+          <button
+            onClick={() => setBannerDismissed(true)}
+            className="flex-shrink-0 opacity-40 hover:opacity-80 transition-opacity cursor-pointer"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Toolbar: actions */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <Link
           href={`/pozivnica/${slug}/raspored-sedenja`}
           className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded transition-opacity hover:opacity-80"
@@ -324,9 +374,49 @@ export default function PotvrdeClient({
         </Link>
 
         <button
+          onClick={() => generateInvitationPDF(weddingData, slug, weddingData.paid_for_pdf ?? false, weddingData.useCyrillic ?? false)}
+          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded transition-opacity hover:opacity-80 cursor-pointer"
+          style={{
+            backgroundColor: "var(--theme-surface)",
+            border: "1px solid var(--theme-border-light)",
+            color: "var(--theme-text)",
+          }}
+        >
+          <Download size={13} />
+          PDF Pozivnica
+        </button>
+
+        <Link
+          href={`/pozivnica/${slug}/audio-knjiga/slusaj`}
+          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded transition-opacity hover:opacity-80"
+          style={{
+            backgroundColor: "var(--theme-surface)",
+            border: "1px solid var(--theme-border-light)",
+            color: "var(--theme-text)",
+          }}
+        >
+          <Mic size={13} />
+          Audio poruke
+        </Link>
+
+        <Link
+          href={`/pozivnica/${slug}`}
+          target="_blank"
+          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded transition-opacity hover:opacity-80"
+          style={{
+            backgroundColor: "var(--theme-surface)",
+            border: "1px solid var(--theme-border-light)",
+            color: "var(--theme-text)",
+          }}
+        >
+          <ExternalLink size={13} />
+          Pozivnica
+        </Link>
+
+        <button
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded cursor-pointer transition-opacity hover:opacity-70 disabled:opacity-40"
+          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded cursor-pointer transition-opacity hover:opacity-70 disabled:opacity-40 sm:ml-auto"
           style={{
             backgroundColor: "var(--theme-surface)",
             border: "1px solid var(--theme-border-light)",
@@ -337,6 +427,21 @@ export default function PotvrdeClient({
           {isRefreshing ? "Osvežavam..." : "Osveži listu"}
         </button>
       </div>
+
+      {/* Empty state */}
+      {allResponses.length === 0 && (
+        <div
+          className="text-center py-16 rounded-xl"
+          style={{
+            backgroundColor: "var(--theme-surface)",
+            border: "1px solid var(--theme-border-light)",
+          }}
+        >
+          <p className="font-raleway text-base" style={{ color: "var(--theme-text-muted)" }}>
+            Još uvek nema potvrda
+          </p>
+        </div>
+      )}
 
       {/* Stats */}
       {allResponses.length > 0 && (

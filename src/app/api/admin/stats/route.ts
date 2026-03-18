@@ -3,6 +3,7 @@ import { jwtVerify } from "jose";
 import { getAllCouples } from "@/lib/couples";
 import { getRSVPResponses } from "@/lib/rsvp";
 import { loadSeatingLayout } from "@/lib/seating";
+import { getAudioMessageCount } from "@/lib/audio";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
@@ -27,6 +28,9 @@ export interface CoupleStats {
     totalSeats: number;
     assignedSeats: number;
   } | null;
+  audio: {
+    messageCount: number;
+  } | null;
 }
 
 export async function GET(req: NextRequest) {
@@ -38,7 +42,7 @@ export async function GET(req: NextRequest) {
 
   await Promise.allSettled(
     couples.map(async (couple) => {
-      const stats: CoupleStats = { rsvp: null, seating: null };
+      const stats: CoupleStats = { rsvp: null, seating: null, audio: null };
 
       // RSVP stats (from MongoDB)
       try {
@@ -70,6 +74,16 @@ export async function GET(req: NextRequest) {
             assignedSeats += t.assignments.filter(Boolean).length;
           }
           stats.seating = { totalSeats, assignedSeats };
+        }
+      } catch {
+        // leave null
+      }
+
+      // Audio stats
+      try {
+        const messageCount = await getAudioMessageCount(couple.slug);
+        if (messageCount > 0) {
+          stats.audio = { messageCount };
         }
       } catch {
         // leave null

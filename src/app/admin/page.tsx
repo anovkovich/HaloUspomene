@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ExternalLink, Pencil, Users, Armchair } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Pencil, Users, Armchair, Mic } from "lucide-react";
+import DeleteModal from "./DeleteModal";
 
 interface Couple {
   slug: string;
@@ -10,11 +11,13 @@ interface Couple {
   event_date: string;
   theme: string;
   paid_for_raspored?: boolean;
+  paid_for_audio?: boolean;
 }
 
 interface CoupleStats {
   rsvp: { attending: number; declined: number; totalGuests: number } | null;
   seating: { totalSeats: number; assignedSeats: number } | null;
+  audio: { messageCount: number } | null;
 }
 
 export default function AdminPage() {
@@ -22,6 +25,7 @@ export default function AdminPage() {
   const [stats, setStats] = useState<Record<string, CoupleStats>>({});
   const [loading, setLoading] = useState(true);
   const [needsLogin, setNeedsLogin] = useState(false);
+  const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -59,11 +63,6 @@ export default function AdminPage() {
     );
   if (loading) return <p className="text-white/40">Učitavanje...</p>;
 
-  async function handleDelete(slug: string) {
-    if (!confirm(`Obrisati ${slug}?`)) return;
-    await fetch(`/api/admin/couples/${slug}`, { method: "DELETE" });
-    setCouples((c) => c.filter((x) => x.slug !== slug));
-  }
 
   async function handleToggleRaspored(slug: string, current: boolean) {
     const newVal = !current;
@@ -83,6 +82,27 @@ export default function AdminPage() {
       setCouples((prev) =>
         prev.map((c) =>
           c.slug === slug ? { ...c, paid_for_raspored: current } : c
+        )
+      );
+    }
+  }
+
+  async function handleToggleAudio(slug: string, current: boolean) {
+    const newVal = !current;
+    setCouples((prev) =>
+      prev.map((c) =>
+        c.slug === slug ? { ...c, paid_for_audio: newVal } : c
+      )
+    );
+    const res = await fetch(`/api/admin/couples/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paid_for_audio: newVal }),
+    });
+    if (!res.ok) {
+      setCouples((prev) =>
+        prev.map((c) =>
+          c.slug === slug ? { ...c, paid_for_audio: current } : c
         )
       );
     }
@@ -114,12 +134,27 @@ export default function AdminPage() {
       <div className="space-y-3">
         {couples.map((c) => {
           const s = stats[c.slug];
-          const isPast = new Date(c.event_date) < new Date();
+          const eventDate = new Date(c.event_date);
+          const today = new Date();
+          const isToday = eventDate.toDateString() === today.toDateString();
+          const isPast = eventDate < today && !isToday;
+          const daysSince = isPast
+            ? Math.floor((today.getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24))
+            : 0;
+          const isExpired = daysSince > 5;
 
           return (
             <div
               key={c.slug}
-              className={`bg-white/5 border border-white/10 rounded-xl px-5 py-4 ${isPast ? "opacity-50" : ""}`}
+              className={`rounded-xl px-5 py-4 ${
+                isExpired
+                  ? "bg-red-950/40 border border-red-500/25 opacity-70"
+                  : isPast
+                  ? "bg-white/5 opacity-50 border border-white/10"
+                  : isToday
+                  ? "bg-white/5 border-2 border-[#AE343F]"
+                  : "bg-white/5 border border-white/10"
+              }`}
             >
               {/* Top row */}
               <div className="flex items-center justify-between mb-2">
@@ -132,7 +167,7 @@ export default function AdminPage() {
                       {c.theme}
                     </span>
                     <span
-                      className={`text-xs ${isPast ? "text-white/30" : "text-white/60"}`}
+                      className={`text-xs ${isExpired ? "text-red-400/60" : isPast ? "text-white/30" : "text-white/60"}`}
                     >
                       {daysUntil(c.event_date)}
                     </span>
@@ -163,7 +198,7 @@ export default function AdminPage() {
                     <Pencil size={16} />
                   </button>
                   <button
-                    onClick={() => handleDelete(c.slug)}
+                    onClick={() => setDeleteSlug(c.slug)}
                     className="p-2 rounded-lg hover:bg-red-500/20 transition-colors text-white/40 hover:text-red-400"
                     title="Obriši"
                   >
@@ -208,29 +243,69 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                {/* paid_for_raspored toggle */}
-                <div className="flex items-center gap-2 ml-auto">
-                  <span className="text-xs text-white/30">Raspored</span>
-                  <button
-                    onClick={() =>
-                      handleToggleRaspored(c.slug, !!c.paid_for_raspored)
-                    }
-                    className={`relative w-9 h-5 rounded-full transition-colors ${
-                      c.paid_for_raspored ? "bg-green-500" : "bg-white/10"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                        c.paid_for_raspored ? "translate-x-4" : ""
+                {/* Audio stats */}
+                {s?.audio && c.paid_for_audio && (
+                  <div className="flex items-center gap-1.5 text-xs text-white/50">
+                    <Mic size={12} />
+                    <span>
+                      {s.audio.messageCount} {s.audio.messageCount === 1 ? "poruka" : "poruka"}
+                    </span>
+                  </div>
+                )}
+
+                {/* Toggles */}
+                <div className="flex items-center gap-4 ml-auto">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-white/30">Raspored</span>
+                    <button
+                      onClick={() =>
+                        handleToggleRaspored(c.slug, !!c.paid_for_raspored)
+                      }
+                      className={`relative w-9 h-5 rounded-full transition-colors ${
+                        c.paid_for_raspored ? "bg-green-500" : "bg-white/10"
                       }`}
-                    />
-                  </button>
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                          c.paid_for_raspored ? "translate-x-4" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-white/30">Audio</span>
+                    <button
+                      onClick={() =>
+                        handleToggleAudio(c.slug, !!c.paid_for_audio)
+                      }
+                      className={`relative w-9 h-5 rounded-full transition-colors ${
+                        c.paid_for_audio ? "bg-green-500" : "bg-white/10"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                          c.paid_for_audio ? "translate-x-4" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {deleteSlug && (
+        <DeleteModal
+          slug={deleteSlug}
+          onClose={() => setDeleteSlug(null)}
+          onDeleted={() => {
+            setCouples((c) => c.filter((x) => x.slug !== deleteSlug));
+            setDeleteSlug(null);
+          }}
+        />
+      )}
     </div>
   );
 }

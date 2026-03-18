@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export default function EventPassedGuard({ eventDate, children }: Props) {
+  const pathname = usePathname();
+
   const isEventOver = useMemo(() => {
     const dayAfter = new Date(eventDate);
     dayAfter.setDate(dayAfter.getDate() + 1);
@@ -18,7 +21,15 @@ export default function EventPassedGuard({ eventDate, children }: Props) {
     return new Date() >= dayAfter;
   }, [eventDate]);
 
-  if (!isEventOver) return <>{children}</>;
+  // Management routes bypass the guard — couples need portal access after the event
+  const isManagementRoute =
+    pathname.includes("/portal") ||
+    pathname.includes("/potvrde") ||
+    pathname.includes("/prijava") ||
+    pathname.includes("/raspored-sedenja") ||
+    pathname.includes("/audio-knjiga");
+
+  if (!isEventOver || isManagementRoute) return <>{children}</>;
 
   return (
     <div

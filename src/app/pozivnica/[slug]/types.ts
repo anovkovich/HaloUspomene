@@ -51,6 +51,7 @@ export interface WeddingData {
   map_enabled: boolean;
   paid_for_raspored?: boolean; // Unlocks full seating chart (default: false = demo, 1 seat only)
   paid_for_pdf?: boolean; // Unlocks watermark-free PDF export
+  paid_for_audio?: boolean; // Unlocks audio guest book recording
 }
 
 // Comprehensive theme configuration

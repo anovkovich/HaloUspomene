@@ -89,7 +89,16 @@ export default function NovaPage() {
         <ArrowLeft size={14} /> Nazad
       </Link>
 
-      <h2 className="text-2xl font-semibold text-white mb-6">Nova pozivnica</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold text-white">Nova pozivnica</h2>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-lg px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
+        >
+          <Save size={15} /> {saving ? "Čuvanje..." : "Sačuvaj pozivnicu"}
+        </button>
+      </div>
 
       <div className="space-y-4">
         <div>
@@ -125,13 +134,6 @@ export default function NovaPage() {
           </div>
         )}
 
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-lg px-6 py-3 font-medium transition-colors disabled:opacity-50"
-        >
-          <Save size={16} /> {saving ? "Čuvanje..." : "Sačuvaj pozivnicu"}
-        </button>
       </div>
     </div>
   );
