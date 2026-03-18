@@ -63,6 +63,9 @@ export interface Translations {
   findSeating: string;
   seatingAvailableNote: string;
 
+  // PDF
+  downloadPDF: string;
+
   // Envelope
   inviteYou: string;
 
@@ -133,6 +136,9 @@ export const latinTranslations: Translations = {
 
   // Footer
   thankYouFooter: "Hvala Vam što ste deo naše sreće",
+
+  // PDF
+  downloadPDF: "Preuzmi pozivnicu",
 
   // Envelope
   inviteYou: "Pozivaju Vas na venčanje",
@@ -225,6 +231,9 @@ export const cyrillicTranslations: Translations = {
 
   // Footer
   thankYouFooter: "Хвала Вам што сте део наше среће",
+
+  // PDF
+  downloadPDF: "Преузми позивницу",
 
   // Envelope
   inviteYou: "Позивају Вас на венчање",

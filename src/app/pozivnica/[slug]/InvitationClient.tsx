@@ -12,7 +12,9 @@ import { EnvelopeLoader } from "./components/EnvelopeLoader";
 import { Countdown } from "./components/Countdown";
 import { Timeline } from "./components/Timeline";
 import { RSVPForm } from "./components/RSVPFrom";
+import { generateInvitationPDF } from "./generateInvitationPDF";
 import Link from "next/link";
+import { Download } from "lucide-react";
 
 interface InvitationClientProps {
   data: WeddingData;
@@ -675,11 +677,20 @@ export default function InvitationClient({
 
           <Link
             href="/"
-            className="w-full flex font-serif text-center gap-1 mb-5 justify-center items-center text-[10px] sm:text-xs mt-0 sm:mt-2 opacity-50"
+            className="w-full flex font-serif text-center gap-1 mb-3 justify-center items-center text-[10px] sm:text-xs mt-0 sm:mt-2 opacity-50"
           >
             Made with <Heart size={10} className="text-[#AE343F]" /> | Halo
             Pozivnice
           </Link>
+
+          <button
+            onClick={() => generateInvitationPDF(data, slug, data.paid_for_pdf ?? false, useCyrillic)}
+            className="flex items-center gap-1 mb-5 mx-auto text-[9px] uppercase tracking-[0.2em] transition-opacity hover:opacity-40 cursor-pointer"
+            style={{ color: "var(--theme-text-light)", opacity: 0.15 }}
+          >
+            <Download size={9} />
+            {t.downloadPDF}
+          </button>
         </footer>
       </div>
     </ThemeProvider>

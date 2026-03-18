@@ -50,6 +50,7 @@ export interface WeddingData {
   countdown_enabled: boolean;
   map_enabled: boolean;
   paid_for_raspored?: boolean; // Unlocks full seating chart (default: false = demo, 1 seat only)
+  paid_for_pdf?: boolean; // Unlocks watermark-free PDF export
 }
 
 // Comprehensive theme configuration
