@@ -360,63 +360,63 @@ export default function PotvrdeClient({
       )}
 
       {/* Toolbar: actions */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 mb-4">
         <Link
           href={`/pozivnica/${slug}/raspored-sedenja`}
-          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded transition-opacity hover:opacity-80"
+          className="flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded transition-opacity hover:opacity-80 min-w-0"
           style={{
             backgroundColor: "var(--theme-primary)",
             color: "white",
           }}
         >
-          <LayoutDashboard size={13} />
-          Raspored sedenja
+          <LayoutDashboard size={13} className="flex-shrink-0" />
+          <span className="truncate">Raspored sedenja</span>
         </Link>
 
         <button
           onClick={() => generateInvitationPDF(weddingData, slug, weddingData.paid_for_pdf ?? false, weddingData.useCyrillic ?? false)}
-          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded transition-opacity hover:opacity-80 cursor-pointer"
+          className="flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded transition-opacity hover:opacity-80 cursor-pointer min-w-0"
           style={{
             backgroundColor: "var(--theme-surface)",
             border: "1px solid var(--theme-border-light)",
             color: "var(--theme-text)",
           }}
         >
-          <Download size={13} />
-          PDF Pozivnica
+          <Download size={13} className="flex-shrink-0" />
+          <span className="truncate">PDF Pozivnica</span>
         </button>
 
         <Link
           href={`/pozivnica/${slug}/audio-knjiga/slusaj`}
-          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded transition-opacity hover:opacity-80"
+          className="flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded transition-opacity hover:opacity-80 min-w-0"
           style={{
             backgroundColor: "var(--theme-surface)",
             border: "1px solid var(--theme-border-light)",
             color: "var(--theme-text)",
           }}
         >
-          <Mic size={13} />
-          Audio poruke
+          <Mic size={13} className="flex-shrink-0" />
+          <span className="truncate">Audio poruke</span>
         </Link>
 
         <Link
           href={`/pozivnica/${slug}`}
           target="_blank"
-          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded transition-opacity hover:opacity-80"
+          className="flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded transition-opacity hover:opacity-80 min-w-0"
           style={{
             backgroundColor: "var(--theme-surface)",
             border: "1px solid var(--theme-border-light)",
             color: "var(--theme-text)",
           }}
         >
-          <ExternalLink size={13} />
-          Pozivnica
+          <ExternalLink size={13} className="flex-shrink-0" />
+          <span className="truncate">Pozivnica</span>
         </Link>
 
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="flex items-center gap-2 text-xs font-raleway font-medium px-3 py-2 rounded cursor-pointer transition-opacity hover:opacity-70 disabled:opacity-40 sm:ml-auto"
+          className="col-span-2 sm:col-span-1 flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded cursor-pointer transition-opacity hover:opacity-70 disabled:opacity-40 sm:ml-auto"
           style={{
             backgroundColor: "var(--theme-surface)",
             border: "1px solid var(--theme-border-light)",
