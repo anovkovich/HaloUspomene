@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 import { notFound } from "next/navigation";
 import { Heart } from "lucide-react";
