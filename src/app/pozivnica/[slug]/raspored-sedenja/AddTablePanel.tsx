@@ -158,7 +158,7 @@ export default function AddTablePanel({
 
       {totalSeats > 0 && (
         <div
-          className="flex items-center px-3 py-2 rounded text-xs font-raleway shadow-sm"
+          className="flex items-center px-3 rounded text-xs font-raleway shadow-sm self-stretch"
           style={{
             backgroundColor: "var(--theme-surface)",
             border: "1px solid var(--theme-border-light)",

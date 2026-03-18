@@ -8,7 +8,7 @@ interface LayoutProps {
 
 export default async function PozivnicaLayout({ children, params }: LayoutProps) {
   const { slug } = await params;
-  const weddingData = getWeddingData(slug);
+  const weddingData = await getWeddingData(slug);
 
   // Invalid slug → let the page handle the 404
   if (!weddingData) return <>{children}</>;

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
@@ -32,10 +33,12 @@ const Navbar: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center gap-3 group">
-              <img
+              <Image
                 src="/images/full-logo.png"
                 alt="HALO Uspomene - Audio Guest Book za Venčanja u Srbiji"
-                className="h-14 mb-1"
+                width={3519}
+                height={1798}
+                className="h-14 mb-1 w-auto"
               />
             </Link>
           </div>

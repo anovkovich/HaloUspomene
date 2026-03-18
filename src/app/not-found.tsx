@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   User,
@@ -327,11 +328,12 @@ export default function NotFound() {
       </div>
 
       <Link href="/" className="mt-8 flex items-center justify-center">
-        <img
-          // src="/images/logo.png"
+        <Image
           src="/images/full-logo.png"
           alt="Halo Uspomene LOGO"
-          className="h-26 mb-1"
+          width={3519}
+          height={1798}
+          className="h-26 mb-1 w-auto"
         />
       </Link>
     </div>

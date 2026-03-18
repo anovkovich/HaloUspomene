@@ -1,21 +1,20 @@
 "use client";
 
 import { useState, useEffect, useMemo, useTransition, useRef } from "react";
-import type { RSVPEntry } from "@/lib/google-sheets";
+import type { RSVPEntry } from "@/lib/rsvp";
 import type { TableData, TableType, SeatAssignment } from "./types";
 import GuestSidebar from "./GuestSidebar";
 import TableNode from "./TableNode";
 import Toolbar from "./Toolbar";
 import AddTablePanel from "./AddTablePanel";
 import UpgradeModal from "./UpgradeModal";
-import { saveRaspored, loadRaspored } from "./actions";
+import { saveRaspored, loadRaspored, checkPaidStatus } from "./actions";
 import { generateAndDownloadPDF } from "./generatePDF";
 
 interface Props {
   attending: RSVPEntry[];
   slug: string;
   coupleNames: string;
-  spreadsheetId?: string;
   paidForRaspored: boolean;
 }
 
@@ -35,8 +34,7 @@ export default function RasporedClient({
   attending,
   slug,
   coupleNames,
-  spreadsheetId,
-  paidForRaspored,
+  paidForRaspored: initialPaid,
 }: Props) {
   const [isMobileWarning, setIsMobileWarning] = useState(false);
   const [tables, setTables] = useState<TableData[]>([]);
@@ -48,17 +46,31 @@ export default function RasporedClient({
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, startSave] = useTransition();
   const initialLoadDone = useRef(false);
+  const [paidForRaspored, setPaidForRaspored] = useState(initialPaid);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  // Always check paid status from DB on gated actions
+  const recheckPaid = async (): Promise<boolean> => {
+    const fresh = await checkPaidStatus(slug);
+    setPaidForRaspored(fresh);
+    return fresh;
+  };
 
   // Show mobile warning once per session
   useEffect(() => {
     if (window.innerWidth < 1024) setIsMobileWarning(true);
   }, []);
 
-  // Load from Google Sheets on mount (Sheets is the single source of truth)
+  // Load seating layout from MongoDB on mount
   useEffect(() => {
     let cancelled = false;
-    if (spreadsheetId) {
-      loadRaspored(spreadsheetId).then((json) => {
+    if (slug) {
+      loadRaspored(slug).then((json) => {
         if (cancelled) return;
         try {
           if (json) setTables(JSON.parse(json));
@@ -88,17 +100,17 @@ export default function RasporedClient({
   }, [isDirty]);
 
   const assignedCounts = useMemo(() => {
-    const counts: Record<number, number> = {};
+    const counts: Record<string, number> = {};
     for (const table of tables)
       for (const seat of table.assignments)
-        if (seat) counts[seat.guestRowIndex] = (counts[seat.guestRowIndex] || 0) + 1;
+        if (seat) counts[seat.guestId] = (counts[seat.guestId] || 0) + 1;
     return counts;
   }, [tables]);
 
   useEffect(() => {
     if (!selectedGuest) return;
-    const total = parseInt(selectedGuest.plusOnes) || 1;
-    if ((assignedCounts[selectedGuest.rowIndex] || 0) >= total) setSelectedGuest(null);
+    const total = parseInt(selectedGuest.guestCount) || 1;
+    if ((assignedCounts[selectedGuest.id] || 0) >= total) setSelectedGuest(null);
   }, [assignedCounts, selectedGuest]);
 
   const totalAssigned = useMemo(
@@ -106,9 +118,10 @@ export default function RasporedClient({
     [assignedCounts],
   );
 
-  const addTable = (type: TableType, label?: string, seats?: number) => {
-    if (!paidForRaspored && (type === "rectangular" || type === "circle")) {
-      if (tables.filter((t) => t.type === type).length >= 2) {
+  const addTable = async (type: TableType, label?: string, seats?: number) => {
+    if ((type === "rectangular" || type === "circle") && tables.filter((t) => t.type === type).length >= 2) {
+      const paid = await recheckPaid();
+      if (!paid) {
         setShowUpgradeModal(true);
         return;
       }
@@ -141,12 +154,15 @@ export default function RasporedClient({
   const deleteTable = (id: string) =>
     setTables((prev) => prev.filter((t) => t.id !== id));
 
-  const handleSeatClick = (tableId: string, seatIndex: number) => {
+  const handleSeatClick = async (tableId: string, seatIndex: number) => {
     const targetTable = tables.find((t) => t.id === tableId);
     const isRemoving = !!targetTable?.assignments[seatIndex];
     if (!isRemoving && selectedGuest && !paidForRaspored && totalAssigned >= 1) {
-      setShowUpgradeModal(true);
-      return;
+      const paid = await recheckPaid();
+      if (!paid) {
+        setShowUpgradeModal(true);
+        return;
+      }
     }
     setTables((prev) =>
       prev.map((t) => {
@@ -156,10 +172,10 @@ export default function RasporedClient({
           const a = [...t.assignments]; a[seatIndex] = null; return { ...t, assignments: a };
         }
         if (!selectedGuest) return t;
-        const total = parseInt(selectedGuest.plusOnes) || 1;
-        if ((assignedCounts[selectedGuest.rowIndex] || 0) >= total) return t;
+        const total = parseInt(selectedGuest.guestCount) || 1;
+        if ((assignedCounts[selectedGuest.id] || 0) >= total) return t;
         const a = [...t.assignments];
-        const assignment: SeatAssignment = { guestRowIndex: selectedGuest.rowIndex, guestName: selectedGuest.name };
+        const assignment: SeatAssignment = { guestId: selectedGuest.id, guestName: selectedGuest.name };
         a[seatIndex] = assignment;
         return { ...t, assignments: a };
       }),
@@ -167,17 +183,15 @@ export default function RasporedClient({
   };
 
   const handleSave = () => {
-    if (!spreadsheetId) return;
     setSaveError("");
     startSave(async () => {
-      const result = await saveRaspored(spreadsheetId, JSON.stringify(tables));
+      const result = await saveRaspored(slug, JSON.stringify(tables));
       if (result.success) {
         setIsDirty(false);
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 2500);
       } else {
-        setSaveError(result.error ?? "Greška");
-        setTimeout(() => setSaveError(""), 3000);
+        showToast(result.error ?? "Greška pri čuvanju");
       }
     });
   };
@@ -235,12 +249,12 @@ export default function RasporedClient({
         <Toolbar
           slug={slug}
           coupleNames={coupleNames}
-          spreadsheetId={spreadsheetId}
           tables={tables}
           isDirty={isDirty}
           isSaving={isSaving}
           saveSuccess={saveSuccess}
           saveError={saveError}
+          paidForRaspored={paidForRaspored}
           onSave={handleSave}
           onDownloadPDF={() => generateAndDownloadPDF(tables, attending, coupleNames, slug)}
         />
@@ -286,6 +300,19 @@ export default function RasporedClient({
       </div>
 
       {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
+
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg shadow-lg text-sm font-raleway font-medium animate-[fade-in-up_0.3s_ease-out]"
+          style={{
+            backgroundColor: "var(--theme-text)",
+            color: "var(--theme-background)",
+          }}
+        >
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

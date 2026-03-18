@@ -1,14 +1,13 @@
 import { Metadata } from "next";
+export const dynamicParams = true;
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getWeddingData, getAllWeddingSlugs } from "@/data/pozivnice";
-import { loadRasporedSedenja } from "@/lib/google-sheets";
+import { loadSeatingLayout } from "@/lib/seating";
 import { getThemeCSSVariables } from "../constants";
 import type { TableData } from "../raspored-sedenja/types";
 import GdeSedimClient from "./GdeSedimClient";
-
-const BASE_URL = "https://halouspomene.rs";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -16,30 +15,20 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const weddingData = getWeddingData(slug);
+  const weddingData = await getWeddingData(slug);
   if (!weddingData) return {};
   const title = `${weddingData.couple_names.full_display} - Gde sedim?`;
   const description = `Pronađite svoje mesto sedenja za venčanje - ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`;
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      images: [{ url: `${BASE_URL}/images/gallery/website-pozivnica.png`, width: 1200, height: 630, alt: title }],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [`${BASE_URL}/images/gallery/website-pozivnica.png`],
-    },
+    openGraph: { title, description, type: "website" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
 export async function generateStaticParams() {
-  return getAllWeddingSlugs().map((slug) => ({ slug }));
+  const slugs = await getAllWeddingSlugs(); return slugs.map((slug) => ({ slug }));
 }
 
 export interface GuestTableEntry {
@@ -57,32 +46,22 @@ export interface GuestLookupEntry {
 
 export default async function GdeSedimPage({ params }: PageProps) {
   const { slug } = await params;
-  const weddingData = getWeddingData(slug);
+  const weddingData = await getWeddingData(slug);
 
   if (!weddingData) notFound();
+  if (!weddingData.paid_for_raspored) notFound();
 
   const cssVars = getThemeCSSVariables(weddingData.theme, weddingData.scriptFont);
 
-  // ── Load seating data ────────────────────────────────────────────────────
+  // ── Load seating data from MongoDB ──────────────────────────────────────
   let tables: TableData[] = [];
-  let noSpreadsheet = false;
   let parseError = false;
 
-  if (!weddingData.responses_spreadsheet_id) {
-    noSpreadsheet = true;
-  } else {
-    try {
-      const json = await loadRasporedSedenja(weddingData.responses_spreadsheet_id);
-      if (json) {
-        try {
-          tables = JSON.parse(json) as TableData[];
-        } catch {
-          parseError = true;
-        }
-      }
-    } catch {
-      parseError = true;
-    }
+  try {
+    const loaded = await loadSeatingLayout(slug);
+    if (loaded) tables = loaded;
+  } catch {
+    parseError = true;
   }
 
   // ── Build guest lookup ───────────────────────────────────────────────────
@@ -168,26 +147,8 @@ export default async function GdeSedimPage({ params }: PageProps) {
             </p>
           </div>
 
-          {/* Edge case: no spreadsheet */}
-          {noSpreadsheet && (
-            <div
-              className="text-center py-14 px-6 rounded-xl"
-              style={{
-                backgroundColor: "var(--theme-surface)",
-                border: "1px solid var(--theme-border-light)",
-              }}
-            >
-              <p className="font-raleway text-base mb-2" style={{ color: "var(--theme-text-muted)" }}>
-                Spreadsheet nije konfigurisan
-              </p>
-              <p className="text-sm" style={{ color: "var(--theme-text-light)" }}>
-                Raspored sedenja još uvek nije dostupan.
-              </p>
-            </div>
-          )}
-
           {/* Edge case: parse error */}
-          {!noSpreadsheet && parseError && (
+          {parseError && (
             <div
               className="text-center py-14 px-6 rounded-xl"
               style={{
@@ -205,7 +166,7 @@ export default async function GdeSedimPage({ params }: PageProps) {
           )}
 
           {/* Main interactive content */}
-          {!noSpreadsheet && !parseError && (
+          {!parseError && (
             <GdeSedimClient
               guestLookup={guestLookup}
               tables={tables}

@@ -17,7 +17,7 @@ import {
   ArrowRight,
   GripVertical,
 } from "lucide-react";
-import type { RSVPEntry } from "@/lib/google-sheets";
+import type { RSVPEntry } from "@/lib/rsvp";
 import type {
   TableData,
   SeatAssignment,

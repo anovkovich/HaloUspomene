@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 const images = [
   {
@@ -42,10 +43,11 @@ const Gallery: React.FC = () => {
               key={index}
               className={`${img.span} overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[3rem] h-[240px] sm:h-[320px] md:h-[400px] lg:h-[500px] relative group`}
             >
-              <img
+              <Image
+                fill
                 src={img.src}
                 alt={img.alt}
-                className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
+                className="object-cover grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
               />
             </div>
           ))}

@@ -1,13 +1,20 @@
 "use server";
 
-import { saveRasporedSedenja, loadRasporedSedenja } from "@/lib/google-sheets";
+import { loadSeatingLayout, saveSeatingLayout } from "@/lib/seating";
+import { getWeddingData } from "@/lib/couples";
+import type { TableData } from "./types";
 
 export async function saveRaspored(
-  spreadsheetId: string,
+  slug: string,
   json: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await saveRasporedSedenja(spreadsheetId, json);
+    const data = await getWeddingData(slug);
+    if (!data?.paid_for_raspored) {
+      return { success: false, error: "Raspored sedenja nije aktiviran za ovu pozivnicu" };
+    }
+    const tables: TableData[] = JSON.parse(json);
+    await saveSeatingLayout(slug, tables);
     return { success: true };
   } catch (err) {
     return {
@@ -17,11 +24,21 @@ export async function saveRaspored(
   }
 }
 
+export async function checkPaidStatus(slug: string): Promise<boolean> {
+  try {
+    const data = await getWeddingData(slug);
+    return data?.paid_for_raspored ?? false;
+  } catch {
+    return false;
+  }
+}
+
 export async function loadRaspored(
-  spreadsheetId: string,
+  slug: string,
 ): Promise<string | null> {
   try {
-    return await loadRasporedSedenja(spreadsheetId);
+    const tables = await loadSeatingLayout(slug);
+    return tables ? JSON.stringify(tables) : null;
   } catch {
     return null;
   }

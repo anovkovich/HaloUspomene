@@ -31,21 +31,11 @@ export interface TimelineItem {
   icon: string;
 }
 
-export interface Entry_IDs {
-  name: string;
-  attending: string;
-  plusOnes: string;
-  details: string;
-}
-
 export interface WeddingData {
   theme: ThemeType;
   scriptFont?: ScriptFontType;
   useCyrillic?: boolean; // Use Cyrillic script for static text
-  rsvp_form_url: string;
-  responses_spreadsheet_id?: string; // Google Sheets ID for RSVP responses
   potvrde_password?: string; // Password to access the /potvrde admin page (format: GroomNameDDMM)
-  entry_IDs: Entry_IDs;
   couple_names: {
     bride: string;
     groom: string;

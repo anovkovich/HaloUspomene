@@ -1,4 +1,4 @@
-import type { RSVPEntry } from "@/lib/google-sheets";
+import type { RSVPEntry } from "@/lib/rsvp";
 import type { TableData } from "./types";
 
 export async function generateAndDownloadPDF(
@@ -96,7 +96,7 @@ export async function generateAndDownloadPDF(
   const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" style="background:#fff">${shapes.join("\n")}</svg>`;
 
   // ── Guest list data ────────────────────────────────────────────────────────
-  const guestMap = Object.fromEntries(attending.map((g) => [g.rowIndex, g]));
+  const guestMap = Object.fromEntries(attending.map((g) => [g.id, g]));
   const seatingTables = tables
     .filter((t) => t.type !== "decoration")
     .sort((a, b) => {
@@ -106,13 +106,13 @@ export async function generateAndDownloadPDF(
       return a.label.localeCompare(b.label, "sr");
     })
     .map((table) => {
-      const guestSeats: Record<number, { name: string; here: number; total: number }> = {};
+      const guestSeats: Record<string, { name: string; here: number; total: number }> = {};
       for (const seat of table.assignments) {
         if (!seat) continue;
-        const g = guestMap[seat.guestRowIndex];
-        if (!guestSeats[seat.guestRowIndex])
-          guestSeats[seat.guestRowIndex] = { name: seat.guestName, here: 0, total: parseInt(g?.plusOnes || "1") || 1 };
-        guestSeats[seat.guestRowIndex].here++;
+        const g = guestMap[seat.guestId];
+        if (!guestSeats[seat.guestId])
+          guestSeats[seat.guestId] = { name: seat.guestName, here: 0, total: parseInt(g?.guestCount || "1") || 1 };
+        guestSeats[seat.guestId].here++;
       }
       return { label: table.label, guests: Object.values(guestSeats) };
     })

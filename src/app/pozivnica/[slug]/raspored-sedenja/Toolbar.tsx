@@ -7,12 +7,12 @@ import type { TableData } from "./types";
 interface Props {
   slug: string;
   coupleNames: string;
-  spreadsheetId?: string;
   tables: TableData[];
   isDirty: boolean;
   isSaving: boolean;
   saveSuccess: boolean;
   saveError: string;
+  paidForRaspored: boolean;
   onSave: () => void;
   onDownloadPDF: () => void;
 }
@@ -20,12 +20,12 @@ interface Props {
 export default function Toolbar({
   slug,
   coupleNames,
-  spreadsheetId,
   tables,
   isDirty,
   isSaving,
   saveSuccess,
   saveError,
+  paidForRaspored,
   onSave,
   onDownloadPDF,
 }: Props) {
@@ -75,21 +75,20 @@ export default function Toolbar({
         Preuzmi PDF
       </button>
 
-      {spreadsheetId && (
-        <button
-          onClick={onSave}
-          disabled={isSaving || tables.length === 0}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-raleway font-medium transition-all hover:opacity-80 disabled:opacity-30${isDirty && !saveSuccess ? " animate-pulse" : ""}`}
-          style={{
-            backgroundColor: saveSuccess ? "#4caf50" : isDirty ? "var(--theme-primary)" : "var(--theme-surface)",
-            border: `1px solid ${saveSuccess ? "#4caf50" : isDirty ? "var(--theme-primary)" : "var(--theme-border-light)"}`,
-            color: saveSuccess || isDirty ? "white" : "var(--theme-text)",
-          }}
-        >
-          {saveSuccess ? <Check size={13} /> : <Save size={13} />}
-          {isSaving ? "Čuvam..." : saveSuccess ? "Sačuvano" : "Sačuvaj"}
-        </button>
-      )}
+      <button
+        onClick={onSave}
+        disabled={isSaving || tables.length === 0 || !paidForRaspored}
+        title={!paidForRaspored ? "Potrebna je aktivacija za čuvanje rasporeda" : undefined}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-raleway font-medium transition-all hover:opacity-80 disabled:opacity-30${isDirty && !saveSuccess ? " animate-pulse" : ""}`}
+        style={{
+          backgroundColor: saveSuccess ? "#4caf50" : isDirty ? "var(--theme-primary)" : "var(--theme-surface)",
+          border: `1px solid ${saveSuccess ? "#4caf50" : isDirty ? "var(--theme-primary)" : "var(--theme-border-light)"}`,
+          color: saveSuccess || isDirty ? "white" : "var(--theme-text)",
+        }}
+      >
+        {saveSuccess ? <Check size={13} /> : <Save size={13} />}
+        {isSaving ? "Čuvam..." : saveSuccess ? "Sačuvano" : "Sačuvaj"}
+      </button>
 
       {saveError && (
         <p className="text-[10px] font-raleway" style={{ color: "#c0392b" }}>

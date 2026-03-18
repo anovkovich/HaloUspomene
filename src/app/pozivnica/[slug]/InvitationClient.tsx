@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { Heart, Calendar, MapPin, Clock } from "lucide-react";
 // MapPin and Clock retained for Feature Cards section below
 import { WeddingData } from "./types";
@@ -583,7 +584,7 @@ export default function InvitationClient({
               </p>
             </div>
           ) : (
-            <RSVPForm formUrl={data.rsvp_form_url} entry_IDs={data.entry_IDs} />
+            <RSVPForm slug={slug} />
           )}
 
           {/* Seating lookup note / link — shown after form */}
@@ -663,10 +664,12 @@ export default function InvitationClient({
             href="/"
             className="mt-8 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
           >
-            <img
+            <Image
               src="/images/logo.png"
               alt="Halo Uspomene LOGO"
-              className="h-6 mb-1"
+              width={3519}
+              height={1301}
+              className="h-6 mb-1 w-auto"
             />
           </Link>
 

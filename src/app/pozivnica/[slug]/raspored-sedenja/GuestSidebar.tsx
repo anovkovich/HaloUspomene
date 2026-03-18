@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Check, X } from "lucide-react";
-import type { RSVPEntry } from "@/lib/google-sheets";
+import type { RSVPEntry } from "@/lib/rsvp";
 
 const FILTER_OPTIONS = [
   { value: "", label: "Svi gosti" },
@@ -16,7 +16,7 @@ interface Props {
   attending: RSVPEntry[];
   selectedGuest: RSVPEntry | null;
   onSelectGuest: (guest: RSVPEntry | null) => void;
-  assignedCounts: Record<number, number>;
+  assignedCounts: Record<string, number>;
 }
 
 export default function GuestSidebar({
@@ -42,14 +42,14 @@ export default function GuestSidebar({
 
   // Unassigned / partially assigned first, fully assigned at bottom
   const sorted = [...filtered].sort((a, b) => {
-    const aFull = (assignedCounts[a.rowIndex] || 0) >= (parseInt(a.plusOnes) || 1);
-    const bFull = (assignedCounts[b.rowIndex] || 0) >= (parseInt(b.plusOnes) || 1);
+    const aFull = (assignedCounts[a.id] || 0) >= (parseInt(a.guestCount) || 1);
+    const bFull = (assignedCounts[b.id] || 0) >= (parseInt(b.guestCount) || 1);
     if (aFull === bFull) return 0;
     return aFull ? 1 : -1;
   });
 
   const totalPersons = attending.reduce(
-    (s, g) => s + (parseInt(g.plusOnes) || 1),
+    (s, g) => s + (parseInt(g.guestCount) || 1),
     0
   );
   const totalAssigned = Object.values(assignedCounts).reduce(
@@ -150,14 +150,14 @@ export default function GuestSidebar({
         )}
 
         {sorted.map((guest) => {
-          const total = parseInt(guest.plusOnes) || 1;
-          const assigned = assignedCounts[guest.rowIndex] || 0;
-          const isSelected = selectedGuest?.rowIndex === guest.rowIndex;
+          const total = parseInt(guest.guestCount) || 1;
+          const assigned = assignedCounts[guest.id] || 0;
+          const isSelected = selectedGuest?.id === guest.id;
           const isFullyAssigned = assigned >= total;
 
           return (
             <button
-              key={guest.rowIndex}
+              key={guest.id}
               onClick={() => onSelectGuest(isSelected ? null : guest)}
               className="w-full text-left px-3 py-2 rounded-lg mb-1 transition-all"
               style={{

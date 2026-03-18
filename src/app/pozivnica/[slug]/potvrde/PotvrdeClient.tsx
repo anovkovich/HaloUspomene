@@ -14,8 +14,7 @@ import {
   RefreshCw,
   LayoutDashboard,
 } from "lucide-react";
-import type { RSVPEntry } from "@/lib/google-sheets";
-import type { Entry_IDs } from "../types";
+import type { RSVPEntry } from "@/lib/rsvp";
 import {
   addManualGuest,
   updateGuestCategory,
@@ -54,10 +53,10 @@ function ResponseCard({
 }: {
   entry: RSVPEntry;
   category?: string;
-  onCategoryChange?: (rowIndex: number, cat: string) => void;
+  onCategoryChange?: (id: string, cat: string) => void;
 }) {
   const isAttending = entry.attending === "Da";
-  const guestCount = parseInt(entry.plusOnes) || 1;
+  const guestCount = parseInt(entry.guestCount) || 1;
 
   return (
     <div
@@ -133,7 +132,7 @@ function ResponseCard({
                     key={cat.value}
                     onClick={() =>
                       onCategoryChange?.(
-                        entry.rowIndex,
+                        entry.id,
                         active ? "" : cat.value,
                       )
                     }
@@ -184,9 +183,6 @@ interface PotvrdeClientProps {
   attending: RSVPEntry[];
   notAttending: RSVPEntry[];
   totalGuests: number;
-  formUrl: string;
-  entry_IDs: Entry_IDs;
-  spreadsheetId: string;
   slug: string;
 }
 
@@ -194,9 +190,6 @@ export default function PotvrdeClient({
   attending: initialAttending,
   notAttending,
   totalGuests: initialTotalGuests,
-  formUrl,
-  entry_IDs,
-  spreadsheetId,
   slug,
 }: PotvrdeClientProps) {
   const [query, setQuery] = useState("");
@@ -211,8 +204,8 @@ export default function PotvrdeClient({
   const [guestError, setGuestError] = useState("");
   const [guestSuccess, setGuestSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [categories, setCategories] = useState<Record<number, string>>(() =>
-    Object.fromEntries(initialAttending.map((e) => [e.rowIndex, e.category])),
+  const [categories, setCategories] = useState<Record<string, string>>(() =>
+    Object.fromEntries(initialAttending.map((e) => [e.id, e.category])),
   );
 
   const handleAddGuest = (e: React.FormEvent) => {
@@ -221,20 +214,20 @@ export default function PotvrdeClient({
     setGuestError("");
     startTransition(async () => {
       const result = await addManualGuest(
-        formUrl,
-        entry_IDs,
+        slug,
         guestName.trim(),
         guestCount,
       );
       if (result.success) {
+        const newId = result.id ?? "";
         setAttending((prev) => [
           ...prev,
           {
-            rowIndex: -1,
-            timestamp: new Date().toLocaleString("sr-RS"),
+            id: newId,
+            timestamp: new Date().toISOString(),
             name: guestName.trim(),
             attending: "Da",
-            plusOnes: String(guestCount),
+            guestCount: String(guestCount),
             details: "",
             category: "",
           },
@@ -250,20 +243,20 @@ export default function PotvrdeClient({
     });
   };
 
-  const handleCategoryChange = (rowIndex: number, cat: string) => {
-    if (rowIndex === -1) return;
-    setCategories((prev) => ({ ...prev, [rowIndex]: cat }));
-    updateGuestCategory(spreadsheetId, rowIndex, cat);
+  const handleCategoryChange = (id: string, cat: string) => {
+    if (!id) return;
+    setCategories((prev) => ({ ...prev, [id]: cat }));
+    updateGuestCategory(id, cat);
   };
 
   const handleRefresh = () => {
     startRefresh(async () => {
-      const result = await refreshResponses(spreadsheetId);
+      const result = await refreshResponses(slug);
       if (result.success && result.attending && result.notAttending) {
         setAttending(result.attending);
         setCategories(
           Object.fromEntries(
-            result.attending.map((e) => [e.rowIndex, e.category]),
+            result.attending.map((e) => [e.id, e.category]),
           ),
         );
         setTotalGuests(result.totalGuests ?? 0);
@@ -275,17 +268,17 @@ export default function PotvrdeClient({
 
   const hasCategorized = Object.values(categories).some((c) => c !== "");
 
-  // Category guest sums (sum of plusOnes per category, ignoring text filter)
+  // Category guest sums (sum of guestCount per category, ignoring text filter)
   const sumGuests = (filter: (e: RSVPEntry) => boolean) =>
     attending
       .filter(filter)
-      .reduce((s, e) => s + (parseInt(e.plusOnes) || 1), 0);
+      .reduce((s, e) => s + (parseInt(e.guestCount) || 1), 0);
 
   const catCounts = {
-    Mladini: sumGuests((e) => categories[e.rowIndex] === "Mladini"),
-    Mladozenjini: sumGuests((e) => categories[e.rowIndex] === "Mladozenjini"),
-    Zajednicki: sumGuests((e) => categories[e.rowIndex] === "Zajednicki"),
-    none: sumGuests((e) => !categories[e.rowIndex]),
+    Mladini: sumGuests((e) => categories[e.id] === "Mladini"),
+    Mladozenjini: sumGuests((e) => categories[e.id] === "Mladozenjini"),
+    Zajednicki: sumGuests((e) => categories[e.id] === "Zajednicki"),
+    none: sumGuests((e) => !categories[e.id]),
   };
 
   const filteredAttending = attending.filter((r) => {
@@ -296,8 +289,8 @@ export default function PotvrdeClient({
     const matchesCat =
       !categoryFilter ||
       (categoryFilter === "__none__"
-        ? !categories[r.rowIndex]
-        : categories[r.rowIndex] === categoryFilter);
+        ? !categories[r.id]
+        : categories[r.id] === categoryFilter);
     const matchesNotes =
       !onlyWithNotes ||
       (r.details && r.details !== "-" && r.details.trim() !== "");
@@ -694,11 +687,11 @@ export default function PotvrdeClient({
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredAttending.map((entry, i) => (
+              {filteredAttending.map((entry) => (
                 <ResponseCard
-                  key={i}
+                  key={entry.id}
                   entry={entry}
-                  category={categories[entry.rowIndex] ?? ""}
+                  category={categories[entry.id] ?? ""}
                   onCategoryChange={handleCategoryChange}
                 />
               ))}
@@ -745,8 +738,8 @@ export default function PotvrdeClient({
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
-                {filteredNotAttending.map((entry, i) => (
-                  <ResponseCard key={i} entry={entry} />
+                {filteredNotAttending.map((entry) => (
+                  <ResponseCard key={entry.id} entry={entry} />
                 ))}
               </motion.div>
             )}

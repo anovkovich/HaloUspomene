@@ -1,13 +1,12 @@
 import { Metadata } from "next";
+export const dynamicParams = true;
 import { notFound } from "next/navigation";
 import { Heart } from "lucide-react";
 import { getWeddingData, getAllWeddingSlugs } from "@/data/pozivnice";
-import { getRSVPResponses } from "@/lib/google-sheets";
+import { getRSVPResponses } from "@/lib/rsvp";
 import { getThemeCSSVariables } from "../constants";
 import PotvrdeClient from "./PotvrdeClient";
-import PotvrdeGate from "./PotvrdeGate";
 
-const BASE_URL = "https://halouspomene.rs";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -15,47 +14,35 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const weddingData = getWeddingData(slug);
+  const weddingData = await getWeddingData(slug);
   if (!weddingData) return {};
   const title = `${weddingData.couple_names.full_display} - Potvrde dolaska`;
   const description = `Pregled potvrda dolaska za venčanje - ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`;
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      images: [{ url: `${BASE_URL}/images/gallery/website-pozivnica.png`, width: 1200, height: 630, alt: title }],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [`${BASE_URL}/images/gallery/website-pozivnica.png`],
-    },
+    openGraph: { title, description, type: "website" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
 export async function generateStaticParams() {
-  return getAllWeddingSlugs().map((slug) => ({ slug }));
+  const slugs = await getAllWeddingSlugs(); return slugs.map((slug) => ({ slug }));
 }
 
 export default async function PotvrdeePage({ params }: PageProps) {
   const { slug } = await params;
-  const weddingData = getWeddingData(slug);
+  const weddingData = await getWeddingData(slug);
 
   if (!weddingData) notFound();
 
-  let responses: import("@/lib/google-sheets").RSVPEntry[] = [];
+  let responses: import("@/lib/rsvp").RSVPEntry[] = [];
   let fetchError = false;
 
-  if (weddingData.responses_spreadsheet_id) {
-    try {
-      responses = await getRSVPResponses(weddingData.responses_spreadsheet_id);
-    } catch {
-      fetchError = true;
-    }
+  try {
+    responses = await getRSVPResponses(slug);
+  } catch {
+    fetchError = true;
   }
 
   const cssVars = getThemeCSSVariables(weddingData.theme, weddingData.scriptFont);
@@ -63,7 +50,7 @@ export default async function PotvrdeePage({ params }: PageProps) {
   const attending = responses.filter((r) => r.attending === "Da");
   const notAttending = responses.filter((r) => r.attending === "Ne");
   const totalGuests = attending.reduce(
-    (sum, r) => sum + (parseInt(r.plusOnes) || 1),
+    (sum, r) => sum + (parseInt(r.guestCount) || 1),
     0,
   );
 
@@ -95,32 +82,6 @@ export default async function PotvrdeePage({ params }: PageProps) {
             </p>
           </div>
 
-          {/* Error / not configured states */}
-          {!weddingData.responses_spreadsheet_id && (
-            <div
-              className="text-center py-16 px-6"
-              style={{
-                backgroundColor: "var(--theme-surface)",
-                borderRadius: "var(--theme-radius)",
-                border: "1px solid var(--theme-border-light)",
-              }}
-            >
-              <p className="font-raleway text-base mb-2" style={{ color: "var(--theme-text-muted)" }}>
-                Spreadsheet nije konfigurisan
-              </p>
-              <p className="text-sm" style={{ color: "var(--theme-text-light)" }}>
-                Dodajte{" "}
-                <code
-                  className="text-xs px-1 py-0.5 rounded"
-                  style={{ backgroundColor: "var(--theme-border-light)" }}
-                >
-                  responses_spreadsheet_id
-                </code>{" "}
-                u podatke za ovu pozivnicu.
-              </p>
-            </div>
-          )}
-
           {fetchError && (
             <div
               className="text-center py-16 px-6"
@@ -134,12 +95,12 @@ export default async function PotvrdeePage({ params }: PageProps) {
                 Greška pri učitavanju podataka
               </p>
               <p className="text-sm" style={{ color: "var(--theme-text-light)" }}>
-                Proverite da li je spreadsheet podeljen sa servisnim nalogom i da je ID ispravan.
+                Pokušajte ponovo kasnije.
               </p>
             </div>
           )}
 
-          {!fetchError && weddingData.responses_spreadsheet_id && responses.length === 0 && (
+          {!fetchError && responses.length === 0 && (
             <div
               className="text-center py-16"
               style={{
@@ -160,9 +121,6 @@ export default async function PotvrdeePage({ params }: PageProps) {
               attending={attending}
               notAttending={notAttending}
               totalGuests={totalGuests}
-              formUrl={weddingData.rsvp_form_url}
-              entry_IDs={weddingData.entry_IDs}
-              spreadsheetId={weddingData.responses_spreadsheet_id!}
               slug={slug}
             />
           )}
@@ -171,16 +129,5 @@ export default async function PotvrdeePage({ params }: PageProps) {
     </div>
   );
 
-  if (!weddingData.potvrde_password) return pageContent;
-
-  return (
-    <PotvrdeGate
-      password={weddingData.potvrde_password}
-      slug={slug}
-      coupleNames={weddingData.couple_names.full_display}
-      cssVars={cssVars}
-    >
-      {pageContent}
-    </PotvrdeGate>
-  );
+  return pageContent;
 }

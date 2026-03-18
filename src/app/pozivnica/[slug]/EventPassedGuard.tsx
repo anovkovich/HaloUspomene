@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 
@@ -73,10 +74,12 @@ export default function EventPassedGuard({ eventDate, children }: Props) {
             href="/"
             className="inline-block opacity-60 hover:opacity-100 transition-opacity"
           >
-            <img
+            <Image
               src="/images/full-logo.png"
               alt="Halo Uspomene"
-              className="h-12 mx-auto"
+              width={3519}
+              height={1798}
+              className="h-12 mx-auto w-auto"
             />
           </Link>
 

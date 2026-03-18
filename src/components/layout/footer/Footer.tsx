@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Heart, Instagram } from "lucide-react";
 
@@ -9,9 +10,11 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 md:gap-16 mb-12 sm:mb-16 md:mb-24">
           {/* Column 1: Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <img
+            <Image
               src="/images/full-logo-white.png"
               alt="HALO Uspomene - Audio Guest Book za Venčanja u Srbiji"
+              width={3519}
+              height={1798}
               className="w-54 h-auto mb-6"
             />
             <p className="text-[#F5F4DC]/40 leading-relaxed mb-4">

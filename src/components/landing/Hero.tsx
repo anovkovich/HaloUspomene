@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { ArrowRight, Award, Phone } from "lucide-react";
 import Link from "next/link";
 import HeroInfoBadge from "./HeroInfoBadge";
@@ -124,10 +125,13 @@ const Hero: React.FC = () => {
 
           <div className="relative hero-image">
             <div className="transform rotate-0 md:hover:rotate-2 md:hover:scale-[1.05] transition-transform duration-700">
-              <img
+              <Image
                 src="/images/phone.webp"
                 alt="HALO Uspomene vintage retro telefon sa rotirajućim brojčanikom — iznajmljivanje audio knjige utisaka za venčanja u Srbiji"
+                width={1536}
+                height={1024}
                 className="w-full h-auto object-cover"
+                priority
               />
             </div>
 

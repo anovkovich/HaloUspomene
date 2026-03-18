@@ -1,31 +1,9 @@
-import { WeddingData } from "@/app/pozivnica/[slug]/types";
-
-// Import all wedding data files
-import anastasijaJovan from "./anastasija-jovan";
-import saraNikola from "./sara-nikola";
-import jelenaMarko from "./jelena-marko";
-import marinaAleksandar from "./marina-aleksandar";
-import anaStefan from "./ana-stefan";
-import anaDejan from "./ana-dejan";
-
-// Map slugs to their wedding data
-const weddingDataMap: Record<string, WeddingData> = {
-  "ana-dejan": anaDejan,
-  "anastasija-jovan": anastasijaJovan,
-  "sara-nikola": saraNikola,
-  "jelena-marko": jelenaMarko,
-  "marina-aleksandar": marinaAleksandar,
-  // Add more weddings here as needed:
-  "ana-stefan": anaStefan,
-  // "marko-ana": markoAna,
-};
-
-export function getWeddingData(slug: string): WeddingData | null {
-  console.log("Fetching wedding data for slug:", slug);
-  console.log("Available slugs:", Object.keys(weddingDataMap));
-  return weddingDataMap[slug] || null;
-}
-
-export function getAllWeddingSlugs(): string[] {
-  return Object.keys(weddingDataMap);
-}
+// Re-export from the MongoDB-backed data layer.
+// All functions are now async — callers must await them.
+export {
+  getWeddingData,
+  getAllWeddingSlugs,
+  getAllCouples,
+  upsertCouple,
+  deleteCouple,
+} from "@/lib/couples";

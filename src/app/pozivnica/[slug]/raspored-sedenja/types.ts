@@ -6,7 +6,7 @@ export type DecorationType = "music" | "dancing" | "entrance" | "custom";
 export type EntranceDirection = "up" | "down" | "left" | "right";
 
 export interface SeatAssignment {
-  guestRowIndex: number;
+  guestId: string;
   guestName: string;
 }
 
