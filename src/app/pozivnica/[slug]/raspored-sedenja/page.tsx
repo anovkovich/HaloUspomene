@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 import { notFound } from "next/navigation";
 import { getWeddingData, getAllWeddingSlugs } from "@/data/pozivnice";
