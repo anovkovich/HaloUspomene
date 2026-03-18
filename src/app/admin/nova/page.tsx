@@ -37,7 +37,9 @@ const TEMPLATE = `{
   ],
   "countdown_enabled": true,
   "map_enabled": true,
-  "paid_for_raspored": false
+  "paid_for_raspored": false,
+  "paid_for_audio": false,
+  "paid_for_pdf": false
 }`;
 
 export default function NovaPage() {
