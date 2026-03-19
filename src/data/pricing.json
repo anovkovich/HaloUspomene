@@ -32,9 +32,9 @@
   "addons": [
     {
       "id": "usb_kaseta",
-      "label": "USB retro kaseta",
+      "label": "Retro kaseta — USB",
       "price": 2500,
-      "note": "Fizički suvenir"
+      "note": "Fizički retro suvenir"
     },
     {
       "id": "usb_bocica",
