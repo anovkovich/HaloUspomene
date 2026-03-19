@@ -13,6 +13,8 @@ import {
   Sparkles,
   ArrowRight,
   BadgePercent,
+  Info,
+  ExternalLink,
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
@@ -446,6 +448,59 @@ export default function PricingClient() {
               Napravi svoju pozivnicu
               <Heart size={14} fill="currentColor" />
             </Link>
+          </div>
+
+          {/* Example links */}
+          <div className="mt-10 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#232323]/30 text-center">
+              Pogledajte primere uživo
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                {
+                  href: "/pozivnica/ana-dejan",
+                  label: "Primer pozivnice",
+                  tooltip:
+                    "Pogledajte kako izgleda personalizovana website pozivnica sa odbrojavanjem, lokacijom i formom za potvrdu dolaska.",
+                },
+                {
+                  href: "/pozivnica/ana-dejan/gde-sedim",
+                  label: "Primer /gde-sedim",
+                  tooltip:
+                    "Gosti ukucaju ime i odmah vide za kojim stolom sede, bez pitanja, bez gužve! Na ulazu možete postaviti samo QR kod.",
+                },
+                {
+                  href: "/pozivnica/ana-dejan/audio-knjiga",
+                  label: "Primer /ostavi-audio",
+                  tooltip:
+                    "Stranica na kojoj gosti snimaju glasovne poruke i čestitke upućene vama! Direktno sa telefona, bez aplikacije.",
+                },
+              ].map((link) => (
+                <div
+                  key={link.href}
+                  className="group relative rounded-xl px-4 py-3 text-center transition-all border border-[#AE343F]/10 sm:border-transparent sm:hover:border-[#AE343F]/10 sm:hover:bg-white/80"
+                >
+                  <div className="peer flex items-center justify-center gap-1.5 mb-1">
+                    <Info size={14} className="text-[#AE343F]/40 cursor-help" />
+                    <Link
+                      href={link.href}
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 text-sm text-[#AE343F] font-medium hover:underline"
+                    >
+                      {link.label} <ExternalLink size={12} />
+                    </Link>
+                  </div>
+                  <p className="text-[11px] text-[#232323]/40 leading-relaxed block sm:hidden">
+                    {link.tooltip}
+                  </p>
+                  <div className="hidden sm:group-hover:block absolute left-0 right-0 top-full mt-1 z-10 px-4 py-2.5 rounded-xl bg-white shadow-lg border border-[#AE343F]/10">
+                    <p className="text-[11px] text-[#232323]/60 leading-relaxed">
+                      {link.tooltip}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
