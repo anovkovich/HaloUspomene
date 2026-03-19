@@ -262,7 +262,7 @@ export default async function CityPage({
                           {t.coupleName}
                         </p>
                         <p className="text-xs text-[#232323]/40">
-                          {t.date} — {t.packageType}
+                          {t.date} — {t.service}
                         </p>
                       </div>
                     </div>

@@ -64,9 +64,9 @@ const Hero: React.FC = () => {
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-[#232323]/60 mb-8 sm:mb-10 md:mb-12 max-w-lg leading-relaxed font-light">
-              Zamislite da kroz nekoliko godina ponovo čujete kako vam baka
-              čestita venčanje. Mi brinemo o svakom detalju, a vi samo uživajte
-              u najlepšem danu svog života.
+              Sačuvajte glasove vaših najdražih zauvek. Putem našeg retro
+              telefona na venčanju ili digitalne audio knjige utisaka — svaka
+              poruka postaje uspomena koju ćete slušati godinama.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5">
@@ -77,16 +77,16 @@ const Hero: React.FC = () => {
                 data-track-cta-name="zakazite_konsultacije"
                 data-track-cta-location="hero"
               >
-                Proverite dostupnost
+                Zakažite retro telefon
               </Link>
               <Link
-                href="/#proces"
+                href="/napravi-pozivnicu"
                 className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] hover:border-[#232323] btn-lg rounded-full px-12"
                 data-track="cta_click"
-                data-track-cta-name="otkrijte_kako"
+                data-track-cta-name="napravi_pozivnicu"
                 data-track-cta-location="hero"
               >
-                Otkrijte kako
+                Napravite pozivnicu
                 <ArrowRight
                   size={20}
                   className="group-hover:translate-x-1.5 transition-transform"
@@ -102,9 +102,9 @@ const Hero: React.FC = () => {
               </span>
               <span>
                 <strong className="text-[#232323] font-semibold">
-                  Najpovoljniji <i>AGB</i>
+                  Najtraženije pozivnice
                 </strong>{" "}
-                u Srbiji
+                za venčanja u Srbiji
               </span>
             </div>
             <div className="flex items-center gap-3 mt-2 text-sm text-[#232323]/60">
@@ -118,7 +118,7 @@ const Hero: React.FC = () => {
                 <strong className="text-[#232323] font-semibold">
                   {socialProofText}
                 </strong>{" "}
-                ovog meseca
+                retro telefona ovog meseca
               </span>
             </div>
           </div>

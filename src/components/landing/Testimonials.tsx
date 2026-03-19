@@ -7,7 +7,7 @@ const Testimonials: React.FC = () => {
   return (
     <section
       id="utisci"
-      className="py-16 sm:py-24 md:py-32 bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6] relative overflow-hidden"
+      className="pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32 bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6] relative overflow-hidden"
     >
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4af37]/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
 
@@ -20,8 +20,8 @@ const Testimonials: React.FC = () => {
             Glasovi koji govore za nas
           </h2>
           <p className="text-lg text-[#232323]/50 max-w-2xl mx-auto">
-            Više od 40 parova u Srbiji već čuva audio uspomene sa svog venčanja.
-            Evo šta kažu o svom iskustvu sa HALO Uspomene.
+            Parovi širom Srbije koriste naše pozivnice, raspored sedenja i retro
+            telefon. Evo šta kažu o svom iskustvu sa HALO Uspomene.
           </p>
         </div>
 
@@ -73,7 +73,7 @@ const Testimonials: React.FC = () => {
                   </span>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
                     <Package size={12} />
-                    {t.packageType}
+                    {t.service}
                   </span>
                 </div>
               </div>
@@ -128,7 +128,7 @@ const Testimonials: React.FC = () => {
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
                   <Package size={12} />
-                  {t.packageType}
+                  {t.service}
                 </span>
               </div>
             </div>

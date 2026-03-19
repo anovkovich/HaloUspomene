@@ -9,6 +9,26 @@
       "price": 10000
     }
   },
+  "pozivnica": {
+    "website": {
+      "label": "Website pozivnica",
+      "price": 5000
+    },
+    "pdf": {
+      "label": "PDF pozivnica",
+      "price": 0
+    },
+    "raspored": {
+      "label": "Raspored sedenja",
+      "price": 2000
+    },
+    "audio": {
+      "label": "Digitalna audio knjiga",
+      "price": 3000
+    },
+    "bundlePrice": 8000,
+    "bundleFullPrice": 10000
+  },
   "addons": [
     {
       "id": "usb_kaseta",
@@ -33,20 +53,6 @@
       "label": "MAXI govornica",
       "price": 5000,
       "note": "Centralni detalj sale"
-    },
-    {
-      "id": "website_pozivnica",
-      "label": "Website pozivnica",
-      "price": 5000,
-      "note": ""
     }
-  ],
-  "discounts": {
-    "bundleWebsitePozivnica": {
-      "label": "Website pozivnica uz Audio Uspomene paket",
-      "active": true,
-      "percent": 30,
-      "discountedPrice": 3500
-    }
-  }
+  ]
 }

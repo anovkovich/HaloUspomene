@@ -1,9 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { Award, Check, Sparkles, X } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 import Link from "next/link";
-import { pricing, formatPrice } from "@/data/pricing";
 
 const HeroInfoBadge: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -35,86 +34,65 @@ const HeroInfoBadge: React.FC = () => {
                 <span className="italic text-[#AE343F]">čuvajte glasove</span>
               </h2>
               <p className="text-sm text-[#232323]/60 mb-6 leading-relaxed">
-                Vintage telefon na koji gosti ostavljaju glasovne poruke tokom
-                venčanja. Zamislite da za 10 godina ponovo čujete glas bake,
-                dede, najboljeg prijatelja — tačno onakvim kakav je bio tog dana.
+                Sačuvajte glasove vaših najdražih zauvek — svaka poruka postaje
+                uspomena koju ćete slušati godinama.
               </p>
 
-              {/* Why us */}
-              <div className="bg-[#d4af37]/10 rounded-2xl p-5 mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Award size={16} className="text-[#d4af37]" />
-                  <p className="text-sm font-bold text-[#232323] uppercase tracking-wider">
-                    Najpovoljniji u Srbiji
+              {/* Two options */}
+              <div className="space-y-3 mb-6">
+                {/* Retro phone */}
+                <div className="bg-[#faf9f6] border border-[#ae343f]/15 rounded-2xl p-5">
+                  <p className="font-bold text-[#232323] text-sm mb-1">
+                    🎙️ Retro Telefon Uspomena
                   </p>
-                </div>
-                <div className="space-y-2">
-                  {[
-                    `Već od ${formatPrice(pricing.packages.essential.price)} — najpovoljnije cene u Srbiji`,
-                    "Dostava do vas uvek uključena u cenu",
-                    "Svi snimci digitalno — fizički oblici dostupni kao dodaci",
-                    "Fiksne cene tokom cele godine, bez skrivenih troškova",
-                  ].map((item) => (
-                    <div key={item} className="flex items-start gap-2">
-                      <Check size={14} className="text-[#d4af37] flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-[#232323]/70">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Packages */}
-              <p className="text-xs font-bold uppercase tracking-widest text-[#AE343F] mb-3">
-                Paketi
-              </p>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="bg-[#faf9f6] border border-[#ae343f]/20 rounded-2xl p-4">
-                  <p className="font-bold text-[#232323] text-sm mb-1">Essential</p>
-                  <p className="text-xl font-serif text-[#AE343F] font-bold">{formatPrice(pricing.packages.essential.price)}</p>
-                  <p className="text-xs text-[#232323]/70 mt-1 leading-relaxed">
-                    Kurirska dostava, vintage telefon, svi snimci za 3–5 dana,
-                    popusti za website pozivnice!
+                  <p className="text-xs text-[#232323]/60 leading-relaxed">
+                    Fizički vintage telefon na vašem venčanju — gosti podižu
+                    slušalicu i ostavljaju poruku od srca. Atrakcija o kojoj će
+                    svi pričati.
                   </p>
-                </div>
-                <div className="bg-[#faf9f6] border border-[#ae343f]/20 rounded-2xl p-4 relative">
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#232323] text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full whitespace-nowrap">
-                    Preporuka
+                  <div className="flex items-center gap-3 mt-3">
+                    <Link
+                      href="/#kontakt"
+                      onClick={() => setModalOpen(false)}
+                      className="text-xs font-bold text-[#AE343F] uppercase tracking-wider hover:underline"
+                    >
+                      Zakažite termin →
+                    </Link>
                   </div>
-                  <p className="font-bold text-[#232323] text-sm mb-1">Full Service</p>
-                  <p className="text-xl font-serif text-[#AE343F] font-bold">{formatPrice(pricing.packages.fullService.price)}</p>
-                  <p className="text-xs text-[#232323]/70 mt-1 leading-relaxed">
-                    Lična dostava, mogućnost postavljanja govornice,
-                    personalizovana dobrodošlica...
+                </div>
+
+                {/* Digital audio */}
+                <div className="bg-[#faf9f6] border border-[#ae343f]/15 rounded-2xl p-5">
+                  <p className="font-bold text-[#232323] text-sm mb-1">
+                    🎤 Digitalna Audio Knjiga Utisaka
+                  </p>
+                  <p className="text-xs text-[#232323]/60 leading-relaxed">
+                    Gosti snimaju poruke direktno sa svog telefona — bez
+                    aplikacije, bez instalacije. Vi slušate, preuzimate i čuvate
+                    zauvek.
                   </p>
                   <p className="text-[10px] text-[#232323]/40 mt-2 italic">
-                    * Dostupno samo u Novom Sadu
+                    Dolazi uz Website Pozivnicu
                   </p>
                 </div>
-              </div>
 
-              {/* Add-ons */}
-              <p className="text-xs font-bold uppercase tracking-widest text-[#AE343F] mb-3">
-                Dodaci
-              </p>
-              <div className="space-y-2 mb-8">
-                {pricing.addons.map((addon) => (
-                  <div
-                    key={addon.label}
-                    className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0"
+                {/* Website pozivnica */}
+                <div className="bg-[#faf9f6] border border-[#ae343f]/15 rounded-2xl p-5">
+                  <p className="font-bold text-[#232323] text-sm mb-1">
+                    💌 Website Pozivnica
+                  </p>
+                  <p className="text-xs text-[#232323]/60 leading-relaxed">
+                    Kompletna platforma — RSVP, portal, raspored sedenja, PDF
+                    pozivnica za štampu, i još mnogo toga.
+                  </p>
+                  <Link
+                    href="/napravi-pozivnicu"
+                    onClick={() => setModalOpen(false)}
+                    className="text-xs font-bold text-[#AE343F] uppercase tracking-wider hover:underline mt-2 inline-block"
                   >
-                    <div>
-                      <p className="text-sm font-medium text-[#232323]">{addon.label}</p>
-                      <p className="text-xs text-[#232323]/60">
-                        {addon.id === "website_pozivnica" && pricing.discounts.bundleWebsitePozivnica.active
-                          ? `${formatPrice(pricing.discounts.bundleWebsitePozivnica.discountedPrice)} uz paket (−${pricing.discounts.bundleWebsitePozivnica.percent}%)`
-                          : addon.note}
-                      </p>
-                    </div>
-                    <p className="text-sm font-bold text-[#AE343F] ml-4 whitespace-nowrap">
-                      +{formatPrice(addon.price)}
-                    </p>
-                  </div>
-                ))}
+                    Napravite pozivnicu →
+                  </Link>
+                </div>
               </div>
 
               {/* CTA */}
@@ -123,12 +101,12 @@ const HeroInfoBadge: React.FC = () => {
                 onClick={() => setModalOpen(false)}
                 className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] btn-lg rounded-full w-full border-none shadow-xl shadow-[#AE343F]/20"
               >
-                Proverite dostupnost
+                Zakažite retro telefon
               </Link>
             </div>
           </div>
         </div>,
-        document.body
+        document.body,
       )
     : null;
 

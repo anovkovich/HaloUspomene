@@ -55,7 +55,7 @@ const ContactForm: React.FC = () => {
         },
         body: JSON.stringify({
           access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `Nova rezervacija - ${formData.name} - ${formattedDate}`,
+          subject: `Retro Telefon - Nova rezervacija - ${formData.name} - ${formattedDate}`,
           from_name: "HALO Uspomene",
           name: formData.name,
           telefon: `+381${formData.phone}`,
@@ -134,6 +134,19 @@ const ContactForm: React.FC = () => {
         onSubmit={handleSubmit}
         className="space-y-10 bg-white/5 backdrop-blur-md p-6 sm:p-10 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/10 shadow-2xl relative"
       >
+        {/* Form context note */}
+        <div className="flex items-center gap-3 text-[#F5F4DC]/40 text-sm">
+          <MessageCircle size={16} className="text-[#AE343F] shrink-0" />
+          <span>
+            Ova forma je za rezervaciju{" "}
+            <strong className="text-[#F5F4DC]/60">
+              Retro Telefona Uspomena
+            </strong>{" "}
+            na Vašem venčanju. <br />
+            Za website pozivnicu, pogledajte sekciju ispod!
+          </span>
+        </div>
+
         {/* Error Message */}
         {error && (
           <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400">
@@ -237,7 +250,8 @@ const ContactForm: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {["Essential", "Full Service"].map((pkg) => {
                 const loc = formData.location.toLowerCase();
-                const isNoviSad = loc.includes("novi sad") || loc.includes("novom sadu");
+                const isNoviSad =
+                  loc.includes("novi sad") || loc.includes("novom sadu");
                 const isDisabled =
                   isLoading || (pkg === "Full Service" && !isNoviSad);
                 return (
@@ -258,10 +272,10 @@ const ContactForm: React.FC = () => {
                       {pkg} Paket
                     </button>
                     {pkg === "Full Service" && !isNoviSad && (
-                        <p className="text-[#F5F4DC]/30 text-xs text-center">
-                          Dostupno samo u Novom Sadu
-                        </p>
-                      )}
+                      <p className="text-[#F5F4DC]/30 text-xs text-center">
+                        Dostupno samo u Novom Sadu
+                      </p>
+                    )}
                   </div>
                 );
               })}

@@ -12,7 +12,7 @@ import {
   Heart,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
-import { pricing, formatPrice } from "@/data/pricing";
+import { formatPrice } from "@/data/pricing";
 import {
   THEME_CONFIGS,
   SCRIPT_FONT_CONFIGS,
@@ -374,15 +374,11 @@ function Step1({
       {/* Pricing section */}
       <div className="mb-3 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
         <p className="text-2xl font-bold align-end text-[#AE343F]">
-          Redovna cena pozivnice je{" "}
-          {formatPrice(
-            pricing.addons.find((a) => a.id === "website_pozivnica")!.price,
-          )}
+          Cena pozivnice je od {formatPrice(5000)}
         </p>
         <p className="font-semibold text-sm text-[#8B2833] mt-2">
-          Iskomuniciraćemo{" "}
           <small>
-            ukoliko imate kupon ili ostvarujete pravo na neki popust
+            Kompletni paket sa rasporedom sedenja i audio knjigom: {formatPrice(8000)}
           </small>
         </p>
       </div>
