@@ -1105,58 +1105,58 @@ function Step6({
 // ─── Raw JSON generator ───────────────────────────────────────────────────────
 
 function generateRawJson(formData: FormData): string {
-  // Only hall location
-  const hallLocStr = formData.locations
-    .filter((l) => l.enabled && l.type === "hall")
-    .map(
-      (l) =>
-        `    { name: "${l.name}", time: "${l.time}", address: "${l.address}", map_url: "TODO", type: "${l.type}" }`,
-    )
-    .join(",\n");
-
-  // Timeline from all enabled locations
-  const timelineStr = formData.locations
-    .filter((l) => l.enabled)
-    .map((l) => {
-      const typeToIcon: Record<string, string> = {
-        home: "Home",
-        church: "Church",
-        ceremony: "Heart",
-        hall: "Utensils",
-      };
-      const icon = typeToIcon[l.type] || "MapPin";
-      return `    { title: "${l.name}", time: "${l.time}", description: "${l.address}", icon: "${icon}" }`;
-    })
-    .join(",\n");
-
   const eventDate = new Date(formData.event_date);
   const dd = String(eventDate.getDate()).padStart(2, "0");
   const mm = String(eventDate.getMonth() + 1).padStart(2, "0");
   const autoPassword = `${formData.groom}${dd}${mm}`;
 
-  const lines = [
-    `import { WeddingData } from "@/app/pozivnica/[slug]/types";`,
-    ``,
-    `const weddingData: WeddingData = {`,
-    `  theme: "${formData.theme}",`,
-    `  scriptFont: "${formData.scriptFont}",`,
-    `  useCyrillic: ${formData.useCyrillic},`,
-    `  potvrde_password: "${autoPassword}", // Password for /potvrde admin page`,
-    `  couple_names: { bride: "${formData.bride}", groom: "${formData.groom}", full_display: "${formData.full_display}" },`,
-    `  paid_for_raspored: false,`,
-    `  event_date: "${formData.event_date}",`,
-    `  submit_until: "${formData.submit_until_date}",`,
-    `  tagline: "${formData.tagline}",`,
-    `  thankYouFooter: "${formData.thankYouFooter}",`,
-    `  locations: [\n${hallLocStr}\n  ],`,
-    `  timeline: [\n${timelineStr}\n  ],`,
-    `  countdown_enabled: ${formData.countdown_enabled},`,
-    `  map_enabled: ${formData.map_enabled},`,
-    `};`,
-    ``,
-    `export default weddingData;`,
-  ];
-  return lines.join("\n");
+  const json = {
+    theme: formData.theme,
+    scriptFont: formData.scriptFont,
+    useCyrillic: formData.useCyrillic,
+    potvrde_password: autoPassword,
+    couple_names: {
+      bride: formData.bride,
+      groom: formData.groom,
+      full_display: formData.full_display,
+    },
+    event_date: formData.event_date,
+    submit_until: formData.submit_until_date,
+    tagline: formData.tagline,
+    thankYouFooter: formData.thankYouFooter,
+    locations: formData.locations
+      .filter((l) => l.enabled && l.type === "hall")
+      .map((l) => ({
+        name: l.name,
+        time: l.time,
+        address: l.address,
+        map_url: "",
+        type: l.type,
+      })),
+    timeline: formData.locations
+      .filter((l) => l.enabled)
+      .map((l) => {
+        const typeToIcon: Record<string, string> = {
+          home: "Home",
+          church: "Church",
+          ceremony: "Heart",
+          hall: "Utensils",
+        };
+        return {
+          title: l.name,
+          time: l.time,
+          description: l.address,
+          icon: typeToIcon[l.type] || "MapPin",
+        };
+      }),
+    countdown_enabled: formData.countdown_enabled,
+    map_enabled: formData.map_enabled,
+    paid_for_raspored: formData.extra_raspored,
+    paid_for_audio: formData.extra_audio,
+    paid_for_pdf: false,
+    draft: false,
+  };
+  return JSON.stringify(json, null, 2);
 }
 
 // ─── Main form ────────────────────────────────────────────────────────────────
@@ -1293,8 +1293,8 @@ export default function QuestionnaireForm() {
         vreme_vencanja: formData.event_time,
         rok_za_prijavu: formData.submit_until,
         kontakt_telefon: `+381${formData.contact_phone}`,
-        tema: formData.theme,
-        font: formData.scriptFont,
+        tema: `${THEME_CONFIGS[formData.theme]?.name ?? formData.theme} (${formData.theme})`,
+        font: `${SCRIPT_FONT_CONFIGS[formData.scriptFont]?.name ?? formData.scriptFont} (${formData.scriptFont})`,
         tagline: formData.tagline,
         zahvalnica: formData.thankYouFooter,
         odbrojavanje: formData.countdown_enabled ? "Da" : "Ne",
