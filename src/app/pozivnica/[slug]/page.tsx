@@ -37,6 +37,7 @@ export default async function InvitationPage({ params }: PageProps) {
   const weddingData = await getWeddingData(slug);
 
   if (!weddingData) notFound();
+  if (weddingData.draft && process.env.NODE_ENV === "production") notFound();
 
   return <InvitationClient data={weddingData} slug={slug} />;
 }
