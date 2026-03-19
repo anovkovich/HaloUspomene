@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { Heart, Calendar, MapPin, Clock, Mic } from "lucide-react";
+import { Heart, Calendar, MapPin, Clock, Mic, Church } from "lucide-react";
 // MapPin and Clock retained for Feature Cards section below
 import { WeddingData } from "./types";
 import { getThemeConfig } from "./constants";
@@ -53,6 +53,115 @@ function scrollTo(elementId: string) {
   }
 }
 
+const LOCATION_TYPE_LABELS: Record<string, { latin: string; cyrillic: string; icon: React.ReactNode }> = {
+  hall: { latin: "Svečana sala", cyrillic: "Свечана сала", icon: <MapPin size={14} /> },
+  church: { latin: "Crkva", cyrillic: "Црква", icon: <Church size={14} /> },
+};
+
+function LocationMapSection({
+  locations,
+  singleLabel,
+  pluralLabel,
+}: {
+  locations: import("./types").Location[];
+  singleLabel: string;
+  pluralLabel: string;
+}) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const active = locations[activeIdx];
+  const hasMultiple = locations.length > 1;
+
+  return (
+    <section id="mapa" className="py-24 sm:py-40 px-6 max-w-6xl mx-auto">
+      <div className="text-center mb-16">
+        <h2
+          className="text-5xl sm:text-8xl font-script mb-4"
+          style={{ color: "var(--theme-primary)" }}
+        >
+          {hasMultiple ? pluralLabel : singleLabel}
+        </h2>
+
+        {/* Tabs */}
+        {hasMultiple ? (
+          <div className="flex items-center justify-center gap-3 mt-6">
+            {locations.map((loc, i) => {
+              const isActive = i === activeIdx;
+              const meta = LOCATION_TYPE_LABELS[loc.type];
+              return (
+                <button
+                  key={i}
+                  onClick={() => setActiveIdx(i)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full font-elegant text-xs uppercase tracking-[0.15em] transition-all cursor-pointer"
+                  style={{
+                    backgroundColor: isActive ? "var(--theme-primary)" : "transparent",
+                    color: isActive ? "#fff" : "var(--theme-text-light)",
+                    border: isActive
+                      ? "1px solid var(--theme-primary)"
+                      : "1px solid var(--theme-border)",
+                  }}
+                >
+                  {meta?.icon}
+                  {meta?.latin || loc.name || loc.type}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p
+            className="font-elegant text-xs uppercase tracking-[0.3em]"
+            style={{ color: "var(--theme-text-light)" }}
+          >
+            {active?.address}
+          </p>
+        )}
+      </div>
+
+      {/* Address (shown below tabs for multi) */}
+      {hasMultiple && (
+        <p
+          className="text-center font-elegant text-xs uppercase tracking-[0.3em] mb-8 transition-opacity duration-300"
+          style={{ color: "var(--theme-text-light)" }}
+          key={activeIdx}
+        >
+          {active?.address}
+        </p>
+      )}
+
+      {/* Map with slide animation */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          borderRadius: "var(--theme-radius)",
+          boxShadow: "var(--theme-shadow)",
+          border: "1px solid var(--theme-border-light)",
+        }}
+      >
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{
+            width: `${locations.length * 100}%`,
+            transform: `translateX(-${(activeIdx * 100) / locations.length}%)`,
+          }}
+        >
+          {locations.map((loc, i) => (
+            <div key={i} style={{ width: `${100 / locations.length}%` }}>
+              {loc.map_url && (
+                <iframe
+                  src={loc.map_url}
+                  className="w-full h-[400px] sm:h-[600px] grayscale-[0.3] hover:grayscale-0 transition-all duration-1000"
+                  style={{ border: 0 }}
+                  allowFullScreen={true}
+                  loading="lazy"
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function InvitationClient({
   data,
   slug,
@@ -70,6 +179,10 @@ export default function InvitationClient({
   );
   const mainLocation = useMemo(
     () => data.locations.find((l) => l.type === "hall"),
+    [data],
+  );
+  const mapLocations = useMemo(
+    () => data.locations.filter((l) => l.map_url),
     [data],
   );
   const eventTime = useMemo(
@@ -507,39 +620,12 @@ export default function InvitationClient({
         )}
 
         {/* Map */}
-        {data.map_enabled && mainLocation?.map_url && (
-          <section id="mapa" className="py-24 sm:py-40 px-6 max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2
-                className="text-5xl sm:text-8xl font-script mb-4"
-                style={{ color: "var(--theme-primary)" }}
-              >
-                {t.location}
-              </h2>
-              <p
-                className="font-elegant text-xs uppercase tracking-[0.3em]"
-                style={{ color: "var(--theme-text-light)" }}
-              >
-                {mainLocation.address}
-              </p>
-            </div>
-            <div
-              className="relative overflow-hidden"
-              style={{
-                borderRadius: "var(--theme-radius)",
-                boxShadow: "var(--theme-shadow)",
-                border: `1px solid var(--theme-border-light)`,
-              }}
-            >
-              <iframe
-                src={mainLocation.map_url}
-                className="w-full h-[400px] sm:h-[600px] grayscale-[0.3] hover:grayscale-0 transition-all duration-1000"
-                style={{ border: 0 }}
-                allowFullScreen={true}
-                loading="lazy"
-              />
-            </div>
-          </section>
+        {data.map_enabled && mapLocations.length > 0 && (
+          <LocationMapSection
+            locations={mapLocations}
+            singleLabel={t.location}
+            pluralLabel={t.locations}
+          />
         )}
 
         {/* RSVP */}

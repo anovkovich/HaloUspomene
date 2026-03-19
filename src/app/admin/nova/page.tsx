@@ -21,7 +21,6 @@ const TEMPLATE = `{
   "locations": [
     {
       "name": "",
-      "time": "16:00",
       "address": "",
       "map_url": "",
       "type": "hall"
@@ -32,6 +31,7 @@ const TEMPLATE = `{
       "title": "",
       "time": "16:00",
       "description": "",
+      "what": "Skup u svečanoj sali",
       "icon": "CalendarHeart"
     }
   ],
@@ -136,7 +136,6 @@ export default function NovaPage() {
             {error}
           </div>
         )}
-
       </div>
     </div>
   );

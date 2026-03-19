@@ -12,7 +12,7 @@ import {
   Heart,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
-import { formatPrice } from "@/data/pricing";
+import { pricing, formatPrice } from "@/data/pricing";
 import {
   THEME_CONFIGS,
   SCRIPT_FONT_CONFIGS,
@@ -247,10 +247,26 @@ function Toggle({
 }
 
 const EXTRAS = [
-  { key: "extra_raspored" as const, label: "Raspored sedenja", price: "+2.000" },
-  { key: "extra_audio" as const, label: "Audio knjiga utisaka", price: "+3.000" },
-  { key: "extra_usb_kaseta" as const, label: "USB retro kaseta", price: "+2.500" },
-  { key: "extra_usb_bocica" as const, label: "USB u bočici", price: "+2.000" },
+  {
+    key: "extra_raspored" as const,
+    label: "Raspored sedenja",
+    price: `+${formatPrice(pricing.pozivnica.raspored.price)}`,
+  },
+  {
+    key: "extra_audio" as const,
+    label: "Audio knjiga utisaka",
+    price: `+${formatPrice(pricing.pozivnica.audio.price)}`,
+  },
+  {
+    key: "extra_usb_kaseta" as const,
+    label: "USB retro kaseta",
+    price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}`,
+  },
+  {
+    key: "extra_usb_bocica" as const,
+    label: "USB u bočici",
+    price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}`,
+  },
 ];
 
 function ExtrasAccordion({
@@ -287,14 +303,26 @@ function ExtrasAccordion({
           fill="none"
           className={`text-stone-300 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         >
-          <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M4 6l4 4 4-4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </button>
 
       {open && (
         <div className="mt-3 space-y-2">
-          {EXTRAS.filter(({ key }) => key !== "extra_usb_kaseta" && key !== "extra_usb_bocica").map(({ key, label, price }) => (
-            <label key={key} className="flex items-center gap-2.5 py-0.5 cursor-pointer group">
+          {EXTRAS.filter(
+            ({ key }) =>
+              key !== "extra_usb_kaseta" && key !== "extra_usb_bocica",
+          ).map(({ key, label, price }) => (
+            <label
+              key={key}
+              className="flex items-center gap-2.5 py-0.5 cursor-pointer group"
+            >
               <input
                 type="checkbox"
                 checked={formData[key]}
@@ -304,16 +332,33 @@ function ExtrasAccordion({
               <span className="text-xs text-stone-400 group-hover:text-stone-500 transition-colors">
                 {label}
               </span>
-              <span className="text-[10px] text-stone-300 ml-auto shrink-0">{price}</span>
+              <span className="text-[10px] text-stone-300 ml-auto shrink-0">
+                {price}
+              </span>
             </label>
           ))}
           {/* USB options — nested under audio, mutually exclusive */}
-          <div className={`ml-5 space-y-2 ${!formData.extra_audio ? "opacity-50 pointer-events-none" : ""}`}>
+          <div
+            className={`ml-5 space-y-2 ${!formData.extra_audio ? "opacity-50 pointer-events-none" : ""}`}
+          >
             {[
-              { key: "extra_usb_kaseta" as const, other: "extra_usb_bocica" as const, label: "USB retro kaseta", price: "+2.500" },
-              { key: "extra_usb_bocica" as const, other: "extra_usb_kaseta" as const, label: "USB u bočici", price: "+2.000" },
+              {
+                key: "extra_usb_kaseta" as const,
+                other: "extra_usb_bocica" as const,
+                label: "USB retro kaseta",
+                price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}`,
+              },
+              {
+                key: "extra_usb_bocica" as const,
+                other: "extra_usb_kaseta" as const,
+                label: "USB u bočici",
+                price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}`,
+              },
             ].map(({ key, other, label, price }) => (
-              <label key={key} className="flex items-center gap-2.5 py-0.5 cursor-pointer group">
+              <label
+                key={key}
+                className="flex items-center gap-2.5 py-0.5 cursor-pointer group"
+              >
                 <input
                   type="checkbox"
                   checked={formData[key]}
@@ -323,15 +368,66 @@ function ExtrasAccordion({
                   }}
                   className="w-3.5 h-3.5 accent-[#AE343F] cursor-pointer shrink-0 opacity-60"
                 />
-                <span className={`text-xs transition-colors ${!formData.extra_audio ? "text-stone-300" : "text-stone-400 group-hover:text-stone-500"}`}>
+                <span
+                  className={`text-xs transition-colors ${!formData.extra_audio ? "text-stone-300" : "text-stone-400 group-hover:text-stone-500"}`}
+                >
                   {label}
                 </span>
-                <span className="text-[10px] text-stone-300 ml-auto shrink-0">{price}</span>
+                <span className="text-[10px] text-stone-300 ml-auto shrink-0">
+                  {price}
+                </span>
               </label>
             ))}
           </div>
-          <p className="text-[10px] text-stone-300 mt-1">
-            Kompletni paket = popust. <a href="/cene" className="text-[#AE343F]/60 hover:underline">Pogledajte cene</a>
+          {/* Sum + discount */}
+          {(() => {
+            let sum = pricing.pozivnica.website.price;
+            if (formData.extra_raspored)
+              sum += pricing.pozivnica.raspored.price;
+            if (formData.extra_audio) sum += pricing.pozivnica.audio.price;
+            if (formData.extra_usb_kaseta)
+              sum += pricing.addons.find((a) => a.id === "usb_kaseta")!.price;
+            if (formData.extra_usb_bocica)
+              sum += pricing.addons.find((a) => a.id === "usb_bocica")!.price;
+            const isFullBundle =
+              formData.extra_raspored && formData.extra_audio;
+            const discount = isFullBundle
+              ? pricing.pozivnica.bundleFullPrice -
+                pricing.pozivnica.bundlePrice
+              : 0;
+            const total = sum - discount;
+            return (
+              <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
+                {isFullBundle && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-green-600">
+                      Popust (kompletni paket)
+                    </span>
+                    <span className="text-[10px] text-green-600 font-medium">
+                      -{formatPrice(discount)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-stone-500 font-medium">
+                    Ukupno
+                  </span>
+                  <span className="text-xs text-[#AE343F] font-bold">
+                    {isFullBundle && (
+                      <span className="line-through text-stone-300 font-normal mr-1.5">
+                        {formatPrice(sum)}
+                      </span>
+                    )}
+                    {formatPrice(total)}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+          <p className="text-[10px] text-stone-300 mt-2">
+            <a href="/cene" className="text-[#AE343F]/60 hover:underline">
+              Pogledajte detaljne cene
+            </a>
           </p>
         </div>
       )}
@@ -476,11 +572,12 @@ function Step1({
       {/* Pricing section */}
       <div className="mb-3 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
         <p className="text-2xl font-bold align-end text-[#AE343F]">
-          Cena pozivnice je od {formatPrice(5000)}
+          Cena pozivnice je od {formatPrice(pricing.pozivnica.website.price)}
         </p>
         <p className="font-semibold text-sm text-[#8B2833] mt-2">
           <small>
-            Kompletni paket sa rasporedom sedenja i audio knjigom: {formatPrice(8000)}
+            Kompletni paket sa rasporedom sedenja i audio knjigom:{" "}
+            {formatPrice(pricing.pozivnica.bundlePrice)}
           </small>
         </p>
       </div>
@@ -1125,10 +1222,9 @@ function generateRawJson(formData: FormData): string {
     tagline: formData.tagline,
     thankYouFooter: formData.thankYouFooter,
     locations: formData.locations
-      .filter((l) => l.enabled && l.type === "hall")
+      .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
       .map((l) => ({
         name: l.name,
-        time: l.time,
         address: l.address,
         map_url: "",
         type: l.type,
@@ -1142,10 +1238,17 @@ function generateRawJson(formData: FormData): string {
           ceremony: "Heart",
           hall: "Utensils",
         };
+        const typeToWhat: Record<string, string> = {
+          home: "Polazak od kuće",
+          church: "Crkveno venčanje",
+          ceremony: "Građansko venčanje",
+          hall: "Skup u svečanoj sali",
+        };
         return {
           title: l.name,
           time: l.time,
           description: l.address,
+          what: typeToWhat[l.type] || "",
           icon: typeToIcon[l.type] || "MapPin",
         };
       }),
@@ -1177,8 +1280,10 @@ export default function QuestionnaireForm() {
         ...prev,
         extra_raspored: params.get("raspored") === "1" || prev.extra_raspored,
         extra_audio: params.get("audio") === "1" || prev.extra_audio,
-        extra_usb_kaseta: params.get("usb_kaseta") === "1" || prev.extra_usb_kaseta,
-        extra_usb_bocica: params.get("usb_bocica") === "1" || prev.extra_usb_bocica,
+        extra_usb_kaseta:
+          params.get("usb_kaseta") === "1" || prev.extra_usb_kaseta,
+        extra_usb_bocica:
+          params.get("usb_bocica") === "1" || prev.extra_usb_bocica,
       }));
     }
   }, []);
@@ -1273,48 +1378,112 @@ export default function QuestionnaireForm() {
     setIsSubmitting(true);
     try {
       const formattedDate = formData.event_date
-        ? new Date(formData.event_date).toLocaleDateString(formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
+        ? new Date(formData.event_date).toLocaleDateString(
+            formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
+            {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            },
+          )
         : "";
+
+      // ── Build bill ──────────────────────────────────────────────────
+      const billItems: {
+        label: string;
+        amount: string;
+        bold?: boolean;
+        discount?: boolean;
+      }[] = [];
+      let billTotal = 0;
+
+      billItems.push({
+        label: "Website pozivnica",
+        amount: formatPrice(pricing.pozivnica.website.price),
+      });
+      billTotal += pricing.pozivnica.website.price;
+
+      billItems.push({ label: "PDF pozivnica za štampu", amount: "BESPLATNO" });
+
+      if (formData.extra_raspored) {
+        billItems.push({
+          label: "Raspored sedenja",
+          amount: formatPrice(pricing.pozivnica.raspored.price),
+        });
+        billTotal += pricing.pozivnica.raspored.price;
+      }
+      if (formData.extra_audio) {
+        billItems.push({
+          label: "Audio knjiga utisaka",
+          amount: formatPrice(pricing.pozivnica.audio.price),
+        });
+        billTotal += pricing.pozivnica.audio.price;
+      }
+      if (formData.extra_usb_kaseta) {
+        const usb = pricing.addons.find((a) => a.id === "usb_kaseta")!;
+        billItems.push({
+          label: "USB retro kaseta",
+          amount: formatPrice(usb.price),
+        });
+        billTotal += usb.price;
+      }
+      if (formData.extra_usb_bocica) {
+        const usb = pricing.addons.find((a) => a.id === "usb_bocica")!;
+        billItems.push({
+          label: "USB u bočici",
+          amount: formatPrice(usb.price),
+        });
+        billTotal += usb.price;
+      }
+
+      const isBundle = formData.extra_raspored && formData.extra_audio;
+      if (isBundle) {
+        const discount =
+          pricing.pozivnica.bundleFullPrice - pricing.pozivnica.bundlePrice;
+        billItems.push({
+          label: "Popust (kompletni paket)",
+          amount: `-${formatPrice(discount)}`,
+          discount: true,
+        });
+        billTotal -= discount;
+      }
+
+      const receiptData = JSON.stringify({
+        par: formData.full_display,
+        datum: formattedDate,
+        ...(formData.extra_raspored ? { r: 1 } : {}),
+        ...(formData.extra_audio ? { a: 1 } : {}),
+        ...(formData.extra_usb_kaseta ? { uk: 1 } : {}),
+        ...(formData.extra_usb_bocica ? { ub: 1 } : {}),
+      });
+      const receiptUrl = `https://halouspomene.rs/racun?d=${btoa(receiptData)}`;
 
       const payload: Record<string, string> = {
         access_key: WEB3FORMS_ACCESS_KEY || "",
-        subject: `Nova Pozivnica - ${formData.bride} & ${formData.groom} - ${formattedDate}`,
+        subject: `Nova Pozivnica - ${formData.full_display} - ${formattedDate}`,
         from_name: "Halo Pozivnice",
-        mlada: formData.bride,
-        mladozenja: formData.groom,
-        prikaz_para: formData.full_display,
-        pismo: formData.useCyrillic ? "Ćirilica" : "Latinica",
-        datum_vencanja: formattedDate,
-        vreme_vencanja: formData.event_time,
-        rok_za_prijavu: formData.submit_until,
-        kontakt_telefon: `+381${formData.contact_phone}`,
-        tema: `${THEME_CONFIGS[formData.theme]?.name ?? formData.theme} (${formData.theme})`,
-        font: `${SCRIPT_FONT_CONFIGS[formData.scriptFont]?.name ?? formData.scriptFont} (${formData.scriptFont})`,
-        tagline: formData.tagline,
-        zahvalnica: formData.thankYouFooter,
-        odbrojavanje: formData.countdown_enabled ? "Da" : "Ne",
-        mapa: formData.map_enabled ? "Da" : "Ne",
-        dodatno_raspored: formData.extra_raspored ? "Da" : "Ne",
-        dodatno_audio_knjiga: formData.extra_audio ? "Da" : "Ne",
-        dodatno_usb_kaseta: formData.extra_usb_kaseta ? "Da" : "Ne",
-        dodatno_usb_bocica: formData.extra_usb_bocica ? "Da" : "Ne",
-        napomene: formData.wishes,
-        _raw_json: generateRawJson(formData),
-      };
 
-      formData.locations
-        .filter((l) => l.enabled)
-        .forEach((loc, i) => {
-          payload[`lokacija_${i + 1}_tip`] = loc.type;
-          payload[`lokacija_${i + 1}_naziv`] = loc.name;
-          payload[`lokacija_${i + 1}_adresa`] = loc.address;
-          payload[`lokacija_${i + 1}_vreme`] = loc.time;
-        });
+        // ── Human-readable essentials ──
+        Par: formData.full_display,
+        "Datum venčanja": `${formattedDate}, ${formData.event_time}h`,
+        "Rok za prijavu": formData.submit_until,
+        "Kontakt telefon": `+381${formData.contact_phone}`,
+        "Raspored sedenja": formData.extra_raspored ? "✅ DA" : "❌ Ne",
+        "Audio knjiga": formData.extra_audio ? "✅ DA" : "❌ Ne",
+        "USB suvenir": formData.extra_usb_kaseta
+          ? "USB retro kaseta"
+          : formData.extra_usb_bocica
+            ? "USB u bočici"
+            : "❌ Ne",
+        "⚠️⚠️⚠️ NAPOMENA ⚠️⚠️⚠️": formData.wishes || "(nema)",
+
+        // ── Bill ──
+        "🧾 Račun": receiptUrl,
+
+        // ── JSON for admin panel (copy-paste) ──
+        "📋 JSON": generateRawJson(formData),
+      };
 
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
@@ -1355,11 +1524,14 @@ export default function QuestionnaireForm() {
             Venčanje:{" "}
             {new Date(
               formData.event_date_only + "T12:00:00",
-            ).toLocaleDateString(formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
+            ).toLocaleDateString(
+              formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
+              {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              },
+            )}
           </p>
         )}
         <p className="text-[#8B2833] text-sm">

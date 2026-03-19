@@ -141,6 +141,16 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
                       {item.time}
                     </span>
 
+                    {/* What */}
+                    {item.what && (
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1.5"
+                        style={{ color: "var(--theme-primary)", opacity: 0.6 }}
+                      >
+                        {item.what}
+                      </p>
+                    )}
+
                     {/* Title */}
                     <h4
                       className="text-xl sm:text-2xl font-serif mb-2 leading-tight"

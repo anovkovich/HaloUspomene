@@ -1,6 +1,16 @@
 import type { RSVPEntry } from "@/lib/rsvp";
 import type { TableData } from "./types";
 
+async function loadFont(path: string): Promise<string> {
+  const res = await fetch(path);
+  const buf = await res.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++)
+    binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+
 export async function generateAndDownloadPDF(
   tables: TableData[],
   attending: RSVPEntry[],
@@ -194,16 +204,29 @@ export async function generateAndDownloadPDF(
   // ── Build PDF ──────────────────────────────────────────────────────────────
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+  // Load fonts for Cyrillic support
+  const [serifB64, sansB64] = await Promise.all([
+    loadFont("/fonts/invitation/CormorantGaramond-Regular.ttf"),
+    loadFont("/fonts/invitation/JosefinSans-Regular.ttf"),
+  ]);
+  doc.addFileToVFS("Serif.ttf", serifB64);
+  doc.addFont("Serif.ttf", "Serif", "normal");
+  doc.addFileToVFS("Sans.ttf", sansB64);
+  doc.addFont("Sans.ttf", "Sans", "normal");
+
   const PW = 210,
     MARGIN = 15,
     CW = PW - MARGIN * 2;
   let y = MARGIN;
 
+  doc.setFont("Serif");
   doc.setFontSize(28);
   doc.setTextColor(35, 35, 35);
   doc.text(coupleNames, PW / 2, y + 10, { align: "center" });
   y += 17;
 
+  doc.setFont("Sans");
   doc.setFontSize(10);
   doc.setTextColor(160, 160, 160);
   doc.text("RASPORED SEDENJA", PW / 2, y + 4, { align: "center" });

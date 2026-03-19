@@ -16,7 +16,7 @@ export type ScriptFontType =
 
 export interface Location {
   name: string;
-  time: string;
+  time?: string;
   address: string;
   lat?: number;
   lng?: number;
@@ -28,6 +28,7 @@ export interface TimelineItem {
   title: string;
   time: string;
   description?: string;
+  what?: string; // e.g. "Polazak od kuće", "Crkveno venčanje", "Skup u svečanoj sali"
   icon: string;
 }
 
@@ -41,7 +42,7 @@ export interface WeddingData {
     groom: string;
     full_display: string;
   };
-  event_date: string;   // ISO string: YYYY-MM-DDTHH:mm:ss
+  event_date: string; // ISO string: YYYY-MM-DDTHH:mm:ss
   submit_until: string; // ISO date: YYYY-MM-DD — deadline for RSVP submissions
   tagline?: string;
   thankYouFooter?: string;

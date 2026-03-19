@@ -23,6 +23,7 @@ export interface Translations {
 
   // Location
   location: string;
+  locations: string;
 
   // RSVP
   rsvpTitle: string;
@@ -114,6 +115,7 @@ export const latinTranslations: Translations = {
 
   // Location
   location: "Lokacija",
+  locations: "Lokacije",
 
   // RSVP
   rsvpTitle: "Potvrda dolaska",
@@ -227,6 +229,7 @@ export const cyrillicTranslations: Translations = {
 
   // Location
   location: "Локација",
+  locations: "Локације",
 
   // RSVP
   rsvpTitle: "Потврда доласка",
