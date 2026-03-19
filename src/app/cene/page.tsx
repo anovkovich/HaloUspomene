@@ -50,12 +50,45 @@ export const metadata: Metadata = {
 };
 
 function PricingStructuredData() {
+  const shippingDetails = {
+    "@type": "OfferShippingDetails",
+    shippingRate: {
+      "@type": "MonetaryAmount",
+      value: "0",
+      currency: "RSD",
+    },
+    shippingDestination: {
+      "@type": "DefinedRegion",
+      addressCountry: "RS",
+    },
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 1, unitCode: "DAY" },
+      transitTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" },
+    },
+  };
+
+  const returnPolicy = {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: "RS",
+    returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+  };
+
+  const offerDefaults = {
+    priceCurrency: "RSD",
+    availability: "https://schema.org/InStock",
+    seller: { "@type": "Organization", name: "Halo Uspomene" },
+    shippingDetails,
+    hasMerchantReturnPolicy: returnPolicy,
+  };
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: "Website Pozivnica za Venčanje",
     description:
       "Digitalna pozivnica za venčanje sa besplatnom PDF verzijom za štampu, QR kodom za potvrdu dolaska, rasporedom sedenja i audio knjigom utisaka.",
+    image: "https://halouspomene.rs/cene/opengraph-image",
     brand: {
       "@type": "Brand",
       name: "Halo Uspomene",
@@ -66,37 +99,33 @@ function PricingStructuredData() {
         "@type": "Offer",
         name: "Website Pozivnica",
         price: "5000",
-        priceCurrency: "RSD",
-        availability: "https://schema.org/InStock",
         description:
           "Personalizovana web stranica za venčanje sa RSVP formom, odbrojavanjem i besplatnom PDF pozivnicom za štampu.",
+        ...offerDefaults,
       },
       {
         "@type": "Offer",
         name: "Raspored Sedenja",
         price: "2000",
-        priceCurrency: "RSD",
-        availability: "https://schema.org/InStock",
         description:
           "Drag-and-drop editor za raspored stolova. Gosti pronalaze svoje mesto putem linka.",
+        ...offerDefaults,
       },
       {
         "@type": "Offer",
         name: "Digitalna Audio Knjiga Utisaka",
         price: "3000",
-        priceCurrency: "RSD",
-        availability: "https://schema.org/InStock",
         description:
           "Gosti skeniraju QR kod i snimaju audio poruke za mladence direktno sa telefona.",
+        ...offerDefaults,
       },
       {
         "@type": "Offer",
         name: "Kompletni Paket",
         price: "8000",
-        priceCurrency: "RSD",
-        availability: "https://schema.org/InStock",
         description:
           "Website pozivnica + raspored sedenja + digitalna audio knjiga — sve u jednom po sniženoj ceni.",
+        ...offerDefaults,
       },
     ],
   };
