@@ -28,6 +28,7 @@ import {
 import { getTranslations } from "../../translations";
 import { refreshAudioMessages, deleteAudioMsg } from "./actions";
 import { mergeAndDownload } from "./mergeAudio";
+import { generateAudioFlyerPDF } from "./generateAudioFlyerPDF";
 import type { AudioMessage } from "@/lib/audio";
 
 const DEMO_MESSAGES: AudioMessage[] = [
@@ -58,6 +59,8 @@ interface Props {
   coupleNames: string;
   useCyrillic: boolean;
   paidForAudio: boolean;
+  primaryColor: string;
+  scriptFont?: string;
 }
 
 export default function SlusajClient({
@@ -67,6 +70,8 @@ export default function SlusajClient({
   coupleNames,
   useCyrillic,
   paidForAudio,
+  primaryColor,
+  scriptFont,
 }: Props) {
   const t = useMemo(() => getTranslations(useCyrillic), [useCyrillic]);
 
@@ -761,39 +766,12 @@ export default function SlusajClient({
                 }}
               >
                 <button
-                  onClick={async () => {
-                    try {
-                      const QRCode = (await import("qrcode")).default;
-                      const url = `https://halouspomene.rs/pozivnica/${slug}/audio-knjiga/`;
-                      const canvas = document.createElement("canvas");
-                      canvas.width = 600;
-                      canvas.height = 600;
-                      const ctx = canvas.getContext("2d")!;
-                      ctx.fillStyle = "#ffffff";
-                      ctx.fillRect(0, 0, 600, 600);
-                      const qrDataUrl = await QRCode.toDataURL(url, {
-                        width: 500,
-                        margin: 2,
-                        color: { dark: "#232323", light: "#ffffff" },
-                      });
-                      const img = new Image();
-                      img.onload = () => {
-                        ctx.drawImage(img, 50, 50, 500, 500);
-                        const a = document.createElement("a");
-                        a.href = canvas.toDataURL("image/png");
-                        a.download = `audio-qr-${slug}.png`;
-                        a.click();
-                      };
-                      img.src = qrDataUrl;
-                    } catch {
-                      /* ignore */
-                    }
-                  }}
+                  onClick={() => generateAudioFlyerPDF(slug, coupleNames, primaryColor, useCyrillic, scriptFont)}
                   className="inline-flex items-center gap-2 font-elegant text-xs uppercase tracking-widest transition-opacity hover:opacity-70 cursor-pointer"
                   style={{ color: "var(--theme-primary)" }}
                 >
                   <QrCode size={14} />
-                  Preuzmite QR kod i pozovite goste da ostave audio poruku
+                  Preuzmite flyer sa QR kodom za goste (PDF A6)
                 </button>
               </div>
 

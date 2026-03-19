@@ -4,7 +4,7 @@ export const dynamicParams = true;
 import { notFound } from "next/navigation";
 import { getWeddingData, getAllWeddingSlugs } from "@/data/pozivnice";
 import { getAudioMessages } from "@/lib/audio";
-import { getThemeCSSVariables } from "../../constants";
+import { getThemeCSSVariables, THEME_CONFIGS } from "../../constants";
 import SlusajClient from "./SlusajClient";
 
 interface PageProps {
@@ -65,6 +65,8 @@ export default async function SlusajPage({ params }: PageProps) {
         coupleNames={weddingData.couple_names.full_display}
         useCyrillic={weddingData.useCyrillic ?? false}
         paidForAudio={paidForAudio}
+        primaryColor={(THEME_CONFIGS[weddingData.theme] ?? THEME_CONFIGS.classic_rose).colors.primary}
+        scriptFont={weddingData.scriptFont}
       />
     </div>
   );

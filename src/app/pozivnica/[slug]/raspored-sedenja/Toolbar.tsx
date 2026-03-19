@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Download, Save, Check } from "lucide-react";
+import { ArrowLeft, Download, Save, Check, ChevronDown, FileDown, QrCode } from "lucide-react";
 import type { TableData } from "./types";
 
 interface Props {
@@ -17,6 +18,20 @@ interface Props {
   onDownloadPDF: () => void;
 }
 
+async function downloadQR(slug: string) {
+  const QRCode = (await import("qrcode")).default;
+  const url = `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
+  const dataUrl = await QRCode.toDataURL(url, {
+    width: 1200,
+    margin: 2,
+    color: { dark: "#232323", light: "#ffffff" },
+  });
+  const a = document.createElement("a");
+  a.href = dataUrl;
+  a.download = `gde-sedim-qr-${slug}.png`;
+  a.click();
+}
+
 export default function Toolbar({
   slug,
   coupleNames,
@@ -29,6 +44,19 @@ export default function Toolbar({
   onSave,
   onDownloadPDF,
 }: Props) {
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDownloadOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   return (
     <div
       className="flex items-center gap-3 px-4 py-2.5 border-b shrink-0"
@@ -61,19 +89,56 @@ export default function Toolbar({
 
       <div className="flex-1" />
 
-      <button
-        onClick={onDownloadPDF}
-        disabled={tables.length === 0}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 disabled:opacity-30"
-        style={{
-          backgroundColor: "var(--theme-surface)",
-          border: "1px solid var(--theme-border-light)",
-          color: "var(--theme-text)",
-        }}
-      >
-        <Download size={13} />
-        Preuzmi PDF
-      </button>
+      {/* Download dropdown */}
+      <div ref={dropdownRef} className="relative">
+        <button
+          onClick={() => setDownloadOpen((v) => !v)}
+          disabled={tables.length === 0}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 disabled:opacity-30"
+          style={{
+            backgroundColor: "var(--theme-surface)",
+            border: "1px solid var(--theme-border-light)",
+            color: "var(--theme-text)",
+          }}
+        >
+          <Download size={13} />
+          Preuzmi
+          <ChevronDown
+            size={11}
+            className="transition-transform"
+            style={{ transform: downloadOpen ? "rotate(180deg)" : "none" }}
+          />
+        </button>
+
+        {downloadOpen && (
+          <div
+            className="absolute top-full right-0 mt-1 rounded-lg overflow-hidden shadow-lg z-20"
+            style={{
+              backgroundColor: "var(--theme-surface)",
+              border: "1px solid var(--theme-border-light)",
+              minWidth: 200,
+            }}
+          >
+            <button
+              onClick={() => { onDownloadPDF(); setDownloadOpen(false); }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
+              style={{ color: "var(--theme-text)" }}
+            >
+              <FileDown size={14} style={{ color: "var(--theme-primary)" }} />
+              Preuzmi PDF raspored
+            </button>
+            <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
+            <button
+              onClick={() => { downloadQR(slug); setDownloadOpen(false); }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
+              style={{ color: "var(--theme-text)" }}
+            >
+              <QrCode size={14} style={{ color: "var(--theme-primary)" }} />
+              Preuzmi QR kod
+            </button>
+          </div>
+        )}
+      </div>
 
       <button
         onClick={onSave}
