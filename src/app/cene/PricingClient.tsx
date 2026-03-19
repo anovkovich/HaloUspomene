@@ -46,7 +46,7 @@ const FEATURES: Feature[] = [
     id: "pdf",
     label: "PDF pozivnica",
     description:
-      "Elegantna pozivnica spremna za štampu u A5 formatu sa svim detaljima venčanja.",
+      "Elegantna pozivnica spremna za štampu u A5 formatu sa svim detaljima venčanja i QR kodom za potvrdu dolaska!",
     price: pricing.pozivnica.pdf.price,
     included: true,
     icon: <FileDown size={20} />,
@@ -55,7 +55,7 @@ const FEATURES: Feature[] = [
     id: "raspored",
     label: "Raspored sedenja",
     description:
-      "Drag-and-drop editor za raspored stolova. Gosti mogu da pronađu svoje mesto putem linka.",
+      "Drag-and-drop editor za raspored stolova i raspored gostiju. Gosti mogu da pronađu sebe putem QR koda ili linka.",
     price: pricing.pozivnica.raspored.price,
     icon: <LayoutDashboard size={20} />,
   },
@@ -63,7 +63,7 @@ const FEATURES: Feature[] = [
     id: "audio",
     label: "Digitalna audio knjiga",
     description:
-      "Gosti skeniraju QR kod i snimaju audio poruke za mladence direktno sa telefona.",
+      "Preuzmite PDF zahvalnicu i ostavite je gostima na stolu — oni skeniraju QR kod i ostavljaju audio čestitke i poruke direktno sa telefona.",
     price: pricing.pozivnica.audio.price,
     icon: <Mic size={20} />,
     subitems: [
@@ -71,7 +71,7 @@ const FEATURES: Feature[] = [
         id: "usb_kaseta",
         label: pricing.addons.find((a) => a.id === "usb_kaseta")!.label,
         price: pricing.addons.find((a) => a.id === "usb_kaseta")!.price,
-        note: "Fizički suvenir sa svim porukama",
+        note: "Fizički retro suvenir sa svim porukama",
       },
       {
         id: "usb_bocica",
@@ -140,7 +140,15 @@ export default function PricingClient() {
   };
 
   const toggleSub = (id: string) => {
-    setSelectedSubs((prev) => ({ ...prev, [id]: !prev[id] }));
+    setSelectedSubs((prev) => {
+      const turning = !prev[id];
+      // Mutually exclusive: USB kaseta vs bočica
+      if (turning && (id === "usb_kaseta" || id === "usb_bocica")) {
+        const other = id === "usb_kaseta" ? "usb_bocica" : "usb_kaseta";
+        return { ...prev, [id]: true, [other]: false };
+      }
+      return { ...prev, [id]: !prev[id] };
+    });
   };
 
   const { subtotal, total, isBundle, subitemsTotal } = useMemo(() => {
@@ -436,7 +444,12 @@ export default function PricingClient() {
             </div>
 
             <Link
-              href="/napravi-pozivnicu"
+              href={`/napravi-pozivnicu?${new URLSearchParams({
+                ...(selected.raspored ? { raspored: "1" } : {}),
+                ...(selected.audio ? { audio: "1" } : {}),
+                ...(selectedSubs.usb_kaseta ? { usb_kaseta: "1" } : {}),
+                ...(selectedSubs.usb_bocica ? { usb_bocica: "1" } : {}),
+              }).toString()}`}
               className="mt-6 w-full flex items-center justify-center gap-3 px-8 py-4 rounded-full text-sm uppercase tracking-[0.15em] font-medium transition-all hover:opacity-80"
               style={{
                 backgroundColor: "#AE343F",

@@ -40,7 +40,7 @@ const ContactForm: React.FC = () => {
 
     try {
       const formattedDate = formData.date
-        ? new Date(formData.date).toLocaleDateString("sr-RS", {
+        ? new Date(formData.date).toLocaleDateString("sr-Latn-RS", {
             weekday: "long",
             year: "numeric",
             month: "long",
@@ -114,7 +114,7 @@ const ContactForm: React.FC = () => {
           Hvala Vam, {formData.name.split(" ")[0]}!
         </h3>
         <p className="text-[#F5F4DC]/60 text-lg mb-8">
-          Vaš upit za {new Date(formData.date).toLocaleDateString("sr-RS")} je
+          Vaš upit za {new Date(formData.date).toLocaleDateString("sr-Latn-RS")} je
           uspešno primljen. <br />
           Odgovorićemo Vam u najkraćem roku sa potvrdom dostupnosti.
         </p>

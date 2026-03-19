@@ -105,7 +105,7 @@ export default function SlusajClient({
 
   const formatTimestamp = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleString("sr-RS", {
+    return d.toLocaleString(useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS", {
       day: "numeric",
       month: "short",
       hour: "2-digit",

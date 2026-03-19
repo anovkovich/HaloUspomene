@@ -143,7 +143,7 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
 
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-[#232323]/30">
-                    {new Date(post.publishDate).toLocaleDateString("sr-RS", {
+                    {new Date(post.publishDate).toLocaleDateString("sr-Latn-RS", {
                       day: "numeric",
                       month: "long",
                       year: "numeric",

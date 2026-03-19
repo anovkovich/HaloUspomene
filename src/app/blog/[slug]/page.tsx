@@ -181,7 +181,7 @@ export default async function BlogPostPage({
             </div>
             <p className="text-sm text-[#232323]/30 mt-4">
               Objavljeno:{" "}
-              {new Date(post.publishDate).toLocaleDateString("sr-RS", {
+              {new Date(post.publishDate).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "long",
                 year: "numeric",

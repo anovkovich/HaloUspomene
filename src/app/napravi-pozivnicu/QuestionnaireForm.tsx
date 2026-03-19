@@ -104,6 +104,11 @@ interface FormData {
   groom: string;
   full_display: string;
   useCyrillic: boolean;
+  // Extras
+  extra_raspored: boolean;
+  extra_audio: boolean;
+  extra_usb_kaseta: boolean;
+  extra_usb_bocica: boolean;
   // Step 2
   event_date: string; // combined "YYYY-MM-DDTHH:MM"
   event_date_only: string; // "YYYY-MM-DD" for DatePicker
@@ -141,6 +146,10 @@ const defaultFormData: FormData = {
   groom: "",
   full_display: "",
   useCyrillic: false,
+  extra_raspored: false,
+  extra_audio: false,
+  extra_usb_kaseta: false,
+  extra_usb_bocica: false,
   event_date: "",
   event_date_only: "",
   event_time: "18:00",
@@ -234,6 +243,99 @@ function Toggle({
         {label}
       </span>
     </label>
+  );
+}
+
+const EXTRAS = [
+  { key: "extra_raspored" as const, label: "Raspored sedenja", price: "+2.000" },
+  { key: "extra_audio" as const, label: "Audio knjiga utisaka", price: "+3.000" },
+  { key: "extra_usb_kaseta" as const, label: "USB retro kaseta", price: "+2.500" },
+  { key: "extra_usb_bocica" as const, label: "USB u bočici", price: "+2.000" },
+];
+
+function ExtrasAccordion({
+  formData,
+  updateField,
+}: {
+  formData: FormData;
+  updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+}) {
+  const count = EXTRAS.filter(({ key }) => formData[key]).length;
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="mt-8 pt-5 border-t border-stone-100">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between cursor-pointer group"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-stone-300 group-hover:text-stone-400 transition-colors">
+            Dodatne usluge (opciono)
+          </span>
+          {count > 0 && (
+            <span className="w-4 h-4 rounded-full bg-[#AE343F] text-white text-[9px] font-bold flex items-center justify-center">
+              {count}
+            </span>
+          )}
+        </div>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          className={`text-stone-300 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-2">
+          {EXTRAS.filter(({ key }) => key !== "extra_usb_kaseta" && key !== "extra_usb_bocica").map(({ key, label, price }) => (
+            <label key={key} className="flex items-center gap-2.5 py-0.5 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={formData[key]}
+                onChange={(e) => updateField(key, e.target.checked)}
+                className="w-3.5 h-3.5 accent-[#AE343F] cursor-pointer shrink-0 opacity-60"
+              />
+              <span className="text-xs text-stone-400 group-hover:text-stone-500 transition-colors">
+                {label}
+              </span>
+              <span className="text-[10px] text-stone-300 ml-auto shrink-0">{price}</span>
+            </label>
+          ))}
+          {/* USB options — nested under audio, mutually exclusive */}
+          <div className={`ml-5 space-y-2 ${!formData.extra_audio ? "opacity-50 pointer-events-none" : ""}`}>
+            {[
+              { key: "extra_usb_kaseta" as const, other: "extra_usb_bocica" as const, label: "USB retro kaseta", price: "+2.500" },
+              { key: "extra_usb_bocica" as const, other: "extra_usb_kaseta" as const, label: "USB u bočici", price: "+2.000" },
+            ].map(({ key, other, label, price }) => (
+              <label key={key} className="flex items-center gap-2.5 py-0.5 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={formData[key]}
+                  onChange={(e) => {
+                    updateField(key, e.target.checked);
+                    if (e.target.checked) updateField(other, false);
+                  }}
+                  className="w-3.5 h-3.5 accent-[#AE343F] cursor-pointer shrink-0 opacity-60"
+                />
+                <span className={`text-xs transition-colors ${!formData.extra_audio ? "text-stone-300" : "text-stone-400 group-hover:text-stone-500"}`}>
+                  {label}
+                </span>
+                <span className="text-[10px] text-stone-300 ml-auto shrink-0">{price}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-[10px] text-stone-300 mt-1">
+            Kompletni paket = popust. <a href="/cene" className="text-[#AE343F]/60 hover:underline">Pogledajte cene</a>
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -465,6 +567,9 @@ function Step1({
           </p>
         )}
       </div>
+
+      {/* Extras accordion */}
+      <ExtrasAccordion formData={formData} updateField={updateField} />
     </div>
   );
 }
@@ -1064,6 +1169,20 @@ export default function QuestionnaireForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Read URL params from /cene page
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.toString()) {
+      setFormData((prev) => ({
+        ...prev,
+        extra_raspored: params.get("raspored") === "1" || prev.extra_raspored,
+        extra_audio: params.get("audio") === "1" || prev.extra_audio,
+        extra_usb_kaseta: params.get("usb_kaseta") === "1" || prev.extra_usb_kaseta,
+        extra_usb_bocica: params.get("usb_bocica") === "1" || prev.extra_usb_bocica,
+      }));
+    }
+  }, []);
+
   // Prepopulate hall venue time if it's already enabled
   React.useEffect(() => {
     const hallVenue = formData.locations[3];
@@ -1095,6 +1214,12 @@ export default function QuestionnaireForm() {
         if (prev.full_display === "" || prev.full_display === autoGen) {
           updated.full_display = `${bride} & ${groom}`;
         }
+      }
+
+      // Clear USB extras when audio is unchecked
+      if (key === "extra_audio" && !value) {
+        updated.extra_usb_kaseta = false;
+        updated.extra_usb_bocica = false;
       }
 
       // Auto-switch font when language changes
@@ -1148,7 +1273,7 @@ export default function QuestionnaireForm() {
     setIsSubmitting(true);
     try {
       const formattedDate = formData.event_date
-        ? new Date(formData.event_date).toLocaleDateString("sr-RS", {
+        ? new Date(formData.event_date).toLocaleDateString(formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS", {
             weekday: "long",
             year: "numeric",
             month: "long",
@@ -1174,6 +1299,10 @@ export default function QuestionnaireForm() {
         zahvalnica: formData.thankYouFooter,
         odbrojavanje: formData.countdown_enabled ? "Da" : "Ne",
         mapa: formData.map_enabled ? "Da" : "Ne",
+        dodatno_raspored: formData.extra_raspored ? "Da" : "Ne",
+        dodatno_audio_knjiga: formData.extra_audio ? "Da" : "Ne",
+        dodatno_usb_kaseta: formData.extra_usb_kaseta ? "Da" : "Ne",
+        dodatno_usb_bocica: formData.extra_usb_bocica ? "Da" : "Ne",
         napomene: formData.wishes,
         _raw_json: generateRawJson(formData),
       };
@@ -1226,7 +1355,7 @@ export default function QuestionnaireForm() {
             Venčanje:{" "}
             {new Date(
               formData.event_date_only + "T12:00:00",
-            ).toLocaleDateString("sr-RS", {
+            ).toLocaleDateString(formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS", {
               day: "numeric",
               month: "long",
               year: "numeric",
