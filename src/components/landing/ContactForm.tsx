@@ -14,7 +14,6 @@ import {
   MessageCircle,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
-import { analytics } from "@/utils/analytics";
 
 // Web3Forms access key - get yours free at https://web3forms.com
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
@@ -76,10 +75,6 @@ const ContactForm: React.FC = () => {
       }
 
       setIsSubmitted(true);
-      analytics.formSubmit("contact");
-      analytics.packageClick(
-        formData.package === "Full Service" ? "Full Service" : "Essential",
-      );
     } catch (err) {
       setError(
         err instanceof Error

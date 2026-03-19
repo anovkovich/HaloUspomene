@@ -130,6 +130,7 @@ const Hero: React.FC = () => {
                 alt="HALO Uspomene vintage retro telefon sa rotirajućim brojčanikom — iznajmljivanje audio knjige utisaka za venčanja u Srbiji"
                 width={1536}
                 height={1024}
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 className="w-full h-auto object-cover"
                 priority
               />

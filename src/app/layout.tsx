@@ -15,10 +15,8 @@ import {
   Raleway,
 } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import { testimonials } from "@/data/testimonials";
 
 const geistSans = Geist({
@@ -112,8 +110,6 @@ const raleway = Raleway({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
-const gaId = process.env.NEXT_PUBLIC_GA_ID;
-const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -214,7 +210,7 @@ export const metadata: Metadata = {
       "HALO Uspomene — website pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte personalizovane web pozivnice i iznajmite retro telefon za glasovne poruke gostiju. Audio guest book (telefon uspomena), i interaktivne pozivnice sa odbrojavanje. Dostava u Beograd, i sve gradove.",
     images: [
       {
-        url: "/images/gallery/og-image.png",
+        url: "/images/og-image.png",
         width: 1200,
         height: 630,
         alt: "HALO Uspomene - Audio Guest Book za Venčanja",
@@ -227,7 +223,7 @@ export const metadata: Metadata = {
     title: "Website Pozivnice i Audio Knjiga Uspomena | HALO Uspomene Srbija",
     description:
       "Website pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte web pozivnice sa RSVP ili iznajmite retro telefon za glasovne poruke. Audio guest book dostava u Beograd, i sve gradove.",
-    images: ["/images/gallery/og-image.png"],
+    images: ["/images/og-image.png"],
   },
 
   robots: {
@@ -290,7 +286,7 @@ export default function RootLayout({
       "HALO Uspomene — premium servisi za venčanja: kreirajte website pozivnice sa RSVP ili iznajmite audio guest book za glasovne poruke gostiju. Audio uspomene, web pozivnice, telefon uspomena sa dostavom u celoj Srbiji.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
-    image: `${siteUrl}/images/gallery/og-image.png`,
+    image: `${siteUrl}/images/og-image.png`,
     // telephone: "+381601234567",
     // email: "info@halouspomene.rs",
     email: "halouspomene@gmail.com",
@@ -512,39 +508,11 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchemas) }}
         />
-        {gaId && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              strategy="afterInteractive"
-            />
-            <Script id="ga4-init" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${gaId}');
-              `}
-            </Script>
-          </>
-        )}
-        {clarityId && (
-          <Script id="clarity-init" strategy="afterInteractive">
-            {`
-              (function(c,l,a,r,i){
-                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                  let t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                  let y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-              })(window, document, "clarity", "script", "${clarityId}");
-            `}
-          </Script>
-        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} ${raleway.variable} antialiased`}
       >
         {children}
-        {gaId && <AnalyticsProvider />}
         <Analytics />
         <SpeedInsights />
       </body>

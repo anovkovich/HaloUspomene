@@ -15,6 +15,9 @@ const Footer: React.FC = () => {
               alt="HALO Uspomene - Audio Guest Book za Venčanja u Srbiji"
               width={3519}
               height={1798}
+              sizes="216px"
+              loading="lazy"
+              quality={80}
               className="w-54 h-auto mb-6"
             />
             <p className="text-[#F5F4DC]/40 leading-relaxed mb-4 text-justify">
