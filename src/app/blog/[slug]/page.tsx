@@ -106,7 +106,7 @@ export default async function BlogPostPage({
           {
             "@type": "HowToStep",
             name: "Dostava",
-            text: "Telefon se dostavlja kurirskom službom (Essential) ili lično sa profesionalnom instalacijom (Full Service).",
+            text: "Telefon se dostavlja kurirskom službom u celoj Srbiji. Lična dostava i montaža dostupna je u Novom Sadu.",
           },
           {
             "@type": "HowToStep",

@@ -5,7 +5,6 @@ import {
   Calendar,
   User,
   MapPin,
-  Package,
   Send,
   CheckCircle2,
   Loader2,
@@ -28,7 +27,6 @@ const ContactForm: React.FC = () => {
     phone: "",
     date: "",
     location: "",
-    package: "Full Service",
     acceptedTerms: false,
   });
 
@@ -60,8 +58,7 @@ const ContactForm: React.FC = () => {
           telefon: `+381${formData.phone}`,
           datum_dogadjaja: formattedDate,
           lokacija: formData.location,
-          paket:
-            formData.package === "Full Service" ? "Full Service" : "Essential",
+          paket: "Audio Guest Book",
           opsti_uslovi: formData.acceptedTerms
             ? "Prihvaćeni"
             : "Nisu prihvaćeni",
@@ -94,7 +91,6 @@ const ContactForm: React.FC = () => {
       phone: "",
       date: "",
       location: "",
-      package: "Full Service",
       acceptedTerms: false,
     });
   };
@@ -219,62 +215,18 @@ const ContactForm: React.FC = () => {
               placeholder="npr. Beograd, Sala XY"
               className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
               value={formData.location}
-              onChange={(e) => {
-                const newLocation = e.target.value;
-                const isNS =
-                  newLocation.toLowerCase().includes("novi sad") ||
-                  newLocation.toLowerCase().includes("novom sadu");
-                setFormData({
-                  ...formData,
-                  location: newLocation,
-                  package:
-                    !isNS && formData.package === "Full Service"
-                      ? "Essential"
-                      : formData.package,
-                });
-              }}
+              onChange={(e) =>
+                setFormData({ ...formData, location: e.target.value })
+              }
               disabled={isLoading}
             />
           </div>
 
-          {/* Package Select */}
-          <div className="md:col-span-2 space-y-3">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
-              <Package size={14} className="text-[#AE343F]" /> Izaberite Paket
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {["Essential", "Full Service"].map((pkg) => {
-                const loc = formData.location.toLowerCase();
-                const isNoviSad =
-                  loc.includes("novi sad") || loc.includes("novom sadu");
-                const isDisabled =
-                  isLoading || (pkg === "Full Service" && !isNoviSad);
-                return (
-                  <div key={pkg} className="flex flex-col gap-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        !isDisabled &&
-                        setFormData({ ...formData, package: pkg })
-                      }
-                      disabled={isDisabled}
-                      className={`py-4 rounded-2xl border transition-all text-sm font-bold uppercase tracking-widest ${
-                        formData.package === pkg && !isDisabled
-                          ? "bg-[#AE343F] border-[#AE343F] text-[#F5F4DC] shadow-lg shadow-[#AE343F]/20"
-                          : "bg-white/5 border-white/10 text-[#F5F4DC]/40"
-                      } ${isDisabled ? "opacity-30 cursor-not-allowed" : "hover:border-white/20"}`}
-                    >
-                      {pkg} Paket
-                    </button>
-                    {pkg === "Full Service" && !isNoviSad && (
-                      <p className="text-[#F5F4DC]/30 text-xs text-center">
-                        Dostupno samo u Novom Sadu
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+          {/* Package info */}
+          <div className="md:col-span-2">
+            <p className="text-[#F5F4DC]/30 text-xs pl-1">
+              Lična dostava i montaža dostupna je samo u Novom Sadu.
+            </p>
           </div>
         </div>
 

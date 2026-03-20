@@ -1,12 +1,8 @@
 {
   "packages": {
     "essential": {
-      "name": "Essential",
+      "name": "Audio Guest Book",
       "price": 9000
-    },
-    "fullService": {
-      "name": "Full Service",
-      "price": 10000
     }
   },
   "pozivnica": {
@@ -43,16 +39,10 @@
       "note": "Fizički suvenir"
     },
     {
-      "id": "mini_govornica",
-      "label": "MINI govornica",
-      "price": 3000,
-      "note": "Drvena, kompaktna"
-    },
-    {
-      "id": "maxi_govornica",
-      "label": "MAXI govornica",
-      "price": 5000,
-      "note": "Centralni detalj sale"
+      "id": "personalizovana_dobrodoslica",
+      "label": "Personalizovana audio dobrodošlica",
+      "price": 1000,
+      "note": "Vaša lična poruka dobrodošlice"
     }
   ]
 }

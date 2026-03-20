@@ -256,7 +256,7 @@ const HowItWorks: React.FC = () => {
                 Vašeg venčanja.
               </p>
               <div className="flex flex-wrap gap-2 mb-4">
-                {["Essential — od 9.000 din", "Full Service — Novi Sad"].map(
+                {["Audio Guest Book — 9.000 din", "Lična dostava — Novi Sad"].map(
                   (tag) => (
                     <span
                       key={tag}

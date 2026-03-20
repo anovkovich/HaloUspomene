@@ -19,7 +19,7 @@ const faqData: FAQItem[] = [
     category: "Osnovno",
     question: "Kako funkcioniše audio guest book na venčanju?",
     answer:
-      "Vrlo jednostavno: telefon se postavi na vidno mesto u sali (mi obezbeđujemo uputstvo i opciono drvenu govornicu). Gost podigne slušalicu, sačeka ton, i ostavi poruku. Sve poruke se automatski snimaju u visokom kvalitetu. Nakon venčanja, dobijate digitalni album sa svim snimcima.",
+      "Vrlo jednostavno: telefon se postavi na vidno mesto u sali (mi obezbeđujemo uputstvo i dekoraciju). Gost podigne slušalicu, sačeka ton, i ostavi poruku. Sve poruke se automatski snimaju u visokom kvalitetu. Nakon venčanja, dobijate digitalni album sa svim snimcima.",
   },
   {
     category: "Osnovno",
@@ -63,7 +63,7 @@ const faqData: FAQItem[] = [
     category: "Dostava",
     question: "Kako se telefon vraća nakon venčanja?",
     answer:
-      "Za Essential paket, telefon šaljete nazad kurirskom službom u istoj kutiji u kojoj ste ga primili — mi pokrivamo troškove povratne dostave. Za Full Service paket, lično dolazimo po telefon i brinemo o svemu.",
+      "Telefon šaljete nazad kurirskom službom u istoj kutiji u kojoj ste ga primili — mi pokrivamo troškove povratne dostave. Za klijente u Novom Sadu, lično dolazimo po telefon.",
   },
   {
     category: "Dostava",
@@ -77,7 +77,7 @@ const faqData: FAQItem[] = [
     category: "Tehnička pitanja",
     question: "U kom formatu dobijam audio snimke?",
     answer:
-      "Sve poruke dobijate u digitalnom formatu visokog kvaliteta (MP3/WAV). Šaljemo ih putem linka za preuzimanje u roku od 3-5 radnih dana nakon venčanja. Full Service paket uključuje i uređen digitalni album sa izdvojenim highlights.",
+      "Sve poruke dobijate u digitalnom formatu visokog kvaliteta (MP3/WAV). Šaljemo ih putem linka za preuzimanje u roku od 3-5 radnih dana nakon venčanja.",
   },
   {
     category: "Tehnička pitanja",
@@ -95,7 +95,7 @@ const faqData: FAQItem[] = [
   {
     category: "Cene",
     question: "Koliko košta iznajmljivanje audio guest book telefona?",
-    answer: `Retro telefon: Essential paket (${formatPrice(pricing.packages.essential.price)}) — kurirska dostava, vintage telefon, svi snimci za 3-5 dana; Full Service u Novom Sadu (${formatPrice(pricing.packages.fullService.price)}) — lična dostava i montaža, personalizovana audio dobrodošlica i uređeni digitalni album. Troškovi povratka uređaja su uvek uključeni u cenu. Dodaci: Retro kaseta (USB) (${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}), Uspomene u boci (${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}), govornice MINI (${formatPrice(pricing.addons.find((a) => a.id === "mini_govornica")!.price)}) i MAXI (${formatPrice(pricing.addons.find((a) => a.id === "maxi_govornica")!.price)}). Website pozivnica: od 5.000 din — uključuje besplatnu PDF pozivnicu za štampu. Uz raspored sedenja (2.000 din) i digitalnu audio knjigu (3.000 din) kompletni paket košta 8.000 din. Sve cene su fiksne tokom cele godine, bez skrivenih troškova.`,
+    answer: `Audio guest book paket (${formatPrice(pricing.packages.essential.price)}) — kurirska dostava u celoj Srbiji, vintage telefon, elegantno uputstvo, svi snimci u digitalnom formatu, besplatan povrat. Lična dostava i montaža dostupna je samo u Novom Sadu. Dodaci: Personalizovana audio dobrodošlica (${formatPrice(pricing.addons.find((a) => a.id === "personalizovana_dobrodoslica")!.price)}), Retro kaseta USB (${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}), Uspomene u boci (${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}). Website pozivnica: od 5.000 din — uključuje besplatnu PDF pozivnicu za štampu. Uz raspored sedenja (2.000 din) i digitalnu audio knjigu (3.000 din) kompletni paket košta 8.000 din. Sve cene su fiksne tokom cele godine, bez skrivenih troškova.`,
   },
   {
     category: "Cene",

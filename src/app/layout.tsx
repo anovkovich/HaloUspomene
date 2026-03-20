@@ -153,7 +153,7 @@ export const metadata: Metadata = {
     "svadbeni telefon za glasovne poruke",
     "audio spomenar za venčanja",
     "beli retro telefon za venčanje",
-    "telefon govornica za svadbe",
+    "retro telefon za svadbe",
     "dekorativni telefon za slikanje i poruke",
     "audio guest book Beograd",
     "audio guest book Novi Sad",
@@ -347,7 +347,7 @@ export default function RootLayout({
             "@type": "Offer",
             itemOffered: {
               "@type": "Service",
-              name: "Essential Paket",
+              name: "Audio Guest Book Paket",
               description:
                 "Iznajmljivanje retro telefona sa rotirajućim brojčanikom za venčanja. Audio knjiga uspomena, audio uspomene sa kurirskom dostavom, elegantno uputstvo i svi audio snimci u digitalnom formatu.",
             },
@@ -356,9 +356,9 @@ export default function RootLayout({
             "@type": "Offer",
             itemOffered: {
               "@type": "Service",
-              name: "Full Service Paket",
+              name: "Audio Guest Book — Lična dostava u Novom Sadu",
               description:
-                "Premium audio guest book sa telefon govornicom — lična dostava, profesionalna montaža, audio spomenar sa personalizovanom dobrodošlicom. Svadbeni telefon za glasovne poruke gostiju. Telefon uspomena sa stojaćom pozicijom.",
+                "Audio guest book sa kurirskom dostavom u celoj Srbiji. Lična dostava i montaža dostupna u Novom Sadu. Personalizovana audio dobrodošlica kao dodatna opcija. Svadbeni telefon za glasovne poruke gostiju.",
             },
           },
           {
@@ -407,7 +407,7 @@ export default function RootLayout({
       "Telefon uspomena",
       "Telefon za poruke na svadbi",
       "Vintage telefon sa rotirajućim brojčanikom",
-      "Telefon govornica za svadbe",
+      "Retro telefon za svadbe",
       "Svadbeni telefon za glasovne poruke",
       "Dekorativni telefon za venčanja",
       "Retro phone guest book",
