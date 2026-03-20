@@ -53,7 +53,11 @@ export interface WeddingData {
   paid_for_raspored?: boolean; // Unlocks full seating chart (default: false = demo, 1 seat only)
   paid_for_pdf?: boolean; // Unlocks watermark-free PDF export
   paid_for_audio?: boolean; // Unlocks audio guest book recording
+  paid_for_audio_USB?: "" | "kaseta" | "bocica"; // USB suvenir choice
   draft?: boolean; // Only visible in dev, returns 404 in production
+  receipt_valid?: boolean; // Receipt link is active (set false after payment)
+  receipt_created?: string; // ISO date when receipt was generated
+  custom_discount?: number; // Custom discount in RSD on website pozivnica
 }
 
 // Comprehensive theme configuration

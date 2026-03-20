@@ -39,8 +39,11 @@ const TEMPLATE = `{
   "map_enabled": true,
   "paid_for_raspored": false,
   "paid_for_audio": false,
+  "paid_for_audio_USB": "",
   "paid_for_pdf": false,
-  "draft": false
+  "draft": false,
+  "receipt_valid": false,
+  "custom_discount": 0
 }`;
 
 export default function NovaPage() {

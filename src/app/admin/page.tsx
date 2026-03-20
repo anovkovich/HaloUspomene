@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ExternalLink, Pencil, Users, Armchair, Mic } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Pencil, Users, Armchair, Mic, Receipt, Copy, Check } from "lucide-react";
 import DeleteModal from "./DeleteModal";
 
 interface Couple {
@@ -12,6 +12,10 @@ interface Couple {
   theme: string;
   paid_for_raspored?: boolean;
   paid_for_audio?: boolean;
+  paid_for_audio_USB?: "" | "kaseta" | "bocica";
+  receipt_valid?: boolean;
+  receipt_created?: string;
+  custom_discount?: number;
 }
 
 interface CoupleStats {
@@ -26,6 +30,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [needsLogin, setNeedsLogin] = useState(false);
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -106,6 +111,61 @@ export default function AdminPage() {
         )
       );
     }
+  }
+
+  function buildReceiptUrl(c: Couple) {
+    const data = {
+      s: c.slug,
+      par: c.couple_names.full_display,
+      datum: c.event_date,
+      r: c.paid_for_raspored ? 1 : 0,
+      a: c.paid_for_audio ? 1 : 0,
+      uk: c.paid_for_audio_USB === "kaseta" ? 1 : 0,
+      ub: c.paid_for_audio_USB === "bocica" ? 1 : 0,
+      d: c.custom_discount ?? 0,
+      t: Date.now(),
+    };
+    return `https://halouspomene.rs/racun?d=${btoa(unescape(encodeURIComponent(JSON.stringify(data))))}`;
+  }
+
+  async function handleGenerateReceipt(slug: string) {
+    const now = new Date().toISOString();
+    setCouples((prev) =>
+      prev.map((c) =>
+        c.slug === slug ? { ...c, receipt_valid: true, receipt_created: now } : c
+      )
+    );
+    await fetch(`/api/admin/couples/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receipt_valid: true, receipt_created: now }),
+    });
+  }
+
+  async function handleInvalidateReceipt(slug: string) {
+    setCouples((prev) =>
+      prev.map((c) =>
+        c.slug === slug ? { ...c, receipt_valid: false } : c
+      )
+    );
+    await fetch(`/api/admin/couples/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receipt_valid: false }),
+    });
+  }
+
+  async function handleSetDiscount(slug: string, amount: number) {
+    setCouples((prev) =>
+      prev.map((c) =>
+        c.slug === slug ? { ...c, custom_discount: amount } : c
+      )
+    );
+    await fetch(`/api/admin/couples/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ custom_discount: amount }),
+    });
   }
 
   function daysUntil(dateStr: string) {
@@ -290,6 +350,27 @@ export default function AdminPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* Receipt dropdown */}
+                <ReceiptDropdown
+                  couple={c}
+                  copiedSlug={copiedSlug}
+                  onGenerate={async () => {
+                    await handleGenerateReceipt(c.slug);
+                    const url = buildReceiptUrl(c);
+                    await navigator.clipboard.writeText(url);
+                    setCopiedSlug(c.slug);
+                    setTimeout(() => setCopiedSlug(null), 2500);
+                  }}
+                  onCopy={async () => {
+                    const url = buildReceiptUrl(c);
+                    await navigator.clipboard.writeText(url);
+                    setCopiedSlug(c.slug);
+                    setTimeout(() => setCopiedSlug(null), 2500);
+                  }}
+                  onPaid={() => handleInvalidateReceipt(c.slug)}
+                  onDiscount={(amount) => handleSetDiscount(c.slug, amount)}
+                />
               </div>
             </div>
           );
@@ -305,6 +386,112 @@ export default function AdminPage() {
             setDeleteSlug(null);
           }}
         />
+      )}
+    </div>
+  );
+}
+
+function ReceiptDropdown({
+  couple,
+  copiedSlug,
+  onGenerate,
+  onCopy,
+  onPaid,
+  onDiscount,
+}: {
+  couple: Couple;
+  copiedSlug: string | null;
+  onGenerate: () => void;
+  onCopy: () => void;
+  onPaid: () => void;
+  onDiscount: (amount: number) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const isCopied = copiedSlug === couple.slug;
+  const isActive = couple.receipt_valid;
+
+  return (
+    <div ref={ref} className="relative mt-2 pt-2 border-t border-white/5">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`flex items-center gap-1.5 text-[10px] cursor-pointer transition-colors ${
+          isActive
+            ? "text-green-400 hover:text-green-300"
+            : "text-white/30 hover:text-white/50"
+        }`}
+      >
+        <Receipt size={11} />
+        {isCopied ? "✓ Link kopiran!" : isActive ? "Račun aktivan" : "Račun"}
+        <svg
+          width="10" height="10" viewBox="0 0 16 16" fill="none"
+          className={`transition-transform ${open ? "rotate-180" : ""}`}
+        >
+          <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          className="absolute bottom-full left-0 mb-1 rounded-lg overflow-hidden shadow-xl z-30"
+          style={{ backgroundColor: "#2a2a2a", border: "1px solid rgba(255,255,255,0.1)", minWidth: 220 }}
+        >
+          {/* Generate / Regenerate */}
+          <button
+            onClick={() => { onGenerate(); setOpen(false); }}
+            className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-white/70 hover:bg-white/5 cursor-pointer transition-colors"
+          >
+            <Receipt size={12} className="text-yellow-400" />
+            {isActive ? "Regeneriši račun" : "Generiši račun"}
+          </button>
+
+          {/* Copy link */}
+          {isActive && (
+            <button
+              onClick={() => { onCopy(); setOpen(false); }}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-white/70 hover:bg-white/5 cursor-pointer transition-colors"
+            >
+              <Copy size={12} className="text-green-400" />
+              Kopiraj link
+            </button>
+          )}
+
+          {/* Mark as paid */}
+          {isActive && (
+            <button
+              onClick={() => { onPaid(); setOpen(false); }}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-red-400/70 hover:bg-white/5 cursor-pointer transition-colors"
+            >
+              <Check size={12} />
+              Označi kao plaćeno
+            </button>
+          )}
+
+          {/* Discount */}
+          <div className="px-4 py-2.5 border-t border-white/5">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-white/30">Popust:</span>
+              <input
+                type="number"
+                min={0}
+                step={500}
+                value={couple.custom_discount ?? 0}
+                onChange={(e) => onDiscount(parseInt(e.target.value) || 0)}
+                className="w-16 text-[11px] text-white/60 bg-white/5 border border-white/10 rounded px-2 py-1 text-right outline-none focus:border-white/20"
+              />
+              <span className="text-[10px] text-white/30">din</span>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1256,6 +1256,7 @@ function generateRawJson(formData: FormData): string {
     map_enabled: formData.map_enabled,
     paid_for_raspored: formData.extra_raspored,
     paid_for_audio: formData.extra_audio,
+    paid_for_audio_USB: formData.extra_usb_kaseta ? "kaseta" : formData.extra_usb_bocica ? "bocica" : "",
     paid_for_pdf: false,
     draft: false,
   };
@@ -1457,7 +1458,7 @@ export default function QuestionnaireForm() {
         ...(formData.extra_usb_kaseta ? { uk: 1 } : {}),
         ...(formData.extra_usb_bocica ? { ub: 1 } : {}),
       });
-      const receiptUrl = `https://halouspomene.rs/racun?d=${btoa(receiptData)}`;
+      const receiptUrl = `https://halouspomene.rs/racun?d=${btoa(unescape(encodeURIComponent(receiptData)))}`;
 
       const payload: Record<string, string> = {
         access_key: WEB3FORMS_ACCESS_KEY || "",
