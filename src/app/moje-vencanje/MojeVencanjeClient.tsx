@@ -444,9 +444,9 @@ function TeaserChecklist() {
 function TeaserBudget() {
   const fakeCategories = getDefaultBudgetCategories();
   const fakePlanned = [
-    350000, 280000, 120000, 150000, 80000, 90000, 60000, 45000, 25000, 30000,
+    350000, 280000, 120000, 150000, 80000, 90000, 60000, 45000, 25000, 30000, 200000, 35000,
   ];
-  const fakeSpent = [350000, 195000, 60000, 100000, 55000, 0, 0, 0, 0, 0];
+  const fakeSpent = [350000, 195000, 60000, 100000, 55000, 0, 0, 0, 0, 0, 0, 0];
   const totalPlanned = fakePlanned.reduce((s, v) => s + v, 0);
   const totalSpent = fakeSpent.reduce((s, v) => s + v, 0);
 
@@ -462,7 +462,7 @@ function TeaserBudget() {
         <div>
           <p className="text-xs text-[#232323]/40">Ukupan budžet</p>
           <p className="text-xl font-bold text-[#232323]">
-            1.230.000{" "}
+            1.465.000{" "}
             <span className="text-xs font-normal text-[#232323]/40">RSD</span>
           </p>
         </div>
