@@ -3,6 +3,7 @@ import { jwtVerify } from "jose";
 import { upsertCouple, deleteCouple, patchCouple } from "@/lib/couples";
 import { deleteRSVPResponses } from "@/lib/rsvp";
 import { deleteSeatingLayout } from "@/lib/seating";
+import { deletePortalData } from "@/lib/portal";
 import { getAudioMessages, deleteAllAudioMessages } from "@/lib/audio";
 import { del } from "@vercel/blob";
 
@@ -70,6 +71,7 @@ export async function DELETE(
     deleteCouple(slug),
     deleteRSVPResponses(slug),
     deleteSeatingLayout(slug),
+    deletePortalData(slug),
     deleteAllAudioMessages(slug),
   ]);
   return NextResponse.json({ ok: true });

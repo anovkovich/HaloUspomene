@@ -7,7 +7,7 @@ import { Menu, X } from "lucide-react";
 
 const navLinks = [
   { name: "Cene", href: "/cene" },
-  { name: "Paketi", href: "/#paketi" },
+  { name: "Pozivnice", href: "/napravi-pozivnicu" },
   { name: "FAQ", href: "/#faq" },
   { name: "Blog", href: "/blog" },
   { name: "Lokacije", href: "/lokacije" },
@@ -57,10 +57,10 @@ const Navbar: React.FC = () => {
               ))}
             </ul>
             <Link
-              href="/napravi-pozivnicu"
+              href="/moje-vencanje"
               className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] rounded-full px-10 shadow-xl shadow-[#AE343F]/20 border-none transition-all"
             >
-              POZIVNICE
+              MOJE VENČANJE
             </Link>
           </div>
 
@@ -94,11 +94,11 @@ const Navbar: React.FC = () => {
           ))}
           <li className="pt-4">
             <Link
-              href="/napravi-pozivnicu"
+              href="/moje-vencanje"
               onClick={() => setIsMenuOpen(false)}
               className="btn bg-[#AE343F] hover:bg-[#8A2A32] w-full text-[#F5F4DC] rounded-xl text-lg border-none min-h-[48px]"
             >
-              Napravi pozivnicu
+              Moje venčanje
             </Link>
           </li>
         </ul>
