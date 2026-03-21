@@ -17,7 +17,9 @@ export default function MojeVencanjePage() {
   return (
     <>
       <MojeVencanjeClient />
-      <Footer />
+      <div className="[@media(display-mode:standalone)]:hidden">
+        <Footer />
+      </div>
     </>
   );
 }

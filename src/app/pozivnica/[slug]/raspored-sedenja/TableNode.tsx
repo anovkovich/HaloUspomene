@@ -441,6 +441,8 @@ interface Props {
   onSeatClick: (tableId: string, seatIndex: number) => void;
   onUpdate: (id: string, changes: Partial<TableData>) => void;
   onDelete: (id: string) => void;
+  readOnly?: boolean;
+  onTap?: (table: TableData) => void;
 }
 
 export default function TableNode({
@@ -449,14 +451,38 @@ export default function TableNode({
   onSeatClick,
   onUpdate,
   onDelete,
+  readOnly,
+  onTap,
 }: Props) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [labelInput, setLabelInput] = useState(table.label);
-  const isSelecting = !!selectedGuest;
+  const isSelecting = readOnly ? false : !!selectedGuest;
+  const seatClick = readOnly ? () => {} : onSeatClick;
 
   // ── Route to specialised decoration components ───────────────────────────
   if (table.type === "decoration") {
+    if (readOnly) {
+      // Simple positioned label for decorations in read-only mode
+      const dw = table.decorationType === "entrance" ? 140 : (table.decoWidth ?? DECO_DEFAULT_W);
+      return (
+        <div className="absolute" style={{ left: table.x, top: table.y, userSelect: "none" }}>
+          <div
+            className="flex items-center gap-2 px-3 py-2 rounded"
+            style={{
+              backgroundColor: "color-mix(in srgb, var(--theme-primary) 2%, var(--theme-background))",
+              border: "2px dashed var(--theme-primary)",
+              width: dw,
+            }}
+          >
+            <DecoIcon type={table.decorationType} />
+            <span className="text-xs font-raleway font-semibold" style={{ color: "var(--theme-primary)" }}>
+              {table.label}
+            </span>
+          </div>
+        </div>
+      );
+    }
     if (table.decorationType === "entrance") {
       return (
         <EntranceDecoration
@@ -647,6 +673,7 @@ export default function TableNode({
       onStop={(_, data) => onUpdate(table.id, { x: data.x, y: data.y })}
       handle=".drag-handle"
       cancel="button, input"
+      disabled={readOnly}
     >
       <div
         ref={nodeRef}
@@ -658,15 +685,25 @@ export default function TableNode({
           border: "2px dashed transparent",
           borderTop: "none",
           transition: "border-color 150ms",
+          cursor: readOnly ? "pointer" : undefined,
         }}
-        onMouseEnter={(e) =>
+        onClick={readOnly && onTap ? () => onTap(table) : undefined}
+        onMouseEnter={readOnly ? undefined : (e) =>
           (e.currentTarget.style.borderColor = "var(--theme-primary)")
         }
-        onMouseLeave={(e) =>
+        onMouseLeave={readOnly ? undefined : (e) =>
           (e.currentTarget.style.borderColor = "transparent")
         }
       >
-        {header}
+        {readOnly ? (
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 rounded-t-lg"
+            style={{ backgroundColor: "var(--theme-primary)", color: "white" }}
+          >
+            <span className="text-xs font-raleway font-medium truncate flex-1">{table.label}</span>
+            <span className="text-[10px] font-raleway opacity-70">{table.assignments.filter(Boolean).length}/{table.seats}</span>
+          </div>
+        ) : header}
 
         {/* RECTANGULAR — landscape */}
         {table.type === "rectangular" && !isRotated && (
@@ -676,7 +713,7 @@ export default function TableNode({
                 <Seat
                   key={i}
                   assignment={a}
-                  onClick={() => onSeatClick(table.id, i)}
+                  onClick={() => seatClick(table.id, i)}
                   isSelecting={isSelecting}
                 />
               ))}
@@ -694,7 +731,7 @@ export default function TableNode({
                 <Seat
                   key={seatsPerRow + i}
                   assignment={a}
-                  onClick={() => onSeatClick(table.id, seatsPerRow + i)}
+                  onClick={() => seatClick(table.id, seatsPerRow + i)}
                   isSelecting={isSelecting}
                 />
               ))}
@@ -711,7 +748,7 @@ export default function TableNode({
                 <Seat
                   key={i}
                   assignment={a}
-                  onClick={() => onSeatClick(table.id, i)}
+                  onClick={() => seatClick(table.id, i)}
                   isSelecting={isSelecting}
                 />
               ))}
@@ -733,7 +770,7 @@ export default function TableNode({
                 <Seat
                   key={seatsPerRow + i}
                   assignment={a}
-                  onClick={() => onSeatClick(table.id, seatsPerRow + i)}
+                  onClick={() => seatClick(table.id, seatsPerRow + i)}
                   isSelecting={isSelecting}
                 />
               ))}
@@ -749,7 +786,7 @@ export default function TableNode({
                 <Seat
                   key={i}
                   assignment={a}
-                  onClick={() => onSeatClick(table.id, i)}
+                  onClick={() => seatClick(table.id, i)}
                   isSelecting={isSelecting}
                 />
               ))}
@@ -799,7 +836,7 @@ export default function TableNode({
                 >
                   <Seat
                     assignment={a}
-                    onClick={() => onSeatClick(table.id, i)}
+                    onClick={() => seatClick(table.id, i)}
                     isSelecting={isSelecting}
                   />
                 </div>

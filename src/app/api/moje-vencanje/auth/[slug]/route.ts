@@ -31,7 +31,7 @@ export async function POST(
 
   const token = await new SignJWT({ slug, scope: "portal" })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("8h")
+    .setExpirationTime("480d")
     .sign(secret);
 
   const response = NextResponse.json({
@@ -40,6 +40,7 @@ export async function POST(
       bride: weddingData.couple_names.bride,
       groom: weddingData.couple_names.groom,
       eventDate: weddingData.event_date,
+      scriptFont: weddingData.scriptFont ?? "great-vibes",
     },
   });
 
@@ -48,7 +49,7 @@ export async function POST(
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 8 * 60 * 60,
+    maxAge: 480 * 24 * 60 * 60,
   });
 
   response.cookies.set("moje_vencanje_slug", slug, {
@@ -56,13 +57,13 @@ export async function POST(
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 480 * 24 * 60 * 60,
   });
 
   // Also set the pozivnica auth cookie so user doesn't need to re-login for portal/potvrde/raspored
   const pozivnicaToken = await new SignJWT({ slug })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("8h")
+    .setExpirationTime("480d")
     .sign(secret);
 
   response.cookies.set(`auth_${slug}`, pozivnicaToken, {
@@ -70,7 +71,7 @@ export async function POST(
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: `/pozivnica/${slug}`,
-    maxAge: 8 * 60 * 60,
+    maxAge: 480 * 24 * 60 * 60,
   });
 
   return response;

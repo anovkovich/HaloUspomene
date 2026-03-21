@@ -363,7 +363,7 @@ export default function PotvrdeClient({
       <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 mb-4">
         <Link
           href={`/pozivnica/${slug}/raspored-sedenja`}
-          className="flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded transition-opacity hover:opacity-80 min-w-0"
+          className="flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded transition-opacity hover:opacity-80 min-w-0 [@media(display-mode:standalone)]:hidden"
           style={{
             backgroundColor: "var(--theme-primary)",
             color: "white",
@@ -377,9 +377,9 @@ export default function PotvrdeClient({
           onClick={() => generateInvitationPDF(weddingData, slug, weddingData.paid_for_pdf ?? false, weddingData.useCyrillic ?? false)}
           className="flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded transition-opacity hover:opacity-80 cursor-pointer min-w-0"
           style={{
-            backgroundColor: "var(--theme-surface)",
-            border: "1px solid var(--theme-border-light)",
-            color: "var(--theme-text)",
+            backgroundColor: "white",
+            border: "1px solid rgba(35,35,35,0.1)",
+            color: "#232323",
           }}
         >
           <Download size={13} className="flex-shrink-0" />
@@ -388,11 +388,11 @@ export default function PotvrdeClient({
 
         <Link
           href={`/pozivnica/${slug}/audio-knjiga/slusaj`}
-          className="flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded transition-opacity hover:opacity-80 min-w-0"
+          className="flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded transition-opacity hover:opacity-80 min-w-0 [@media(display-mode:standalone)]:hidden"
           style={{
-            backgroundColor: "var(--theme-surface)",
-            border: "1px solid var(--theme-border-light)",
-            color: "var(--theme-text)",
+            backgroundColor: "white",
+            border: "1px solid rgba(35,35,35,0.1)",
+            color: "#232323",
           }}
         >
           <Mic size={13} className="flex-shrink-0" />
@@ -404,9 +404,9 @@ export default function PotvrdeClient({
           target="_blank"
           className="flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded transition-opacity hover:opacity-80 min-w-0"
           style={{
-            backgroundColor: "var(--theme-surface)",
-            border: "1px solid var(--theme-border-light)",
-            color: "var(--theme-text)",
+            backgroundColor: "white",
+            border: "1px solid rgba(35,35,35,0.1)",
+            color: "#232323",
           }}
         >
           <ExternalLink size={13} className="flex-shrink-0" />
@@ -418,9 +418,9 @@ export default function PotvrdeClient({
           disabled={isRefreshing}
           className="col-span-2 sm:col-span-1 flex items-center justify-center gap-2 text-xs font-raleway font-medium px-3 py-2.5 sm:py-2 rounded cursor-pointer transition-opacity hover:opacity-70 disabled:opacity-40 sm:ml-auto"
           style={{
-            backgroundColor: "var(--theme-surface)",
-            border: "1px solid var(--theme-border-light)",
-            color: "var(--theme-text-light)",
+            backgroundColor: "white",
+            border: "1px solid rgba(35,35,35,0.1)",
+            color: "rgba(35,35,35,0.5)",
           }}
         >
           <RefreshCw size={13} className={isRefreshing ? "animate-spin" : ""} />
@@ -462,11 +462,10 @@ export default function PotvrdeClient({
             ].map((stat, i) => (
               <div
                 key={i}
-                className="text-center py-4 px-3"
+                className="text-center py-4 px-3 rounded-xl"
                 style={{
-                  backgroundColor: "var(--theme-surface)",
-                  borderRadius: "var(--theme-radius)",
-                  border: "1px solid var(--theme-border-light)",
+                  backgroundColor: "white",
+                  border: "1px solid rgba(35,35,35,0.1)",
                 }}
               >
                 <p
@@ -492,14 +491,10 @@ export default function PotvrdeClient({
           {/* Big: total guests — acts as "Svi" filter */}
           <button
             onClick={() => setCategoryFilter("")}
-            className="w-full text-center py-6 px-4 transition-all duration-200 cursor-pointer"
+            className="w-full text-center py-6 px-4 transition-all duration-200 cursor-pointer rounded-xl"
             style={{
-              backgroundColor:
-                categoryFilter === ""
-                  ? "var(--theme-primary-muted)"
-                  : "var(--theme-surface)",
-              borderRadius: "var(--theme-radius)",
-              border: `1px solid ${categoryFilter === "" ? "var(--theme-primary)" : "var(--theme-border-light)"}`,
+              backgroundColor: categoryFilter === "" ? "rgba(174,52,63,0.06)" : "white",
+              border: `1px solid ${categoryFilter === "" ? "rgba(174,52,63,0.3)" : "rgba(35,35,35,0.1)"}`,
             }}
           >
             <p
@@ -563,9 +558,9 @@ export default function PotvrdeClient({
                       }}
                       style={{
                         backgroundColor: active
-                          ? "var(--theme-primary-muted)"
-                          : "var(--theme-surface)",
-                        borderRadius: "var(--theme-radius)",
+                          ? "rgba(174,52,63,0.06)"
+                          : "white",
+                        borderRadius: "0.75rem",
                         border: `1px solid ${active ? "var(--theme-primary)" : "var(--theme-border-light)"}`,
                       }}
                     >
@@ -596,11 +591,10 @@ export default function PotvrdeClient({
 
       {/* Inline add guest form */}
       <div
-        className="mb-8 p-4"
+        className="mb-8 p-4 rounded-xl"
         style={{
-          backgroundColor: "var(--theme-surface)",
-          borderRadius: "var(--theme-radius)",
-          border: "1px solid var(--theme-border-light)",
+          backgroundColor: "white",
+          border: "1px solid rgba(35,35,35,0.1)",
         }}
       >
         <p
@@ -617,16 +611,16 @@ export default function PotvrdeClient({
             placeholder="Ime i prezime"
             className="flex-1 bg-transparent px-3 py-2.5 text-sm placeholder:opacity-40 outline-none transition-colors duration-300 min-w-0"
             style={{
-              color: "var(--theme-text)",
-              backgroundColor: "var(--theme-background)",
-              borderRadius: "var(--theme-radius)",
-              border: "1px solid var(--theme-border-light)",
+              color: "#232323",
+              backgroundColor: "#F5F4DC",
+              borderRadius: "0.75rem",
+              border: "1px solid rgba(35,35,35,0.1)",
             }}
             onFocus={(e) =>
-              (e.target.style.borderColor = "var(--theme-primary)")
+              (e.target.style.borderColor = "#AE343F")
             }
             onBlur={(e) =>
-              (e.target.style.borderColor = "var(--theme-border-light)")
+              (e.target.style.borderColor = "rgba(35,35,35,0.1)")
             }
           />
           <button
@@ -634,17 +628,17 @@ export default function PotvrdeClient({
             onClick={() => setGuestCount((c) => Math.max(1, c - 1))}
             className="w-9 h-9 flex-shrink-0 flex items-center justify-center text-base transition-opacity hover:opacity-60 cursor-pointer"
             style={{
-              backgroundColor: "var(--theme-background)",
-              borderRadius: "var(--theme-radius)",
-              border: "1px solid var(--theme-border-light)",
-              color: "var(--theme-text-light)",
+              backgroundColor: "#F5F4DC",
+              borderRadius: "0.75rem",
+              border: "1px solid rgba(35,35,35,0.1)",
+              color: "rgba(35,35,35,0.5)",
             }}
           >
             −
           </button>
           <span
             className="font-raleway text-base w-6 text-center flex-shrink-0"
-            style={{ color: "var(--theme-text)" }}
+            style={{ color: "#232323" }}
           >
             {guestCount}
           </span>
@@ -653,10 +647,10 @@ export default function PotvrdeClient({
             onClick={() => setGuestCount((c) => c + 1)}
             className="w-9 h-9 flex-shrink-0 flex items-center justify-center text-base transition-opacity hover:opacity-60 cursor-pointer"
             style={{
-              backgroundColor: "var(--theme-background)",
-              borderRadius: "var(--theme-radius)",
-              border: "1px solid var(--theme-border-light)",
-              color: "var(--theme-text-light)",
+              backgroundColor: "#F5F4DC",
+              borderRadius: "0.75rem",
+              border: "1px solid rgba(35,35,35,0.1)",
+              color: "rgba(35,35,35,0.5)",
             }}
           >
             +
@@ -719,16 +713,15 @@ export default function PotvrdeClient({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Pretraži..."
-          className="w-full bg-transparent pl-11 pr-10 py-3 text-sm placeholder:opacity-40 outline-none transition-colors duration-300"
+          className="w-full bg-transparent pl-11 pr-10 py-3 text-sm placeholder:opacity-40 outline-none transition-colors duration-300 rounded-xl"
           style={{
-            color: "var(--theme-text)",
-            backgroundColor: "var(--theme-surface)",
-            borderRadius: "var(--theme-radius)",
-            border: "1px solid var(--theme-border-light)",
+            color: "#232323",
+            backgroundColor: "white",
+            border: "1px solid rgba(35,35,35,0.1)",
           }}
-          onFocus={(e) => (e.target.style.borderColor = "var(--theme-primary)")}
+          onFocus={(e) => (e.target.style.borderColor = "#AE343F")}
           onBlur={(e) =>
-            (e.target.style.borderColor = "var(--theme-border-light)")
+            (e.target.style.borderColor = "rgba(35,35,35,0.1)")
           }
         />
         {query && (

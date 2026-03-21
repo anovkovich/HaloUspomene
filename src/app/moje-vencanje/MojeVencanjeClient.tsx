@@ -3,7 +3,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, LogOut, CheckCircle2, Wallet, ArrowLeft } from "lucide-react";
+import {
+  Heart,
+  LogOut,
+  CheckCircle2,
+  Wallet,
+  ArrowLeft,
+  Download,
+  Users,
+  LayoutDashboard,
+  Mic,
+} from "lucide-react";
 import { verifyAuth, loadPortalDataAction } from "./actions";
 import type { ChecklistItem, PortalBudget } from "./types";
 import ChecklistCard from "./ChecklistCard";
@@ -36,12 +46,21 @@ export default function MojeVencanjeClient() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("checklist");
 
+  // PWA install
+  const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
+  const [isStandalone, setIsStandalone] = useState(true);
+  const [isIOS, setIsIOS] = useState(false);
+  const [showIOSInstall, setShowIOSInstall] = useState(false);
+  const [mobilePrompt, setMobilePrompt] = useState(false);
+  const [skipInstall, setSkipInstall] = useState(false);
+
   // Auth data
   const [coupleInfo, setCoupleInfo] = useState<{
     slug: string;
     bride: string;
     groom: string;
     eventDate: string;
+    scriptFont: string;
   } | null>(null);
 
   // Portal data
@@ -50,6 +69,12 @@ export default function MojeVencanjeClient() {
     totalBudget: 0,
     categories: [],
   });
+
+  // Read tab from URL query param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") === "budget") setMobileTab("budget");
+  }, []);
 
   // Auto-login on mount
   useEffect(() => {
@@ -63,6 +88,7 @@ export default function MojeVencanjeClient() {
             bride: result.bride!,
             groom: result.groom!,
             eventDate: result.eventDate!,
+            scriptFont: result.scriptFont ?? "great-vibes",
           });
           const data = await loadPortalDataAction();
           if (data) {
@@ -77,6 +103,25 @@ export default function MojeVencanjeClient() {
     } else {
       setState("guest");
     }
+  }, []);
+
+  // PWA install prompt
+  useEffect(() => {
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true;
+    setIsStandalone(standalone);
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    setIsIOS(ios);
+    const mobile = window.innerWidth < 768;
+    if (mobile && !standalone) setMobilePrompt(true);
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   const handleLogin = useCallback(
@@ -108,6 +153,7 @@ export default function MojeVencanjeClient() {
           bride: json.couple.bride,
           groom: json.couple.groom,
           eventDate: json.couple.eventDate,
+          scriptFont: json.couple.scriptFont ?? "great-vibes",
         });
 
         const data = await loadPortalDataAction();
@@ -137,6 +183,17 @@ export default function MojeVencanjeClient() {
     setState("guest");
   }, []);
 
+  const handleInstall = useCallback(async () => {
+    if (installPrompt) {
+      const prompt = installPrompt as any;
+      await prompt.prompt();
+      const result = await prompt.userChoice;
+      if (result.outcome === "accepted") setInstallPrompt(null);
+    } else if (isIOS) {
+      setShowIOSInstall(true);
+    }
+  }, [installPrompt, isIOS]);
+
   // Loading state
   if (state === "loading") {
     return (
@@ -146,6 +203,8 @@ export default function MojeVencanjeClient() {
     );
   }
 
+  const canInstall = !isStandalone && (installPrompt !== null || isIOS);
+
   const completedCount = checklist.filter((i) => i.completed).length;
   const totalSpent = budget.categories.reduce((s, c) => s + c.spent, 0);
   const totalPlanned = budget.categories.reduce((s, c) => s + c.planned, 0);
@@ -154,10 +213,10 @@ export default function MojeVencanjeClient() {
     <div className="min-h-screen bg-[#F5F4DC]">
       {/* ── Simple Navbar ──────────────────────────────────────── */}
       <nav className="fixed top-0 left-0 w-full z-50 bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/5">
-        <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-4 md:px-8 h-14 md:h-16 flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2 text-sm text-[#232323]/50 hover:text-[#232323] transition-colors"
+            className="flex items-center gap-2 text-sm text-[#232323]/50 hover:text-[#232323] transition-colors [@media(display-mode:standalone)]:hidden"
           >
             <ArrowLeft size={16} />
             <span className="hidden sm:inline">Početna</span>
@@ -180,7 +239,9 @@ export default function MojeVencanjeClient() {
         </div>
       </nav>
 
-      <div className="pt-28 pb-16 px-4">
+      <div
+        className={`pt-20 md:pt-28 px-4 [@media(display-mode:standalone)]:pt-[4.5rem] pb-16 ${state === "auth" ? "[@media(display-mode:standalone)]:pb-24" : ""}`}
+      >
         <div className="max-w-5xl mx-auto">
           {/* ── Hero / Title ─────────────────────────────────────── */}
           {state === "guest" && (
@@ -196,10 +257,29 @@ export default function MojeVencanjeClient() {
                 </p>
               </div>
 
+              {/* ── Mobile install prompt ──────────────────── */}
+              {mobilePrompt && !skipInstall && (
+                <div className="max-w-xs mx-auto mb-14 flex flex-col items-center gap-4">
+                  <button
+                    onClick={handleInstall}
+                    className="w-full px-8 py-3 text-sm font-semibold tracking-[0.15em] uppercase text-white bg-[#AE343F] rounded-full hover:bg-[#932d35] transition-all duration-300 flex items-center justify-center gap-2"
+                  >
+                    <Download size={16} />
+                    Preuzmite aplikaciju
+                  </button>
+                  <button
+                    onClick={() => setSkipInstall(true)}
+                    className="text-xs text-[#232323]/30 hover:text-[#232323]/50 transition-colors"
+                  >
+                    Nastavi u pretraživaču
+                  </button>
+                </div>
+              )}
+
               {/* ── Login Form (stacked, luxury) ──────────────── */}
               <form
                 onSubmit={handleLogin}
-                className="max-w-xs mx-auto mb-14 flex flex-col items-center gap-5"
+                className={`max-w-xs mx-auto mb-14 flex flex-col items-center gap-5 ${mobilePrompt && !skipInstall ? "hidden" : ""}`}
               >
                 <input
                   type="text"
@@ -235,8 +315,22 @@ export default function MojeVencanjeClient() {
                 </button>
               </form>
 
+              {canInstall && !(mobilePrompt && !skipInstall) && (
+                <div className="text-center mb-6">
+                  <button
+                    onClick={handleInstall}
+                    className="inline-flex items-center gap-2 text-xs text-[#232323]/40 hover:text-[#232323]/60 transition-colors"
+                  >
+                    <Download size={14} />
+                    Instalirajte kao aplikaciju za brži pristup
+                  </button>
+                </div>
+              )}
+
               {/* ── Subtle upsell note ─────────────────────────── */}
-              <p className="text-center text-xs text-[#232323]/30 italic mb-6">
+              <p
+                className={`text-center text-xs text-[#232323]/30 italic mb-6 ${mobilePrompt && !skipInstall ? "hidden" : ""}`}
+              >
                 Ovo je samo kratak pregled — prijavom dobijate potpun planer sa
                 čuvanjem podataka, prilagođenim stavkama i praćenjem u realnom
                 vremenu.{" "}
@@ -260,11 +354,18 @@ export default function MojeVencanjeClient() {
           {state === "auth" && coupleInfo && (
             <>
               {/* Couple heading */}
-              <div className="text-center mb-8">
-                <h1 className="font-serif text-3xl md:text-4xl text-[#232323] mb-1">
+              <div className="text-center mb-8 pwa-heading-section">
+                <h1
+                  className="font-serif text-3xl md:text-4xl text-[#232323] mb-1 pwa-script-heading"
+                  style={
+                    {
+                      "--couple-script-font": `var(--font-${coupleInfo.scriptFont})`,
+                    } as React.CSSProperties
+                  }
+                >
                   {coupleInfo.bride} & {coupleInfo.groom}
                 </h1>
-                <p className="text-[#232323]/50 text-sm">
+                <p className="text-[#232323]/50 text-sm [@media(display-mode:standalone)]:hidden">
                   {new Date(coupleInfo.eventDate).toLocaleDateString(
                     "sr-Latn-RS",
                     {
@@ -278,14 +379,14 @@ export default function MojeVencanjeClient() {
                 </p>
                 <Link
                   href={`/pozivnica/${coupleInfo.slug}/portal`}
-                  className="mt-3 inline-flex items-center gap-1.5 px-5 py-1.5 text-xs font-semibold tracking-wider uppercase text-[#AE343F] border border-[#AE343F]/30 rounded-full hover:bg-[#AE343F] hover:text-[#F5F4DC] transition-all duration-300"
+                  className="mt-3 inline-flex items-center gap-1.5 px-5 py-1.5 text-xs font-semibold tracking-wider uppercase text-[#AE343F] border border-[#AE343F]/30 rounded-full hover:bg-[#AE343F] hover:text-[#F5F4DC] transition-all duration-300 [@media(display-mode:standalone)]:hidden"
                 >
                   Organizacija gostiju
                 </Link>
-                <br />
+                <br className="[@media(display-mode:standalone)]:hidden" />
                 <button
                   onClick={handleLogout}
-                  className="mt-2 text-xs text-[#232323]/40 hover:text-[#AE343F] transition-colors inline-flex items-center gap-1"
+                  className="mt-2 text-xs text-[#232323]/40 hover:text-[#AE343F] transition-colors inline-flex items-center gap-1 [@media(display-mode:standalone)]:hidden"
                 >
                   <LogOut size={12} /> Odjavite se
                 </button>
@@ -314,8 +415,8 @@ export default function MojeVencanjeClient() {
                 </div>
               </div>
 
-              {/* Mobile tab switcher */}
-              <div className="flex md:hidden justify-center gap-2 mb-6">
+              {/* Mobile tab switcher (browser only, hidden in PWA) */}
+              <div className="flex md:hidden justify-center gap-2 mb-6 [@media(display-mode:standalone)]:hidden">
                 <button
                   onClick={() => setMobileTab("checklist")}
                   className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
@@ -358,6 +459,111 @@ export default function MojeVencanjeClient() {
           )}
         </div>
       </div>
+
+      {/* ── Mobile bottom nav (auth) ── */}
+      {state === "auth" && coupleInfo && (
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#232323]/10 hidden [@media(display-mode:standalone)_and_(max-width:767px)]:flex flex-col"
+          style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+        >
+          <div className="flex justify-around items-center h-14">
+            <button
+              onClick={() => { setMobileTab("checklist"); window.scrollTo({ top: 0 }); }}
+              className={`flex flex-col items-center gap-0.5 py-1 ${
+                mobileTab === "checklist"
+                  ? "text-[#AE343F]"
+                  : "text-[#232323]/35"
+              }`}
+            >
+              <CheckCircle2 size={20} />
+              <span className="text-[10px] font-medium">Checklista</span>
+            </button>
+            <button
+              onClick={() => { setMobileTab("budget"); window.scrollTo({ top: 0 }); }}
+              className={`flex flex-col items-center gap-0.5 py-1 ${
+                mobileTab === "budget" ? "text-[#AE343F]" : "text-[#232323]/35"
+              }`}
+            >
+              <Wallet size={20} />
+              <span className="text-[10px] font-medium">Budžet</span>
+            </button>
+            <Link
+              href={`/pozivnica/${coupleInfo.slug}/portal`}
+              className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35"
+            >
+              <Users size={20} />
+              <span className="text-[10px] font-medium">Gosti</span>
+            </Link>
+            <Link
+              href={`/pozivnica/${coupleInfo.slug}/audio-knjiga/slusaj`}
+              className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35"
+            >
+              <Mic size={20} />
+              <span className="text-[10px] font-medium">Audio</span>
+            </Link>
+            <Link
+              href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
+              className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35"
+            >
+              <LayoutDashboard size={20} />
+              <span className="text-[10px] font-medium">Raspored</span>
+            </Link>
+          </div>
+        </nav>
+      )}
+
+      {/* ── iOS install instructions ── */}
+      {showIOSInstall && (
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/30"
+          onClick={() => setShowIOSInstall(false)}
+        >
+          <div
+            className="bg-white rounded-t-2xl p-6 w-full max-w-md"
+            style={{
+              paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-[#232323]/15 rounded-full mx-auto mb-5" />
+            <h3 className="font-serif text-lg text-[#232323] text-center mb-4">
+              Instalirajte aplikaciju
+            </h3>
+            <div className="space-y-4 text-sm text-[#232323]/70">
+              <div className="flex items-start gap-3">
+                <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">
+                  1
+                </span>
+                <p>
+                  Pritisnite <strong>Share</strong> dugme u Safari-ju
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">
+                  2
+                </span>
+                <p>
+                  Izaberite <strong>&ldquo;Add to Home Screen&rdquo;</strong>
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">
+                  3
+                </span>
+                <p>
+                  Pritisnite <strong>&ldquo;Add&rdquo;</strong>
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowIOSInstall(false)}
+              className="btn btn-sm btn-ghost text-[#232323]/50 w-full mt-5"
+            >
+              Zatvori
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -372,8 +578,7 @@ function TeaserChecklist() {
     allItems.length > 0 ? (checkedCount / allItems.length) * 100 : 0;
 
   // Group items by group (exclude custom)
-  const groups = GROUP_ORDER
-    .filter((g) => g !== "custom")
+  const groups = GROUP_ORDER.filter((g) => g !== "custom")
     .map((g) => ({
       label: GROUP_LABELS[g],
       items: allItems.filter((i) => i.group === g),
@@ -384,7 +589,7 @@ function TeaserChecklist() {
     <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm relative overflow-hidden">
       <h3 className="font-serif text-lg text-[#232323] mb-3 flex items-center gap-2">
         <CheckCircle2 size={18} className="text-[#AE343F]" />
-        Checklista
+        Checklista DEMO
       </h3>
 
       {/* Progress bar */}
@@ -448,7 +653,8 @@ function TeaserChecklist() {
 function TeaserBudget() {
   const fakeCategories = getDefaultBudgetCategories();
   const fakePlanned = [
-    350000, 280000, 120000, 150000, 80000, 90000, 60000, 45000, 25000, 30000, 200000, 35000,
+    350000, 280000, 120000, 150000, 80000, 90000, 60000, 45000, 25000, 30000,
+    200000, 35000,
   ];
   const fakeSpent = [350000, 195000, 60000, 100000, 55000, 0, 0, 0, 0, 0, 0, 0];
   const totalPlanned = fakePlanned.reduce((s, v) => s + v, 0);
@@ -458,7 +664,7 @@ function TeaserBudget() {
     <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm relative overflow-hidden">
       <h3 className="font-serif text-lg text-[#232323] mb-3 flex items-center gap-2">
         <Wallet size={18} className="text-[#AE343F]" />
-        Budžet
+        Budžet DEMO
       </h3>
 
       {/* Totals */}

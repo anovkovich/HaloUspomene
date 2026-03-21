@@ -206,24 +206,24 @@ export default function SlusajClient({
       className="min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6]"
       style={{ color: "var(--theme-text)" }}
     >
-      <div className="max-w-3xl mx-auto px-4 py-12 sm:py-16">
+      <div className="max-w-3xl mx-auto px-4 py-12 sm:py-16 [@media(display-mode:standalone)]:pt-4">
         <Link
           href={`/pozivnica/${slug}/portal`}
-          className="inline-flex items-center gap-1.5 text-sm font-raleway mb-8 transition-opacity hover:opacity-70"
+          className="inline-flex items-center gap-1.5 text-sm font-raleway mb-8 transition-opacity hover:opacity-70 [@media(display-mode:standalone)]:hidden"
           style={{ color: "var(--theme-text-light)" }}
         >
           <ArrowLeft size={14} /> Portal
         </Link>
 
         {/* Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 pwa-heading-section">
           <h1
             className="font-script text-4xl sm:text-6xl mb-3"
             style={{ color: "var(--theme-primary)" }}
           >
             {coupleNames}
           </h1>
-          <div className="flex items-center justify-center gap-4 my-5">
+          <div className="flex items-center justify-center gap-4 my-5 [@media(display-mode:standalone)]:hidden">
             <div
               className="h-px w-12"
               style={{ backgroundColor: "var(--theme-border)" }}
@@ -239,7 +239,7 @@ export default function SlusajClient({
             />
           </div>
           <p
-            className="font-raleway text-xs uppercase tracking-widest"
+            className="font-raleway text-xs uppercase tracking-widest [@media(display-mode:standalone)]:hidden"
             style={{ color: "var(--theme-text-light)" }}
           >
             {t.audioListenTitle}
