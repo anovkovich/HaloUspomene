@@ -310,8 +310,16 @@ export async function generateInvitationPDF(
     y += 7;
     centerText(hall.address, y, 11, bodyFont, textMuted);
     y += 6;
-    centerText(hall.time + "h", y, 11, bodyFont, textMuted);
-    y += 10;
+    const venueTime = hall.time
+      || (data.event_date.includes("T")
+        ? data.event_date.split("T")[1].slice(0, 5)
+        : null);
+    if (venueTime) {
+      centerText(venueTime + "h", y, 11, bodyFont, textMuted);
+      y += 10;
+    } else {
+      y += 4;
+    }
   }
 
   // Divider with heart
