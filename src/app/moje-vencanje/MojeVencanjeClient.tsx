@@ -8,7 +8,12 @@ import { verifyAuth, loadPortalDataAction } from "./actions";
 import type { ChecklistItem, PortalBudget } from "./types";
 import ChecklistCard from "./ChecklistCard";
 import BudgetCard from "./BudgetCard";
-import { getDefaultChecklist, getDefaultBudgetCategories } from "./defaults";
+import {
+  getDefaultChecklist,
+  getDefaultBudgetCategories,
+  GROUP_ORDER,
+  GROUP_LABELS,
+} from "./defaults";
 
 type AppState = "loading" | "guest" | "auth";
 type MobileTab = "checklist" | "budget";
@@ -362,29 +367,14 @@ function TeaserChecklist() {
   const progressPct =
     allItems.length > 0 ? (checkedCount / allItems.length) * 100 : 0;
 
-  // Group items by group
-  const groups: { label: string; items: typeof allItems }[] = [
-    {
-      label: "12+ meseci pre",
-      items: allItems.filter((i) => i.group === "12+"),
-    },
-    {
-      label: "6–12 meseci pre",
-      items: allItems.filter((i) => i.group === "6-12"),
-    },
-    {
-      label: "3–6 meseci pre",
-      items: allItems.filter((i) => i.group === "3-6"),
-    },
-    {
-      label: "1–3 meseca pre",
-      items: allItems.filter((i) => i.group === "1-3"),
-    },
-    {
-      label: "Poslednja nedelja",
-      items: allItems.filter((i) => i.group === "last-week"),
-    },
-  ];
+  // Group items by group (exclude custom)
+  const groups = GROUP_ORDER
+    .filter((g) => g !== "custom")
+    .map((g) => ({
+      label: GROUP_LABELS[g],
+      items: allItems.filter((i) => i.group === g),
+    }))
+    .filter((g) => g.items.length > 0);
 
   return (
     <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm relative overflow-hidden">
