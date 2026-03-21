@@ -171,16 +171,7 @@ export default function MojeVencanjeClient() {
             />
           </Link>
 
-          {state === "auth" && coupleInfo ? (
-            <Link
-              href={`/pozivnica/${coupleInfo.slug}/portal`}
-              className="text-xs tracking-wider text-[#232323]/40 hover:text-[#AE343F] transition-colors uppercase"
-            >
-              Organizacija gostiju
-            </Link>
-          ) : (
-            <div className="w-16" />
-          )}
+          <div className="w-16" />
         </div>
       </nav>
 
@@ -276,6 +267,13 @@ export default function MojeVencanjeClient() {
                   {" · "}
                   još {daysUntil(coupleInfo.eventDate)} dana
                 </p>
+                <Link
+                  href={`/pozivnica/${coupleInfo.slug}/portal`}
+                  className="mt-3 inline-flex items-center gap-1.5 px-5 py-1.5 text-xs font-semibold tracking-wider uppercase text-[#AE343F] border border-[#AE343F]/30 rounded-full hover:bg-[#AE343F] hover:text-[#F5F4DC] transition-all duration-300"
+                >
+                  Organizacija gostiju
+                </Link>
+                <br />
                 <button
                   onClick={handleLogout}
                   className="mt-2 text-xs text-[#232323]/40 hover:text-[#AE343F] transition-colors inline-flex items-center gap-1"
