@@ -4,7 +4,10 @@ import React from "react";
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Clock } from "lucide-react";
 import type { BirthdayData } from "./types";
-import { getBirthdayThemeCSSVariables, getBirthdayThemeConfig } from "./constants";
+import {
+  getBirthdayThemeCSSVariables,
+  getBirthdayThemeConfig,
+} from "./constants";
 import { BirthdayThemeProvider } from "./components/ThemeProvider";
 import { SceneDecorations, AgeBadge } from "./components/Illustrations";
 import { BirthdayCountdown } from "./components/Countdown";
@@ -16,13 +19,28 @@ interface Props {
 }
 
 const MONTHS = [
-  "januar", "februar", "mart", "april", "maj", "jun",
-  "jul", "avgust", "septembar", "oktobar", "novembar", "decembar",
+  "januar",
+  "februar",
+  "mart",
+  "april",
+  "maj",
+  "jun",
+  "jul",
+  "avgust",
+  "septembar",
+  "oktobar",
+  "novembar",
+  "decembar",
 ];
 
 const DAYS = [
-  "Nedelja", "Ponedeljak", "Utorak", "Sreda",
-  "Četvrtak", "Petak", "Subota",
+  "Nedelja",
+  "Ponedeljak",
+  "Utorak",
+  "Sreda",
+  "Četvrtak",
+  "Petak",
+  "Subota",
 ];
 
 function formatDate(iso: string) {
@@ -60,7 +78,7 @@ export default function BirthdayClient({ data, slug }: Props) {
           >
             {/* Parent names */}
             <p
-              className="text-sm sm:text-base tracking-wide"
+              className="text-sm sm:text-base tracking-wide uppercase"
               style={{ color: "var(--theme-text-light)" }}
             >
               {data.parent_names}
@@ -71,7 +89,7 @@ export default function BirthdayClient({ data, slug }: Props) {
               className="text-xs sm:text-sm uppercase tracking-[0.3em] font-medium"
               style={{ color: "var(--theme-text-muted)" }}
             >
-              Vas pozivaju na proslavu
+              Vas pozivaju na moj
             </p>
 
             {/* Age badge */}
@@ -93,7 +111,8 @@ export default function BirthdayClient({ data, slug }: Props) {
               className="text-sm sm:text-base uppercase tracking-[0.2em]"
               style={{ color: "var(--theme-text-muted)" }}
             >
-              {data.age === 1 ? "prvog rođendana" : `${data.age}. rođendana`}
+              {/* {data.age === 1 ? "prvog rođendana" : `${data.age}. rođendana`} */}
+              rođendan
             </p>
 
             {/* Child name */}
@@ -120,11 +139,10 @@ export default function BirthdayClient({ data, slug }: Props) {
                 className="text-base sm:text-lg max-w-md mx-auto italic"
                 style={{ color: "var(--theme-text-muted)" }}
               >
-                &ldquo;{data.tagline}&rdquo;
+                {data.tagline}
               </motion.p>
             )}
           </motion.div>
-
         </section>
 
         {/* ── Countdown ── */}
@@ -159,7 +177,8 @@ export default function BirthdayClient({ data, slug }: Props) {
             <div
               className="p-8 rounded-3xl text-center space-y-6 backdrop-blur-sm"
               style={{
-                backgroundColor: "color-mix(in srgb, var(--theme-surface) 92%, transparent)",
+                backgroundColor:
+                  "color-mix(in srgb, var(--theme-surface) 92%, transparent)",
                 border: "1px solid var(--theme-border-light)",
                 boxShadow: "var(--theme-shadow)",
               }}
@@ -176,14 +195,20 @@ export default function BirthdayClient({ data, slug }: Props) {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-center gap-3">
-                  <Calendar size={18} style={{ color: "var(--theme-secondary)" }} />
+                  <Calendar
+                    size={18}
+                    style={{ color: "var(--theme-secondary)" }}
+                  />
                   <span style={{ color: "var(--theme-text)" }}>
                     {dateInfo.day}, {dateInfo.full}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-center gap-3">
-                  <Clock size={18} style={{ color: "var(--theme-secondary)" }} />
+                  <Clock
+                    size={18}
+                    style={{ color: "var(--theme-secondary)" }}
+                  />
                   <span style={{ color: "var(--theme-text)" }}>
                     {dateInfo.time}
                   </span>
@@ -195,7 +220,10 @@ export default function BirthdayClient({ data, slug }: Props) {
                 />
 
                 <div className="flex items-center justify-center gap-3">
-                  <MapPin size={18} style={{ color: "var(--theme-secondary)" }} />
+                  <MapPin
+                    size={18}
+                    style={{ color: "var(--theme-secondary)" }}
+                  />
                   <div>
                     <p
                       className="font-bold"

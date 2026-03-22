@@ -13,7 +13,9 @@
       "Bash(npx tsc:*)",
       "Bash(npm install:*)",
       "Bash(npx next:*)",
-      "WebFetch(domain:developers.cloudflare.com)"
+      "WebFetch(domain:developers.cloudflare.com)",
+      "WebSearch",
+      "WebFetch(domain:developers.google.com)"
     ]
   }
 }
