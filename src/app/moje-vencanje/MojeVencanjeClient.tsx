@@ -189,10 +189,10 @@ export default function MojeVencanjeClient() {
       await prompt.prompt();
       const result = await prompt.userChoice;
       if (result.outcome === "accepted") setInstallPrompt(null);
-    } else if (isIOS) {
+    } else {
       setShowIOSInstall(true);
     }
-  }, [installPrompt, isIOS]);
+  }, [installPrompt]);
 
   // Loading state
   if (state === "loading") {
@@ -530,30 +530,39 @@ export default function MojeVencanjeClient() {
               Instalirajte aplikaciju
             </h3>
             <div className="space-y-4 text-sm text-[#232323]/70">
-              <div className="flex items-start gap-3">
-                <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">
-                  1
-                </span>
-                <p>
-                  Pritisnite <strong>Share</strong> dugme u Safari-ju
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">
-                  2
-                </span>
-                <p>
-                  Izaberite <strong>&ldquo;Add to Home Screen&rdquo;</strong>
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">
-                  3
-                </span>
-                <p>
-                  Pritisnite <strong>&ldquo;Add&rdquo;</strong>
-                </p>
-              </div>
+              {isIOS ? (
+                <>
+                  <div className="flex flex-col items-center gap-2">
+                    <Image src="/images/pwa/ios-share.jpeg" alt="Safari share button" width={1179} height={264} className="w-full max-w-[280px] rounded-xl" />
+                    <p className="text-center text-sm text-[#232323]/70">
+                      <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-5 h-5 inline-flex items-center justify-center text-xs font-bold mr-1.5">1</span>
+                      Pritisnite <strong>Share</strong> dugme u Safari-ju
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-center gap-2 pt-2">
+                    <Image src="/images/pwa/ios-share-download.jpeg" alt="Add to Home Screen" width={1179} height={186} className="w-full max-w-[280px] rounded-xl" />
+                    <p className="text-center text-sm text-[#232323]/70">
+                      <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-5 h-5 inline-flex items-center justify-center text-xs font-bold mr-1.5">2</span>
+                      Izaberite <strong>&ldquo;Add to Home Screen&rdquo;</strong>
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start gap-3">
+                    <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                    <p>Otvorite <strong>meni</strong> pretraživača (tri tačke ⋮)</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                    <p>Izaberite <strong>&ldquo;Dodaj na početni ekran&rdquo;</strong> ili <strong>&ldquo;Install app&rdquo;</strong></p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">3</span>
+                    <p>Potvrdite instalaciju</p>
+                  </div>
+                </>
+              )}
             </div>
             <button
               onClick={() => setShowIOSInstall(false)}

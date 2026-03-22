@@ -2,8 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ExternalLink, Pencil, Users, Armchair, Mic, Receipt, Copy, Check } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake } from "lucide-react";
 import DeleteModal from "./DeleteModal";
+import BirthdayAdminList from "./BirthdayAdminList";
+
+type AdminTab = "pozivnice" | "rodjendani";
 
 interface Couple {
   slug: string;
@@ -25,6 +28,7 @@ interface CoupleStats {
 }
 
 export default function AdminPage() {
+  const [activeTab, setActiveTab] = useState<AdminTab>("pozivnice");
   const [couples, setCouples] = useState<Couple[]>([]);
   const [stats, setStats] = useState<Record<string, CoupleStats>>({});
   const [loading, setLoading] = useState(true);
@@ -113,7 +117,7 @@ export default function AdminPage() {
     }
   }
 
-  function buildReceiptUrl(c: Couple) {
+  function buildReceiptUrl(c: Couple, extras?: { retro_phone?: boolean; dobrodoslica?: boolean }) {
     const data = {
       s: c.slug,
       par: c.couple_names.full_display,
@@ -122,6 +126,8 @@ export default function AdminPage() {
       a: c.paid_for_audio ? 1 : 0,
       uk: c.paid_for_audio_USB === "kaseta" ? 1 : 0,
       ub: c.paid_for_audio_USB === "bocica" ? 1 : 0,
+      rp: extras?.retro_phone ? 1 : 0,
+      pd: extras?.dobrodoslica ? 1 : 0,
       d: c.custom_discount ?? 0,
       t: Date.now(),
     };
@@ -179,6 +185,34 @@ export default function AdminPage() {
 
   return (
     <div>
+      {/* Tab bar */}
+      <div className="flex items-center gap-1 mb-8 bg-white/5 rounded-xl p-1 w-fit">
+        <button
+          onClick={() => setActiveTab("pozivnice")}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+            activeTab === "pozivnice"
+              ? "bg-[#AE343F] text-white"
+              : "text-white/50 hover:text-white/80"
+          }`}
+        >
+          <Heart size={14} /> Pozivnice
+        </button>
+        <button
+          onClick={() => setActiveTab("rodjendani")}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+            activeTab === "rodjendani"
+              ? "bg-[#FF6B6B] text-white"
+              : "text-white/50 hover:text-white/80"
+          }`}
+        >
+          <Cake size={14} /> Rođendani
+        </button>
+      </div>
+
+      {activeTab === "rodjendani" ? (
+        <BirthdayAdminList onNeedsLogin={() => setNeedsLogin(true)} />
+      ) : (
+      <>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-semibold text-white">
           Pozivnice ({couples.length})
@@ -355,15 +389,15 @@ export default function AdminPage() {
                 <ReceiptDropdown
                   couple={c}
                   copiedSlug={copiedSlug}
-                  onGenerate={async () => {
+                  onGenerate={async (extras) => {
                     await handleGenerateReceipt(c.slug);
-                    const url = buildReceiptUrl(c);
+                    const url = buildReceiptUrl(c, extras);
                     await navigator.clipboard.writeText(url);
                     setCopiedSlug(c.slug);
                     setTimeout(() => setCopiedSlug(null), 2500);
                   }}
-                  onCopy={async () => {
-                    const url = buildReceiptUrl(c);
+                  onCopy={async (extras) => {
+                    const url = buildReceiptUrl(c, extras);
                     await navigator.clipboard.writeText(url);
                     setCopiedSlug(c.slug);
                     setTimeout(() => setCopiedSlug(null), 2500);
@@ -387,6 +421,8 @@ export default function AdminPage() {
           }}
         />
       )}
+      </>
+      )}
     </div>
   );
 }
@@ -401,12 +437,14 @@ function ReceiptDropdown({
 }: {
   couple: Couple;
   copiedSlug: string | null;
-  onGenerate: () => void;
-  onCopy: () => void;
+  onGenerate: (extras: { retro_phone: boolean; dobrodoslica: boolean }) => void;
+  onCopy: (extras: { retro_phone: boolean; dobrodoslica: boolean }) => void;
   onPaid: () => void;
   onDiscount: (amount: number) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [retroPhone, setRetroPhone] = useState(false);
+  const [dobrodoslica, setDobrodoslica] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -445,9 +483,36 @@ function ReceiptDropdown({
           className="absolute bottom-full left-0 mb-1 rounded-lg overflow-hidden shadow-xl z-30"
           style={{ backgroundColor: "#2a2a2a", border: "1px solid rgba(255,255,255,0.1)", minWidth: 220 }}
         >
+          {/* Retro Phone toggle */}
+          <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+            <span className="text-[11px] text-white/50">Retro telefon (9.000)</span>
+            <button
+              onClick={() => {
+                const next = !retroPhone;
+                setRetroPhone(next);
+                if (next) onDiscount(1500);
+                else onDiscount(0);
+              }}
+              className={`w-8 h-[18px] rounded-full relative transition-colors ${retroPhone ? "bg-yellow-500" : "bg-white/10"}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-white rounded-full transition-transform ${retroPhone ? "translate-x-3.5" : ""}`} />
+            </button>
+          </div>
+
+          {/* Personalizovana dobrodošlica toggle */}
+          <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+            <span className="text-[11px] text-white/50">Dobrodošlica (1.000)</span>
+            <button
+              onClick={() => setDobrodoslica((v) => !v)}
+              className={`w-8 h-[18px] rounded-full relative transition-colors ${dobrodoslica ? "bg-yellow-500" : "bg-white/10"}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-white rounded-full transition-transform ${dobrodoslica ? "translate-x-3.5" : ""}`} />
+            </button>
+          </div>
+
           {/* Generate / Regenerate */}
           <button
-            onClick={() => { onGenerate(); setOpen(false); }}
+            onClick={() => { onGenerate({ retro_phone: retroPhone, dobrodoslica }); setOpen(false); }}
             className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-white/70 hover:bg-white/5 cursor-pointer transition-colors"
           >
             <Receipt size={12} className="text-yellow-400" />
@@ -457,7 +522,7 @@ function ReceiptDropdown({
           {/* Copy link */}
           {isActive && (
             <button
-              onClick={() => { onCopy(); setOpen(false); }}
+              onClick={() => { onCopy({ retro_phone: retroPhone, dobrodoslica }); setOpen(false); }}
               className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-white/70 hover:bg-white/5 cursor-pointer transition-colors"
             >
               <Copy size={12} className="text-green-400" />

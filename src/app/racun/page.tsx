@@ -202,6 +202,8 @@ interface ReceiptPayload {
   a: number; // audio
   uk?: number; // usb kaseta
   ub?: number; // usb bocica
+  rp?: number; // retro phone
+  pd?: number; // personalizovana dobrodoslica
   d: number; // custom discount
   t: number; // timestamp
 }
@@ -210,23 +212,38 @@ function ReceiptContent() {
   const params = useSearchParams();
   const router = useRouter();
 
-  const [state, setState] = useState<{ payload: ReceiptPayload | null; ready: boolean }>({ payload: null, ready: false });
+  const [state, setState] = useState<{
+    payload: ReceiptPayload | null;
+    ready: boolean;
+  }>({ payload: null, ready: false });
 
   useEffect(() => {
     const encoded = params.get("d");
-    if (!encoded) { router.replace("/"); return; }
+    if (!encoded) {
+      router.replace("/");
+      return;
+    }
 
     let data: ReceiptPayload;
     try {
       data = JSON.parse(decodeURIComponent(escape(atob(encoded))));
-      if (!data.s) { router.replace("/"); return; }
-    } catch { router.replace("/"); return; }
+      if (!data.s) {
+        router.replace("/");
+        return;
+      }
+    } catch {
+      router.replace("/");
+      return;
+    }
 
     fetch(`/api/racun/${data.s}`)
       .then((res) => res.json())
       .then((apiData) => {
-        if (!apiData.valid) { router.replace("/"); }
-        else { setState({ payload: data, ready: true }); }
+        if (!apiData.valid) {
+          router.replace("/");
+        } else {
+          setState({ payload: data, ready: true });
+        }
       })
       .catch(() => router.replace("/"));
   }, [params, router]);
@@ -241,10 +258,25 @@ function ReceiptContent() {
   }
 
   // Build line items
-  const items: { label: string; amount: number; free?: boolean }[] = [
+  const items: { label: string; amount: number; free?: boolean }[] = [];
+
+  if (payload.rp)
+    items.push({
+      label: "Audio Guest Book — telefon",
+      amount: pricing.packages.essential.price,
+    });
+  if (payload.pd)
+    items.push({
+      label: "Personalizovana audio dobrodošlica",
+      amount: pricing.addons.find(
+        (a) => a.id === "personalizovana_dobrodoslica",
+      )!.price,
+    });
+
+  items.push(
     { label: "Website pozivnica", amount: pricing.pozivnica.website.price },
     { label: "PDF pozivnica za štampu", amount: 0, free: true },
-  ];
+  );
 
   if (payload.r)
     items.push({

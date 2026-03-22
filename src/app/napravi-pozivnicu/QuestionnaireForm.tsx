@@ -1342,7 +1342,14 @@ export default function QuestionnaireForm() {
     });
   };
 
+  const [stepError, setStepError] = useState("");
+
   const goNext = () => {
+    if (step === 1 && (!formData.bride.trim() || !formData.groom.trim())) {
+      setStepError("Unesite imena mladenaca pre nego što nastavite.");
+      return;
+    }
+    setStepError("");
     setDirection(1);
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
   };
@@ -1632,14 +1639,19 @@ export default function QuestionnaireForm() {
           </button>
 
           {step < TOTAL_STEPS ? (
-            <button
-              type="button"
-              onClick={goNext}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#8B2833] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20"
-            >
-              Dalje
-              <ChevronRight size={16} />
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                type="button"
+                onClick={goNext}
+                className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#8B2833] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20"
+              >
+                Dalje
+                <ChevronRight size={16} />
+              </button>
+              {stepError && (
+                <p className="text-xs text-[#AE343F]">{stepError}</p>
+              )}
+            </div>
           ) : (
             <button
               type="button"
