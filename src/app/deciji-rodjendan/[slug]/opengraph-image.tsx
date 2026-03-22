@@ -33,22 +33,32 @@ const GOOGLE_FONT_NAMES: Record<BirthdayFontType, string> = {
   chewy: "Chewy",
 };
 
-async function fetchGoogleFont(fontKey: BirthdayFontType): Promise<ArrayBuffer> {
+async function fetchGoogleFont(fontKey: BirthdayFontType): Promise<ArrayBuffer | null> {
   const fontName = GOOGLE_FONT_NAMES[fontKey] || "Fredoka";
-  // Request ttf format via user-agent trick (Google Fonts returns woff2 by default)
-  const cssUrl = `https://fonts.googleapis.com/css2?family=${fontName}:wght@700&display=swap`;
-  const cssRes = await fetch(cssUrl, {
-    headers: { "User-Agent": "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)" },
-  });
-  const css = await cssRes.text();
+  // Try bold first, then regular (some fonts like Chewy only have 400)
+  const urls = [
+    `https://fonts.googleapis.com/css2?family=${fontName}:wght@700&display=swap`,
+    `https://fonts.googleapis.com/css2?family=${fontName}:wght@400&display=swap`,
+    `https://fonts.googleapis.com/css2?family=${fontName}&display=swap`,
+  ];
 
-  // Extract the font URL from the CSS
-  const match = css.match(/url\(([^)]+)\)/);
-  if (!match) throw new Error(`Could not find font URL for ${fontName}`);
-
-  const fontUrl = match[1];
-  const fontRes = await fetch(fontUrl);
-  return fontRes.arrayBuffer();
+  for (const cssUrl of urls) {
+    try {
+      const cssRes = await fetch(cssUrl, {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)" },
+      });
+      if (!cssRes.ok) continue;
+      const css = await cssRes.text();
+      const match = css.match(/url\(([^)]+)\)/);
+      if (!match) continue;
+      const fontRes = await fetch(match[1]);
+      if (!fontRes.ok) continue;
+      return fontRes.arrayBuffer();
+    } catch {
+      continue;
+    }
+  }
+  return null;
 }
 
 export default async function OGImage({
@@ -76,11 +86,14 @@ export default async function OGImage({
   const displayFontKey = data.displayFont ?? "fredoka";
 
   // Load fonts in parallel
-  const fontsDir = join(process.cwd(), "src/app/pozivnica/[slug]/fonts");
-  const [sansFontData, displayFontData] = await Promise.all([
-    readFile(join(fontsDir, "JosefinSans-Regular.ttf")),
+  const sharedFontsDir = join(process.cwd(), "src/app/pozivnica/[slug]/fonts");
+  const birthdayFontsDir = join(process.cwd(), "src/app/deciji-rodjendan/[slug]/fonts");
+  const [sansFontData, fetchedFont] = await Promise.all([
+    readFile(join(sharedFontsDir, "JosefinSans-Regular.ttf")),
     fetchGoogleFont(displayFontKey),
   ]);
+  // Fallback to local Fredoka if Google Fonts fetch fails
+  const displayFontData = fetchedFont ?? await readFile(join(birthdayFontsDir, "Fredoka-SemiBold.ttf"));
 
   return new ImageResponse(
     <div
