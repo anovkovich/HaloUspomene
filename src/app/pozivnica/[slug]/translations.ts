@@ -152,7 +152,7 @@ export const latinTranslations: Translations = {
   // Seating lookup
   findSeating: "✦ Pronađite mesto sedenja ✦",
   seatingAvailableNote:
-    "Dan pre proslave biće dostupna provera gde ste raspoređeni sa sedenjem - ukoliko host uradi online raspored sedenja.",
+    "Dan pre proslave biće dostupna provera gde ste raspoređeni sa sedenjem.",
 
   // Footer
   thankYouFooter: "Hvala Vam što ste deo naše sreće",
@@ -266,7 +266,7 @@ export const cyrillicTranslations: Translations = {
   // Seating lookup
   findSeating: "✦ Пронађите место седења ✦",
   seatingAvailableNote:
-    "Дан пре прославе биће доступна провера где сте распоређени са седењем - уколико хост уради онлајн распоред седења.",
+    "Дан пре прославе биће доступна провера где сте распоређени са седењем.",
 
   // Footer
   thankYouFooter: "Хвала Вам што сте део наше среће",

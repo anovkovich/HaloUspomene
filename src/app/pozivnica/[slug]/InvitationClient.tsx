@@ -682,10 +682,10 @@ export default function InvitationClient({
             <RSVPForm slug={slug} />
           )}
 
-          {/* Seating lookup note / link — shown after form */}
-          <div className="max-w-xl mx-auto mt-6 text-center">
-            {showGdeSedimLink ? (
-              data.paid_for_raspored ? (
+          {/* Seating lookup note / link — only shown when paid_for_raspored */}
+          {data.paid_for_raspored && (
+            <div className="max-w-xl mx-auto mt-6 text-center">
+              {showGdeSedimLink ? (
                 <Link
                   href={`/pozivnica/${slug}/gde-sedim`}
                   className="inline-flex items-center gap-2 font-elegant text-sm uppercase tracking-widest transition-opacity hover:opacity-70"
@@ -693,16 +693,16 @@ export default function InvitationClient({
                 >
                   {t.findSeating}
                 </Link>
-              ) : null
-            ) : (
-              <p
-                className="font-elegant text-xs leading-relaxed"
-                style={{ color: "var(--theme-text-light)", opacity: 0.7 }}
-              >
-                {t.seatingAvailableNote}
-              </p>
-            )}
-          </div>
+              ) : (
+                <p
+                  className="font-elegant text-xs leading-relaxed"
+                  style={{ color: "var(--theme-text-light)", opacity: 0.7 }}
+                >
+                  {t.seatingAvailableNote}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Audio guest book link — wedding day only */}
           {isWeddingDay && data.paid_for_audio && (
