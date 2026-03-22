@@ -251,58 +251,60 @@ export default function AdminPage() {
               }`}
             >
               {/* Top row */}
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <span className="font-semibold text-white">
-                      {c.couple_names.full_display}
-                    </span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/50">
-                      {c.theme}
-                    </span>
-                    <span
-                      className={`text-xs ${isExpired ? "text-red-400/60" : isPast ? "text-white/30" : "text-white/60"}`}
+              <div className="mb-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="font-semibold text-white">
+                        {c.couple_names.full_display}
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 shrink-0">
+                        {c.theme}
+                      </span>
+                      <span
+                        className={`text-[10px] shrink-0 ${isExpired ? "text-red-400/60" : isPast ? "text-white/30" : "text-white/60"}`}
+                      >
+                        {daysUntil(c.event_date)}
+                      </span>
+                    </div>
+                    <div className="text-xs text-white/40 truncate">
+                      /{c.slug} &middot;{" "}
+                      {new Date(c.event_date).toLocaleDateString("sr-RS", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <a
+                      href={`/pozivnica/${c.slug}`}
+                      target="_blank"
+                      className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white"
+                      title="Otvori pozivnicu"
                     >
-                      {daysUntil(c.event_date)}
-                    </span>
+                      <ExternalLink size={14} />
+                    </a>
+                    <button
+                      onClick={() => router.push(`/admin/${c.slug}`)}
+                      className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white"
+                      title="Izmeni"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      onClick={() => setDeleteSlug(c.slug)}
+                      className="p-1.5 rounded-lg hover:bg-red-500/20 transition-colors text-white/40 hover:text-red-400"
+                      title="Obriši"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
-                  <div className="text-sm text-white/40">
-                    /{c.slug} &middot;{" "}
-                    {new Date(c.event_date).toLocaleDateString("sr-RS", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={`/pozivnica/${c.slug}`}
-                    target="_blank"
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white"
-                    title="Otvori pozivnicu"
-                  >
-                    <ExternalLink size={16} />
-                  </a>
-                  <button
-                    onClick={() => router.push(`/admin/${c.slug}`)}
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white"
-                    title="Izmeni"
-                  >
-                    <Pencil size={16} />
-                  </button>
-                  <button
-                    onClick={() => setDeleteSlug(c.slug)}
-                    className="p-2 rounded-lg hover:bg-red-500/20 transition-colors text-white/40 hover:text-red-400"
-                    title="Obriši"
-                  >
-                    <Trash2 size={16} />
-                  </button>
                 </div>
               </div>
 
               {/* Stats row */}
-              <div className="flex items-center gap-4 mt-2">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
                 {/* RSVP */}
                 {s?.rsvp && (
                   <div className="flex items-center gap-1.5 text-xs text-white/50">
@@ -348,7 +350,7 @@ export default function AdminPage() {
                 )}
 
                 {/* Toggles */}
-                <div className="flex items-center gap-4 ml-auto">
+                <div className="flex items-center gap-4 sm:ml-auto">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-white/30">Raspored</span>
                     <button
