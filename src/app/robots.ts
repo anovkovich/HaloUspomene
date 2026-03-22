@@ -23,11 +23,13 @@ export default function robots(): MetadataRoute.Robots {
           "/pozivnica/*/prijava",
           "/pozivnica/*/gde-sedim",
           "/pozivnica/*/audio-knjiga",
+          "/deciji-rodjendan/*/portal",
+          "/deciji-rodjendan/*/prijava",
         ],
       },
       {
         userAgent: "GPTBot",
-        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/"],
+        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/"],
         disallow: [
           "/api/",
           "/_next/",
@@ -37,11 +39,13 @@ export default function robots(): MetadataRoute.Robots {
           "/pozivnica/*/prijava",
           "/pozivnica/*/gde-sedim",
           "/pozivnica/*/audio-knjiga",
+          "/deciji-rodjendan/*/portal",
+          "/deciji-rodjendan/*/prijava",
         ],
       },
       {
         userAgent: "ChatGPT-User",
-        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/"],
+        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/"],
         disallow: [
           "/api/",
           "/_next/",
@@ -51,11 +55,13 @@ export default function robots(): MetadataRoute.Robots {
           "/pozivnica/*/prijava",
           "/pozivnica/*/gde-sedim",
           "/pozivnica/*/audio-knjiga",
+          "/deciji-rodjendan/*/portal",
+          "/deciji-rodjendan/*/prijava",
         ],
       },
       {
         userAgent: "Google-Extended",
-        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/"],
+        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/"],
         disallow: [
           "/api/",
           "/_next/",
@@ -65,11 +71,13 @@ export default function robots(): MetadataRoute.Robots {
           "/pozivnica/*/prijava",
           "/pozivnica/*/gde-sedim",
           "/pozivnica/*/audio-knjiga",
+          "/deciji-rodjendan/*/portal",
+          "/deciji-rodjendan/*/prijava",
         ],
       },
       {
         userAgent: "anthropic-ai",
-        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/"],
+        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/"],
         disallow: [
           "/api/",
           "/_next/",
@@ -79,6 +87,8 @@ export default function robots(): MetadataRoute.Robots {
           "/pozivnica/*/prijava",
           "/pozivnica/*/gde-sedim",
           "/pozivnica/*/audio-knjiga",
+          "/deciji-rodjendan/*/portal",
+          "/deciji-rodjendan/*/prijava",
         ],
       },
     ],

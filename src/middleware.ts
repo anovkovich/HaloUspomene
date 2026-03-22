@@ -28,24 +28,49 @@ export async function middleware(request: NextRequest) {
   const match = pathname.match(
     /^\/pozivnica\/([^/]+)\/(portal|potvrde|raspored-sedenja|audio-knjiga\/slusaj)(\/|$)/
   );
-  if (!match) return NextResponse.next();
+  if (match) {
+    const slug = match[1];
+    const cookie = request.cookies.get(`auth_${slug}`);
 
-  const slug = match[1];
-  const cookie = request.cookies.get(`auth_${slug}`);
-
-  if (cookie) {
-    try {
-      await jwtVerify(cookie.value, secret);
-      return NextResponse.next();
-    } catch {
-      // Expired or invalid — fall through to redirect
+    if (cookie) {
+      try {
+        await jwtVerify(cookie.value, secret);
+        return NextResponse.next();
+      } catch {
+        // Expired or invalid — fall through to redirect
+      }
     }
+
+    const next = encodeURIComponent(pathname);
+    return NextResponse.redirect(
+      new URL(`/pozivnica/${slug}/prijava?next=${next}`, request.url)
+    );
   }
 
-  const next = encodeURIComponent(pathname);
-  return NextResponse.redirect(
-    new URL(`/pozivnica/${slug}/prijava?next=${next}`, request.url)
+  // ── Birthday auth (portal) ─────────────────────────────────────────────
+  const birthdayMatch = pathname.match(
+    /^\/deciji-rodjendan\/([^/]+)\/(portal)(\/|$)/
   );
+  if (birthdayMatch) {
+    const slug = birthdayMatch[1];
+    const cookie = request.cookies.get(`auth_birthday_${slug}`);
+
+    if (cookie) {
+      try {
+        await jwtVerify(cookie.value, secret);
+        return NextResponse.next();
+      } catch {
+        // Expired or invalid — fall through to redirect
+      }
+    }
+
+    const next = encodeURIComponent(pathname);
+    return NextResponse.redirect(
+      new URL(`/deciji-rodjendan/${slug}/prijava?next=${next}`, request.url)
+    );
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
@@ -58,5 +83,7 @@ export const config = {
     "/pozivnica/:slug/raspored-sedenja/:path*",
     "/pozivnica/:slug/audio-knjiga/slusaj",
     "/pozivnica/:slug/audio-knjiga/slusaj/:path*",
+    "/deciji-rodjendan/:slug/portal",
+    "/deciji-rodjendan/:slug/portal/:path*",
   ],
 };
