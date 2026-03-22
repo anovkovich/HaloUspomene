@@ -16,6 +16,7 @@ interface Couple {
   paid_for_raspored?: boolean;
   paid_for_audio?: boolean;
   paid_for_audio_USB?: "" | "kaseta" | "bocica";
+  draft?: boolean;
   receipt_valid?: boolean;
   receipt_created?: string;
   custom_discount?: number;
@@ -72,6 +73,27 @@ export default function AdminPage() {
     );
   if (loading) return <p className="text-white/40">Učitavanje...</p>;
 
+
+  async function handleToggleDraft(slug: string, current: boolean) {
+    const newVal = !current;
+    setCouples((prev) =>
+      prev.map((c) =>
+        c.slug === slug ? { ...c, draft: newVal } : c
+      )
+    );
+    const res = await fetch(`/api/admin/couples/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ draft: newVal }),
+    });
+    if (!res.ok) {
+      setCouples((prev) =>
+        prev.map((c) =>
+          c.slug === slug ? { ...c, draft: current } : c
+        )
+      );
+    }
+  }
 
   async function handleToggleRaspored(slug: string, current: boolean) {
     const newVal = !current;
@@ -255,6 +277,10 @@ export default function AdminPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${c.draft ? "bg-orange-400" : "bg-green-400"}`}
+                        title={c.draft ? "Draft" : "Live"}
+                      />
                       <span className="font-semibold text-white">
                         {c.couple_names.full_display}
                       </span>
@@ -351,6 +377,23 @@ export default function AdminPage() {
 
                 {/* Toggles */}
                 <div className="flex items-center gap-4 sm:ml-auto">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-white/30">Draft</span>
+                    <button
+                      onClick={() =>
+                        handleToggleDraft(c.slug, !!c.draft)
+                      }
+                      className={`relative w-9 h-5 rounded-full transition-colors ${
+                        c.draft ? "bg-orange-400" : "bg-white/10"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                          c.draft ? "translate-x-4" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-white/30">Raspored</span>
                     <button

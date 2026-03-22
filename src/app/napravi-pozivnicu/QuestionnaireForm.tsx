@@ -1258,7 +1258,7 @@ function generateRawJson(formData: FormData): string {
     paid_for_audio: formData.extra_audio,
     paid_for_audio_USB: formData.extra_usb_kaseta ? "kaseta" : formData.extra_usb_bocica ? "bocica" : "",
     paid_for_pdf: false,
-    draft: false,
+    draft: true,
   };
   return JSON.stringify(json, null, 2);
 }

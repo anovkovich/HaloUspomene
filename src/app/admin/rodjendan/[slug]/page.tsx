@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Trash2, MapPin } from "lucide-react";
 import Link from "next/link";
 
 export default function EditBirthdayPage() {
@@ -13,6 +13,7 @@ export default function EditBirthdayPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -41,6 +42,7 @@ export default function EditBirthdayPage() {
       parsed = JSON.parse(json);
     } catch (e) {
       setError("Neispravan JSON: " + (e as Error).message);
+      setTimeout(() => setError(""), 5000);
       return;
     }
 
@@ -54,11 +56,34 @@ export default function EditBirthdayPage() {
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       setError(data.error || "Greška pri čuvanju");
+      setTimeout(() => setError(""), 5000);
       setSaving(false);
       return;
     }
 
-    router.push("/admin");
+    setSaving(false);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  }
+
+  function handleGenerateMapUrl() {
+    try {
+      const parsed = JSON.parse(json);
+      if (!parsed.location) return;
+
+      const loc = parsed.location;
+      const query = [loc.name, loc.address].filter(Boolean).join(", ");
+      if (!query) return;
+
+      parsed.location = {
+        ...loc,
+        map_url: `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed`,
+      };
+
+      setJson(JSON.stringify(parsed, null, 2));
+    } catch {
+      // invalid JSON, ignore
+    }
   }
 
   async function handleDelete() {
@@ -72,6 +97,7 @@ export default function EditBirthdayPage() {
     } else {
       setDeleting(false);
       setError("Greška pri brisanju");
+      setTimeout(() => setError(""), 5000);
     }
   }
 
@@ -86,23 +112,32 @@ export default function EditBirthdayPage() {
         <ArrowLeft size={14} /> Nazad
       </Link>
 
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-white">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <h2 className="text-xl sm:text-2xl font-semibold text-white">
           Izmena: <span className="text-[#FF6B6B]">{slug}</span>
         </h2>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            onClick={handleGenerateMapUrl}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/15 text-white/70 hover:text-white transition-colors cursor-pointer"
+            title="Generiši map_url za lokaciju"
+          >
+            <MapPin size={14} /> <span className="hidden sm:inline">Generiši mapu</span>
+          </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 bg-[#FF6B6B] hover:bg-[#E55A5A] text-white rounded-lg px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
+            className={`flex items-center gap-2 rounded-lg px-4 sm:px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer ${
+              saveSuccess ? "bg-green-600 hover:bg-green-700" : "bg-[#FF6B6B] hover:bg-[#E55A5A]"
+            } text-white`}
           >
-            <Save size={15} /> {saving ? "Čuvanje..." : "Sačuvaj izmene"}
+            <Save size={15} /> {saving ? "Čuvanje..." : saveSuccess ? "✓ Sačuvano!" : "Sačuvaj"}
           </button>
           <button
             onClick={() => setShowDelete(true)}
             className="flex items-center gap-2 text-red-400 hover:text-red-300 text-sm transition-colors cursor-pointer"
           >
-            <Trash2 size={14} /> Obriši
+            <Trash2 size={14} /> <span className="hidden sm:inline">Obriši</span>
           </button>
         </div>
       </div>
@@ -111,17 +146,18 @@ export default function EditBirthdayPage() {
         <textarea
           value={json}
           onChange={(e) => setJson(e.target.value)}
-          rows={30}
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white font-mono text-xs leading-relaxed focus:outline-none focus:border-[#FF6B6B] resize-y"
+          rows={25}
+          className="w-full px-3 sm:px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white font-mono text-[11px] sm:text-xs leading-relaxed focus:outline-none focus:border-[#FF6B6B] resize-y"
           spellCheck={false}
         />
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-400 text-sm">
-            {error}
-          </div>
-        )}
       </div>
+
+      {/* Toast for errors */}
+      {error && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white px-5 py-3 rounded-lg shadow-lg text-sm max-w-sm text-center">
+          {error}
+        </div>
+      )}
 
       {/* Delete modal */}
       {showDelete && (

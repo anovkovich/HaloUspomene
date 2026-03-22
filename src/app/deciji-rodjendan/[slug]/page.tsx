@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getBirthdayData, getAllBirthdaySlugs } from "@/data/rodjendani";
 import BirthdayClient from "./BirthdayClient";
 
+export const revalidate = 60;
 // Allow slugs not in generateStaticParams (new events added via admin)
 export const dynamicParams = true;
 

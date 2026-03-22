@@ -12,6 +12,7 @@ interface Birthday {
   theme: string;
   gender: string;
   age: number;
+  draft?: boolean;
 }
 
 interface BirthdayStats {
@@ -52,6 +53,27 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
         setLoading(false);
       });
   }, [onNeedsLogin]);
+
+  async function handleToggleDraft(slug: string, current: boolean) {
+    const newVal = !current;
+    setBirthdays((prev) =>
+      prev.map((b) =>
+        b.slug === slug ? { ...b, draft: newVal } : b
+      )
+    );
+    const res = await fetch(`/api/admin/birthdays/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ draft: newVal }),
+    });
+    if (!res.ok) {
+      setBirthdays((prev) =>
+        prev.map((b) =>
+          b.slug === slug ? { ...b, draft: current } : b
+        )
+      );
+    }
+  }
 
   function daysUntil(dateStr: string) {
     const diff = Math.ceil(
@@ -115,6 +137,10 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${b.draft ? "bg-orange-400" : "bg-green-400"}`}
+                        title={b.draft ? "Draft" : "Live"}
+                      />
                       <Cake size={14} className="text-[#FF6B6B] shrink-0" />
                       <span className="font-semibold text-white">
                         {b.child_name}
@@ -165,9 +191,9 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
                 </div>
               </div>
 
-              {/* Stats */}
-              {s?.rsvp && (
-                <div className="flex items-center gap-4 mt-2">
+              {/* Stats + toggles */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
+                {s?.rsvp && (
                   <div className="flex items-center gap-1.5 text-xs text-white/50">
                     <Users size={12} />
                     <span>
@@ -178,8 +204,23 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
                       <span className="text-white/70">{s.rsvp.totalGuests} gostiju</span>
                     </span>
                   </div>
+                )}
+                <div className="flex items-center gap-2 sm:ml-auto">
+                  <span className="text-xs text-white/30">Draft</span>
+                  <button
+                    onClick={() => handleToggleDraft(b.slug, !!b.draft)}
+                    className={`relative w-9 h-5 rounded-full transition-colors ${
+                      b.draft ? "bg-orange-400" : "bg-white/10"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                        b.draft ? "translate-x-4" : ""
+                      }`}
+                    />
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}

@@ -693,7 +693,7 @@ function generateBirthdayJson(formData: FormData): string {
     countdown_enabled: formData.countdown_enabled,
     map_enabled: formData.map_enabled,
     admin_password: "",
-    draft: false,
+    draft: true,
   };
   return JSON.stringify(json, null, 2);
 }
