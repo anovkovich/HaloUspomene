@@ -434,7 +434,7 @@ export default function InvitationClient({
               {data.tagline?.split(/\\n|\n/).map((line, i, arr) => (
                 <React.Fragment key={i}>
                   {line}
-                  {i < arr.length - 1 && <div className="h-4" />}
+                  {i < arr.length - 1 && <br />}
                 </React.Fragment>
               ))}
             </div>
