@@ -164,7 +164,7 @@ export default async function CityPage({
                 <p className="text-sm text-[#232323]/50">
                   {loc.deliveryType === "Kurirska dostava"
                     ? "telefon i uputstvo stižu sigurno upakovani spremni za korišćenje"
-                    : "telefon, a i govornicu ukoliko izaberete Full Service paket"}
+                    : "profesionalna montaža telefona na idealnom mestu u sali"}
                 </p>
               </div>
               <div className="text-center p-4">
@@ -262,7 +262,7 @@ export default async function CityPage({
                           {t.coupleName}
                         </p>
                         <p className="text-xs text-[#232323]/40">
-                          {t.date} — {t.packageType}
+                          {t.date} — {t.service}
                         </p>
                       </div>
                     </div>

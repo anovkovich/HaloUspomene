@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Heart, Instagram } from "lucide-react";
 
@@ -9,16 +10,21 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 md:gap-16 mb-12 sm:mb-16 md:mb-24">
           {/* Column 1: Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <img
+            <Image
               src="/images/full-logo-white.png"
               alt="HALO Uspomene - Audio Guest Book za Venčanja u Srbiji"
+              width={3519}
+              height={1798}
+              sizes="216px"
+              loading="lazy"
+              quality={80}
               className="w-54 h-auto mb-6"
             />
-            <p className="text-[#F5F4DC]/40 leading-relaxed mb-4">
-              HALO Uspomene — kreirajte website pozivnice ili iznajmite
-              vintage retro telefon za audio uspomene sa venčanja. Audio guest
-              book ili telefon uspomena — sačuvajte glasove jer ljubav zaslužuje
-              da se čuje zauvek.
+            <p className="text-[#F5F4DC]/40 leading-relaxed mb-4 text-justify">
+              HALO Uspomene — kompletna platforma za organizaciju venčanja.
+              Website pozivnice sa RSVP-om, rasporedom sedenja i audio knjigom
+              utisaka. Retro telefon uspomena za nezaboravne glasovne poruke
+              gostiju. Sve što vam treba — na jednom mestu.
             </p>
             <a
               href="https://www.instagram.com/halo_uspomene"
@@ -34,56 +40,18 @@ const Footer: React.FC = () => {
             </a>
           </div>
 
-          {/* Column 2: Navigacija */}
+          {/* Column 2: Usluge */}
           <div>
             <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/80 mb-6">
-              Navigacija
+              Usluge
             </h4>
             <ul className="space-y-3">
               {[
-                { name: "Zašto mi", href: "/#zasto-mi" },
+                { name: "Website Pozivnice", href: "/napravi-pozivnicu" },
+                { name: "Retro Telefon Uspomena", href: "/#kontakt" },
                 { name: "Kako funkcioniše", href: "/#proces" },
-                { name: "Paketi", href: "/#paketi" },
-                { name: "Utisci", href: "/#utisci" },
+                { name: "Cene", href: "/cene" },
                 { name: "FAQ", href: "/#faq" },
-                { name: "Kontakt", href: "/#kontakt" },
-              ].map((link) => (
-                <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="text-[#F5F4DC]/40 hover:text-[#AE343F] transition-colors text-sm"
-                  >
-                    {link.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 3: Resursi */}
-          <div>
-            <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/80 mb-6">
-              Resursi
-            </h4>
-            <ul className="space-y-3">
-              {[
-                { name: "Blog", href: "/blog" },
-                {
-                  name: "Website Pozivnice",
-                  href: "/napravi-pozivnicu",
-                },
-                {
-                  name: "Šta je Audio Guest Book?",
-                  href: "/blog/sta-je-audio-guest-book",
-                },
-                {
-                  name: "Audio Guest Book vs Knjiga Utisaka",
-                  href: "/blog/audio-guest-book-vs-knjiga-utisaka",
-                },
-                {
-                  name: "Kako Funkcioniše",
-                  href: "/blog/kako-funkcionise-audio-guest-book",
-                },
               ].map((link) => (
                 <li key={link.name}>
                   <Link
@@ -104,6 +72,47 @@ const Footer: React.FC = () => {
                   Opšti uslovi najma
                 </a>
               </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Blog */}
+          <div>
+            <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/80 mb-6">
+              Blog
+            </h4>
+            <ul className="space-y-3">
+              {[
+                { name: "Svi članci", href: "/blog" },
+                {
+                  name: "Kompletan vodič za pozivnice",
+                  href: "/blog/website-pozivnica-kompletan-vodic",
+                },
+                {
+                  name: "Šta je Audio Guest Book?",
+                  href: "/blog/sta-je-audio-guest-book",
+                },
+                {
+                  name: "Audio Guest Book vs Knjiga Utisaka",
+                  href: "/blog/audio-guest-book-vs-knjiga-utisaka",
+                },
+                {
+                  name: "Pozivnica + Audio Guest Book",
+                  href: "/blog/website-pozivnica-audio-guest-book",
+                },
+                {
+                  name: "Checklista za organizaciju venčanja",
+                  href: "/blog/planiranje-vencanja-checklista",
+                },
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-[#F5F4DC]/40 hover:text-[#AE343F] transition-colors text-sm"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

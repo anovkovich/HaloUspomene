@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 const navLinks = [
-  { name: "Paketi", href: "/#paketi" },
-  { name: "Utisci", href: "/#utisci" },
+  { name: "Cene", href: "/cene" },
+  { name: "Pozivnice", href: "/napravi-pozivnicu" },
   { name: "FAQ", href: "/#faq" },
   { name: "Blog", href: "/blog" },
   { name: "Lokacije", href: "/lokacije" },
@@ -32,10 +33,12 @@ const Navbar: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center gap-3 group">
-              <img
+              <Image
                 src="/images/full-logo.png"
                 alt="HALO Uspomene - Audio Guest Book za Venčanja u Srbiji"
-                className="h-14 mb-1"
+                width={3519}
+                height={1798}
+                className="h-14 mb-1 w-auto"
               />
             </Link>
           </div>
@@ -54,10 +57,10 @@ const Navbar: React.FC = () => {
               ))}
             </ul>
             <Link
-              href="/#kontakt"
-              className="btn bg-[#232323] hover:bg-[#AE343F] text-[#F5F4DC] rounded-full px-10 shadow-xl shadow-black/10 border-none transition-all"
+              href="/moje-vencanje"
+              className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] rounded-full px-10 shadow-xl shadow-[#AE343F]/20 border-none transition-all"
             >
-              KONTAKT
+              MOJE VENČANJE
             </Link>
           </div>
 
@@ -91,11 +94,11 @@ const Navbar: React.FC = () => {
           ))}
           <li className="pt-4">
             <Link
-              href="/#kontakt"
+              href="/moje-vencanje"
               onClick={() => setIsMenuOpen(false)}
               className="btn bg-[#AE343F] hover:bg-[#8A2A32] w-full text-[#F5F4DC] rounded-xl text-lg border-none min-h-[48px]"
             >
-              Zakažite razgovor
+              Moje venčanje
             </Link>
           </li>
         </ul>

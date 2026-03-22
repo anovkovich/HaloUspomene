@@ -23,6 +23,7 @@ export interface Translations {
 
   // Location
   location: string;
+  locations: string;
 
   // RSVP
   rsvpTitle: string;
@@ -55,8 +56,37 @@ export interface Translations {
   // Footer
   thankYouFooter: string;
 
+  // RSVP closed
+  rsvpClosed: string;
+  rsvpClosedSub: string;
+
+  // Seating lookup
+  findSeating: string;
+  seatingAvailableNote: string;
+
+  // PDF
+  downloadPDF: string;
+
   // Envelope
   inviteYou: string;
+
+  // Audio guest book
+  audioGuestBook: string;
+  audioRecordMessage: string;
+  audioRecordButton: string;
+  audioStopButton: string;
+  audioYourName: string;
+  audioSendMessage: string;
+  audioThankYou: string;
+  audioRecordAnother: string;
+  audioMaxDuration: string;
+  audioNotAvailableYet: string;
+  audioDemoTitle: string;
+  audioDemoDescription: string;
+  audioListenTitle: string;
+  audioNoMessages: string;
+  audioBeFirst: string;
+  audioDownloadAll: string;
 
   // Date labels
   months: string[];
@@ -85,6 +115,7 @@ export const latinTranslations: Translations = {
 
   // Location
   location: "Lokacija",
+  locations: "Lokacije",
 
   // RSVP
   rsvpTitle: "Potvrda dolaska",
@@ -100,7 +131,7 @@ export const latinTranslations: Translations = {
   additionalNotes: "Dodatne napomene",
   notesPlaceholder: "Posebni zahtevi ili poruka mladencima...",
   sending: "Šaljem...",
-  confirmAttendance: "Potvrdi dolazak",
+  confirmAttendance: "Potvrdite dolazak",
 
   // Success messages
   thankYou: "Hvala Vam!",
@@ -114,11 +145,41 @@ export const latinTranslations: Translations = {
   people: "osobe",
   notAttending: "Neće prisustvovati",
 
+  // RSVP closed
+  rsvpClosed: "Prijave su zatvorene",
+  rsvpClosedSub: "Rok za prijavu je istekao.",
+
+  // Seating lookup
+  findSeating: "✦ Pronađite mesto sedenja ✦",
+  seatingAvailableNote:
+    "Dan pre proslave biće dostupna provera gde ste raspoređeni sa sedenjem.",
+
   // Footer
   thankYouFooter: "Hvala Vam što ste deo naše sreće",
 
+  // PDF
+  downloadPDF: "Preuzmi pozivnicu",
+
   // Envelope
   inviteYou: "Pozivaju Vas na venčanje",
+
+  // Audio guest book
+  audioGuestBook: "Audio knjiga utisaka",
+  audioRecordMessage: "Ostavite audio poruku mladencima",
+  audioRecordButton: "Snimite poruku",
+  audioStopButton: "Zaustavite",
+  audioYourName: "Vaše ime",
+  audioSendMessage: "Pošaljite poruku",
+  audioThankYou: "Hvala na poruci!",
+  audioRecordAnother: "Snimite još jednu",
+  audioMaxDuration: "Maksimalno trajanje: 60 sekundi",
+  audioNotAvailableYet: "Audio knjiga utisaka biće dostupna na dan venčanja",
+  audioDemoTitle: "Audio knjiga utisaka — Demo",
+  audioDemoDescription: "Ovo je demo verzija. Kontaktirajte nas za aktivaciju.",
+  audioListenTitle: "Audio poruke gostiju",
+  audioNoMessages: "Još uvek nema audio poruka",
+  audioBeFirst: "Budite prvi koji će ostaviti poruku!",
+  audioDownloadAll: "Preuzmi sve poruke",
 
   // Date labels
   months: [
@@ -168,6 +229,7 @@ export const cyrillicTranslations: Translations = {
 
   // Location
   location: "Локација",
+  locations: "Локације",
 
   // RSVP
   rsvpTitle: "Потврда доласка",
@@ -183,7 +245,7 @@ export const cyrillicTranslations: Translations = {
   additionalNotes: "Додатне напомене",
   notesPlaceholder: "Посебни захтеви или порука младенцима...",
   sending: "Шаљем...",
-  confirmAttendance: "Потврди долазак",
+  confirmAttendance: "Потврдите долазак",
 
   // Success messages
   thankYou: "Хвала Вам!",
@@ -197,11 +259,41 @@ export const cyrillicTranslations: Translations = {
   people: "особе",
   notAttending: "Неће присуствовати",
 
+  // RSVP closed
+  rsvpClosed: "Пријаве су затворене",
+  rsvpClosedSub: "Рок за пријаву је истекао.",
+
+  // Seating lookup
+  findSeating: "✦ Пронађите место седења ✦",
+  seatingAvailableNote:
+    "Дан пре прославе биће доступна провера где сте распоређени са седењем.",
+
   // Footer
   thankYouFooter: "Хвала Вам што сте део наше среће",
 
+  // PDF
+  downloadPDF: "Преузми позивницу",
+
   // Envelope
   inviteYou: "Позивају Вас на венчање",
+
+  // Audio guest book
+  audioGuestBook: "Audio knjiga utisaka",
+  audioRecordMessage: "Ostavite audio poruku mladencima",
+  audioRecordButton: "Snimite poruku",
+  audioStopButton: "Zaustavite",
+  audioYourName: "Vaše ime",
+  audioSendMessage: "Pošaljite poruku",
+  audioThankYou: "Hvala na poruci!",
+  audioRecordAnother: "Snimite još jednu",
+  audioMaxDuration: "Maksimalno trajanje: 60 sekundi",
+  audioNotAvailableYet: "Audio knjiga utisaka biće dostupna na dan venčanja",
+  audioDemoTitle: "Audio knjiga utisaka — Demo",
+  audioDemoDescription: "Ovo je demo verzija. Kontaktirajte nas za aktivaciju.",
+  audioListenTitle: "Audio poruke gostiju",
+  audioNoMessages: "Još uvek nema audio poruka",
+  audioBeFirst: "Budite prvi koji će ostaviti poruku!",
+  audioDownloadAll: "Preuzmi sve poruke",
 
   // Date labels
   months: [

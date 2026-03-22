@@ -2,7 +2,10 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Clock, ArrowLeft, ArrowRight, Tag } from "lucide-react";
+import { compileMDX } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
 import { blogPosts, getBlogPost, getRelatedPosts } from "@/data/blog/posts";
+import { mdxComponents } from "@/components/blog/mdx-components";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
@@ -35,259 +38,6 @@ export async function generateMetadata({
   };
 }
 
-// Simple markdown-like renderer for blog content
-function renderContent(content: string) {
-  const lines = content.trim().split("\n");
-  const elements: React.ReactNode[] = [];
-  let inList = false;
-  let listItems: React.ReactNode[] = [];
-  let inTable = false;
-  let tableRows: string[][] = [];
-  let tableHeaders: string[] = [];
-
-  const processInline = (text: string): React.ReactNode => {
-    const parts: React.ReactNode[] = [];
-    let remaining = text;
-    let key = 0;
-
-    while (remaining.length > 0) {
-      // Bold
-      const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
-      // Link
-      const linkMatch = remaining.match(/\[([^\]]+)\]\(([^)]+)\)/);
-      // Italic (single *)
-      const italicMatch = remaining.match(
-        /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/,
-      );
-
-      const matches = [
-        boldMatch
-          ? { type: "bold", index: boldMatch.index!, match: boldMatch }
-          : null,
-        linkMatch
-          ? { type: "link", index: linkMatch.index!, match: linkMatch }
-          : null,
-        italicMatch
-          ? { type: "italic", index: italicMatch.index!, match: italicMatch }
-          : null,
-      ]
-        .filter(Boolean)
-        .sort((a, b) => a!.index - b!.index);
-
-      if (matches.length === 0) {
-        parts.push(remaining);
-        break;
-      }
-
-      const first = matches[0]!;
-      if (first.index > 0) {
-        parts.push(remaining.slice(0, first.index));
-      }
-
-      if (first.type === "bold") {
-        parts.push(<strong key={key++}>{first.match[1]}</strong>);
-        remaining = remaining.slice(first.index + first.match[0].length);
-      } else if (first.type === "link") {
-        parts.push(
-          <Link
-            key={key++}
-            href={first.match[2]}
-            className="text-[#AE343F] hover:underline"
-          >
-            {first.match[1]}
-          </Link>,
-        );
-        remaining = remaining.slice(first.index + first.match[0].length);
-      } else if (first.type === "italic") {
-        parts.push(<em key={key++}>{first.match[1]}</em>);
-        remaining = remaining.slice(first.index + first.match[0].length);
-      }
-    }
-
-    return parts.length === 1 ? parts[0] : parts;
-  };
-
-  const flushList = () => {
-    if (listItems.length > 0) {
-      elements.push(
-        <ul
-          key={`list-${elements.length}`}
-          className="list-disc pl-6 space-y-2 text-[#232323]/70 mb-6"
-        >
-          {listItems}
-        </ul>,
-      );
-      listItems = [];
-      inList = false;
-    }
-  };
-
-  const flushTable = () => {
-    if (tableRows.length > 0) {
-      elements.push(
-        <div key={`table-${elements.length}`} className="overflow-x-auto mb-6">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr>
-                {tableHeaders.map((h, i) => (
-                  <th
-                    key={i}
-                    className="text-left p-3 bg-[#faf9f6] font-semibold text-[#232323] border-b border-stone-200"
-                  >
-                    {h.trim()}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {tableRows.map((row, i) => (
-                <tr key={i}>
-                  {row.map((cell, j) => (
-                    <td
-                      key={j}
-                      className="p-3 text-[#232323]/70 border-b border-stone-100"
-                    >
-                      {cell.trim()}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>,
-      );
-      tableRows = [];
-      tableHeaders = [];
-      inTable = false;
-    }
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmed = line.trim();
-
-    if (trimmed === "") {
-      flushList();
-      flushTable();
-      continue;
-    }
-
-    // Table
-    if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
-      const cells = trimmed
-        .slice(1, -1)
-        .split("|")
-        .map((c) => c.trim());
-      if (cells.every((c) => /^[-:]+$/.test(c))) continue; // separator row
-      if (!inTable) {
-        inTable = true;
-        tableHeaders = cells;
-      } else {
-        tableRows.push(cells);
-      }
-      continue;
-    } else if (inTable) {
-      flushTable();
-    }
-
-    // Headings
-    if (trimmed.startsWith("# ")) {
-      flushList();
-      elements.push(
-        <h1
-          key={`h1-${i}`}
-          className="text-3xl sm:text-4xl font-serif font-semibold text-[#232323] mb-6 mt-8 first:mt-0"
-        >
-          {processInline(trimmed.slice(2))}
-        </h1>,
-      );
-      continue;
-    }
-    if (trimmed.startsWith("## ")) {
-      flushList();
-      elements.push(
-        <h2
-          key={`h2-${i}`}
-          className="text-2xl sm:text-3xl font-serif font-semibold text-[#232323] mb-4 mt-10"
-        >
-          {processInline(trimmed.slice(3))}
-        </h2>,
-      );
-      continue;
-    }
-    if (trimmed.startsWith("### ")) {
-      flushList();
-      elements.push(
-        <h3
-          key={`h3-${i}`}
-          className="text-xl font-serif font-semibold text-[#232323] mb-3 mt-8"
-        >
-          {processInline(trimmed.slice(4))}
-        </h3>,
-      );
-      continue;
-    }
-
-    // Blockquote
-    if (trimmed.startsWith("> ")) {
-      flushList();
-      elements.push(
-        <blockquote
-          key={`bq-${i}`}
-          className="border-l-4 border-[#AE343F]/30 pl-6 py-2 mb-6 text-[#232323]/60 italic"
-        >
-          {processInline(trimmed.slice(2))}
-        </blockquote>,
-      );
-      continue;
-    }
-
-    // Horizontal rule
-    if (trimmed === "---") {
-      flushList();
-      elements.push(<hr key={`hr-${i}`} className="my-8 border-stone-200" />);
-      continue;
-    }
-
-    // List items
-    if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-      inList = true;
-      listItems.push(
-        <li key={`li-${i}`}>{processInline(trimmed.slice(2))}</li>,
-      );
-      continue;
-    }
-
-    // Numbered list
-    if (/^\d+\.\s/.test(trimmed)) {
-      if (!inList) {
-        flushList();
-        inList = true;
-      }
-      listItems.push(
-        <li key={`li-${i}`}>
-          {processInline(trimmed.replace(/^\d+\.\s/, ""))}
-        </li>,
-      );
-      continue;
-    }
-
-    flushList();
-
-    // Paragraph
-    elements.push(
-      <p key={`p-${i}`} className="text-[#232323]/70 leading-relaxed mb-4">
-        {processInline(trimmed)}
-      </p>,
-    );
-  }
-
-  flushList();
-  flushTable();
-
-  return elements;
-}
-
 export default async function BlogPostPage({
   params,
 }: {
@@ -302,6 +52,15 @@ export default async function BlogPostPage({
 
   const relatedPosts = getRelatedPosts(slug);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
+
+  const { content } = await compileMDX({
+    source: post.content,
+    components: mdxComponents,
+    options: {
+      parseFrontmatter: false,
+      mdxOptions: { remarkPlugins: [remarkGfm] },
+    },
+  });
 
   const articleSchema = {
     "@context": "https://schema.org",
@@ -347,7 +106,7 @@ export default async function BlogPostPage({
           {
             "@type": "HowToStep",
             name: "Dostava",
-            text: "Telefon se dostavlja kurirskom službom (Essential) ili lično sa profesionalnom instalacijom (Full Service).",
+            text: "Telefon se dostavlja kurirskom službom u celoj Srbiji. Lična dostava i montaža dostupna je u Novom Sadu.",
           },
           {
             "@type": "HowToStep",
@@ -422,7 +181,7 @@ export default async function BlogPostPage({
             </div>
             <p className="text-sm text-[#232323]/30 mt-4">
               Objavljeno:{" "}
-              {new Date(post.publishDate).toLocaleDateString("sr-RS", {
+              {new Date(post.publishDate).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "long",
                 year: "numeric",
@@ -431,7 +190,7 @@ export default async function BlogPostPage({
           </header>
 
           {/* Post Content */}
-          <div className="prose-custom">{renderContent(post.content)}</div>
+          <div className="prose-custom">{content}</div>
 
           {/* Related Posts */}
           {relatedPosts.length > 0 && (
@@ -460,23 +219,6 @@ export default async function BlogPostPage({
               </div>
             </section>
           )}
-
-          {/* CTA */}
-          <div className="mt-12 bg-[#232323] rounded-3xl p-8 sm:p-12 text-center">
-            <h2 className="text-2xl sm:text-3xl font-serif text-[#F5F4DC] mb-4">
-              Spremni za audio guest book?
-            </h2>
-            <p className="text-[#F5F4DC]/60 mb-6 max-w-lg mx-auto">
-              Rezervišite vaš termin kod HALO Uspomene i sačuvajte glasove sa
-              vašeg venčanja zauvek.
-            </p>
-            <Link
-              href="/#kontakt"
-              className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] rounded-full px-10 border-none"
-            >
-              Rezervišite termin
-            </Link>
-          </div>
 
           {/* Back to blog */}
           <div className="mt-8 text-center">

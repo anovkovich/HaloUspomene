@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Heart } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 
 interface EnvelopeLoaderProps {
@@ -128,10 +129,18 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
                 className="w-5 sm:w-8 h-px"
                 style={{ background: `linear-gradient(to right, transparent, ${primaryColor}66)` }}
               ></div>
-              <div
-                className="w-1.5 h-1.5 sm:w-2 sm:h-2 rotate-45"
-                style={{ border: `1px solid ${primaryColor}66` }}
-              ></div>
+              <Heart
+                size={8}
+                className="sm:hidden"
+                style={{ color: `${primaryColor}99` }}
+                fill="currentColor"
+              />
+              <Heart
+                size={11}
+                className="hidden sm:block"
+                style={{ color: `${primaryColor}99` }}
+                fill="currentColor"
+              />
               <div
                 className="w-5 sm:w-8 h-px"
                 style={{ background: `linear-gradient(to left, transparent, ${primaryColor}66)` }}

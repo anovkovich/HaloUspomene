@@ -10,7 +10,6 @@ import ContactForm from "../components/landing/ContactForm";
 import Footer from "@/components/layout/footer/Footer";
 import { Header } from "@/components/layout";
 import { Heart, Sparkles, ArrowRight } from "lucide-react";
-import { pricing, formatPrice } from "@/data/pricing";
 
 export default function Home() {
   return (
@@ -23,29 +22,6 @@ export default function Home() {
         <Packages />
         <Testimonials />
         <FAQ />
-
-        <section
-          id="kontakt"
-          className="py-16 sm:py-20 md:py-24 bg-[#232323] text-[#F5F4DC] relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-[#AE343F]/10 rounded-full blur-2xl sm:blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-[#AE343F]/5 rounded-full blur-2xl sm:blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-          <div className="container mx-auto px-4 max-w-4xl relative z-10">
-            <div className="text-center mb-10 sm:mb-12 md:mb-16">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif mb-6">
-                Kada je Vaše Venčanje?
-              </h2>
-              <p className="text-lg text-[#F5F4DC]/60 max-w-2xl mx-auto">
-                Svaki mesec radimo sa ograničenim brojem događaja kako bismo
-                svakom posvetili punu pažnju. Javite nam se na vreme — a mi ćemo
-                Vam omogućiti da Vaš događaj bude jedinstven i nezaboravan.
-              </p>
-            </div>
-
-            <ContactForm />
-          </div>
-        </section>
 
         {/* Wedding Invitation Promo Section */}
         <section className="py-16 sm:py-20 bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6] relative overflow-hidden">
@@ -79,9 +55,9 @@ export default function Home() {
               </h2>
 
               <p className="text-[#8B2833] text-base max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-                Zaboravite na klasične pozivnice — naša digitalna rešenja
-                omogućavaju vam da ostavite trajan utisak. Gosti mogu lako
-                potvrditi dolazak, saznati sve detalje, brzo i lako.
+                Kompletna platforma za organizaciju venčanja — od pozivnice i
+                potvrda dolaska, preko rasporeda sedenja, do audio knjige
+                utisaka. Sve na jednom mestu.
               </p>
 
               {/* Features */}
@@ -92,20 +68,28 @@ export default function Home() {
                     desc: "Odaberite temu, boju i font po želji",
                   },
                   {
-                    title: "📝 RSVP forma",
-                    desc: "Pratite potvrde za dolazak gostiju",
+                    title: "📝 RSVP forma + Portal",
+                    desc: "Pratite potvrde gostiju u realnom vremenu",
                   },
                   {
-                    title: "⏱️ Odbrojavanje",
-                    desc: "Interaktivni brojač do vašeg velikog dana",
+                    title: "🪑 Raspored sedenja",
+                    desc: "Vizuelni alat za raspoređivanje gostiju po stolovima",
                   },
                   {
-                    title: "🗺️ Google mapa",
-                    desc: "Pregled lokacija i vreme svečanog dana",
+                    title: "🔍 Gde sedim?",
+                    desc: "Gosti sami pronalaze svoj sto na dan venčanja",
                   },
                   {
-                    title: "🔗 Jedan link",
-                    desc: "Sve informacije na jednoj web stranici",
+                    title: "🎤 Audio knjiga utisaka",
+                    desc: "Gosti snimaju glasovne poruke sa telefona",
+                  },
+                  {
+                    title: "📄 PDF pozivnica",
+                    desc: "Elegantna pozivnica za štampu sa QR kodom",
+                  },
+                  {
+                    title: "🗺️ Google mapa + odbrojavanje",
+                    desc: "Lokacija, vreme i interaktivni brojač dana",
                   },
                   {
                     title: "📱 Mobile first",
@@ -124,42 +108,50 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* CTA Button */}
-              <Link
-                href="/napravi-pozivnicu"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full group"
-                data-track="cta_click"
-                data-track-cta-name="pozivnica_cta"
-                data-track-cta-location="promo_section"
-              >
-                Zatražite Vašu Pozivnicu
-                <ArrowRight
-                  size={18}
-                  className="group-hover:translate-x-1 transition-transform"
-                />
-              </Link>
-
-              {/* Pricing & Discount banner */}
-              <div className="mt-10 space-y-4">
-                <div className="p-5 bg-[#AE343F] text-white rounded-2xl text-center">
-                  <p className="text-sm opacity-90 mb-1">Redovna cena svega:</p>
-                  <p className="text-3xl font-bold">{formatPrice(pricing.addons.find(a => a.id === "website_pozivnica")!.price)}</p>
-                  <p className="text-sm opacity-75 mt-2">
-                    Kompletna website pozivnica sa svim funkcijama
-                  </p>
-                </div>
-                <div className="p-4 bg-gradient-to-r from-[#AE343F]/10 via-[#AE343F]/5 to-[#AE343F]/10 rounded-2xl border border-[#AE343F]/20">
-                  <p className="text-[#AE343F] font-semibold">
-                    <span className="text-lg">-30%</span> popusta uz Audio
-                    Knjigu Uspomena → {formatPrice(pricing.discounts.bundleWebsitePozivnica.discountedPrice)}
-                  </p>
-                  <p className="text-[#8B2833] text-sm mt-1">
-                    Audio Retro Telefon + Website Pozivnica = Nerocenljiva
-                    vrednost
-                  </p>
-                </div>
+              {/* CTA Buttons */}
+              <div className="flex flex-col items-center justify-center gap-4">
+                <Link
+                  href="/napravi-pozivnicu"
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full group"
+                  data-track="cta_click"
+                  data-track-cta-name="pozivnica_cta"
+                  data-track-cta-location="promo_section"
+                >
+                  Napravite Vašu Pozivnicu
+                </Link>
+                <Link
+                  href="/cene"
+                  className="inline-flex items-center gap-2 text-[#AE343F] text-sm uppercase tracking-widest font-medium hover:underline transition-all"
+                >
+                  Pogledajte cene
+                  <ArrowRight size={16} />
+                </Link>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section
+          id="kontakt"
+          className="py-16 sm:py-20 md:py-24 bg-[#232323] text-[#F5F4DC] relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-[#AE343F]/10 rounded-full blur-2xl sm:blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-[#AE343F]/5 rounded-full blur-2xl sm:blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+          <div className="container mx-auto px-4 max-w-4xl relative z-10">
+            <div className="text-center mb-10 sm:mb-12 md:mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif mb-6">
+                Zakažite Retro Telefon Uspomena
+              </h2>
+              <p className="text-lg text-[#F5F4DC]/60 max-w-2xl mx-auto">
+                Svaki mesec radimo sa ograničenim brojem događaja kako bismo
+                svakom posvetili punu pažnju. Rezervišite termin za najam našeg
+                retro telefona na vreme — a mi ćemo se pobrinuti da Vaše
+                venčanje dobije nezaboravnu atrakciju.
+              </p>
+            </div>
+
+            <ContactForm />
           </div>
         </section>
 
@@ -197,9 +189,9 @@ export default function Home() {
             dana.
           </p>
           <p>
-            Specijalni paketi: kombinovana usluga website pozivnice + audio
-            guest book sa 30% popusta. Zaboravite na klasične pozivnice —
-            moderni digitalni i audio servisi za nezaboravne venčanju. Dostava i
+            Website pozivnica, raspored sedenja, digitalna audio knjiga utisaka
+            i retro telefon — sve na jednom mestu.
+            Moderni digitalni i audio servisi za nezaboravna venčanja. Dostava i
             profesionalna montaža u svim večim gradovima: Beograd, Novi Sad,
             Niš, Kragujevac, Subotica, Čačak, Smederevo, i drugi.
           </p>

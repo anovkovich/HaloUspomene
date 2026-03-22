@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Geist,
   Geist_Mono,
@@ -12,10 +12,11 @@ import {
   Bad_Script,
   Cormorant_Garamond,
   Josefin_Sans,
+  Raleway,
 } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";
-import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { testimonials } from "@/data/testimonials";
 
 const geistSans = Geist({
@@ -101,9 +102,18 @@ const josefinSans = Josefin_Sans({
   display: "swap",
 });
 
+const raleway = Raleway({
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-raleway",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
+
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
-const gaId = process.env.NEXT_PUBLIC_GA_ID;
-const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -147,7 +157,7 @@ export const metadata: Metadata = {
     "svadbeni telefon za glasovne poruke",
     "audio spomenar za venčanja",
     "beli retro telefon za venčanje",
-    "telefon govornica za svadbe",
+    "retro telefon za svadbe",
     "dekorativni telefon za slikanje i poruke",
     "audio guest book Beograd",
     "audio guest book Novi Sad",
@@ -204,7 +214,7 @@ export const metadata: Metadata = {
       "HALO Uspomene — website pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte personalizovane web pozivnice i iznajmite retro telefon za glasovne poruke gostiju. Audio guest book (telefon uspomena), i interaktivne pozivnice sa odbrojavanje. Dostava u Beograd, i sve gradove.",
     images: [
       {
-        url: "/images/gallery/og-image.png",
+        url: "/images/og-image.png",
         width: 1200,
         height: 630,
         alt: "HALO Uspomene - Audio Guest Book za Venčanja",
@@ -217,7 +227,7 @@ export const metadata: Metadata = {
     title: "Website Pozivnice i Audio Knjiga Uspomena | HALO Uspomene Srbija",
     description:
       "Website pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte web pozivnice sa RSVP ili iznajmite retro telefon za glasovne poruke. Audio guest book dostava u Beograd, i sve gradove.",
-    images: ["/images/gallery/og-image.png"],
+    images: ["/images/og-image.png"],
   },
 
   robots: {
@@ -280,7 +290,7 @@ export default function RootLayout({
       "HALO Uspomene — premium servisi za venčanja: kreirajte website pozivnice sa RSVP ili iznajmite audio guest book za glasovne poruke gostiju. Audio uspomene, web pozivnice, telefon uspomena sa dostavom u celoj Srbiji.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
-    image: `${siteUrl}/images/gallery/og-image.png`,
+    image: `${siteUrl}/images/og-image.png`,
     // telephone: "+381601234567",
     // email: "info@halouspomene.rs",
     email: "halouspomene@gmail.com",
@@ -341,7 +351,7 @@ export default function RootLayout({
             "@type": "Offer",
             itemOffered: {
               "@type": "Service",
-              name: "Essential Paket",
+              name: "Audio Guest Book Paket",
               description:
                 "Iznajmljivanje retro telefona sa rotirajućim brojčanikom za venčanja. Audio knjiga uspomena, audio uspomene sa kurirskom dostavom, elegantno uputstvo i svi audio snimci u digitalnom formatu.",
             },
@@ -350,9 +360,9 @@ export default function RootLayout({
             "@type": "Offer",
             itemOffered: {
               "@type": "Service",
-              name: "Full Service Paket",
+              name: "Audio Guest Book — Lična dostava u Novom Sadu",
               description:
-                "Premium audio guest book sa telefon govornicom — lična dostava, profesionalna montaža, audio spomenar sa personalizovanom dobrodošlicom. Svadbeni telefon za glasovne poruke gostiju. Telefon uspomena sa stojaćom pozicijom.",
+                "Audio guest book sa kurirskom dostavom u celoj Srbiji. Lična dostava i montaža dostupna u Novom Sadu. Personalizovana audio dobrodošlica kao dodatna opcija. Svadbeni telefon za glasovne poruke gostiju.",
             },
           },
           {
@@ -401,7 +411,7 @@ export default function RootLayout({
       "Telefon uspomena",
       "Telefon za poruke na svadbi",
       "Vintage telefon sa rotirajućim brojčanikom",
-      "Telefon govornica za svadbe",
+      "Retro telefon za svadbe",
       "Svadbeni telefon za glasovne poruke",
       "Dekorativni telefon za venčanja",
       "Retro phone guest book",
@@ -502,39 +512,13 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchemas) }}
         />
-        {gaId && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              strategy="afterInteractive"
-            />
-            <Script id="ga4-init" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${gaId}');
-              `}
-            </Script>
-          </>
-        )}
-        {clarityId && (
-          <Script id="clarity-init" strategy="afterInteractive">
-            {`
-              (function(c,l,a,r,i){
-                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                  let t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                  let y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-              })(window, document, "clarity", "script", "${clarityId}");
-            `}
-          </Script>
-        )}
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} ${raleway.variable} antialiased`}
       >
         {children}
-        {gaId && <AnalyticsProvider />}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
