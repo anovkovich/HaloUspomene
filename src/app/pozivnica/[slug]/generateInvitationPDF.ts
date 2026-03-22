@@ -341,21 +341,38 @@ export async function generateInvitationPDF(
   );
   y += 10;
 
-  // QR Code
+  // QR Code — try page 1 (large then small), else defer to page 2
+  const qrLarge = 24;
+  const qrSmall = 16;
+  let qrDataUrl: string | null = null;
+  let qrDeferred = false;
+
   try {
     const qrUrl = `https://halouspomene.rs/pozivnica/${slug}`;
-    const qrDataUrl = await QRCode.toDataURL(qrUrl, {
+    qrDataUrl = await QRCode.toDataURL(qrUrl, {
       width: 300,
       margin: 1,
       color: { dark: theme.colors.text, light: "#00000000" },
     });
-    const qrSize = 24;
-    doc.addImage(qrDataUrl, "PNG", cx - qrSize / 2, y, qrSize, qrSize);
-    y += qrSize + 3.5;
+
     const scanLabel = useCyrillic
       ? "Скенирајте за потврду"
       : "Skenirajte za potvrdu";
-    centerText(scanLabel, y, 9, bodyFont, textLight);
+
+    if (y + qrLarge + 8 <= H - 14) {
+      // Large QR fits on page 1
+      doc.addImage(qrDataUrl, "PNG", cx - qrLarge / 2, y, qrLarge, qrLarge);
+      y += qrLarge + 3.5;
+      centerText(scanLabel, y, 9, bodyFont, textLight);
+    } else if (y + qrSmall + 8 <= H - 14) {
+      // Small QR fits on page 1
+      doc.addImage(qrDataUrl, "PNG", cx - qrSmall / 2, y, qrSmall, qrSmall);
+      y += qrSmall + 3.5;
+      centerText(scanLabel, y, 8, bodyFont, textLight);
+    } else {
+      // Defer to page 2
+      qrDeferred = true;
+    }
   } catch {
     // QR generation failed, skip
   }
@@ -366,6 +383,7 @@ export async function generateInvitationPDF(
   }
 
   // ── PAGE 2: Timeline ────────────────────────────────────────────────────
+  let ty = 28; // Track Y position on page 2 for deferred QR placement
 
   if (data.timeline.length > 0) {
     doc.addPage("a5", "portrait");
@@ -387,7 +405,7 @@ export async function generateInvitationPDF(
     doc.line(W - cm, H - cm, W - cm - cl, H - cm);
     doc.line(W - cm, H - cm, W - cm, H - cm - cl);
 
-    let ty = 28;
+    ty = 28;
 
     // Title
     const protocolLabel = useCyrillic ? "Протокол" : "Protokol";
@@ -438,6 +456,28 @@ export async function generateInvitationPDF(
     if (!isPaid) {
       centerText("halouspomene.rs", H - 12, 7, "Sans", [190, 185, 175]);
     }
+  }
+
+  // ── Deferred QR Code — try large then small at bottom of page 2 ──────────
+  if (qrDeferred && qrDataUrl) {
+    const scanLabel = useCyrillic
+      ? "Скенирајте за потврду"
+      : "Skenirajte za potvrdu";
+    // ty is the current Y position on page 2 after timeline items
+    const spaceLeft = H - 14 - (typeof ty !== "undefined" ? ty : 28);
+
+    if (spaceLeft >= qrLarge + 10) {
+      const qrY = H - 14 - qrLarge - 6;
+      drawLine(qrY - 4, 40, 0.2);
+      doc.addImage(qrDataUrl, "PNG", cx - qrLarge / 2, qrY, qrLarge, qrLarge);
+      centerText(scanLabel, qrY + qrLarge + 3.5, 9, bodyFont, textLight);
+    } else if (spaceLeft >= qrSmall + 8) {
+      const qrY = H - 14 - qrSmall - 4;
+      drawLine(qrY - 3, 30, 0.2);
+      doc.addImage(qrDataUrl, "PNG", cx - qrSmall / 2, qrY, qrSmall, qrSmall);
+      centerText(scanLabel, qrY + qrSmall + 3, 8, bodyFont, textLight);
+    }
+    // If neither fits, skip QR entirely (extremely rare)
   }
 
   // ── Save ──────────────────────────────────────────────────────────────────

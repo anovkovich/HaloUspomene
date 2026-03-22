@@ -427,12 +427,17 @@ export default function InvitationClient({
             </div>
 
             {/* Tagline */}
-            <p
+            <div
               className={`font-serif italic text-base sm:text-2xl max-w-2xl mx-auto leading-relaxed font-light px-10 transition-all duration-[1500ms] delay-1000 ${isRevealed ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
               style={{ color: "var(--theme-text-muted)", opacity: 0.7 }}
             >
-              {data.tagline}
-            </p>
+              {data.tagline?.split(/\\n|\n/).map((line, i, arr) => (
+                <React.Fragment key={i}>
+                  {line}
+                  {i < arr.length - 1 && <div className="h-4" />}
+                </React.Fragment>
+              ))}
+            </div>
 
             {/* Date display */}
             <div
