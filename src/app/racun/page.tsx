@@ -134,7 +134,7 @@ function NbsQrCode({
       .slice(0, 50);
     // receiptNo format: 20260320-1059 → strip dash for numeric RO
     const ro = receiptNo.replace("-", "");
-    const body = `K:PR|V:01|C:1|R:340000003258405791|N:HALO USPOMENE\nNOVI SAD|I:RSD${total},00|SF:189|S:Pozivnica - ${safeName}|RO:${ro}`;
+    const body = `K:PR|V:01|C:1|R:340000003258405791|N:HALO USPOMENE\nNOVI SAD|I:RSD${total},00|SF:189|S:Pozivnica - ${safeName}|RO:${ro}|MO:`;
 
     fetch("/api/qr", {
       method: "POST",
