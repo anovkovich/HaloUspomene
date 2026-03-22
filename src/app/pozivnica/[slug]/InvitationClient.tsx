@@ -755,12 +755,17 @@ export default function InvitationClient({
               />
             </div>
 
-            <p
+            <div
               className="font-elegant text-xs uppercase tracking-[0.3em] px-3"
               style={{ color: "var(--theme-text-light)" }}
             >
-              {data.thankYouFooter ? data.thankYouFooter : t.thankYouFooter}
-            </p>
+              {(data.thankYouFooter || t.thankYouFooter).split("\\n").map((line, i, arr) => (
+                <React.Fragment key={i}>
+                  {line}
+                  {i < arr.length - 1 && <div className="h-6" />}
+                </React.Fragment>
+              ))}
+            </div>
 
             <p
               className="mt-12 font-elegant text-[10px] uppercase tracking-[0.3em]"
