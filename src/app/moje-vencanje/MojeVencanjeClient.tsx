@@ -132,6 +132,23 @@ export default function MojeVencanjeClient() {
 
       try {
         const trimmedSlug = slug.trim().toLowerCase();
+
+        // Admin shortcut
+        if (trimmedSlug === "halo.admin") {
+          const adminRes = await fetch("/api/admin/auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password }),
+          });
+          if (adminRes.ok) {
+            window.location.href = "/admin";
+            return;
+          }
+          setError("Pogrešna admin lozinka");
+          setLoginLoading(false);
+          return;
+        }
+
         const res = await fetch(
           `/api/moje-vencanje/auth/${encodeURIComponent(trimmedSlug)}`,
           {
@@ -383,10 +400,10 @@ export default function MojeVencanjeClient() {
                 >
                   Organizacija gostiju
                 </Link>
-                <br className="[@media(display-mode:standalone)]:hidden" />
+                <br />
                 <button
                   onClick={handleLogout}
-                  className="mt-2 text-xs text-[#232323]/40 hover:text-[#AE343F] transition-colors inline-flex items-center gap-1 [@media(display-mode:standalone)]:hidden"
+                  className="mt-2 text-xs text-[#232323]/40 hover:text-[#AE343F] transition-colors inline-flex items-center gap-1"
                 >
                   <LogOut size={12} /> Odjavite se
                 </button>
