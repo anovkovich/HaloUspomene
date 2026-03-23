@@ -134,7 +134,7 @@ function NbsQrCode({
       .slice(0, 50);
     // receiptNo format: 20260320-1059 → strip dash for numeric RO
     const ro = receiptNo.replace("-", "");
-    const body = `K:PR|V:01|C:1|R:340000003258405791|N:HALO USPOMENE\nNOVI SAD|I:RSD${total},00|SF:189|S:Pozivnica - ${safeName}|RO:${ro}|MO:`;
+    const body = `K:PR|V:01|C:1|R:340000003258405791|N:HALO USPOMENE\nNOVI SAD|I:RSD${total},00|SF:189|S:Pozivnica - ${safeName}|RO:${ro}`;
 
     fetch("/api/qr", {
       method: "POST",
@@ -182,9 +182,17 @@ function NbsQrCode({
           </p>
         </div>
       ) : error ? (
-        <p className="text-[10px] text-gray-400 py-2">
-          QR kod trenutno nije dostupan
-        </p>
+        <div className="flex flex-col items-center gap-1 py-2">
+          <p className="text-[10px] text-gray-400">
+            QR kod trenutno nije dostupan
+          </p>
+          <p className="text-[12px] text-gray-400">
+            Račun: 340-0000032584057-91
+          </p>
+          <p className="text-[12px] text-gray-400">
+            Poziv na br. {receiptNo.replace("-", "")}
+          </p>
+        </div>
       ) : (
         <div className="flex justify-center py-4">
           <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
