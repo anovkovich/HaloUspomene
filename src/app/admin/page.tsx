@@ -8,6 +8,12 @@ import BirthdayAdminList from "./BirthdayAdminList";
 
 type AdminTab = "pozivnice" | "rodjendani";
 
+const BANK_ACCOUNTS = [
+  { raw: "340000003258405791", display: "340-0000032584057-91", label: "Erste (340)" },
+  { raw: "170001040456500004", display: "170-0010404565000-04", label: "UniCredit (170)" },
+  { raw: "000000000000000000", display: "TODO", label: "TODO" },
+];
+
 interface Couple {
   slug: string;
   couple_names: { bride: string; groom: string; full_display: string };
@@ -36,6 +42,7 @@ export default function AdminPage() {
   const [needsLogin, setNeedsLogin] = useState(false);
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [bankAccountIdx, setBankAccountIdx] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -151,6 +158,7 @@ export default function AdminPage() {
       rp: extras?.retro_phone ? 1 : 0,
       pd: extras?.dobrodoslica ? 1 : 0,
       d: c.custom_discount ?? 0,
+      ba: bankAccountIdx,
       t: Date.now(),
     };
     return `https://halouspomene.rs/racun?d=${btoa(unescape(encodeURIComponent(JSON.stringify(data))))}`;
@@ -207,6 +215,27 @@ export default function AdminPage() {
 
   return (
     <div>
+      {/* Bank account selector */}
+      <div className="flex items-center gap-3 mb-6">
+        <span className="text-xs text-white/30">Žiro račun:</span>
+        <div className="flex items-center gap-1 bg-white/5 rounded-lg p-0.5">
+          {BANK_ACCOUNTS.map((acc, i) => (
+            <button
+              key={i}
+              onClick={() => setBankAccountIdx(i)}
+              className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
+                bankAccountIdx === i
+                  ? "bg-[#AE343F] text-white"
+                  : "text-white/40 hover:text-white/70"
+              }`}
+              title={acc.display}
+            >
+              {acc.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Tab bar */}
       <div className="flex items-center gap-1 mb-8 bg-white/5 rounded-xl p-1 w-fit">
         <button

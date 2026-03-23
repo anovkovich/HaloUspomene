@@ -117,13 +117,17 @@ function NbsQrCode({
   total,
   couple,
   receiptNo,
+  bankAccountIdx = 0,
 }: {
   total: number;
   couple: string;
   receiptNo: string;
+  bankAccountIdx?: number;
 }) {
   const [qrSrc, setQrSrc] = useState<string | null>(null);
   const [error, setError] = useState(false);
+
+  const account = BANK_ACCOUNTS[bankAccountIdx] ?? BANK_ACCOUNTS[0];
 
   useEffect(() => {
     if (total <= 0) return;
@@ -134,7 +138,7 @@ function NbsQrCode({
       .slice(0, 50);
     // receiptNo format: 20260320-1059 → strip dash for numeric RO
     const ro = receiptNo.replace("-", "");
-    const body = `K:PR|V:01|C:1|R:340000003258405791|N:HALO USPOMENE\nNOVI SAD|I:RSD${total},00|SF:189|S:Pozivnica - ${safeName}|RO:${ro}`;
+    const body = `K:PR|V:01|C:1|R:${account.raw}|N:HALO USPOMENE\nNOVI SAD|I:RSD${total},00|SF:189|S:Pozivnica - ${safeName}|RO:${ro}`;
 
     fetch("/api/qr", {
       method: "POST",
@@ -157,7 +161,7 @@ function NbsQrCode({
         console.error("QR fetch error:", err);
         setError(true);
       });
-  }, [total, couple]);
+  }, [total, couple, account.raw]);
 
   if (total <= 0) return null;
 
@@ -175,7 +179,7 @@ function NbsQrCode({
             className="w-44 h-44"
           />
           <p className="text-[12px] text-gray-400">
-            ili na račun: 340-0000032584057-91
+            ili na račun: {account.display}
           </p>
           <p className="text-[12px] text-gray-400">
             poziv na br. {receiptNo.replace("-", "")}
@@ -187,7 +191,7 @@ function NbsQrCode({
             QR kod trenutno nije dostupan
           </p>
           <p className="text-[12px] text-gray-400">
-            Račun: 340-0000032584057-91
+            Račun: {account.display}
           </p>
           <p className="text-[12px] text-gray-400">
             Poziv na br. {receiptNo.replace("-", "")}
@@ -202,6 +206,12 @@ function NbsQrCode({
   );
 }
 
+const BANK_ACCOUNTS = [
+  { raw: "340000003258405791", display: "340-0000032584057-91" },
+  { raw: "170001040456500004", display: "170-0010404565000-04" },
+  { raw: "000000000000000000", display: "TODO" },
+];
+
 interface ReceiptPayload {
   s: string; // slug
   par: string; // couple display name
@@ -213,6 +223,7 @@ interface ReceiptPayload {
   rp?: number; // retro phone
   pd?: number; // personalizovana dobrodoslica
   d: number; // custom discount
+  ba?: number; // bank account index (0, 1, 2)
   t: number; // timestamp
 }
 
@@ -441,7 +452,7 @@ function ReceiptContent() {
             </div>
 
             {/* NBS IPS QR */}
-            <NbsQrCode total={total} couple={couple} receiptNo={receiptNo} />
+            <NbsQrCode total={total} couple={couple} receiptNo={receiptNo} bankAccountIdx={payload.ba ?? 0} />
           </div>
 
           {/* Torn bottom edge */}

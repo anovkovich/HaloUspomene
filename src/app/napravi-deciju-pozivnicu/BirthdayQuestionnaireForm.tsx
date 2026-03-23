@@ -776,6 +776,19 @@ export default function BirthdayQuestionnaireForm() {
     }
   };
 
+  const currentThemeConfig = BIRTHDAY_THEME_CONFIGS[formData.theme];
+
+  // Sync page background with selected theme
+  useEffect(() => {
+    const main = document.querySelector(".birthday-form-page") as HTMLElement;
+    if (main) {
+      main.style.backgroundColor = currentThemeConfig.colors.background;
+    }
+    return () => {
+      if (main) main.style.backgroundColor = "";
+    };
+  }, [currentThemeConfig.colors.background]);
+
   // Success screen
   if (isSubmitted) {
     return (
@@ -809,18 +822,6 @@ export default function BirthdayQuestionnaireForm() {
   }
 
   const progress = ((step - 1) / (TOTAL_STEPS - 1)) * 100;
-  const currentThemeConfig = BIRTHDAY_THEME_CONFIGS[formData.theme];
-
-  // Sync page background with selected theme
-  useEffect(() => {
-    const main = document.querySelector(".birthday-form-page") as HTMLElement;
-    if (main) {
-      main.style.backgroundColor = currentThemeConfig.colors.background;
-    }
-    return () => {
-      if (main) main.style.backgroundColor = "";
-    };
-  }, [currentThemeConfig.colors.background]);
 
   return (
     <div className="max-w-2xl mx-auto">
