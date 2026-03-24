@@ -155,7 +155,8 @@ export default function MojeVencanjeClient() {
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as any).standalone === true;
     setIsStandalone(standalone);
-    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     setIsIOS(ios);
     const mobile = window.innerWidth < 768;
     if (mobile && !standalone) setMobilePrompt(true);
@@ -254,9 +255,17 @@ export default function MojeVencanjeClient() {
       setShowIOSInstall(true);
     } else if (installPrompt) {
       const prompt = installPrompt as any;
-      await prompt.prompt();
-      const result = await prompt.userChoice;
-      if (result.outcome === "accepted") setInstallPrompt(null);
+      setInstallPrompt(null); // consumed after one use, clear immediately
+      try {
+        await prompt.prompt();
+        await prompt.userChoice;
+      } catch {
+        // prompt failed — show manual instructions
+        setShowIOSInstall(true);
+      }
+    } else {
+      // fallback: prompt consumed or never fired
+      setShowIOSInstall(true);
     }
   }, [isIOS, installPrompt]);
 
@@ -269,7 +278,7 @@ export default function MojeVencanjeClient() {
     );
   }
 
-  const canInstall = !isStandalone && (installPrompt !== null || isIOS);
+  const canInstall = !isStandalone;
 
   const completedCount = checklist.filter((i) => i.completed).length;
   const totalSpent = budget.categories.reduce((s, c) => s + c.spent, 0);
