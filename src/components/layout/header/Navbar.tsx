@@ -7,7 +7,7 @@ import { Menu, X } from "lucide-react";
 
 const navLinks = [
   { name: "Planer", href: "/planiranje-vencanja" },
-  { name: "Pozivnice", href: "/napravi-pozivnicu" },
+  { name: "Pozivnice", href: "/pozivnice" },
   { name: "Telefon", href: "/telefon-uspomena" },
   { name: "Cene", href: "/cene" },
   { name: "Blog", href: "/blog" },

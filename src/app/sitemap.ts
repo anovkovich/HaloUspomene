@@ -26,10 +26,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: `${siteUrl}/napravi-pozivnicu`,
+      url: `${siteUrl}/pozivnice`,
       lastModified,
       changeFrequency: "weekly",
       priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/napravi-pozivnicu`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
       url: `${siteUrl}/telefon-uspomena`,

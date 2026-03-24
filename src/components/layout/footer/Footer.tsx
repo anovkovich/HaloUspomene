@@ -55,7 +55,7 @@ const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-3">
               {[
-                { name: "Website Pozivnice", href: "/napravi-pozivnicu" },
+                { name: "Website Pozivnice", href: "/pozivnice" },
                 { name: "Telefon Uspomena", href: "/telefon-uspomena" },
                 { name: "Planer za Venčanje", href: "/planiranje-vencanja" },
                 { name: "Kako funkcioniše", href: "/#proces" },
