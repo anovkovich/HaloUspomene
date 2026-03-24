@@ -83,6 +83,7 @@ export default function OverviewCard({
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const [seatingModal, setSeatingModal] = useState<{
     totalGuests: number;
     seated: number;
@@ -347,14 +348,15 @@ export default function OverviewCard({
             PDF pozivnica
           </button>
           <button
-            onClick={handleDownloadFlyer}
-            disabled={!audioStats?.paidForAudio}
-            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-[#232323]/8 disabled:hover:text-[#232323]/60"
-            title={
-              !audioStats?.paidForAudio
-                ? "Audio knjiga nije aktivirana"
-                : "Preuzmi A6 flyer sa QR kodom"
-            }
+            onClick={() => {
+              if (!audioStats?.paidForAudio) {
+                setToast("Audio knjiga nije aktivirana");
+                setTimeout(() => setToast(null), 3000);
+                return;
+              }
+              handleDownloadFlyer();
+            }}
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
           >
             <QrCode size={12} />
             Audio flyer
@@ -487,6 +489,13 @@ export default function OverviewCard({
               </>
             ) : null}
           </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-[#232323] text-white text-xs font-medium shadow-lg animate-[fadeIn_0.2s_ease-out]">
+          {toast}
         </div>
       )}
     </div>
