@@ -2,13 +2,25 @@ import type { Metadata } from "next";
 import MojeVencanjeClient from "./MojeVencanjeClient";
 
 export const metadata: Metadata = {
-  title: "Moje Venčanje — Planer za Organizaciju | HALO Uspomene",
+  title: "Moje Venčanje — Besplatan Planer za Organizaciju Venčanja | HALO Uspomene",
   description:
-    "Besplatan planer za organizaciju venčanja. Checklista za pripremu, praćenje budžeta i sve na jednom mestu.",
+    "Organizujte venčanje na jednom mestu: checklista zadataka, praćenje budžeta, katalog vendora (sale, bendovi, fotografi, torte, dekoracija) i audio knjiga uspomena. Besplatno.",
+  keywords: [
+    "organizacija venčanja",
+    "planer za venčanje",
+    "checklista za venčanje",
+    "budžet za venčanje",
+    "sale za venčanje",
+    "bendovi za svadbu",
+    "fotograf za venčanje",
+    "dekoracija venčanja",
+    "svadbeni vendori Srbija",
+    "torta za venčanje",
+  ],
   openGraph: {
-    title: "Moje Venčanje — Planer za Organizaciju | HALO Uspomene",
+    title: "Moje Venčanje — Besplatan Planer za Organizaciju Venčanja",
     description:
-      "Besplatan planer za organizaciju venčanja. Checklista za pripremu, praćenje budžeta i sve na jednom mestu.",
+      "Checklista, budžet, katalog vendora i audio knjiga uspomena — sve za organizaciju vašeg venčanja na jednom mestu.",
   },
 };
 

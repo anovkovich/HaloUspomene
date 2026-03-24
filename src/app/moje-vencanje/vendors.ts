@@ -11,28 +11,18 @@ export const CITIES = [
 
 export type City = (typeof CITIES)[number];
 
-export const VENDOR_CATEGORIES: VendorCategoryMeta[] = [
-  { id: "venue", label: "Sala", labelPlural: "Sale", count: 50 },
-  { id: "music", label: "Muzika", labelPlural: "Bendovi & DJ", count: 42 },
-  {
-    id: "photo-video",
-    label: "Foto/Video",
-    labelPlural: "Foto & Video",
-    count: 30,
-  },
-  { id: "cake", label: "Torta", labelPlural: "Torte", count: 22 },
-  {
-    id: "decoration",
-    label: "Dekoracija",
-    labelPlural: "Dekoracije",
-    count: 18,
-  },
-  { id: "flowers", label: "Cveće", labelPlural: "Cveće", count: 20 },
-  { id: "fireworks", label: "Vatromet", labelPlural: "Efekti", count: 18 },
-  { id: "dress", label: "Venčanica", labelPlural: "Venčanice", count: 25 },
-  { id: "makeup", label: "Šminka", labelPlural: "MakeUp", count: 12 },
-  { id: "rings", label: "Burme", labelPlural: "Burme", count: 16 },
-  { id: "gifts", label: "Pokloni", labelPlural: "Pokloni", count: 10 },
+const _CATEGORY_META: Omit<VendorCategoryMeta, "count">[] = [
+  { id: "venue", label: "Sala", labelPlural: "Sale" },
+  { id: "music", label: "Muzika", labelPlural: "Bendovi & DJ" },
+  { id: "photo-video", label: "Foto/Video", labelPlural: "Foto & Video" },
+  { id: "cake", label: "Torta", labelPlural: "Torte" },
+  { id: "decoration", label: "Dekoracija", labelPlural: "Dekoracije" },
+  { id: "flowers", label: "Cveće", labelPlural: "Cveće" },
+  { id: "fireworks", label: "Vatromet", labelPlural: "Efekti" },
+  { id: "dress", label: "Venčanica", labelPlural: "Venčanice" },
+  { id: "makeup", label: "Šminka", labelPlural: "MakeUp" },
+  { id: "rings", label: "Burme", labelPlural: "Burme" },
+  { id: "gifts", label: "Pokloni", labelPlural: "Pokloni" },
 ];
 
 // Venues backfilled from research doc, other categories still placeholder
@@ -351,6 +341,12 @@ export const VENDORS: Vendor[] = [
   { id: "g-pandora", name: "Pandora Srbija", category: "gifts", city: "Beograd", website: "pandorashop.rs" },
   { id: "g-sunmoon", name: "Sun, Moon & Stars", category: "gifts", city: "Beograd", website: "sunmoon-stars.com" },
 ];
+
+// Compute counts from actual data so they never go stale
+export const VENDOR_CATEGORIES: VendorCategoryMeta[] = _CATEGORY_META.map((cat) => ({
+  ...cat,
+  count: VENDORS.filter((v) => v.category === cat.id).length,
+}));
 
 export function getVendorsByCategory(category: VendorCategory): Vendor[] {
   return VENDORS.filter((v) => v.category === category);
