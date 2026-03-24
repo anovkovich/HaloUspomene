@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, CalendarPlus } from "lucide-react";
 import DeleteModal from "./DeleteModal";
 import BirthdayAdminList from "./BirthdayAdminList";
 import VendorAdminTab from "./VendorAdminTab";
@@ -150,7 +150,7 @@ export default function AdminPage() {
   function buildReceiptUrl(c: Couple, extras?: { retro_phone?: boolean; dobrodoslica?: boolean }) {
     const data = {
       s: c.slug,
-      par: c.couple_names.full_display,
+      par: c.couple_names?.full_display || c.slug,
       datum: c.event_date,
       r: c.paid_for_raspored ? 1 : 0,
       a: c.paid_for_audio ? 1 : 0,
@@ -292,20 +292,23 @@ export default function AdminPage() {
       <div className="space-y-3">
         {couples.map((c) => {
           const s = stats[c.slug];
-          const eventDate = new Date(c.event_date);
+          const eventDate = c.event_date ? new Date(c.event_date) : null;
           const today = new Date();
-          const isToday = eventDate.toDateString() === today.toDateString();
-          const isPast = eventDate < today && !isToday;
-          const daysSince = isPast
+          const isToday = eventDate ? eventDate.toDateString() === today.toDateString() : false;
+          const isPast = eventDate ? eventDate < today && !isToday : false;
+          const daysSince = isPast && eventDate
             ? Math.floor((today.getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24))
             : 0;
           const isExpired = daysSince > 5;
+          const isQuickStart = !c.theme;
 
           return (
             <div
               key={c.slug}
               className={`rounded-xl px-5 py-4 ${
-                isExpired
+                isQuickStart
+                  ? "bg-indigo-950/30 border border-dashed border-indigo-400/30"
+                  : isExpired
                   ? "bg-red-950/40 border border-red-500/25 opacity-70"
                   : isPast
                   ? "bg-white/5 opacity-50 border border-white/10"
@@ -324,24 +327,24 @@ export default function AdminPage() {
                         title={c.draft ? "Draft" : "Live"}
                       />
                       <span className="font-semibold text-white">
-                        {c.couple_names.full_display}
+                        {c.couple_names?.full_display || c.slug}
                       </span>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 shrink-0">
-                        {c.theme}
+                        {c.theme || "—"}
                       </span>
                       <span
                         className={`text-[10px] shrink-0 ${isExpired ? "text-red-400/60" : isPast ? "text-white/30" : "text-white/60"}`}
                       >
-                        {daysUntil(c.event_date)}
+                        {c.event_date ? daysUntil(c.event_date) : "—"}
                       </span>
                     </div>
                     <div className="text-xs text-white/40 truncate">
-                      /{c.slug} &middot;{" "}
+                      /{c.slug}{c.event_date ? <> &middot;{" "}
                       {new Date(c.event_date).toLocaleDateString("sr-RS", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
-                      })}
+                      })}</> : null}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -355,6 +358,36 @@ export default function AdminPage() {
                       title="Kopiraj link pozivnice"
                     >
                       {copiedSlug === c.slug ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                    </button>
+                    <button
+                      disabled={!c.event_date}
+                      onClick={() => {
+                        if (!c.event_date) return;
+                        const d = new Date(c.event_date);
+                        const pad = (n: number) => String(n).padStart(2, "0");
+                        const dateStr = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+                        const ics = [
+                          "BEGIN:VCALENDAR",
+                          "VERSION:2.0",
+                          "BEGIN:VEVENT",
+                          `DTSTART;VALUE=DATE:${dateStr}`,
+                          `DTEND;VALUE=DATE:${dateStr}`,
+                          `SUMMARY:Venčanje — ${c.couple_names?.full_display || c.slug}`,
+                          `URL:https://halouspomene.rs/pozivnica/${c.slug}`,
+                          "END:VEVENT",
+                          "END:VCALENDAR",
+                        ].join("\r\n");
+                        const blob = new Blob([ics], { type: "text/calendar" });
+                        const a = document.createElement("a");
+                        a.href = URL.createObjectURL(blob);
+                        a.download = `vencanje-${c.slug}.ics`;
+                        a.click();
+                        URL.revokeObjectURL(a.href);
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed"
+                      title={c.event_date ? "Dodaj u kalendar" : "Nema datuma"}
+                    >
+                      <CalendarPlus size={14} />
                     </button>
                     <button
                       onClick={() => router.push(`/admin/${c.slug}`)}

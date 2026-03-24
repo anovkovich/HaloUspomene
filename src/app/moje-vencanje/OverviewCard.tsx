@@ -17,7 +17,11 @@ import {
   X,
   Armchair,
 } from "lucide-react";
-import { loadOverviewAction, getWeddingDataForPDF, loadSeatingStatsAction } from "./actions";
+import {
+  loadOverviewAction,
+  getWeddingDataForPDF,
+  loadSeatingStatsAction,
+} from "./actions";
 import type { ActiveView } from "./Sidebar";
 import type { ChecklistItem, PortalBudget } from "./types";
 
@@ -288,7 +292,7 @@ export default function OverviewCard({
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle size={15} className="text-[#AE343F]" />
             <span className="text-xs font-medium text-[#232323]/50">
-              Pažnja
+              {alerts.length > 0 ? "Pažnja" : "Nema upozorenja"}
             </span>
           </div>
           {loading ? (

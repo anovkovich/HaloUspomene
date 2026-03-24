@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical } from "lucide-react";
 import { saveChecklistAction } from "./actions";
 import type { ChecklistItem, ChecklistGroup } from "./types";
@@ -13,6 +14,7 @@ interface Props {
 
 export default function ChecklistCard({ checklist, setChecklist }: Props) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [newItemText, setNewItemText] = useState<Record<string, string>>({});
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -34,6 +36,15 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
           item.id === id ? { ...item, completed: !item.completed } : item,
         );
         debouncedSave(next);
+        // Auto-collapse group if all items completed
+        const toggled = next.find((i) => i.id === id);
+        if (toggled?.completed) {
+          const group = toggled.group;
+          const groupItems = next.filter((i) => i.group === group);
+          if (groupItems.every((i) => i.completed)) {
+            setTimeout(() => setCollapsed((c) => ({ ...c, [group]: true })), 400);
+          }
+        }
         return next;
       });
     },
@@ -214,10 +225,14 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
               </button>
 
               {!isCollapsed && (
+                <>
+                <LayoutGroup>
                 <div className="px-4 pb-3 space-y-1">
                   {groupItems.map((item, idx) => (
-                    <div
+                    <motion.div
                       key={item.id}
+                      layout
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
                       draggable
                       onDragStart={() => handleDragStart(item.id)}
                       onDragOver={(e) => handleDragOver(e, item.id)}
@@ -264,16 +279,27 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                           <ChevronDown size={14} />
                         </button>
                         <button
-                          onClick={() => deleteItem(item.id)}
-                          className="text-[#232323]/30 hover:text-red-500 transition-colors p-0.5 cursor-pointer"
+                          onClick={() => {
+                            if (confirmDeleteId === item.id) {
+                              deleteItem(item.id);
+                              setConfirmDeleteId(null);
+                            } else {
+                              setConfirmDeleteId(item.id);
+                              setTimeout(() => setConfirmDeleteId((c) => c === item.id ? null : c), 3000);
+                            }
+                          }}
+                          className={`transition-colors p-0.5 cursor-pointer ${confirmDeleteId === item.id ? "text-red-500 scale-110" : "text-[#232323]/30 hover:text-red-500"}`}
                         >
                           <Trash2 size={14} />
                         </button>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
+                </div>
+                </LayoutGroup>
 
                   {/* Add custom item */}
+                  <div className="px-4 pb-3">
                   <div className="flex gap-2 pt-1">
                     <input
                       type="text"
@@ -300,7 +326,8 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                       <Plus size={16} />
                     </button>
                   </div>
-                </div>
+                  </div>
+                </>
               )}
             </div>
           );

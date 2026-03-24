@@ -139,6 +139,8 @@ export default function MojeVencanjeClient() {
             setVendorFavorites(data.vendorFavorites ?? []);
           }
           setHighlightedVendors(highlighted);
+          setActiveView("overview");
+          setPwaSubView("none");
           setState("auth");
         } else {
           setState("guest");
@@ -228,6 +230,8 @@ export default function MojeVencanjeClient() {
           setVendorFavorites(data.vendorFavorites ?? []);
         }
         setHighlightedVendors(highlighted);
+        setActiveView("overview");
+        setPwaSubView("none");
         setState("auth");
       } catch {
         setError("Greška pri povezivanju sa serverom");

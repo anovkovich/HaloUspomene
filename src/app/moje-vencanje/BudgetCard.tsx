@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { Plus, Trash2, Banknote, Euro } from "lucide-react";
 import { saveBudgetAction } from "./actions";
 import type { PortalBudget, BudgetCategory } from "./types";
@@ -27,6 +27,7 @@ function toRSD(value: number, currency?: "RSD" | "EUR"): number {
 
 export default function BudgetCard({ budget, setBudget }: Props) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const debouncedSave = useCallback((updated: PortalBudget) => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -210,14 +211,25 @@ export default function BudgetCard({ budget, setBudget }: Props) {
                 )}
                 <span className="text-[10px] text-[#232323]/30 shrink-0">{curr}</span>
                 <button
-                  onClick={() => deleteCategory(cat.id)}
+                  onClick={() => {
+                    if (hasValues) return;
+                    if (confirmDeleteId === cat.id) {
+                      deleteCategory(cat.id);
+                      setConfirmDeleteId(null);
+                    } else {
+                      setConfirmDeleteId(cat.id);
+                      setTimeout(() => setConfirmDeleteId((c) => c === cat.id ? null : c), 3000);
+                    }
+                  }}
                   disabled={hasValues}
                   className={`shrink-0 transition-all cursor-pointer p-0.5 ${
                     hasValues
                       ? "text-[#232323]/10 cursor-not-allowed"
+                      : confirmDeleteId === cat.id
+                      ? "text-red-500 scale-110"
                       : "text-[#232323]/30 hover:text-red-500"
                   }`}
-                  title={hasValues ? "Obrišite vrednosti pre uklanjanja" : "Ukloni kategoriju"}
+                  title={hasValues ? "Obrišite vrednosti pre uklanjanja" : confirmDeleteId === cat.id ? "Klikni ponovo za brisanje" : "Ukloni kategoriju"}
                 >
                   <Trash2 size={14} />
                 </button>

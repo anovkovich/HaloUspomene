@@ -15,6 +15,7 @@ export default function DeleteModal({ slug, onClose, onDeleted }: Props) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
 
   async function handleDelete() {
     setError("");
@@ -48,7 +49,8 @@ export default function DeleteModal({ slug, onClose, onDeleted }: Props) {
 
     await fetch(`/api/admin/couples/${slug}`, { method: "DELETE" });
     setDeleting(false);
-    onDeleted();
+    setDeleted(true);
+    setTimeout(() => onDeleted(), 1500);
   }
 
   return (
@@ -71,6 +73,15 @@ export default function DeleteModal({ slug, onClose, onDeleted }: Props) {
           </button>
         </div>
 
+        {deleted ? (
+          <div className="p-8 flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-green-500/15 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <p className="text-white font-medium">Pozivnica obrisana</p>
+            <p className="text-sm text-white/40">{slug} i svi povezani podaci su trajno uklonjeni.</p>
+          </div>
+        ) : (
         <div className="p-5 space-y-4">
           <p className="text-sm text-white/70 leading-relaxed">
             Ovo će trajno obrisati pozivnicu{" "}
@@ -95,9 +106,13 @@ export default function DeleteModal({ slug, onClose, onDeleted }: Props) {
               <span className="w-1.5 h-1.5 rounded-full bg-red-400/60 flex-shrink-0" />
               Audio poruke (biće preuzete pre brisanja)
             </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-400/60 flex-shrink-0" />
+              Planer podaci (checklista, budžet, favoriti)
+            </li>
           </ul>
 
-          <div className="pt-2 space-y-3">
+          <form autoComplete="off" onSubmit={(e) => e.preventDefault()} className="pt-2 space-y-3">
             <div>
               <label className="block text-xs text-white/40 mb-2">
                 Ukucajte{" "}
@@ -106,6 +121,7 @@ export default function DeleteModal({ slug, onClose, onDeleted }: Props) {
               </label>
               <input
                 type="text"
+                name="delete_confirm_ignore"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
                 placeholder={slug}
@@ -121,7 +137,8 @@ export default function DeleteModal({ slug, onClose, onDeleted }: Props) {
                 Admin lozinka
               </label>
               <input
-                type="password"
+                type="text"
+                name="delete_pass_ignore"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -129,14 +146,16 @@ export default function DeleteModal({ slug, onClose, onDeleted }: Props) {
                 }}
                 placeholder="••••••••"
                 className="w-full px-3 py-2.5 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/15 focus:outline-none focus:border-red-500/50"
-                style={{ backgroundColor: "#2a2a2a" }}
+                style={{ backgroundColor: "#2a2a2a", WebkitTextSecurity: "disc" } as React.CSSProperties}
                 autoComplete="off"
               />
             </div>
             {error && <p className="text-xs text-red-400">{error}</p>}
-          </div>
+          </form>
         </div>
+        )}
 
+        {!deleted && (
         <div className="flex gap-3 p-5 border-t border-white/10">
           <button
             onClick={onClose}
@@ -153,6 +172,7 @@ export default function DeleteModal({ slug, onClose, onDeleted }: Props) {
             {deleting ? "Brisanje..." : "Obriši zauvek"}
           </button>
         </div>
+        )}
       </div>
     </div>
   );
