@@ -195,7 +195,7 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                 onClick={() =>
                   setCollapsed((p) => ({ ...p, [group]: !isCollapsed }))
                 }
-                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[#232323]/[0.02] transition-colors rounded-xl"
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[#232323]/[0.02] transition-colors rounded-xl cursor-pointer"
               >
                 <span className="text-sm font-semibold text-[#232323]">
                   {GROUP_LABELS[group]}
@@ -237,7 +237,7 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                         type="checkbox"
                         checked={item.completed}
                         onChange={() => toggleItem(item.id)}
-                        className="checkbox checkbox-sm border-[#232323]/20 [--chkbg:#AE343F] [--chkfg:#F5F4DC]"
+                        className="checkbox checkbox-sm border-[#232323]/20 [--chkbg:#AE343F] [--chkfg:#F5F4DC] cursor-pointer"
                       />
                       <span
                         className={`text-sm flex-1 ${
@@ -248,24 +248,24 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                       >
                         {item.text}
                       </span>
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-0.5">
                         <button
                           onClick={() => moveItem(group, idx, -1)}
                           disabled={idx === 0}
-                          className="text-[#232323]/30 hover:text-[#232323]/60 disabled:opacity-0 transition-colors p-0.5"
+                          className="text-[#232323]/30 hover:text-[#232323]/60 disabled:opacity-0 transition-colors p-0.5 cursor-pointer"
                         >
                           <ChevronUp size={14} />
                         </button>
                         <button
                           onClick={() => moveItem(group, idx, 1)}
                           disabled={idx === groupItems.length - 1}
-                          className="text-[#232323]/30 hover:text-[#232323]/60 disabled:opacity-0 transition-colors p-0.5"
+                          className="text-[#232323]/30 hover:text-[#232323]/60 disabled:opacity-0 transition-colors p-0.5 cursor-pointer"
                         >
                           <ChevronDown size={14} />
                         </button>
                         <button
                           onClick={() => deleteItem(item.id)}
-                          className="text-[#232323]/30 hover:text-red-500 transition-colors p-0.5"
+                          className="text-[#232323]/30 hover:text-red-500 transition-colors p-0.5 cursor-pointer"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -295,7 +295,7 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                     />
                     <button
                       onClick={() => addCustomItem(group)}
-                      className="btn btn-sm btn-ghost text-[#AE343F]"
+                      className="btn btn-sm btn-ghost text-[#AE343F] cursor-pointer"
                     >
                       <Plus size={16} />
                     </button>

@@ -5,11 +5,13 @@ export const dynamic = "force-static";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/moje-vencanje",
     name: "Moje Venčanje — Planer | HALO Uspomene",
     short_name: "Moje Venčanje",
     description:
       "Planer za organizaciju venčanja — checklista, budžet i praćenje priprema na jednom mestu.",
     start_url: "/moje-vencanje",
+    scope: "/",
     display: "standalone",
     background_color: "#F5F4DC",
     theme_color: "#AE343F",

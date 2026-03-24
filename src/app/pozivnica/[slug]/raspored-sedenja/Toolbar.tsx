@@ -66,7 +66,7 @@ export default function Toolbar({
       }}
     >
       <Link
-        href={`/pozivnica/${slug}/portal`}
+        href="/moje-vencanje?tab=guests"
         className="flex items-center gap-1.5 text-xs font-raleway transition-opacity hover:opacity-60"
         style={{ color: "var(--theme-text-light)" }}
       >

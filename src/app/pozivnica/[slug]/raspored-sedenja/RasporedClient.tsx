@@ -289,6 +289,15 @@ export default function RasporedClient({
     );
   };
 
+  const handleStartOver = () => {
+    setTables([]);
+    setSelectedGuest(null);
+    setIsDirty(false);
+    startSave(async () => {
+      await saveRaspored(slug, JSON.stringify([]));
+    });
+  };
+
   const handleSave = () => {
     setSaveError("");
     startSave(async () => {
@@ -306,7 +315,21 @@ export default function RasporedClient({
   return (
     <div
       className="flex h-screen overflow-hidden"
-      style={{ backgroundColor: "var(--theme-background)" }}
+      style={{
+        backgroundColor: "var(--theme-background)",
+        // Override couple theme with HaloUspomene brand colors
+        "--theme-primary": "#d4af37",
+        "--theme-primary-light": "rgba(212,175,55,0.15)",
+        "--theme-primary-muted": "rgba(212,175,55,0.08)",
+        "--theme-background": "#FAFAF5",
+        "--theme-surface": "#F5F4DC",
+        "--theme-surface-alt": "#F0EFCF",
+        "--theme-text": "#232323",
+        "--theme-text-muted": "rgba(35,35,35,0.5)",
+        "--theme-text-light": "rgba(35,35,35,0.4)",
+        "--theme-border": "rgba(35,35,35,0.12)",
+        "--theme-border-light": "rgba(35,35,35,0.06)",
+      } as React.CSSProperties}
     >
       {isMobileWarning && (
         <div
@@ -336,7 +359,7 @@ export default function RasporedClient({
               većeg uređaja.
             </p>
             <a
-              href={`/pozivnica/${slug}/portal`}
+              href="/moje-vencanje?tab=guests"
               className="mt-1 w-full py-2.5 rounded-xl font-raleway text-sm font-medium transition-opacity hover:opacity-80 text-center"
               style={{
                 backgroundColor: "var(--theme-primary)",
@@ -361,6 +384,7 @@ export default function RasporedClient({
           selectedGuest={selectedGuest}
           onSelectGuest={setSelectedGuest}
           assignedCounts={assignedCounts}
+          onStartOver={handleStartOver}
         />
       )}
 
@@ -665,6 +689,7 @@ export default function RasporedClient({
                     setShowGuestPanel(false);
                   }}
                   assignedCounts={assignedCounts}
+                  onStartOver={handleStartOver}
                 />
               </div>
             </div>

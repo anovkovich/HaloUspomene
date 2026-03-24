@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X } from "lucide-react";
+import { Check, X, RotateCcw } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
 
 const FILTER_OPTIONS = [
@@ -17,6 +17,7 @@ interface Props {
   selectedGuest: RSVPEntry | null;
   onSelectGuest: (guest: RSVPEntry | null) => void;
   assignedCounts: Record<string, number>;
+  onStartOver: () => void;
 }
 
 export default function GuestSidebar({
@@ -24,9 +25,11 @@ export default function GuestSidebar({
   selectedGuest,
   onSelectGuest,
   assignedCounts,
+  onStartOver,
 }: Props) {
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const categoryFiltered = attending.filter((g) => {
     if (filter === "") return true;
@@ -226,6 +229,44 @@ export default function GuestSidebar({
           </p>
         </div>
       )}
+
+      {/* Start over */}
+      <div
+        className="px-3 py-3 border-t"
+        style={{ borderColor: "var(--theme-border-light)" }}
+      >
+        {!confirmReset ? (
+          <button
+            onClick={() => setConfirmReset(true)}
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-raleway font-medium transition-colors hover:bg-red-50 cursor-pointer"
+            style={{ color: "var(--theme-text-light)" }}
+          >
+            <RotateCcw size={12} />
+            Počni ispočetka
+          </button>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <p className="text-[10px] font-raleway text-center text-red-500 font-medium">
+              Obrisati sve stolove i raspored?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmReset(false)}
+                className="flex-1 px-3 py-1.5 rounded-lg text-xs font-raleway font-medium border cursor-pointer transition-colors hover:bg-black/5"
+                style={{ borderColor: "var(--theme-border-light)", color: "var(--theme-text-light)" }}
+              >
+                Otkaži
+              </button>
+              <button
+                onClick={() => { onStartOver(); setConfirmReset(false); }}
+                className="flex-1 px-3 py-1.5 rounded-lg text-xs font-raleway font-medium bg-red-500 text-white cursor-pointer transition-colors hover:bg-red-600"
+              >
+                Obriši sve
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

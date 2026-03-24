@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Trash2, AlertTriangle, X } from "lucide-react";
-import { mergeAndDownload } from "@/app/pozivnica/[slug]/audio-knjiga/slusaj/mergeAudio";
+import { mergeAndDownload } from "@/lib/audio-utils/mergeAudio";
 
 interface Props {
   slug: string;

@@ -113,6 +113,8 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const viewport: Viewport = {
   viewportFit: "cover",
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export const metadata: Metadata = {

@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
 
   // ── Couple auth (potvrde / raspored-sedenja) ──────────────────────────────
   const match = pathname.match(
-    /^\/pozivnica\/([^/]+)\/(portal|potvrde|raspored-sedenja|audio-knjiga\/slusaj)(\/|$)/
+    /^\/pozivnica\/([^/]+)\/(potvrde|raspored-sedenja)(\/|$)/
   );
   if (match) {
     const slug = match[1];
@@ -76,13 +76,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/pozivnica/:slug/portal",
-    "/pozivnica/:slug/portal/:path*",
     "/pozivnica/:slug/potvrde",
     "/pozivnica/:slug/raspored-sedenja",
     "/pozivnica/:slug/raspored-sedenja/:path*",
-    "/pozivnica/:slug/audio-knjiga/slusaj",
-    "/pozivnica/:slug/audio-knjiga/slusaj/:path*",
     "/deciji-rodjendan/:slug/portal",
     "/deciji-rodjendan/:slug/portal/:path*",
   ],

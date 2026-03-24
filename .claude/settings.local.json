@@ -15,7 +15,8 @@
       "Bash(npx next:*)",
       "WebFetch(domain:developers.cloudflare.com)",
       "WebSearch",
-      "WebFetch(domain:developers.google.com)"
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:www.weddingwonderland.rs)"
     ]
   }
 }

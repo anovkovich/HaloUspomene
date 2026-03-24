@@ -23,10 +23,12 @@ export interface BudgetCategory {
   planned: number;
   spent: number;
   isCustom: boolean;
+  currency?: "RSD" | "EUR";
 }
 
 export interface PortalBudget {
   totalBudget: number;
+  totalBudgetCurrency?: "RSD" | "EUR";
   categories: BudgetCategory[];
 }
 
@@ -34,6 +36,41 @@ export interface PortalData {
   slug: string;
   checklist: ChecklistItem[];
   budget: PortalBudget;
+  vendorFavorites: string[];
   updatedAt: Date;
   createdAt: Date;
+}
+
+/* ── Vendor Directory Types ─────────────────────────────────── */
+
+export type VendorCategory =
+  | "venue"
+  | "music"
+  | "photo-video"
+  | "cake"
+  | "decoration"
+  | "flowers"
+  | "fireworks"
+  | "dress"
+  | "makeup"
+  | "rings"
+  | "gifts";
+
+export interface Vendor {
+  id: string;
+  name: string;
+  category: VendorCategory;
+  city: string;
+  phone?: string;
+  website?: string;
+  instagram?: string;
+  email?: string;
+  facebook?: string;
+}
+
+export interface VendorCategoryMeta {
+  id: VendorCategory;
+  label: string;
+  labelPlural: string;
+  count: number;
 }

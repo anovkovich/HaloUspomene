@@ -618,8 +618,8 @@ export default function TableNode({
   const header =
     table.type === "rectangular" ? (
       <div
-        className="drag-handle rounded-t-lg cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-        style={{ backgroundColor: "var(--theme-primary)", color: "white" }}
+        className="drag-handle rounded-t-lg cursor-grab active:cursor-grabbing table-header transition-opacity duration-150"
+        style={{ backgroundColor: "#8a8a8a", color: "white", opacity: 0 }}
       >
         {isRotated ? (
           // Portrait: two rows
@@ -653,8 +653,8 @@ export default function TableNode({
     ) : (
       // Circle / single-sided: count first, then name
       <div
-        className="drag-handle flex items-center gap-1.5 px-2 py-1 rounded-t-lg cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-        style={{ backgroundColor: "var(--theme-primary)", color: "white" }}
+        className="drag-handle flex items-center gap-1.5 px-2 py-1 rounded-t-lg cursor-grab active:cursor-grabbing table-header transition-opacity duration-150"
+        style={{ backgroundColor: "#8a8a8a", color: "white", opacity: 0 }}
       >
         {grabHandle}
         {seatControls}
@@ -677,28 +677,28 @@ export default function TableNode({
     >
       <div
         ref={nodeRef}
-        className="absolute group"
+        className="absolute table-node-card"
         style={{
           width: cardWidth,
           userSelect: "none",
           borderRadius: 8,
-          border: "2px dashed transparent",
-          borderTop: "none",
-          transition: "border-color 150ms",
+          transition: "background-color 150ms",
           cursor: readOnly ? "pointer" : undefined,
         }}
         onClick={readOnly && onTap ? () => onTap(table) : undefined}
-        onMouseEnter={readOnly ? undefined : (e) =>
-          (e.currentTarget.style.borderColor = "var(--theme-primary)")
-        }
-        onMouseLeave={readOnly ? undefined : (e) =>
-          (e.currentTarget.style.borderColor = "transparent")
-        }
+        onMouseEnter={readOnly ? undefined : (e) => {
+          e.currentTarget.style.backgroundColor = "rgba(35,35,35,0.04)";
+          e.currentTarget.querySelectorAll<HTMLElement>(".table-header").forEach(el => el.style.opacity = "1");
+        }}
+        onMouseLeave={readOnly ? undefined : (e) => {
+          e.currentTarget.style.backgroundColor = "transparent";
+          e.currentTarget.querySelectorAll<HTMLElement>(".table-header").forEach(el => el.style.opacity = "0");
+        }}
       >
         {readOnly ? (
           <div
             className="flex items-center gap-1.5 px-2 py-1 rounded-t-lg"
-            style={{ backgroundColor: "var(--theme-primary)", color: "white" }}
+            style={{ backgroundColor: "#8a8a8a", color: "white" }}
           >
             <span className="text-xs font-raleway font-medium truncate flex-1">{table.label}</span>
             <span className="text-[10px] font-raleway opacity-70">{table.assignments.filter(Boolean).length}/{table.seats}</span>
@@ -722,8 +722,8 @@ export default function TableNode({
               className="h-15 rounded"
               style={{
                 backgroundColor:
-                  "color-mix(in srgb, var(--theme-primary) 10%, var(--theme-background))",
-                border: "3px solid var(--theme-primary)",
+                  "rgba(35,35,35,0.04)",
+                border: "3px solid rgba(35,35,35,0.15)",
               }}
             />
             <div className="flex gap-1.5 justify-center mt-2">
@@ -760,8 +760,8 @@ export default function TableNode({
                 width: 60,
                 minHeight: seatsPerRow * (SEAT_SIZE + 6) - 6,
                 backgroundColor:
-                  "color-mix(in srgb, var(--theme-primary) 10%, var(--theme-background))",
-                border: "3px solid var(--theme-primary)",
+                  "rgba(35,35,35,0.04)",
+                border: "3px solid rgba(35,35,35,0.15)",
               }}
             />
             {/* Right column */}
@@ -795,8 +795,8 @@ export default function TableNode({
               className="h-15 rounded"
               style={{
                 backgroundColor:
-                  "color-mix(in srgb, var(--theme-primary) 10%, var(--theme-background))",
-                border: "3px solid var(--theme-primary)",
+                  "rgba(35,35,35,0.04)",
+                border: "3px solid rgba(35,35,35,0.15)",
               }}
             />
           </div>
@@ -817,8 +817,8 @@ export default function TableNode({
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 backgroundColor:
-                  "color-mix(in srgb, var(--theme-primary) 10%, var(--theme-background))",
-                border: "3px solid var(--theme-primary)",
+                  "rgba(35,35,35,0.04)",
+                border: "3px solid rgba(35,35,35,0.15)",
               }}
             />
             {table.assignments.map((a, i) => {

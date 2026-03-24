@@ -92,11 +92,11 @@ function encodeWAV(buffer: AudioBuffer): Blob {
   view.setUint32(40, dataLength, true);
 
   // Write PCM samples
-  let offset = 44;
+  let pcmOffset = 44;
   for (let i = 0; i < data.length; i++) {
     const sample = Math.max(-1, Math.min(1, data[i]));
-    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
-    offset += 2;
+    view.setInt16(pcmOffset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+    pcmOffset += 2;
   }
 
   return new Blob([arrayBuffer], { type: "audio/wav" });

@@ -72,11 +72,11 @@ export default async function RasporedSedenja({ params }: PageProps) {
             <Wallet size={20} />
             <span className="text-[10px] font-medium">Budžet</span>
           </Link>
-          <Link href={`/pozivnica/${slug}/portal`} className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35">
+          <Link href="/moje-vencanje?tab=guests" className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35">
             <Users size={20} />
             <span className="text-[10px] font-medium">Gosti</span>
           </Link>
-          <Link href={`/pozivnica/${slug}/audio-knjiga/slusaj`} className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35">
+          <Link href="/moje-vencanje?tab=audio" className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35">
             <Mic size={20} />
             <span className="text-[10px] font-medium">Audio</span>
           </Link>

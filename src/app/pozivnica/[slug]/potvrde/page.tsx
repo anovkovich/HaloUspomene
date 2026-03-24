@@ -9,5 +9,5 @@ interface PageProps {
 
 export default async function PotvrdeRedirect({ params }: PageProps) {
   const { slug } = await params;
-  redirect(`/pozivnica/${slug}/portal`);
+  redirect("/moje-vencanje?tab=guests");
 }

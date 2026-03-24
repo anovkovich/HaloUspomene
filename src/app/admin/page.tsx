@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ExternalLink, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star } from "lucide-react";
 import DeleteModal from "./DeleteModal";
 import BirthdayAdminList from "./BirthdayAdminList";
+import VendorAdminTab from "./VendorAdminTab";
 
-type AdminTab = "pozivnice" | "rodjendani";
+type AdminTab = "pozivnice" | "rodjendani" | "vendori";
 
 const BANK_ACCOUNTS = [
   { raw: "340000003258405791", display: "340-0000032584057-91", label: "Erste (340)" },
@@ -258,9 +259,21 @@ export default function AdminPage() {
         >
           <Cake size={14} /> Rođendani
         </button>
+        <button
+          onClick={() => setActiveTab("vendori")}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+            activeTab === "vendori"
+              ? "bg-[#d4af37] text-white"
+              : "text-white/50 hover:text-white/80"
+          }`}
+        >
+          <Star size={14} /> Vendori
+        </button>
       </div>
 
-      {activeTab === "rodjendani" ? (
+      {activeTab === "vendori" ? (
+        <VendorAdminTab />
+      ) : activeTab === "rodjendani" ? (
         <BirthdayAdminList onNeedsLogin={() => setNeedsLogin(true)} />
       ) : (
       <>

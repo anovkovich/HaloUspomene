@@ -13,11 +13,19 @@ import {
   Users,
   LayoutDashboard,
   Mic,
+  Star,
+  ArrowLeftCircle,
+  Home,
+  Menu,
+  X,
 } from "lucide-react";
-import { verifyAuth, loadPortalDataAction } from "./actions";
+import { verifyAuth, loadPortalDataAction, saveVendorFavoritesAction, loadHighlightedVendorsAction } from "./actions";
 import type { ChecklistItem, PortalBudget } from "./types";
 import ChecklistCard from "./ChecklistCard";
 import BudgetCard from "./BudgetCard";
+import Sidebar, { type ActiveView } from "./Sidebar";
+import TeaserVendors from "./TeaserVendors";
+import Footer from "@/components/layout/footer/Footer";
 import {
   getDefaultChecklist,
   getDefaultBudgetCategories,
@@ -25,8 +33,12 @@ import {
   GROUP_LABELS,
 } from "./defaults";
 
+const VendorDirectory = React.lazy(() => import("./VendorDirectory"));
+const AudioCard = React.lazy(() => import("./AudioCard"));
+const GuestsCard = React.lazy(() => import("./GuestsCard"));
+import OverviewCard from "./OverviewCard";
+
 type AppState = "loading" | "guest" | "auth";
-type MobileTab = "checklist" | "budget";
 
 function getCookie(name: string): string | undefined {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
@@ -44,7 +56,9 @@ export default function MojeVencanjeClient() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
-  const [mobileTab, setMobileTab] = useState<MobileTab>("checklist");
+  const [mobileSidebar, setMobileSidebar] = useState(false);
+  const [pwaSubView, setPwaSubView] = useState<"none" | "checklist" | "budget">("none");
+  const [activeView, setActiveView] = useState<ActiveView>("overview");
 
   // PWA install
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
@@ -69,12 +83,29 @@ export default function MojeVencanjeClient() {
     totalBudget: 0,
     categories: [],
   });
+  const [vendorFavorites, setVendorFavorites] = useState<string[]>([]);
+  const [highlightedVendors, setHighlightedVendors] = useState<string[]>([]);
 
-  // Read tab from URL query param
+  // Read tab from URL query param on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("tab") === "budget") setMobileTab("budget");
+    const tab = params.get("tab");
+    if (tab === "budget") setActiveView("budget");
+    if (tab === "vendors") setActiveView("vendors");
+    if (tab === "audio") setActiveView("audio");
+    if (tab === "guests") setActiveView("guests");
   }, []);
+
+  // Sync activeView to URL query param
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (activeView === "overview") {
+      url.searchParams.delete("tab");
+    } else {
+      url.searchParams.set("tab", activeView);
+    }
+    window.history.replaceState({}, "", url.toString());
+  }, [activeView]);
 
   // Auto-login on mount
   useEffect(() => {
@@ -90,11 +121,16 @@ export default function MojeVencanjeClient() {
             eventDate: result.eventDate!,
             scriptFont: result.scriptFont ?? "great-vibes",
           });
-          const data = await loadPortalDataAction();
+          const [data, highlighted] = await Promise.all([
+            loadPortalDataAction(),
+            loadHighlightedVendorsAction(),
+          ]);
           if (data) {
             setChecklist(data.checklist);
             setBudget(data.budget);
+            setVendorFavorites(data.vendorFavorites ?? []);
           }
+          setHighlightedVendors(highlighted);
           setState("auth");
         } else {
           setState("guest");
@@ -173,11 +209,16 @@ export default function MojeVencanjeClient() {
           scriptFont: json.couple.scriptFont ?? "great-vibes",
         });
 
-        const data = await loadPortalDataAction();
+        const [data, highlighted] = await Promise.all([
+          loadPortalDataAction(),
+          loadHighlightedVendorsAction(),
+        ]);
         if (data) {
           setChecklist(data.checklist);
           setBudget(data.budget);
+          setVendorFavorites(data.vendorFavorites ?? []);
         }
+        setHighlightedVendors(highlighted);
         setState("auth");
       } catch {
         setError("Greška pri povezivanju sa serverom");
@@ -227,22 +268,20 @@ export default function MojeVencanjeClient() {
   const totalPlanned = budget.categories.reduce((s, c) => s + c.planned, 0);
 
   return (
-    <div className="min-h-screen bg-[#F5F4DC]">
+    <div className={`min-h-screen overflow-x-hidden ${state === "auth" ? "bg-[#FAFAF5]" : "bg-[#F5F4DC]"}`}>
       {/* ── Simple Navbar ──────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 w-full z-50 bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/5">
-        <div className="container mx-auto px-4 md:px-8 h-14 md:h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm text-[#232323]/50 hover:text-[#232323] transition-colors [@media(display-mode:standalone)]:hidden"
-          >
-            <ArrowLeft size={16} />
-            <span className="hidden sm:inline">Početna</span>
-          </Link>
-
-          <Link
-            href="/moje-vencanje"
-            className="absolute left-1/2 -translate-x-1/2"
-          >
+      <nav className={`fixed top-0 z-50 bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/5 ${state === "auth" ? "left-0 md:left-60 right-0" : "left-0 w-full"}`}>
+        <div className="px-4 md:px-8 h-14 md:h-16 flex items-center justify-center relative">
+          {/* Mobile hamburger (browser only, hidden in PWA) */}
+          {state === "auth" && (
+            <button
+              onClick={() => setMobileSidebar(true)}
+              className="absolute left-4 md:hidden [@media(display-mode:standalone)]:hidden text-[#232323]/50 hover:text-[#232323] transition-colors cursor-pointer"
+            >
+              <Menu size={22} />
+            </button>
+          )}
+          <Link href="/">
             <Image
               src="/images/full-logo.png"
               alt="HALO Uspomene"
@@ -251,13 +290,11 @@ export default function MojeVencanjeClient() {
               className="h-10 w-auto"
             />
           </Link>
-
-          <div className="w-16" />
         </div>
       </nav>
 
       <div
-        className={`pt-20 md:pt-28 px-4 [@media(display-mode:standalone)]:pt-[4.5rem] pb-16 ${state === "auth" ? "[@media(display-mode:standalone)]:pb-24" : ""}`}
+        className={`pt-20 md:pt-28 px-4 [@media(display-mode:standalone)]:pt-[4.5rem] pb-16 ${state === "auth" ? "hidden" : ""}`}
       >
         <div className="max-w-5xl mx-auto">
           {/* ── Hero / Title ─────────────────────────────────────── */}
@@ -330,10 +367,16 @@ export default function MojeVencanjeClient() {
                     "Prijavite se"
                   )}
                 </button>
+                <Link
+                  href="/napravi-pozivnicu"
+                  className="text-xs text-[#d4af37] hover:text-[#b8972e] underline underline-offset-2 transition-colors"
+                >
+                  Nemate pozivnicu? Naručite ovde
+                </Link>
               </form>
 
               {canInstall && !(mobilePrompt && !skipInstall) && (
-                <div className="text-center mb-6">
+                <div className="text-center mb-6 md:hidden">
                   <button
                     onClick={handleInstall}
                     className="inline-flex items-center gap-2 text-xs text-[#232323]/40 hover:text-[#232323]/60 transition-colors"
@@ -344,20 +387,8 @@ export default function MojeVencanjeClient() {
                 </div>
               )}
 
-              {/* ── Subtle upsell note ─────────────────────────── */}
-              <p
-                className={`text-center text-xs text-[#232323]/30 italic mb-6 ${mobilePrompt && !skipInstall ? "hidden" : ""}`}
-              >
-                Ovo je samo kratak pregled — prijavom dobijate potpun planer sa
-                čuvanjem podataka, prilagođenim stavkama i praćenjem u realnom
-                vremenu.{" "}
-                <Link
-                  href="/napravi-pozivnicu"
-                  className="text-[#d4af37] hover:text-[#b8972e] underline underline-offset-2 not-italic transition-colors"
-                >
-                  Naručite pozivnicu
-                </Link>
-              </p>
+              {/* ── Teaser Vendors ───────────────────────────────── */}
+              <TeaserVendors />
 
               {/* ── Teaser Cards ─────────────────────────────────── */}
               <div className="grid md:grid-cols-2 gap-6 mb-10">
@@ -367,117 +398,127 @@ export default function MojeVencanjeClient() {
             </>
           )}
 
-          {/* ── Authenticated ────────────────────────────────────── */}
-          {state === "auth" && coupleInfo && (
-            <>
-              {/* Couple heading */}
-              <div className="text-center mb-8 pwa-heading-section">
-                <h1
-                  className="font-serif text-3xl md:text-4xl text-[#232323] mb-1 pwa-script-heading"
-                  style={
-                    {
-                      "--couple-script-font": `var(--font-${coupleInfo.scriptFont})`,
-                    } as React.CSSProperties
-                  }
-                >
-                  {coupleInfo.bride} & {coupleInfo.groom}
-                </h1>
-                <p className="text-[#232323]/50 text-sm [@media(display-mode:standalone)]:hidden">
-                  {new Date(coupleInfo.eventDate).toLocaleDateString(
-                    "sr-Latn-RS",
-                    {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    },
-                  )}
-                  {" · "}
-                  još {daysUntil(coupleInfo.eventDate)} dana
-                </p>
-                <Link
-                  href={`/pozivnica/${coupleInfo.slug}/portal`}
-                  className="mt-3 inline-flex items-center gap-1.5 px-5 py-1.5 text-xs font-semibold tracking-wider uppercase text-[#AE343F] border border-[#AE343F]/30 rounded-full hover:bg-[#AE343F] hover:text-[#F5F4DC] transition-all duration-300 [@media(display-mode:standalone)]:hidden"
-                >
-                  Organizacija gostiju
-                </Link>
-                <br />
-                <button
-                  onClick={handleLogout}
-                  className="mt-2 text-xs text-[#232323]/40 hover:text-[#AE343F] transition-colors inline-flex items-center gap-1"
-                >
-                  <LogOut size={12} /> Odjavite se
-                </button>
-              </div>
-
-              {/* Stats row */}
-              <div className="grid grid-cols-2 gap-4 mb-8 max-w-xl mx-auto">
-                <div className="bg-white rounded-xl border border-[#232323]/10 p-4 text-center">
-                  <CheckCircle2
-                    size={20}
-                    className="mx-auto mb-1 text-[#AE343F]"
-                  />
-                  <p className="text-2xl font-bold text-[#232323]">
-                    {completedCount}/{checklist.length}
-                  </p>
-                  <p className="text-xs text-[#232323]/50">Završeno</p>
-                </div>
-                <div className="bg-white rounded-xl border border-[#232323]/10 p-4 text-center">
-                  <Wallet size={20} className="mx-auto mb-1 text-[#AE343F]" />
-                  <p className="text-2xl font-bold text-[#232323]">
-                    {totalSpent.toLocaleString("sr-RS")}
-                  </p>
-                  <p className="text-xs text-[#232323]/50">
-                    od {totalPlanned.toLocaleString("sr-RS")} RSD
-                  </p>
-                </div>
-              </div>
-
-              {/* Mobile tab switcher (browser only, hidden in PWA) */}
-              <div className="flex md:hidden justify-center gap-2 mb-6 [@media(display-mode:standalone)]:hidden">
-                <button
-                  onClick={() => setMobileTab("checklist")}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
-                    mobileTab === "checklist"
-                      ? "bg-[#AE343F] text-[#F5F4DC]"
-                      : "bg-white text-[#232323]/60 border border-[#232323]/10"
-                  }`}
-                >
-                  Checklista
-                </button>
-                <button
-                  onClick={() => setMobileTab("budget")}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
-                    mobileTab === "budget"
-                      ? "bg-[#AE343F] text-[#F5F4DC]"
-                      : "bg-white text-[#232323]/60 border border-[#232323]/10"
-                  }`}
-                >
-                  Budžet
-                </button>
-              </div>
-
-              {/* Cards */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div
-                  className={`${mobileTab !== "checklist" ? "hidden md:block" : ""}`}
-                >
-                  <ChecklistCard
-                    checklist={checklist}
-                    setChecklist={setChecklist}
-                  />
-                </div>
-                <div
-                  className={`${mobileTab !== "budget" ? "hidden md:block" : ""}`}
-                >
-                  <BudgetCard budget={budget} setBudget={setBudget} />
-                </div>
-              </div>
-            </>
-          )}
+          {/* ── Authenticated (guest-view ends, sidebar layout begins) ── */}
         </div>
       </div>
 
-      {/* ── Mobile bottom nav (auth) ── */}
+      {state === "auth" && coupleInfo && (
+        <div className="flex min-h-[calc(100vh-3.5rem)] md:min-h-[calc(100vh-4rem)] overflow-x-hidden">
+          {/* Desktop sidebar */}
+          <div className="hidden md:block">
+            <Sidebar
+              activeView={activeView}
+              onViewChange={(v) => { setActiveView(v); window.scrollTo({ top: 0 }); }}
+              coupleInfo={coupleInfo}
+              checklistStats={{ completed: completedCount, total: checklist.length }}
+              budgetStats={{ spent: totalSpent, planned: totalPlanned }}
+              onLogout={handleLogout}
+            />
+          </div>
+
+          {/* Main content */}
+          <main className="flex-1 md:ml-60 pt-18 md:pt-24 px-4 pb-16 [@media(display-mode:standalone)]:pt-[4.5rem] [@media(display-mode:standalone)]:pb-24 min-w-0 overflow-x-hidden">
+            <div className="max-w-4xl mx-auto">
+
+              {/* PWA compact header */}
+              <div className="hidden [@media(display-mode:standalone)]:block md:hidden mb-4">
+                <div className="text-center pwa-heading-section">
+                  <h1
+                    className="font-serif text-2xl text-[#232323] mb-0.5 pwa-script-heading"
+                    style={{ "--couple-script-font": `var(--font-${coupleInfo.scriptFont})` } as React.CSSProperties}
+                  >
+                    {coupleInfo.bride} & {coupleInfo.groom}
+                  </h1>
+                </div>
+                {/* PWA sub-tabs on Overview — toggleable */}
+                {activeView === "overview" && (
+                  <div className="flex justify-center gap-2 mt-3">
+                    <button
+                      onClick={() => setPwaSubView((v) => v === "checklist" ? "none" : "checklist")}
+                      className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+                        pwaSubView === "checklist"
+                          ? "bg-[#AE343F] text-[#F5F4DC]"
+                          : "bg-white text-[#232323]/60 border border-[#232323]/10"
+                      }`}
+                    >
+                      Checklista
+                    </button>
+                    <button
+                      onClick={() => setPwaSubView((v) => v === "budget" ? "none" : "budget")}
+                      className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+                        pwaSubView === "budget"
+                          ? "bg-[#AE343F] text-[#F5F4DC]"
+                          : "bg-white text-[#232323]/60 border border-[#232323]/10"
+                      }`}
+                    >
+                      Budžet
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Active view content */}
+              {activeView === "overview" && coupleInfo && (
+                <>
+                  {/* PWA sub-view: show checklist/budget inline, or overview stats */}
+                  <div className="hidden [@media(display-mode:standalone)]:block md:hidden">
+                    {pwaSubView === "checklist" && (
+                      <ChecklistCard checklist={checklist} setChecklist={setChecklist} />
+                    )}
+                    {pwaSubView === "budget" && (
+                      <BudgetCard budget={budget} setBudget={setBudget} />
+                    )}
+                    {pwaSubView === "none" && (
+                      <OverviewCard
+                        coupleInfo={coupleInfo}
+                        checklist={checklist}
+                        budget={budget}
+                        onNavigate={(v) => { setActiveView(v); window.scrollTo({ top: 0 }); }}
+                      />
+                    )}
+                  </div>
+                  {/* Desktop + mobile browser: always show overview */}
+                  <div className="[@media(display-mode:standalone)]:hidden md:block">
+                    <OverviewCard
+                      coupleInfo={coupleInfo}
+                      checklist={checklist}
+                      budget={budget}
+                      onNavigate={(v) => { setActiveView(v); window.scrollTo({ top: 0 }); }}
+                    />
+                  </div>
+                </>
+              )}
+              {activeView === "checklist" && (
+                <ChecklistCard checklist={checklist} setChecklist={setChecklist} />
+              )}
+              {activeView === "budget" && (
+                <BudgetCard budget={budget} setBudget={setBudget} />
+              )}
+              {activeView === "vendors" && (
+                <React.Suspense fallback={<div className="flex justify-center py-12"><span className="loading loading-spinner loading-lg text-[#AE343F]" /></div>}>
+                  <VendorDirectory
+                    favorites={vendorFavorites}
+                    onFavoritesChange={setVendorFavorites}
+                    highlighted={highlightedVendors}
+                  />
+                </React.Suspense>
+              )}
+              {activeView === "audio" && coupleInfo && (
+                <React.Suspense fallback={<div className="flex justify-center py-12"><span className="loading loading-spinner loading-lg text-[#AE343F]" /></div>}>
+                  <AudioCard slug={coupleInfo.slug} coupleNames={`${coupleInfo.bride} & ${coupleInfo.groom}`} />
+                </React.Suspense>
+              )}
+              {activeView === "guests" && coupleInfo && (
+                <React.Suspense fallback={<div className="flex justify-center py-12"><span className="loading loading-spinner loading-lg text-[#AE343F]" /></div>}>
+                  <GuestsCard slug={coupleInfo.slug} />
+                </React.Suspense>
+              )}
+            </div>
+          </main>
+        </div>
+      )}
+
+      {/* ── Mobile bottom nav (auth, PWA only) ── */}
       {state === "auth" && coupleInfo && (
         <nav
           className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#232323]/10 hidden [@media(display-mode:standalone)_and_(max-width:767px)]:flex flex-col"
@@ -485,41 +526,44 @@ export default function MojeVencanjeClient() {
         >
           <div className="flex justify-around items-center h-14">
             <button
-              onClick={() => { setMobileTab("checklist"); window.scrollTo({ top: 0 }); }}
+              onClick={() => { setActiveView("overview"); setPwaSubView("none"); window.scrollTo({ top: 0 }); }}
               className={`flex flex-col items-center gap-0.5 py-1 ${
-                mobileTab === "checklist"
-                  ? "text-[#AE343F]"
-                  : "text-[#232323]/35"
+                activeView === "overview" ? "text-[#AE343F]" : "text-[#232323]/35"
               }`}
             >
-              <CheckCircle2 size={20} />
-              <span className="text-[10px] font-medium">Checklista</span>
+              <Home size={20} />
+              <span className="text-[10px] font-medium">Pregled</span>
             </button>
             <button
-              onClick={() => { setMobileTab("budget"); window.scrollTo({ top: 0 }); }}
+              onClick={() => { setActiveView("guests"); window.scrollTo({ top: 0 }); }}
               className={`flex flex-col items-center gap-0.5 py-1 ${
-                mobileTab === "budget" ? "text-[#AE343F]" : "text-[#232323]/35"
+                activeView === "guests" ? "text-[#AE343F]" : "text-[#232323]/35"
               }`}
-            >
-              <Wallet size={20} />
-              <span className="text-[10px] font-medium">Budžet</span>
-            </button>
-            <Link
-              href={`/pozivnica/${coupleInfo.slug}/portal`}
-              className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35"
             >
               <Users size={20} />
               <span className="text-[10px] font-medium">Gosti</span>
-            </Link>
-            <Link
-              href={`/pozivnica/${coupleInfo.slug}/audio-knjiga/slusaj`}
-              className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35"
+            </button>
+            <button
+              onClick={() => { setActiveView("vendors"); window.scrollTo({ top: 0 }); }}
+              className={`flex flex-col items-center gap-0.5 py-1 ${
+                activeView === "vendors" ? "text-[#AE343F]" : "text-[#232323]/35"
+              }`}
+            >
+              <Star size={20} />
+              <span className="text-[10px] font-medium">Vendori</span>
+            </button>
+            <button
+              onClick={() => { setActiveView("audio"); window.scrollTo({ top: 0 }); }}
+              className={`flex flex-col items-center gap-0.5 py-1 ${
+                activeView === "audio" ? "text-[#AE343F]" : "text-[#232323]/35"
+              }`}
             >
               <Mic size={20} />
               <span className="text-[10px] font-medium">Audio</span>
-            </Link>
+            </button>
             <Link
               href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
+              target="_blank"
               className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35"
             >
               <LayoutDashboard size={20} />
@@ -529,7 +573,87 @@ export default function MojeVencanjeClient() {
         </nav>
       )}
 
+      {/* ── Mobile sidebar overlay (browser only) ── */}
+      {mobileSidebar && state === "auth" && coupleInfo && (
+        <div className="fixed inset-0 z-[60] md:hidden [@media(display-mode:standalone)]:hidden">
+          <div
+            className="absolute inset-0 bg-black/30"
+            onClick={() => setMobileSidebar(false)}
+          />
+          <div className="absolute left-0 top-0 h-full w-72 bg-[#F5F4DC] shadow-2xl flex flex-col overflow-y-auto">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <h2 className="font-serif text-lg text-[#232323] whitespace-nowrap truncate">
+                {coupleInfo.bride} & {coupleInfo.groom}
+              </h2>
+              <button
+                onClick={() => setMobileSidebar(false)}
+                className="text-[#232323]/40 hover:text-[#232323] transition-colors cursor-pointer p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="px-5 text-xs text-[#232323]/40 mb-4">
+              {new Date(coupleInfo.eventDate).toLocaleDateString("sr-Latn-RS", { day: "numeric", month: "short" })}
+              {" · još "}
+              {daysUntil(coupleInfo.eventDate)}d
+            </p>
+            <nav className="flex-1 px-3 space-y-1">
+              {([
+                { view: "overview" as const, label: "Pregled", icon: <Home size={18} /> },
+                { view: "checklist" as const, label: "Checklista", icon: <CheckCircle2 size={18} /> },
+                { view: "budget" as const, label: "Budžet", icon: <Wallet size={18} /> },
+                { view: "vendors" as const, label: "Vendori", icon: <Star size={18} /> },
+                { view: "audio" as const, label: "Audio knjiga", icon: <Mic size={18} /> },
+                { view: "guests" as const, label: "Gosti", icon: <Users size={18} /> },
+              ]).map((item) => {
+                const isActive = activeView === item.view;
+                return (
+                  <button
+                    key={item.view}
+                    onClick={() => { setActiveView(item.view); setMobileSidebar(false); window.scrollTo({ top: 0 }); }}
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                      isActive
+                        ? "bg-[#AE343F]/5 text-[#AE343F]"
+                        : "text-[#232323]/50 hover:bg-white/60 hover:text-[#232323]"
+                    }`}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </button>
+                );
+              })}
+              <div className="border-t border-[#232323]/5 my-2" />
+              <Link
+                href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
+                target="_blank"
+                onClick={() => setMobileSidebar(false)}
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-[#232323]/50 hover:bg-white/60 hover:text-[#232323] transition-colors"
+              >
+                <LayoutDashboard size={18} />
+                Raspored
+              </Link>
+            </nav>
+            <div className="px-3 pb-5 pt-2 border-t border-[#232323]/5">
+              <button
+                onClick={() => { handleLogout(); setMobileSidebar(false); }}
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-[#232323]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
+              >
+                <LogOut size={16} />
+                Odjavite se
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── iOS install instructions ── */}
+      {/* ── Footer (guest only) ── */}
+      {state === "guest" && (
+        <div className="[@media(display-mode:standalone)]:hidden">
+          <Footer />
+        </div>
+      )}
+
       {showIOSInstall && (
         <div
           className="fixed inset-0 z-[100] flex items-end justify-center bg-black/30"
@@ -672,6 +796,9 @@ function TeaserChecklist() {
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none" />
+      <p className="absolute bottom-3 left-0 right-0 text-center text-xs font-semibold text-[#AE343F] z-10">
+        Prijavite se za pun pristup
+      </p>
     </div>
   );
 }
@@ -740,6 +867,9 @@ function TeaserBudget() {
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none" />
+      <p className="absolute bottom-3 left-0 right-0 text-center text-xs font-semibold text-[#AE343F] z-10">
+        Prijavite se za pun pristup
+      </p>
     </div>
   );
 }

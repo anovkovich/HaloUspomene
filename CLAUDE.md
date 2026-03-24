@@ -66,6 +66,19 @@ src/
 │   │   ├── BlogClient.tsx       # Search + category filter (client component)
 │   │   └── [slug]/page.tsx      # Blog post (MDX renderer)
 │   ├── lokacije/[city]/         # 5 city landing pages (SEO)
+│   ├── moje-vencanje/           # Wedding planner dashboard (PWA, sidebar layout)
+│   │   ├── page.tsx             # Server component wrapper
+│   │   ├── MojeVencanjeClient.tsx # Main client: auth, sidebar layout, view switching
+│   │   ├── Sidebar.tsx          # Desktop sidebar nav (cream bg)
+│   │   ├── ChecklistCard.tsx    # Checklist with drag-and-drop, groups
+│   │   ├── BudgetCard.tsx       # Budget tracker with EUR/RSD conversion
+│   │   ├── VendorDirectory.tsx  # Vendor listing with filters (lazy-loaded)
+│   │   ├── AudioCard.tsx        # Audio guestbook player (lazy-loaded)
+│   │   ├── TeaserVendors.tsx    # Guest view vendor category preview
+│   │   ├── vendors.ts           # Placeholder vendor data + helpers
+│   │   ├── types.ts             # Checklist, Budget, Vendor types
+│   │   ├── defaults.ts          # Default checklist/budget templates
+│   │   └── actions.ts           # Server actions: auth, checklist, budget, audio
 │   ├── napravi-pozivnicu/       # Lead generation questionnaire (Web3Forms)
 │   └── pozivnica/[slug]/        # Invitation pages (per-couple)
 │       ├── layout.tsx           # EventPassedGuard wrapper
@@ -108,7 +121,12 @@ src/
 │   ├── mongodb.ts               # MongoDB client singleton (HMR-safe)
 │   ├── couples.ts               # Couple data CRUD (MongoDB: couples collection)
 │   ├── rsvp.ts                  # RSVP data access (MongoDB: rsvp_responses collection)
-│   └── seating.ts               # Seating layout access (MongoDB: seating_layouts collection)
+│   ├── seating.ts               # Seating layout access (MongoDB: seating_layouts collection)
+│   ├── audio.ts                 # Audio message CRUD (MongoDB: audio_messages collection)
+│   ├── portal.ts                # Portal data layer (checklist, budget persistence)
+│   └── audio-utils/             # Client-side audio utilities (shared)
+│       ├── mergeAudio.ts        # Merge multiple audio files into WAV download
+│       └── generateAudioFlyerPDF.ts # Generate A6 PDF flyer with QR code
 └── utils/
     └── analytics.ts             # GA4 event helpers
 
