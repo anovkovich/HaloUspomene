@@ -24,7 +24,7 @@ export async function getAllBirthdaySlugs(): Promise<string[]> {
 
 export async function getAllBirthdays(): Promise<BirthdayDocument[]> {
   const c = await col();
-  return c.find({}, { projection: { _id: 0 } }).toArray();
+  return c.find({}, { projection: { _id: 0 } }).sort({ created_at: -1, _id: -1 }).toArray();
 }
 
 export async function upsertBirthday(
@@ -32,7 +32,11 @@ export async function upsertBirthday(
   data: BirthdayData,
 ): Promise<void> {
   const c = await col();
-  await c.replaceOne({ slug }, { slug, ...data }, { upsert: true });
+  await c.updateOne(
+    { slug },
+    { $set: { slug, ...data }, $setOnInsert: { created_at: new Date() } },
+    { upsert: true }
+  );
 }
 
 export async function deleteBirthday(slug: string): Promise<void> {

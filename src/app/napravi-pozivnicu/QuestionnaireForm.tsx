@@ -584,7 +584,7 @@ function Step1({
 
       {/* Live preview section */}
       <a
-        href="/pozivnica/sara-nikola"
+        href="/pozivnica/ana-dejan"
         target="_blank"
         rel="noopener noreferrer"
         className="mb-6 inline-flex justify-between w-full gap-2 px-4 py-2.5 bg-[#AE343F] text-white rounded-lg hover:bg-[#932d35] transition-colors text-sm font-medium"

@@ -102,10 +102,7 @@ function ResponseCard({
   const longPress = useLongPress(() => onEdit?.(entry));
 
   return (
-    <div
-      className="relative p-4 bg-white rounded-xl border border-[#232323]/8 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.03)] select-none touch-none"
-      {...longPress}
-    >
+    <div className="relative p-4 bg-white rounded-xl border border-[#232323]/8 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.03)]">
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -127,7 +124,10 @@ function ResponseCard({
             </p>
           </div>
           {isAttending ? (
-            <span className="flex items-center gap-1.5 text-xs font-medium rounded-full bg-[#AE343F]/8 text-[#AE343F] px-2.5 py-1 shrink-0">
+            <span
+              className="flex items-center gap-1.5 text-xs font-medium rounded-full bg-[#AE343F]/8 text-[#AE343F] px-2.5 py-1 shrink-0 select-none touch-none cursor-pointer active:scale-95 transition-transform"
+              {...longPress}
+            >
               <Users size={11} />
               {guestCount} {getPersonLabel(guestCount)}
             </span>

@@ -24,7 +24,7 @@ export async function getAllWeddingSlugs(): Promise<string[]> {
 
 export async function getAllCouples(): Promise<CoupleDocument[]> {
   const c = await col();
-  return c.find({}, { projection: { _id: 0 } }).toArray();
+  return c.find({}, { projection: { _id: 0 } }).sort({ created_at: -1, _id: -1 }).toArray();
 }
 
 export async function upsertCouple(
@@ -32,7 +32,11 @@ export async function upsertCouple(
   data: WeddingData
 ): Promise<void> {
   const c = await col();
-  await c.replaceOne({ slug }, { slug, ...data }, { upsert: true });
+  await c.updateOne(
+    { slug },
+    { $set: { slug, ...data }, $setOnInsert: { created_at: new Date() } },
+    { upsert: true }
+  );
 }
 
 export async function deleteCouple(slug: string): Promise<void> {
