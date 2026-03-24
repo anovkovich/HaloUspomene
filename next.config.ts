@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
       },
       // Static pages — cache 1 hour, revalidate in background
       {
-        source: "/(blog|lokacije|napravi-pozivnicu|napravi-deciju-pozivnicu|telefon-uspomena)(.*)",
+        source: "/(blog|lokacije|napravi-pozivnicu|napravi-deciju-pozivnicu|telefon-uspomena|planiranje-vencanja)(.*)",
         headers: [{ key: "Cache-Control", value: "public, max-age=3600, stale-while-revalidate=86400" }],
       },
       // Homepage

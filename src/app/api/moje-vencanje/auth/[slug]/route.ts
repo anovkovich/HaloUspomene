@@ -41,6 +41,7 @@ export async function POST(
       groom: weddingData.couple_names.groom,
       eventDate: weddingData.event_date,
       scriptFont: weddingData.scriptFont ?? "great-vibes",
+      draft: weddingData.draft ?? false,
     },
   });
 

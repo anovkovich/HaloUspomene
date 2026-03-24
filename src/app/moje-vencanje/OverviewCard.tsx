@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -32,6 +33,7 @@ interface Props {
     groom: string;
     eventDate: string;
     scriptFont: string;
+    draft: boolean;
   };
   checklist: ChecklistItem[];
   budget: PortalBudget;
@@ -87,7 +89,6 @@ export default function OverviewCard({
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
   const [seatingModal, setSeatingModal] = useState<{
     totalGuests: number;
     seated: number;
@@ -193,15 +194,26 @@ export default function OverviewCard({
         <p className="text-[10px] uppercase tracking-widest text-[#232323]/30 mb-2">
           Do venčanja
         </p>
-        <p className="font-serif text-5xl text-[#AE343F] mb-1">{days}</p>
-        <p className="text-sm text-[#232323]/40">
-          {days === 1 ? "dan" : "dana"} ·{" "}
-          {new Date(coupleInfo.eventDate).toLocaleDateString("sr-Latn-RS", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
-        </p>
+        {coupleInfo.eventDate && !isNaN(new Date(coupleInfo.eventDate).getTime()) ? (
+          <>
+            <p className="font-serif text-5xl text-[#AE343F] mb-1">{days}</p>
+            <p className="text-sm text-[#232323]/40">
+              {days === 1 ? "dan" : "dana"} ·{" "}
+              {new Date(coupleInfo.eventDate).toLocaleDateString("sr-Latn-RS", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="font-serif text-5xl text-[#232323]/15 mb-1">XX</p>
+            <p className="text-sm text-[#232323]/25">
+              dana · XX. XX. XXXX.
+            </p>
+          </>
+        )}
       </div>
 
       {/* Quick stats */}
@@ -325,46 +337,69 @@ export default function OverviewCard({
           Brze akcije
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <Link
-            href={`/pozivnica/${coupleInfo.slug}`}
-            target="_blank"
-            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors"
-          >
-            <ExternalLink size={12} />
-            Pozivnica
-          </Link>
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
-          >
-            {copied ? (
-              <Check size={12} className="text-green-600" />
-            ) : (
-              <Copy size={12} />
-            )}
-            {copied ? "Kopirano!" : "Kopiraj link"}
-          </button>
-          <button
-            onClick={handleDownloadPDF}
-            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
-          >
-            <Download size={12} />
-            PDF pozivnica
-          </button>
-          <button
-            onClick={() => {
-              if (!audioStats?.paidForAudio) {
-                setToast("Audio knjiga nije aktivirana");
-                setTimeout(() => setToast(null), 3000);
-                return;
-              }
-              handleDownloadFlyer();
-            }}
-            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
-          >
-            <QrCode size={12} />
-            Audio flyer
-          </button>
+          {coupleInfo.draft ? (
+            <>
+              {[
+                { icon: <ExternalLink size={12} />, label: "Pozivnica" },
+                { icon: <Copy size={12} />, label: "Kopiraj link" },
+                { icon: <Download size={12} />, label: "PDF pozivnica" },
+                { icon: <QrCode size={12} />, label: "Audio flyer" },
+              ].map((btn) => (
+                <button
+                  key={btn.label}
+                  onClick={() => {
+                    toast("Dostupno nakon kreiranja pozivnice — naš tim će vas kontaktirati");
+                  }}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/30 cursor-pointer transition-colors"
+                >
+                  {btn.icon}
+                  {btn.label}
+                </button>
+              ))}
+            </>
+          ) : (
+            <>
+              <Link
+                href={`/pozivnica/${coupleInfo.slug}`}
+                target="_blank"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors"
+              >
+                <ExternalLink size={12} />
+                Pozivnica
+              </Link>
+              <button
+                onClick={handleCopyLink}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
+              >
+                {copied ? (
+                  <Check size={12} className="text-green-600" />
+                ) : (
+                  <Copy size={12} />
+                )}
+                {copied ? "Kopirano!" : "Kopiraj link"}
+              </button>
+              <button
+                onClick={handleDownloadPDF}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
+              >
+                <Download size={12} />
+                PDF pozivnica
+              </button>
+              <button
+                onClick={() => {
+                  if (!audioStats?.paidForAudio) {
+                    toast("Audio knjiga nije aktivirana");
+                    return;
+                  }
+                  handleDownloadFlyer();
+                }}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
+              >
+                <QrCode size={12} />
+                Audio flyer
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -496,12 +531,6 @@ export default function OverviewCard({
         </div>
       )}
 
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-[#232323] text-white text-xs font-medium shadow-lg animate-[fadeIn_0.2s_ease-out]">
-          {toast}
-        </div>
-      )}
     </div>
   );
 }

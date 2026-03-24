@@ -57,6 +57,7 @@ const Footer: React.FC = () => {
               {[
                 { name: "Website Pozivnice", href: "/napravi-pozivnicu" },
                 { name: "Telefon Uspomena", href: "/telefon-uspomena" },
+                { name: "Planer za Venčanje", href: "/planiranje-vencanja" },
                 { name: "Kako funkcioniše", href: "/#proces" },
                 { name: "Cene", href: "/cene" },
                 { name: "FAQ", href: "/#faq" },

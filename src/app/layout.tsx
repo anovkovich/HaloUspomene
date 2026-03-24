@@ -17,6 +17,7 @@ import {
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Toaster } from "sonner";
 import { testimonials } from "@/data/testimonials";
 
 const geistSans = Geist({
@@ -519,6 +520,22 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} ${raleway.variable} antialiased`}
       >
         {children}
+        <Toaster
+          position="bottom-center"
+          toastOptions={{
+            style: {
+              background: "#232323",
+              color: "#fff",
+              fontSize: "0.75rem",
+              fontWeight: 500,
+              borderRadius: "0.75rem",
+              padding: "0.625rem 1rem",
+              boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+              maxWidth: "20rem",
+              textAlign: "center",
+            },
+          }}
+        />
         <Analytics />
         <SpeedInsights />
       </body>

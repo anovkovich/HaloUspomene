@@ -8,6 +8,7 @@ import {
   useRef,
   useCallback,
 } from "react";
+import { toast } from "sonner";
 import type { RSVPEntry } from "@/lib/rsvp";
 import type { TableData, TableType, SeatAssignment } from "./types";
 import {
@@ -68,7 +69,6 @@ export default function RasporedClient({
   const [isSaving, startSave] = useTransition();
   const initialLoadDone = useRef(false);
   const [paidForRaspored, setPaidForRaspored] = useState(initialPaid);
-  const [toast, setToast] = useState<string | null>(null);
 
   // PWA mobile mode
   const [isPWAMobile, setIsPWAMobile] = useState(false);
@@ -116,8 +116,7 @@ export default function RasporedClient({
   }, []);
 
   const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3500);
+    toast(msg);
   };
 
   // Always check paid status from DB on gated actions
@@ -911,18 +910,6 @@ export default function RasporedClient({
         <UpgradeModal onClose={() => setShowUpgradeModal(false)} />
       )}
 
-      {/* Toast notification */}
-      {toast && (
-        <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg shadow-lg text-sm font-raleway font-medium animate-[fade-in-up_0.3s_ease-out]"
-          style={{
-            backgroundColor: "var(--theme-text)",
-            color: "var(--theme-background)",
-          }}
-        >
-          {toast}
-        </div>
-      )}
     </div>
   );
 }

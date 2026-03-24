@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { toast } from "sonner";
 import { Mic, Square, Send, RotateCcw, Heart, Play, Pause } from "lucide-react";
 import { getTranslations } from "../translations";
 import { drawWaveform } from "./waveform";
@@ -52,7 +53,6 @@ export default function AudioKnjigaClient({
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [browserSupported, setBrowserSupported] = useState(true);
-  const [toast, setToast] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -62,7 +62,6 @@ export default function AudioKnjigaClient({
   const audioContextRef = useRef<AudioContext | null>(null);
   const recordedBlobRef = useRef<Blob | null>(null);
   const durationRef = useRef(0);
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices) {
@@ -86,14 +85,11 @@ export default function AudioKnjigaClient({
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
       if (audioContextRef.current) audioContextRef.current.close();
       if (audioUrl) URL.revokeObjectURL(audioUrl);
-      if (toastTimer.current) clearTimeout(toastTimer.current);
     };
   }, [audioUrl]);
 
   const showToast = useCallback((msg: string) => {
-    setToast(msg);
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 3500);
+    toast(msg);
   }, []);
 
   const handleRecordClick = useCallback(async () => {
@@ -595,20 +591,6 @@ export default function AudioKnjigaClient({
           )}
         </div>
 
-        {/* Toast */}
-        {toast && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-[fadeInUp_0.3s_ease-out]">
-            <div
-              className="px-6 py-3 rounded-xl shadow-lg text-sm font-serif text-center max-w-xs"
-              style={{
-                backgroundColor: "var(--theme-text)",
-                color: "var(--theme-background)",
-              }}
-            >
-              {toast}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

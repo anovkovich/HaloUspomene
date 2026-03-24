@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Trash2, MapPin } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function EditBirthdayPage() {
   const params = useParams<{ slug: string }>();
@@ -11,7 +12,6 @@ export default function EditBirthdayPage() {
   const router = useRouter();
   const [json, setJson] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -29,20 +29,18 @@ export default function EditBirthdayPage() {
           const { slug: _s, ...data } = birthday;
           setJson(JSON.stringify(data, null, 2));
         } else {
-          setError("Rođendan nije pronađen");
+          toast.error("Rođendan nije pronađen");
         }
         setLoading(false);
       });
   }, [slug]);
 
   async function handleSave() {
-    setError("");
     let parsed;
     try {
       parsed = JSON.parse(json);
     } catch (e) {
-      setError("Neispravan JSON: " + (e as Error).message);
-      setTimeout(() => setError(""), 5000);
+      toast.error("Neispravan JSON: " + (e as Error).message);
       return;
     }
 
@@ -55,8 +53,7 @@ export default function EditBirthdayPage() {
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Greška pri čuvanju");
-      setTimeout(() => setError(""), 5000);
+      toast.error(data.error || "Greška pri čuvanju");
       setSaving(false);
       return;
     }
@@ -96,8 +93,7 @@ export default function EditBirthdayPage() {
       router.push("/admin");
     } else {
       setDeleting(false);
-      setError("Greška pri brisanju");
-      setTimeout(() => setError(""), 5000);
+      toast.error("Greška pri brisanju");
     }
   }
 
@@ -151,13 +147,6 @@ export default function EditBirthdayPage() {
           spellCheck={false}
         />
       </div>
-
-      {/* Toast for errors */}
-      {error && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white px-5 py-3 rounded-lg shadow-lg text-sm max-w-sm text-center">
-          {error}
-        </div>
-      )}
 
       {/* Delete modal */}
       {showDelete && (

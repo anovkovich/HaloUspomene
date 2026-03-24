@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useTransition, useEffect } from "react";
+import { toast } from "sonner";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -137,9 +138,10 @@ function ResponseCard({
 
 interface Props {
   slug: string;
+  draft?: boolean;
 }
 
-export default function GuestsCard({ slug }: Props) {
+export default function GuestsCard({ slug, draft }: Props) {
   const [attending, setAttending] = useState<RSVPEntry[]>([]);
   const [notAttending, setNotAttending] = useState<RSVPEntry[]>([]);
   const [totalGuests, setTotalGuests] = useState(0);
@@ -201,6 +203,10 @@ export default function GuestsCard({ slug }: Props) {
 
   const handleAddGuest = (e: React.FormEvent) => {
     e.preventDefault();
+    if (draft) {
+      toast("Dostupno nakon kreiranja pozivnice — naš tim će vas kontaktirati");
+      return;
+    }
     if (!guestName.trim()) return;
     setGuestError("");
     startTransition(async () => {
@@ -344,7 +350,7 @@ export default function GuestsCard({ slug }: Props) {
 
       {/* Empty state */}
       {attending.length === 0 && notAttending.length === 0 && (
-        <div className="text-center py-12 bg-[#F5F4DC]/30 rounded-xl border border-[#232323]/5">
+        <div className="text-center py-12 mb-4 bg-[#F5F4DC]/30 rounded-xl border border-[#232323]/5">
           <Users size={32} className="mx-auto mb-3 text-[#AE343F]/20" />
           <p className="text-sm text-[#232323]/40">Još uvek nema potvrda</p>
         </div>
@@ -587,6 +593,7 @@ export default function GuestsCard({ slug }: Props) {
           </p>
         </div>
       )}
+
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Trash2, MapPin } from "lucide-react";
 import Link from "next/link";
@@ -12,7 +13,6 @@ export default function EditCouplePage() {
   const router = useRouter();
   const [json, setJson] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -28,20 +28,18 @@ export default function EditCouplePage() {
           const { slug: _s, ...data } = couple;
           setJson(JSON.stringify(data, null, 2));
         } else {
-          setError("Pozivnica nije pronađena");
+          toast.error("Pozivnica nije pronađena");
         }
         setLoading(false);
       });
   }, [slug]);
 
   async function handleSave() {
-    setError("");
     let parsed;
     try {
       parsed = JSON.parse(json);
     } catch (e) {
-      setError("Neispravan JSON: " + (e as Error).message);
-      setTimeout(() => setError(""), 5000);
+      toast.error("Neispravan JSON: " + (e as Error).message);
       return;
     }
 
@@ -54,8 +52,7 @@ export default function EditCouplePage() {
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Greška pri čuvanju");
-      setTimeout(() => setError(""), 5000);
+      toast.error(data.error || "Greška pri čuvanju");
       setSaving(false);
       return;
     }
@@ -140,13 +137,6 @@ export default function EditCouplePage() {
           spellCheck={false}
         />
       </div>
-
-      {/* Toast for errors */}
-      {error && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white px-5 py-3 rounded-lg shadow-lg text-sm max-w-sm text-center">
-          {error}
-        </div>
-      )}
 
       {showDeleteModal && (
         <DeleteModal

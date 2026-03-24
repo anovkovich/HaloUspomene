@@ -23,10 +23,12 @@ interface SidebarProps {
     groom: string;
     eventDate: string;
     scriptFont: string;
+    draft: boolean;
   };
   checklistStats: { completed: number; total: number };
   budgetStats: { spent: number; planned: number };
   onLogout: () => void;
+  onDraftAction?: () => void;
 }
 
 function daysUntil(dateStr: string): number {
@@ -54,12 +56,13 @@ export default function Sidebar({
   checklistStats,
   budgetStats,
   onLogout,
+  onDraftAction,
 }: SidebarProps) {
-  const days = daysUntil(coupleInfo.eventDate);
-  const eventDateFormatted = new Date(coupleInfo.eventDate).toLocaleDateString(
-    "sr-Latn-RS",
-    { day: "numeric", month: "short" },
-  );
+  const hasDate = coupleInfo.eventDate && !isNaN(new Date(coupleInfo.eventDate).getTime());
+  const days = hasDate ? daysUntil(coupleInfo.eventDate) : null;
+  const eventDateFormatted = hasDate
+    ? new Date(coupleInfo.eventDate).toLocaleDateString("sr-Latn-RS", { day: "numeric", month: "short" })
+    : null;
 
   return (
     <aside className="fixed left-0 top-0 w-60 h-screen bg-[#F5F4DC] border-r border-[#232323]/8 flex flex-col z-40 overflow-y-auto">
@@ -76,7 +79,7 @@ export default function Sidebar({
           {coupleInfo.bride} & {coupleInfo.groom}
         </h2>
         <p className="text-xs text-[#232323]/40 mt-1">
-          {eventDateFormatted} · još {days}d
+          {hasDate ? `${eventDateFormatted} · još ${days}d` : "Datum nije unet"}
         </p>
       </div>
 
@@ -88,22 +91,11 @@ export default function Sidebar({
             <button
               key={item.view}
               onClick={() => onViewChange(item.view)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 ${
                 isActive
                   ? "bg-[#AE343F]/5 text-[#AE343F] border-l-2 border-[#AE343F] pl-[10px]"
-                  : "text-[#232323]/50"
+                  : "text-[#232323]/50 hover:bg-white/70 hover:text-[#232323] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
               }`}
-              style={{ transition: "all 0.2s" }}
-              onMouseEnter={!isActive ? (e) => {
-                e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.7)";
-                e.currentTarget.style.color = "#232323";
-                e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.06)";
-              } : undefined}
-              onMouseLeave={!isActive ? (e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color = "";
-                e.currentTarget.style.boxShadow = "none";
-              } : undefined}
             >
               {item.icon}
               <span className="flex-1 text-left">{item.label}</span>
@@ -115,26 +107,25 @@ export default function Sidebar({
         <div className="border-t border-[#232323]/5 my-3" />
 
         {/* External links */}
-        <Link
-          href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
-          target="_blank"
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/50 cursor-pointer"
-          style={{ transition: "all 0.2s" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.7)";
-            e.currentTarget.style.color = "#232323";
-            e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.06)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.color = "";
-            e.currentTarget.style.boxShadow = "none";
-          }}
-        >
-          <LayoutDashboard size={18} />
-          <span className="flex-1">Raspored</span>
-          <ExternalLink size={12} className="text-[#232323]/20" />
-        </Link>
+        {coupleInfo.draft ? (
+          <button
+            onClick={onDraftAction}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/30 cursor-pointer transition-all duration-200 hover:bg-white/70 hover:text-[#232323]/50"
+          >
+            <LayoutDashboard size={18} />
+            <span className="flex-1 text-left">Raspored</span>
+          </button>
+        ) : (
+          <Link
+            href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
+            target="_blank"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/50 cursor-pointer transition-all duration-200 hover:bg-white/70 hover:text-[#232323] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+          >
+            <LayoutDashboard size={18} />
+            <span className="flex-1">Raspored</span>
+            <ExternalLink size={12} className="text-[#232323]/20" />
+          </Link>
+        )}
       </nav>
 
       {/* Logout */}

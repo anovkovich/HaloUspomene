@@ -43,6 +43,7 @@ export async function verifyAuth(): Promise<{
   groom?: string;
   eventDate?: string;
   scriptFont?: string;
+  draft?: boolean;
 } | null> {
   const slug = await getAuthSlug();
   if (!slug) return null;
@@ -57,6 +58,7 @@ export async function verifyAuth(): Promise<{
     groom: data.couple_names.groom,
     eventDate: data.event_date,
     scriptFont: data.scriptFont ?? "great-vibes",
+    draft: data.draft ?? false,
   };
 }
 

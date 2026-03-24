@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -83,6 +84,7 @@ export default function MojeVencanjeClient() {
     groom: string;
     eventDate: string;
     scriptFont: string;
+    draft: boolean;
   } | null>(null);
 
   // Portal data
@@ -128,6 +130,7 @@ export default function MojeVencanjeClient() {
             groom: result.groom!,
             eventDate: result.eventDate!,
             scriptFont: result.scriptFont ?? "great-vibes",
+            draft: result.draft ?? false,
           });
           const [data, highlighted] = await Promise.all([
             loadPortalDataAction(),
@@ -218,6 +221,7 @@ export default function MojeVencanjeClient() {
           groom: json.couple.groom,
           eventDate: json.couple.eventDate,
           scriptFont: json.couple.scriptFont ?? "great-vibes",
+          draft: json.couple.draft ?? false,
         });
 
         const [data, highlighted] = await Promise.all([
@@ -253,6 +257,20 @@ export default function MojeVencanjeClient() {
     setPassword("");
     setState("guest");
   }, []);
+
+  // Re-validate session when tab becomes visible (catches deleted records)
+  useEffect(() => {
+    if (state !== "auth") return;
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        verifyAuth().then((result) => {
+          if (!result?.ok) handleLogout();
+        });
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [state, handleLogout]);
 
   const handleInstall = useCallback(async () => {
     if (isIOS) {
@@ -480,6 +498,9 @@ export default function MojeVencanjeClient() {
               }}
               budgetStats={{ spent: totalSpent, planned: totalPlanned }}
               onLogout={handleLogout}
+              onDraftAction={() => {
+                toast("Dostupno nakon kreiranja pozivnice — naš tim će vas kontaktirati");
+              }}
             />
           </div>
 
@@ -625,7 +646,7 @@ export default function MojeVencanjeClient() {
                     </div>
                   }
                 >
-                  <GuestsCard slug={coupleInfo.slug} />
+                  <GuestsCard slug={coupleInfo.slug} draft={coupleInfo.draft} />
                 </React.Suspense>
               )}
             </div>
