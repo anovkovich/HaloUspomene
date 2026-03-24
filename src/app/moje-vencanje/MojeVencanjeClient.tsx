@@ -250,15 +250,15 @@ export default function MojeVencanjeClient() {
   }, []);
 
   const handleInstall = useCallback(async () => {
-    if (installPrompt) {
+    if (isIOS) {
+      setShowIOSInstall(true);
+    } else if (installPrompt) {
       const prompt = installPrompt as any;
       await prompt.prompt();
       const result = await prompt.userChoice;
       if (result.outcome === "accepted") setInstallPrompt(null);
-    } else {
-      setShowIOSInstall(true);
     }
-  }, [installPrompt]);
+  }, [isIOS, installPrompt]);
 
   // Loading state
   if (state === "loading") {
@@ -291,6 +291,16 @@ export default function MojeVencanjeClient() {
               className="absolute right-4 md:hidden [@media(display-mode:standalone)]:hidden text-[#232323]/50 hover:text-[#232323] transition-colors cursor-pointer"
             >
               <Menu size={22} />
+            </button>
+          )}
+          {/* PWA logout button */}
+          {state === "auth" && (
+            <button
+              onClick={handleLogout}
+              className="absolute right-4 hidden [@media(display-mode:standalone)]:flex items-center text-[#232323]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
+              aria-label="Odjavi se"
+            >
+              <LogOut size={20} />
             </button>
           )}
           <Link href={isStandalone ? "/moje-vencanje" : "/"}>
