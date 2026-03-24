@@ -346,6 +346,13 @@ export default function AudioCard({ slug, coupleNames }: Props) {
                 Pun doživljaj — gosti podižu slušalicu i ostavljaju poruku.
                 Atrakcija na venčanju i nezaboravna uspomena.
               </p>
+              <Link
+                href="/telefon-uspomena"
+                className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold text-[#AE343F] hover:underline"
+              >
+                <Phone size={11} />
+                Saznajte više
+              </Link>
             </div>
           </div>
         </div>
@@ -579,7 +586,7 @@ export default function AudioCard({ slug, coupleNames }: Props) {
               poruku. Atrakcija na venčanju i nezaboravna uspomena za ceo život.
             </p>
             <Link
-              href="/#packages"
+              href="/telefon-uspomena"
               className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold text-[#AE343F] hover:underline"
             >
               <Phone size={11} />

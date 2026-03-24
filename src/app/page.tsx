@@ -147,7 +147,10 @@ export default function Home() {
                 Svaki mesec radimo sa ograničenim brojem događaja kako bismo
                 svakom posvetili punu pažnju. Rezervišite termin za najam našeg
                 retro telefona na vreme — a mi ćemo se pobrinuti da Vaše
-                venčanje dobije nezaboravnu atrakciju.
+                venčanje dobije nezaboravnu atrakciju.{" "}
+                <Link href="/telefon-uspomena" className="underline hover:text-[#F5F4DC]/80 transition-colors">
+                  Saznajte više o telefonu uspomena
+                </Link>.
               </p>
             </div>
 
@@ -194,6 +197,8 @@ export default function Home() {
             Moderni digitalni i audio servisi za nezaboravna venčanja. Dostava i
             profesionalna montaža u svim večim gradovima: Beograd, Novi Sad,
             Niš, Kragujevac, Subotica, Čačak, Smederevo, i drugi.
+            Saznajte više o našem{" "}
+            <Link href="/telefon-uspomena">telefonu uspomena za venčanja</Link>.
           </p>
         </section>
       </main>

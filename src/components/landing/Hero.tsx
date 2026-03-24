@@ -127,7 +127,7 @@ const Hero: React.FC = () => {
             <div className="transform rotate-0 md:hover:rotate-2 md:hover:scale-[1.05] transition-transform duration-700">
               <Image
                 src="/images/phone.webp"
-                alt="HALO Uspomene vintage retro telefon sa rotirajućim brojčanikom — iznajmljivanje audio knjige utisaka za venčanja u Srbiji"
+                alt="HALO Uspomene vintage retro telefon sa brojčanikom — iznajmljivanje audio knjige utisaka za venčanja u Srbiji"
                 width={1536}
                 height={1024}
                 sizes="(max-width: 1024px) 100vw, 50vw"

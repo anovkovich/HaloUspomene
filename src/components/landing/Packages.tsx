@@ -79,7 +79,14 @@ const Packages: React.FC = () => {
 
         {/* Subtle note */}
         <p className="text-center text-xs text-[#232323]/35 mt-6">
-          Pogledajte i našu{" "}
+          Saznajte više o{" "}
+          <Link
+            href="/telefon-uspomena"
+            className="text-[#AE343F]/60 hover:text-[#AE343F] underline"
+          >
+            telefonu uspomena
+          </Link>
+          {" "}ili pogledajte{" "}
           <Link
             href="/cene"
             className="text-[#AE343F]/60 hover:text-[#AE343F] underline"

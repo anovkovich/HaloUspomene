@@ -155,7 +155,7 @@ export const metadata: Metadata = {
     "audio guest book cena",
     "cena iznajmljivanja telefona za svadbu",
     "rezervacija audio telefona za venčanje",
-    "telefon sa rotirajućim brojčanikom za svadbe",
+    "telefon sa brojčanikom za svadbe",
     "svadbeni telefon za glasovne poruke",
     "audio spomenar za venčanja",
     "beli retro telefon za venčanje",
@@ -355,7 +355,7 @@ export default function RootLayout({
               "@type": "Service",
               name: "Audio Guest Book Paket",
               description:
-                "Iznajmljivanje retro telefona sa rotirajućim brojčanikom za venčanja. Audio knjiga uspomena, audio uspomene sa kurirskom dostavom, elegantno uputstvo i svi audio snimci u digitalnom formatu.",
+                "Iznajmljivanje retro telefona sa brojčanikom za venčanja. Audio knjiga uspomena, audio uspomene sa kurirskom dostavom, elegantno uputstvo i svi audio snimci u digitalnom formatu.",
             },
           },
           {
@@ -412,7 +412,7 @@ export default function RootLayout({
       "Audio spomenar",
       "Telefon uspomena",
       "Telefon za poruke na svadbi",
-      "Vintage telefon sa rotirajućim brojčanikom",
+      "Vintage telefon sa brojčanikom",
       "Retro telefon za svadbe",
       "Svadbeni telefon za glasovne poruke",
       "Dekorativni telefon za venčanja",

@@ -269,10 +269,10 @@ const HowItWorks: React.FC = () => {
               </div>
             </div>
             <Link
-              href="/#paketi"
+              href="/telefon-uspomena"
               className="flex items-center gap-2 text-sm text-[#d4af37] font-medium hover:underline mt-auto"
             >
-              Pogledajte pakete <ArrowRight size={14} />
+              Saznajte više <ArrowRight size={14} />
             </Link>
           </div>
         </div>

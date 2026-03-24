@@ -105,8 +105,8 @@ const ContactForm: React.FC = () => {
           Hvala Vam, {formData.name.split(" ")[0]}!
         </h3>
         <p className="text-[#F5F4DC]/60 text-lg mb-8">
-          Vaš upit za {new Date(formData.date).toLocaleDateString("sr-Latn-RS")} je
-          uspešno primljen. <br />
+          Vaš upit za {new Date(formData.date).toLocaleDateString("sr-Latn-RS")}{" "}
+          je uspešno primljen. <br />
           Odgovorićemo Vam u najkraćem roku sa potvrdom dostupnosti.
         </p>
         <button
@@ -133,8 +133,7 @@ const ContactForm: React.FC = () => {
             <strong className="text-[#F5F4DC]/60">
               Retro Telefona Uspomena
             </strong>{" "}
-            na Vašem venčanju. <br />
-            Za website pozivnicu, pogledajte sekciju ispod!
+            na Vašem venčanju.
           </span>
         </div>
 

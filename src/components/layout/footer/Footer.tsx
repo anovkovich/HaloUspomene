@@ -38,6 +38,14 @@ const Footer: React.FC = () => {
               <Instagram size={18} />
               <span className="text-sm">@halo_uspomene</span>
             </a>
+            <a
+              href="/OP%C5%A0TI%20USLOVI%20NAJMA%20I%20KORI%C5%A0%C4%86ENJA%20AUDIO%20GUEST%20BOOK%20URE%C4%90AJA.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-4 text-[#F5F4DC]/30 hover:text-[#AE343F] transition-colors text-xs"
+            >
+              Opšti uslovi najma
+            </a>
           </div>
 
           {/* Column 2: Usluge */}
@@ -48,7 +56,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-3">
               {[
                 { name: "Website Pozivnice", href: "/napravi-pozivnicu" },
-                { name: "Retro Telefon Uspomena", href: "/#kontakt" },
+                { name: "Telefon Uspomena", href: "/telefon-uspomena" },
                 { name: "Kako funkcioniše", href: "/#proces" },
                 { name: "Cene", href: "/cene" },
                 { name: "FAQ", href: "/#faq" },
@@ -62,16 +70,6 @@ const Footer: React.FC = () => {
                   </Link>
                 </li>
               ))}
-              <li>
-                <a
-                  href="/OP%C5%A0TI%20USLOVI%20NAJMA%20I%20KORI%C5%A0%C4%86ENJA%20AUDIO%20GUEST%20BOOK%20URE%C4%90AJA.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#F5F4DC]/40 hover:text-[#AE343F] transition-colors text-sm"
-                >
-                  Opšti uslovi najma
-                </a>
-              </li>
             </ul>
           </div>
 

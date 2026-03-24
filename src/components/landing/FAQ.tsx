@@ -29,9 +29,9 @@ const faqData: FAQItem[] = [
   },
   {
     category: "Osnovno",
-    question: "Da li je ovo pravi telefon sa rotirajućim brojčanikom?",
+    question: "Da li je ovo pravi telefon sa brojčanikom?",
     answer:
-      "Ovo je autentičnan vintage telefone sa replikom rotirajućeg brojčanika koji su fabriči napravljeni za snimanje audio poruka. Ovakav retro telefon sa brojčanikom za svadbe je potpuno funkcionalan — gosti podižu slušalicu i ostavljaju poruku baš kao na pravom telefonu. To je upravo ono što stvara taj wow efekat i čini iskustvo nezaboravnim.",
+      "Ovo je autentičnan vintage telefone sa replikom rotirajućeg brojčanika koji su fabrički napravljeni za snimanje audio poruka. Ovakav retro telefon sa brojčanikom za svadbe je potpuno funkcionalan — gosti podižu slušalicu i ostavljaju poruku baš kao na pravom telefonu. To je upravo ono što stvara taj wow efekat i čini iskustvo nezaboravnim.",
   },
   {
     category: "Osnovno",

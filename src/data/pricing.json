@@ -34,13 +34,13 @@
     },
     {
       "id": "usb_bocica",
-      "label": "Uspomene u boci — USB u bočici",
+      "label": "USB Uspomene u bočici",
       "price": 2000,
       "note": "Fizički suvenir"
     },
     {
       "id": "personalizovana_dobrodoslica",
-      "label": "Personalizovana audio dobrodošlica",
+      "label": "Audio dobrodošlica",
       "price": 1000,
       "note": "Vaša lična poruka dobrodošlice"
     }
