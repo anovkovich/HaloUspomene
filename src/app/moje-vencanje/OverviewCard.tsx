@@ -14,8 +14,10 @@ import {
   AlertCircle,
   Clock,
   QrCode,
+  X,
+  Armchair,
 } from "lucide-react";
-import { loadOverviewAction, getWeddingDataForPDF } from "./actions";
+import { loadOverviewAction, getWeddingDataForPDF, loadSeatingStatsAction } from "./actions";
 import type { ActiveView } from "./Sidebar";
 import type { ChecklistItem, PortalBudget } from "./types";
 
@@ -81,6 +83,13 @@ export default function OverviewCard({
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [seatingModal, setSeatingModal] = useState<{
+    totalGuests: number;
+    seated: number;
+    notSeated: number;
+    slug: string;
+  } | null>(null);
+  const [seatingLoading, setSeatingLoading] = useState(false);
 
   useEffect(() => {
     loadOverviewAction().then((result) => {
@@ -124,6 +133,13 @@ export default function OverviewCard({
     );
   }, [coupleInfo]);
 
+  const handleOpenSeatingModal = useCallback(async () => {
+    setSeatingLoading(true);
+    const stats = await loadSeatingStatsAction();
+    if (stats) setSeatingModal(stats);
+    setSeatingLoading(false);
+  }, []);
+
   // Derived stats
   const days = daysUntil(coupleInfo.eventDate);
   const completedCount = checklist.filter((i) => i.completed).length;
@@ -149,11 +165,11 @@ export default function OverviewCard({
   const budgetOver = totalSpent > budgetBase;
 
   // Alerts
-  const alerts: { text: string; view: ActiveView }[] = [];
+  const alerts: { text: string; action: () => void }[] = [];
   if (guestStats && guestStats.uncategorized > 0) {
     alerts.push({
       text: `${guestStats.uncategorized} nekategorisanih gostiju`,
-      view: "guests",
+      action: handleOpenSeatingModal,
     });
   }
   // Upcoming checklist items (items in nearest uncompleted group)
@@ -161,7 +177,7 @@ export default function OverviewCard({
   if (upcomingCount > 0 && upcomingCount <= 10) {
     alerts.push({
       text: `${upcomingCount} preostalih stavki na checklisti`,
-      view: "checklist",
+      action: () => onNavigate("checklist"),
     });
   }
 
@@ -183,8 +199,8 @@ export default function OverviewCard({
         </p>
       </div>
 
-      {/* Quick stats 2x2 */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Quick stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Checklist */}
         <button
           onClick={() => onNavigate("checklist")}
@@ -281,7 +297,7 @@ export default function OverviewCard({
               {alerts.map((alert, i) => (
                 <button
                   key={i}
-                  onClick={() => onNavigate(alert.view)}
+                  onClick={alert.action}
                   className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-xs bg-[#d4af37]/5 border border-[#d4af37]/10 text-[#232323]/55 hover:border-[#d4af37]/25 transition-colors cursor-pointer"
                 >
                   <AlertCircle size={12} className="text-[#d4af37] shrink-0" />
@@ -303,29 +319,29 @@ export default function OverviewCard({
         <p className="text-[10px] uppercase tracking-widest text-[#232323]/30 mb-3">
           Brze akcije
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Link
             href={`/pozivnica/${coupleInfo.slug}`}
             target="_blank"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors"
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors"
           >
             <ExternalLink size={12} />
-            Pogledaj pozivnicu
+            Pozivnica
           </Link>
           <button
             onClick={handleCopyLink}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
           >
             {copied ? (
               <Check size={12} className="text-green-600" />
             ) : (
               <Copy size={12} />
             )}
-            {copied ? "Link je kopiran!" : "Kopiraj link do pozivnice"}
+            {copied ? "Kopirano!" : "Kopiraj link"}
           </button>
           <button
             onClick={handleDownloadPDF}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
           >
             <Download size={12} />
             PDF pozivnica
@@ -333,7 +349,7 @@ export default function OverviewCard({
           <button
             onClick={handleDownloadFlyer}
             disabled={!audioStats?.paidForAudio}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-[#232323]/8 disabled:hover:text-[#232323]/60"
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-[#232323]/8 disabled:hover:text-[#232323]/60"
             title={
               !audioStats?.paidForAudio
                 ? "Audio knjiga nije aktivirana"
@@ -401,6 +417,75 @@ export default function OverviewCard({
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      {/* Seating stats modal */}
+      {(seatingModal || seatingLoading) && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => !seatingLoading && setSeatingModal(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-sm p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {seatingLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <span className="loading loading-spinner loading-md text-[#AE343F]" />
+              </div>
+            ) : seatingModal ? (
+              <>
+                <button
+                  onClick={() => setSeatingModal(null)}
+                  className="absolute top-4 right-4 text-[#232323]/30 hover:text-[#232323]/60 transition-colors cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+
+                <h3 className="font-serif text-lg text-[#232323] mb-5">
+                  Raspored gostiju
+                </h3>
+
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-[#F5F4DC]/50 border border-[#232323]/6">
+                    <span className="text-sm text-[#232323]/60 flex items-center gap-2">
+                      <Users size={14} className="text-[#AE343F]" />
+                      Ukupno dolazi
+                    </span>
+                    <span className="text-sm font-bold text-[#232323]">
+                      {seatingModal.totalGuests}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-green-50 border border-green-200/50">
+                    <span className="text-sm text-[#232323]/60 flex items-center gap-2">
+                      <Armchair size={14} className="text-green-600" />
+                      Raspoređeno
+                    </span>
+                    <span className="text-sm font-bold text-green-700">
+                      {seatingModal.seated}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200/50">
+                    <span className="text-sm text-[#232323]/60 flex items-center gap-2">
+                      <AlertCircle size={14} className="text-amber-500" />
+                      Neraspoređeno
+                    </span>
+                    <span className="text-sm font-bold text-amber-600">
+                      {seatingModal.notSeated}
+                    </span>
+                  </div>
+                </div>
+
+                <Link
+                  href={`/pozivnica/${seatingModal.slug}/raspored-sedenja`}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-[#AE343F] text-white text-sm font-medium hover:bg-[#962d36] transition-colors"
+                >
+                  <Armchair size={15} />
+                  Otvori raspored sedenja
+                </Link>
+              </>
+            ) : null}
           </div>
         </div>
       )}

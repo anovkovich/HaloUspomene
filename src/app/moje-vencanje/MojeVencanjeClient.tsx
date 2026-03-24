@@ -18,8 +18,14 @@ import {
   Home,
   Menu,
   X,
+  Store,
 } from "lucide-react";
-import { verifyAuth, loadPortalDataAction, saveVendorFavoritesAction, loadHighlightedVendorsAction } from "./actions";
+import {
+  verifyAuth,
+  loadPortalDataAction,
+  saveVendorFavoritesAction,
+  loadHighlightedVendorsAction,
+} from "./actions";
 import type { ChecklistItem, PortalBudget } from "./types";
 import ChecklistCard from "./ChecklistCard";
 import BudgetCard from "./BudgetCard";
@@ -57,7 +63,9 @@ export default function MojeVencanjeClient() {
   const [error, setError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [mobileSidebar, setMobileSidebar] = useState(false);
-  const [pwaSubView, setPwaSubView] = useState<"none" | "checklist" | "budget">("none");
+  const [pwaSubView, setPwaSubView] = useState<"none" | "checklist" | "budget">(
+    "none",
+  );
   const [activeView, setActiveView] = useState<ActiveView>("overview");
 
   // PWA install
@@ -268,15 +276,19 @@ export default function MojeVencanjeClient() {
   const totalPlanned = budget.categories.reduce((s, c) => s + c.planned, 0);
 
   return (
-    <div className={`min-h-screen overflow-x-hidden ${state === "auth" ? "bg-[#FAFAF5]" : "bg-[#F5F4DC]"}`}>
+    <div
+      className={`min-h-screen overflow-x-hidden ${state === "auth" ? "bg-[#FAFAF5]" : "bg-[#F5F4DC]"}`}
+    >
       {/* ── Simple Navbar ──────────────────────────────────────── */}
-      <nav className={`fixed top-0 z-50 bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/5 ${state === "auth" ? "left-0 md:left-60 right-0" : "left-0 w-full"}`}>
+      <nav
+        className={`fixed top-0 z-50 bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/5 ${state === "auth" ? "left-0 md:left-60 right-0" : "left-0 w-full"}`}
+      >
         <div className="px-4 md:px-8 h-14 md:h-16 flex items-center justify-center relative">
           {/* Mobile hamburger (browser only, hidden in PWA) */}
           {state === "auth" && (
             <button
               onClick={() => setMobileSidebar(true)}
-              className="absolute left-4 md:hidden [@media(display-mode:standalone)]:hidden text-[#232323]/50 hover:text-[#232323] transition-colors cursor-pointer"
+              className="absolute right-4 md:hidden [@media(display-mode:standalone)]:hidden text-[#232323]/50 hover:text-[#232323] transition-colors cursor-pointer"
             >
               <Menu size={22} />
             </button>
@@ -301,14 +313,40 @@ export default function MojeVencanjeClient() {
           {state === "guest" && (
             <>
               <div className="text-center mb-10">
-                <Heart className="mx-auto mb-4 text-[#AE343F]" size={36} />
                 <h1 className="font-serif text-4xl md:text-5xl text-[#232323] mb-3">
                   Vaše venčanje, na jednom mestu
                 </h1>
-                <p className="text-[#232323]/60 max-w-lg mx-auto">
-                  Besplatan planer za organizaciju venčanja — checklista i
-                  praćenje budžeta za sve parove koji koriste HALO Uspomene.
-                </p>
+                {!(mobilePrompt && skipInstall) && (
+                  <>
+                    <p className="text-[#232323]/60 max-w-md mx-auto mb-6">
+                      Besplatan planer koji vam pomaže da organizujete savršeno
+                      venčanje — od izbora svečane sale do efekata za prvi ples, sve
+                      na jednom mestu.
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-[#232323]/45">
+                      <span className="flex items-center gap-1.5">
+                        <CheckCircle2 size={13} className="text-[#AE343F]" />
+                        Checklista zadataka
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Wallet size={13} className="text-[#AE343F]" />
+                        Praćenje budžeta
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Users size={13} className="text-[#AE343F]" />
+                        Pregled gostiju
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Store size={13} className="text-[#AE343F]" />
+                        Katalog vendora
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Mic size={13} className="text-[#AE343F]" />
+                        Audio knjiga uspomena
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* ── Mobile install prompt ──────────────────── */}
@@ -408,9 +446,15 @@ export default function MojeVencanjeClient() {
           <div className="hidden md:block">
             <Sidebar
               activeView={activeView}
-              onViewChange={(v) => { setActiveView(v); window.scrollTo({ top: 0 }); }}
+              onViewChange={(v) => {
+                setActiveView(v);
+                window.scrollTo({ top: 0 });
+              }}
               coupleInfo={coupleInfo}
-              checklistStats={{ completed: completedCount, total: checklist.length }}
+              checklistStats={{
+                completed: completedCount,
+                total: checklist.length,
+              }}
               budgetStats={{ spent: totalSpent, planned: totalPlanned }}
               onLogout={handleLogout}
             />
@@ -419,13 +463,16 @@ export default function MojeVencanjeClient() {
           {/* Main content */}
           <main className="flex-1 md:ml-60 pt-18 md:pt-24 px-4 pb-16 [@media(display-mode:standalone)]:pt-[4.5rem] [@media(display-mode:standalone)]:pb-24 min-w-0 overflow-x-hidden">
             <div className="max-w-4xl mx-auto">
-
               {/* PWA compact header */}
               <div className="hidden [@media(display-mode:standalone)]:block md:hidden mb-4">
                 <div className="text-center pwa-heading-section">
                   <h1
                     className="font-serif text-2xl text-[#232323] mb-0.5 pwa-script-heading"
-                    style={{ "--couple-script-font": `var(--font-${coupleInfo.scriptFont})` } as React.CSSProperties}
+                    style={
+                      {
+                        "--couple-script-font": `var(--font-${coupleInfo.scriptFont})`,
+                      } as React.CSSProperties
+                    }
                   >
                     {coupleInfo.bride} & {coupleInfo.groom}
                   </h1>
@@ -434,7 +481,11 @@ export default function MojeVencanjeClient() {
                 {activeView === "overview" && (
                   <div className="flex justify-center gap-2 mt-3">
                     <button
-                      onClick={() => setPwaSubView((v) => v === "checklist" ? "none" : "checklist")}
+                      onClick={() =>
+                        setPwaSubView((v) =>
+                          v === "checklist" ? "none" : "checklist",
+                        )
+                      }
                       className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                         pwaSubView === "checklist"
                           ? "bg-[#AE343F] text-[#F5F4DC]"
@@ -444,7 +495,11 @@ export default function MojeVencanjeClient() {
                       Checklista
                     </button>
                     <button
-                      onClick={() => setPwaSubView((v) => v === "budget" ? "none" : "budget")}
+                      onClick={() =>
+                        setPwaSubView((v) =>
+                          v === "budget" ? "none" : "budget",
+                        )
+                      }
                       className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                         pwaSubView === "budget"
                           ? "bg-[#AE343F] text-[#F5F4DC]"
@@ -463,7 +518,10 @@ export default function MojeVencanjeClient() {
                   {/* PWA sub-view: show checklist/budget inline, or overview stats */}
                   <div className="hidden [@media(display-mode:standalone)]:block md:hidden">
                     {pwaSubView === "checklist" && (
-                      <ChecklistCard checklist={checklist} setChecklist={setChecklist} />
+                      <ChecklistCard
+                        checklist={checklist}
+                        setChecklist={setChecklist}
+                      />
                     )}
                     {pwaSubView === "budget" && (
                       <BudgetCard budget={budget} setBudget={setBudget} />
@@ -490,19 +548,31 @@ export default function MojeVencanjeClient() {
                       coupleInfo={coupleInfo}
                       checklist={checklist}
                       budget={budget}
-                      onNavigate={(v) => { setActiveView(v); window.scrollTo({ top: 0 }); }}
+                      onNavigate={(v) => {
+                        setActiveView(v);
+                        window.scrollTo({ top: 0 });
+                      }}
                     />
                   </div>
                 </>
               )}
               {activeView === "checklist" && (
-                <ChecklistCard checklist={checklist} setChecklist={setChecklist} />
+                <ChecklistCard
+                  checklist={checklist}
+                  setChecklist={setChecklist}
+                />
               )}
               {activeView === "budget" && (
                 <BudgetCard budget={budget} setBudget={setBudget} />
               )}
               {activeView === "vendors" && (
-                <React.Suspense fallback={<div className="flex justify-center py-12"><span className="loading loading-spinner loading-lg text-[#AE343F]" /></div>}>
+                <React.Suspense
+                  fallback={
+                    <div className="flex justify-center py-12">
+                      <span className="loading loading-spinner loading-lg text-[#AE343F]" />
+                    </div>
+                  }
+                >
                   <VendorDirectory
                     favorites={vendorFavorites}
                     onFavoritesChange={setVendorFavorites}
@@ -511,12 +581,27 @@ export default function MojeVencanjeClient() {
                 </React.Suspense>
               )}
               {activeView === "audio" && coupleInfo && (
-                <React.Suspense fallback={<div className="flex justify-center py-12"><span className="loading loading-spinner loading-lg text-[#AE343F]" /></div>}>
-                  <AudioCard slug={coupleInfo.slug} coupleNames={`${coupleInfo.bride} & ${coupleInfo.groom}`} />
+                <React.Suspense
+                  fallback={
+                    <div className="flex justify-center py-12">
+                      <span className="loading loading-spinner loading-lg text-[#AE343F]" />
+                    </div>
+                  }
+                >
+                  <AudioCard
+                    slug={coupleInfo.slug}
+                    coupleNames={`${coupleInfo.bride} & ${coupleInfo.groom}`}
+                  />
                 </React.Suspense>
               )}
               {activeView === "guests" && coupleInfo && (
-                <React.Suspense fallback={<div className="flex justify-center py-12"><span className="loading loading-spinner loading-lg text-[#AE343F]" /></div>}>
+                <React.Suspense
+                  fallback={
+                    <div className="flex justify-center py-12">
+                      <span className="loading loading-spinner loading-lg text-[#AE343F]" />
+                    </div>
+                  }
+                >
                   <GuestsCard slug={coupleInfo.slug} />
                 </React.Suspense>
               )}
@@ -533,16 +618,25 @@ export default function MojeVencanjeClient() {
         >
           <div className="flex justify-around items-center h-14">
             <button
-              onClick={() => { setActiveView("overview"); setPwaSubView("none"); window.scrollTo({ top: 0 }); }}
+              onClick={() => {
+                setActiveView("overview");
+                setPwaSubView("none");
+                window.scrollTo({ top: 0 });
+              }}
               className={`flex flex-col items-center gap-0.5 py-1 ${
-                activeView === "overview" ? "text-[#AE343F]" : "text-[#232323]/35"
+                activeView === "overview"
+                  ? "text-[#AE343F]"
+                  : "text-[#232323]/35"
               }`}
             >
               <Home size={20} />
               <span className="text-[10px] font-medium">Pregled</span>
             </button>
             <button
-              onClick={() => { setActiveView("guests"); window.scrollTo({ top: 0 }); }}
+              onClick={() => {
+                setActiveView("guests");
+                window.scrollTo({ top: 0 });
+              }}
               className={`flex flex-col items-center gap-0.5 py-1 ${
                 activeView === "guests" ? "text-[#AE343F]" : "text-[#232323]/35"
               }`}
@@ -551,16 +645,24 @@ export default function MojeVencanjeClient() {
               <span className="text-[10px] font-medium">Gosti</span>
             </button>
             <button
-              onClick={() => { setActiveView("vendors"); window.scrollTo({ top: 0 }); }}
+              onClick={() => {
+                setActiveView("vendors");
+                window.scrollTo({ top: 0 });
+              }}
               className={`flex flex-col items-center gap-0.5 py-1 ${
-                activeView === "vendors" ? "text-[#AE343F]" : "text-[#232323]/35"
+                activeView === "vendors"
+                  ? "text-[#AE343F]"
+                  : "text-[#232323]/35"
               }`}
             >
               <Star size={20} />
               <span className="text-[10px] font-medium">Vendori</span>
             </button>
             <button
-              onClick={() => { setActiveView("audio"); window.scrollTo({ top: 0 }); }}
+              onClick={() => {
+                setActiveView("audio");
+                window.scrollTo({ top: 0 });
+              }}
               className={`flex flex-col items-center gap-0.5 py-1 ${
                 activeView === "audio" ? "text-[#AE343F]" : "text-[#232323]/35"
               }`}
@@ -600,24 +702,55 @@ export default function MojeVencanjeClient() {
               </button>
             </div>
             <p className="px-5 text-xs text-[#232323]/40 mb-4">
-              {new Date(coupleInfo.eventDate).toLocaleDateString("sr-Latn-RS", { day: "numeric", month: "short" })}
+              {new Date(coupleInfo.eventDate).toLocaleDateString("sr-Latn-RS", {
+                day: "numeric",
+                month: "short",
+              })}
               {" · još "}
               {daysUntil(coupleInfo.eventDate)}d
             </p>
             <nav className="flex-1 px-3 space-y-1">
-              {([
-                { view: "overview" as const, label: "Pregled", icon: <Home size={18} /> },
-                { view: "checklist" as const, label: "Checklista", icon: <CheckCircle2 size={18} /> },
-                { view: "budget" as const, label: "Budžet", icon: <Wallet size={18} /> },
-                { view: "vendors" as const, label: "Vendori", icon: <Star size={18} /> },
-                { view: "audio" as const, label: "Audio knjiga", icon: <Mic size={18} /> },
-                { view: "guests" as const, label: "Gosti", icon: <Users size={18} /> },
-              ]).map((item) => {
+              {[
+                {
+                  view: "overview" as const,
+                  label: "Pregled",
+                  icon: <Home size={18} />,
+                },
+                {
+                  view: "checklist" as const,
+                  label: "Checklista",
+                  icon: <CheckCircle2 size={18} />,
+                },
+                {
+                  view: "budget" as const,
+                  label: "Budžet",
+                  icon: <Wallet size={18} />,
+                },
+                {
+                  view: "vendors" as const,
+                  label: "Vendori",
+                  icon: <Star size={18} />,
+                },
+                {
+                  view: "audio" as const,
+                  label: "Audio knjiga",
+                  icon: <Mic size={18} />,
+                },
+                {
+                  view: "guests" as const,
+                  label: "Gosti",
+                  icon: <Users size={18} />,
+                },
+              ].map((item) => {
                 const isActive = activeView === item.view;
                 return (
                   <button
                     key={item.view}
-                    onClick={() => { setActiveView(item.view); setMobileSidebar(false); window.scrollTo({ top: 0 }); }}
+                    onClick={() => {
+                      setActiveView(item.view);
+                      setMobileSidebar(false);
+                      window.scrollTo({ top: 0 });
+                    }}
                     className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                       isActive
                         ? "bg-[#AE343F]/5 text-[#AE343F]"
@@ -642,7 +775,10 @@ export default function MojeVencanjeClient() {
             </nav>
             <div className="px-3 pb-5 pt-2 border-t border-[#232323]/5">
               <button
-                onClick={() => { handleLogout(); setMobileSidebar(false); }}
+                onClick={() => {
+                  handleLogout();
+                  setMobileSidebar(false);
+                }}
                 className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-[#232323]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
               >
                 <LogOut size={16} />
@@ -681,32 +817,61 @@ export default function MojeVencanjeClient() {
               {isIOS ? (
                 <>
                   <div className="flex flex-col items-center gap-2">
-                    <Image src="/images/pwa/ios-share.jpeg" alt="Safari share button" width={1179} height={264} className="w-full max-w-[280px] rounded-xl" />
+                    <Image
+                      src="/images/pwa/ios-share.jpeg"
+                      alt="Safari share button"
+                      width={1179}
+                      height={264}
+                      className="w-full max-w-[280px] rounded-xl"
+                    />
                     <p className="text-center text-sm text-[#232323]/70">
-                      <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-5 h-5 inline-flex items-center justify-center text-xs font-bold mr-1.5">1</span>
+                      <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-5 h-5 inline-flex items-center justify-center text-xs font-bold mr-1.5">
+                        1
+                      </span>
                       Pritisnite <strong>Share</strong> dugme u Safari-ju
                     </p>
                   </div>
                   <div className="flex flex-col items-center gap-2 pt-2">
-                    <Image src="/images/pwa/ios-share-download.jpeg" alt="Add to Home Screen" width={1179} height={186} className="w-full max-w-[280px] rounded-xl" />
+                    <Image
+                      src="/images/pwa/ios-share-download.jpeg"
+                      alt="Add to Home Screen"
+                      width={1179}
+                      height={186}
+                      className="w-full max-w-[280px] rounded-xl"
+                    />
                     <p className="text-center text-sm text-[#232323]/70">
-                      <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-5 h-5 inline-flex items-center justify-center text-xs font-bold mr-1.5">2</span>
-                      Izaberite <strong>&ldquo;Add to Home Screen&rdquo;</strong>
+                      <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-5 h-5 inline-flex items-center justify-center text-xs font-bold mr-1.5">
+                        2
+                      </span>
+                      Izaberite{" "}
+                      <strong>&ldquo;Add to Home Screen&rdquo;</strong>
                     </p>
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex items-start gap-3">
-                    <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">1</span>
-                    <p>Otvorite <strong>meni</strong> pretraživača (tri tačke ⋮)</p>
+                    <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">
+                      1
+                    </span>
+                    <p>
+                      Otvorite <strong>meni</strong> pretraživača (tri tačke ⋮)
+                    </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">2</span>
-                    <p>Izaberite <strong>&ldquo;Dodaj na početni ekran&rdquo;</strong> ili <strong>&ldquo;Install app&rdquo;</strong></p>
+                    <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">
+                      2
+                    </span>
+                    <p>
+                      Izaberite{" "}
+                      <strong>&ldquo;Dodaj na početni ekran&rdquo;</strong> ili{" "}
+                      <strong>&ldquo;Install app&rdquo;</strong>
+                    </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">3</span>
+                    <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0">
+                      3
+                    </span>
                     <p>Potvrdite instalaciju</p>
                   </div>
                 </>

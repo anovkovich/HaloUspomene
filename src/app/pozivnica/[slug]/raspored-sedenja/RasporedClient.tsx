@@ -315,21 +315,23 @@ export default function RasporedClient({
   return (
     <div
       className="flex h-screen overflow-hidden"
-      style={{
-        backgroundColor: "var(--theme-background)",
-        // Override couple theme with HaloUspomene brand colors
-        "--theme-primary": "#d4af37",
-        "--theme-primary-light": "rgba(212,175,55,0.15)",
-        "--theme-primary-muted": "rgba(212,175,55,0.08)",
-        "--theme-background": "#FAFAF5",
-        "--theme-surface": "#F5F4DC",
-        "--theme-surface-alt": "#F0EFCF",
-        "--theme-text": "#232323",
-        "--theme-text-muted": "rgba(35,35,35,0.5)",
-        "--theme-text-light": "rgba(35,35,35,0.4)",
-        "--theme-border": "rgba(35,35,35,0.12)",
-        "--theme-border-light": "rgba(35,35,35,0.06)",
-      } as React.CSSProperties}
+      style={
+        {
+          backgroundColor: "var(--theme-background)",
+          // Override couple theme with HaloUspomene brand colors
+          "--theme-primary": "#d4af37",
+          "--theme-primary-light": "rgba(212,175,55,0.15)",
+          "--theme-primary-muted": "rgba(212,175,55,0.08)",
+          "--theme-background": "#FAFAF5",
+          "--theme-surface": "#F5F4DC",
+          "--theme-surface-alt": "#F0EFCF",
+          "--theme-text": "#232323",
+          "--theme-text-muted": "rgba(35,35,35,0.5)",
+          "--theme-text-light": "rgba(35,35,35,0.4)",
+          "--theme-border": "rgba(35,35,35,0.12)",
+          "--theme-border-light": "rgba(35,35,35,0.06)",
+        } as React.CSSProperties
+      }
     >
       {isMobileWarning && (
         <div
@@ -359,14 +361,14 @@ export default function RasporedClient({
               većeg uređaja.
             </p>
             <a
-              href="/moje-vencanje?tab=guests"
+              href="/moje-vencanje"
               className="mt-1 w-full py-2.5 rounded-xl font-raleway text-sm font-medium transition-opacity hover:opacity-80 text-center"
               style={{
                 backgroundColor: "var(--theme-primary)",
                 color: "white",
               }}
             >
-              Vrati se na pregled potvrda
+              Nazad na Moje Venčanje
             </a>
             <button
               onClick={() => setIsMobileWarning(false)}

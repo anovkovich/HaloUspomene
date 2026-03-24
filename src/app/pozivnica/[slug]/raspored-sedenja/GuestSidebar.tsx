@@ -39,7 +39,7 @@ export default function GuestSidebar({
 
   const filtered = search.trim()
     ? categoryFiltered.filter((g) =>
-        g.name.toLowerCase().includes(search.toLowerCase())
+        g.name.toLowerCase().includes(search.toLowerCase()),
       )
     : categoryFiltered;
 
@@ -53,11 +53,11 @@ export default function GuestSidebar({
 
   const totalPersons = attending.reduce(
     (s, g) => s + (parseInt(g.guestCount) || 1),
-    0
+    0,
   );
   const totalAssigned = Object.values(assignedCounts).reduce(
     (s, n) => s + n,
-    0
+    0,
   );
 
   return (
@@ -89,7 +89,8 @@ export default function GuestSidebar({
             {totalAssigned}
           </span>
           <span style={{ color: "var(--theme-text-muted)" }}>
-            {" "}/ {totalPersons} raspoređeno
+            {" "}
+            / {totalPersons} raspoređeno
           </span>
         </p>
       </div>
@@ -217,7 +218,7 @@ export default function GuestSidebar({
             className="text-[10px] font-raleway"
             style={{ color: "var(--theme-text-light)" }}
           >
-            Klikni na mesto da dodijeliš
+            Klikni na mesto za dodelu
             <br />
             <button
               onClick={() => onSelectGuest(null)}
@@ -253,12 +254,18 @@ export default function GuestSidebar({
               <button
                 onClick={() => setConfirmReset(false)}
                 className="flex-1 px-3 py-1.5 rounded-lg text-xs font-raleway font-medium border cursor-pointer transition-colors hover:bg-black/5"
-                style={{ borderColor: "var(--theme-border-light)", color: "var(--theme-text-light)" }}
+                style={{
+                  borderColor: "var(--theme-border-light)",
+                  color: "var(--theme-text-light)",
+                }}
               >
                 Otkaži
               </button>
               <button
-                onClick={() => { onStartOver(); setConfirmReset(false); }}
+                onClick={() => {
+                  onStartOver();
+                  setConfirmReset(false);
+                }}
                 className="flex-1 px-3 py-1.5 rounded-lg text-xs font-raleway font-medium bg-red-500 text-white cursor-pointer transition-colors hover:bg-red-600"
               >
                 Obriši sve

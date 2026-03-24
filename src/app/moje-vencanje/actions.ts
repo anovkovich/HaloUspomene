@@ -270,6 +270,43 @@ export async function getWeddingDataForPDF(): Promise<{
   return { weddingData: data as import("@/app/pozivnica/[slug]/types").WeddingData, slug };
 }
 
+/* ── Seating Stats ────────────────────────────────────────── */
+
+export async function loadSeatingStatsAction(): Promise<{
+  totalGuests: number;
+  seated: number;
+  notSeated: number;
+  slug: string;
+} | null> {
+  const slug = await getAuthSlug();
+  if (!slug) return null;
+
+  const { loadSeatingLayout } = await import("@/lib/seating");
+
+  // Total attending guests
+  let totalGuests = 0;
+  try {
+    const responses = await getRSVPResponses(slug);
+    const att = responses.filter((r) => r.attending === "Da");
+    totalGuests = att.reduce((s, r) => s + (parseInt(r.guestCount) || 1), 0);
+  } catch { /* ignore */ }
+
+  // Count seated from seating layout
+  let seated = 0;
+  try {
+    const tables = await loadSeatingLayout(slug);
+    if (tables) {
+      for (const table of tables) {
+        for (const seat of table.assignments) {
+          if (seat) seated++;
+        }
+      }
+    }
+  } catch { /* ignore */ }
+
+  return { totalGuests, seated, notSeated: totalGuests - seated, slug };
+}
+
 /* ── Overview ──────────────────────────────────────────────── */
 
 export async function loadOverviewAction(): Promise<{

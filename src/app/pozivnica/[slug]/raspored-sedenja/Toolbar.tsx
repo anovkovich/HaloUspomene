@@ -2,7 +2,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Download, Save, Check, ChevronDown, FileDown, QrCode } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Save,
+  Check,
+  ChevronDown,
+  FileDown,
+  QrCode,
+} from "lucide-react";
 import type { TableData } from "./types";
 
 interface Props {
@@ -49,7 +57,10 @@ export default function Toolbar({
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDownloadOpen(false);
       }
     };
@@ -71,12 +82,18 @@ export default function Toolbar({
         style={{ color: "var(--theme-text-light)" }}
       >
         <ArrowLeft size={13} />
-        Portal
+        Nazad
       </Link>
 
-      <div className="h-4 w-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
+      <div
+        className="h-4 w-px"
+        style={{ backgroundColor: "var(--theme-border-light)" }}
+      />
 
-      <p className="font-script text-lg leading-none" style={{ color: "var(--theme-primary)" }}>
+      <p
+        className="font-script text-lg leading-none"
+        style={{ color: "var(--theme-primary)" }}
+      >
         {coupleNames}
       </p>
 
@@ -120,16 +137,25 @@ export default function Toolbar({
             }}
           >
             <button
-              onClick={() => { onDownloadPDF(); setDownloadOpen(false); }}
+              onClick={() => {
+                onDownloadPDF();
+                setDownloadOpen(false);
+              }}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
               style={{ color: "var(--theme-text)" }}
             >
               <FileDown size={14} style={{ color: "var(--theme-primary)" }} />
               Preuzmi PDF raspored
             </button>
-            <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
+            <div
+              className="h-px"
+              style={{ backgroundColor: "var(--theme-border-light)" }}
+            />
             <button
-              onClick={() => { downloadQR(slug); setDownloadOpen(false); }}
+              onClick={() => {
+                downloadQR(slug);
+                setDownloadOpen(false);
+              }}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
               style={{ color: "var(--theme-text)" }}
             >
@@ -143,10 +169,18 @@ export default function Toolbar({
       <button
         onClick={onSave}
         disabled={isSaving || tables.length === 0 || !paidForRaspored}
-        title={!paidForRaspored ? "Potrebna je aktivacija za čuvanje rasporeda" : undefined}
+        title={
+          !paidForRaspored
+            ? "Potrebna je aktivacija za čuvanje rasporeda"
+            : undefined
+        }
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-raleway font-medium transition-all hover:opacity-80 disabled:opacity-30${isDirty && !saveSuccess ? " animate-pulse" : ""}`}
         style={{
-          backgroundColor: saveSuccess ? "#4caf50" : isDirty ? "var(--theme-primary)" : "var(--theme-surface)",
+          backgroundColor: saveSuccess
+            ? "#4caf50"
+            : isDirty
+              ? "var(--theme-primary)"
+              : "var(--theme-surface)",
           border: `1px solid ${saveSuccess ? "#4caf50" : isDirty ? "var(--theme-primary)" : "var(--theme-border-light)"}`,
           color: saveSuccess || isDirty ? "white" : "var(--theme-text)",
         }}
