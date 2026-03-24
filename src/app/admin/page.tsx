@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ExternalLink, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star } from "lucide-react";
 import DeleteModal from "./DeleteModal";
 import BirthdayAdminList from "./BirthdayAdminList";
 import VendorAdminTab from "./VendorAdminTab";
@@ -345,14 +345,17 @@ export default function AdminPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <a
-                      href={`/pozivnica/${c.slug}`}
-                      target="_blank"
-                      className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white"
-                      title="Otvori pozivnicu"
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://halouspomene.rs/pozivnica/${c.slug}`);
+                        setCopiedSlug(c.slug);
+                        setTimeout(() => setCopiedSlug(null), 2000);
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white cursor-pointer"
+                      title="Kopiraj link pozivnice"
                     >
-                      <ExternalLink size={14} />
-                    </a>
+                      {copiedSlug === c.slug ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                    </button>
                     <button
                       onClick={() => router.push(`/admin/${c.slug}`)}
                       className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white"

@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${isScrolled ? "bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/5 py-2" : "bg-transparent py-6"}`}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${isScrolled ? "bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/5 py-2" : `${isMenuOpen ? "bg-[#F5F4DC]" : "bg-transparent"} py-6`}`}
     >
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between">
@@ -76,23 +76,23 @@ const Navbar: React.FC = () => {
 
       {/* Mobile menu with CSS transition */}
       <div
-        className={`lg:hidden absolute top-full left-0 w-full bg-[#F5F4DC] border-b border-[#232323]/10 shadow-2xl transition-all duration-300 overflow-hidden ${
+        className={`lg:hidden absolute top-full left-0 w-full bg-[#F5F4DC] -mt-px shadow-2xl transition-all duration-300 overflow-hidden ${
           isMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <ul className="p-4 sm:p-6 space-y-4">
+        <ul className="py-2">
           {navLinks.map((link) => (
             <li key={link.name}>
               <Link
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="block text-2xl font-serif text-[#232323] hover:text-[#AE343F] py-2 transition-colors min-h-[44px] flex items-center"
+                className="block text-xl font-serif text-[#232323] hover:text-[#AE343F] hover:bg-[#232323]/3 py-3.5 text-center transition-colors min-h-[44px]"
               >
                 {link.name}
               </Link>
             </li>
           ))}
-          <li className="pt-4">
+          <li className="px-4 sm:px-6 pt-3 pb-4">
             <Link
               href="/moje-vencanje"
               onClick={() => setIsMenuOpen(false)}
