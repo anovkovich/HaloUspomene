@@ -511,8 +511,9 @@ export default function RasporedClient({
           {/* Hamburger menu button */}
           <button
             onClick={() => setShowPWAMenu((v) => !v)}
-            className="fixed top-3 right-3 z-[55] w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
+            className="fixed right-3 z-[55] w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
             style={{
+              top: "calc(0.75rem + env(safe-area-inset-top, 0px))",
               backgroundColor: "var(--theme-surface)",
               border: "1px solid var(--theme-border-light)",
             }}
@@ -553,8 +554,9 @@ export default function RasporedClient({
           {/* PDF loading indicator */}
           {pdfLoading && (
             <div
-              className="fixed top-14 left-1/2 -translate-x-1/2 z-[55] flex items-center gap-2 px-4 py-2 rounded-full shadow-lg"
+              className="fixed left-1/2 -translate-x-1/2 z-[55] flex items-center gap-2 px-4 py-2 rounded-full shadow-lg"
               style={{
+                top: "calc(3.5rem + env(safe-area-inset-top, 0px))",
                 backgroundColor: "var(--theme-surface)",
                 border: "1px solid var(--theme-border-light)",
               }}
@@ -579,8 +581,9 @@ export default function RasporedClient({
               onClick={() => setShowPWAMenu(false)}
             >
               <div
-                className="absolute top-14 right-3 rounded-xl shadow-xl overflow-hidden"
+                className="absolute right-3 rounded-xl shadow-xl overflow-hidden"
                 style={{
+                  top: "calc(3.5rem + env(safe-area-inset-top, 0px))",
                   backgroundColor: "var(--theme-surface)",
                   border: "1px solid var(--theme-border-light)",
                   minWidth: 200,

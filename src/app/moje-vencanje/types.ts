@@ -64,8 +64,10 @@ export interface Vendor {
   phone?: string;
   website?: string;
   instagram?: string;
-  email?: string;
   facebook?: string;
+  capacity?: string;       // venues: max guest count (e.g. "300" or "300+")
+  musicType?: string;      // music: "DJ" | "Bend" | "DJ + Bend" etc.
+  serviceType?: string;    // photo-video: "Foto" | "Video" | "Foto + Video" etc.
 }
 
 export interface VendorCategoryMeta {

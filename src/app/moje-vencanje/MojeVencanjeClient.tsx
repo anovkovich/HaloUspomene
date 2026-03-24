@@ -281,7 +281,7 @@ export default function MojeVencanjeClient() {
               <Menu size={22} />
             </button>
           )}
-          <Link href="/">
+          <Link href={isStandalone ? "/moje-vencanje" : "/"}>
             <Image
               src="/images/full-logo.png"
               alt="HALO Uspomene"
@@ -473,7 +473,14 @@ export default function MojeVencanjeClient() {
                         coupleInfo={coupleInfo}
                         checklist={checklist}
                         budget={budget}
-                        onNavigate={(v) => { setActiveView(v); window.scrollTo({ top: 0 }); }}
+                        onNavigate={(v) => {
+                          if (v === "checklist" || v === "budget") {
+                            setPwaSubView(v);
+                          } else {
+                            setActiveView(v);
+                          }
+                          window.scrollTo({ top: 0 });
+                        }}
                       />
                     )}
                   </div>
