@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useTransition, useEffect } from "react";
+import React, { useState, useMemo, useTransition, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,13 +16,18 @@ import {
   ExternalLink,
   AlertTriangle,
   ChevronDown,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
+import { triggerHaptic } from "@/lib/haptics";
 import {
   loadGuestsAction,
   refreshGuestsAction,
   addManualGuestAction,
   updateGuestCategoryAction,
+  updateGuestCountAction,
+  deleteGuestAction,
 } from "./actions";
 
 function getPersonLabel(count: number): string {
@@ -50,20 +55,57 @@ const CATEGORIES = [
   { value: "Zajednicki", label: "Zajednički" },
 ] as const;
 
+function useLongPress(callback: () => void, ms = 500) {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didFire = useRef(false);
+
+  const start = useCallback(() => {
+    didFire.current = false;
+    timerRef.current = setTimeout(() => {
+      didFire.current = true;
+      triggerHaptic();
+      callback();
+    }, ms);
+  }, [callback, ms]);
+
+  const cancel = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+
+  return {
+    onPointerDown: start,
+    onPointerUp: cancel,
+    onPointerLeave: cancel,
+    onContextMenu: (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!didFire.current) {
+        didFire.current = true;
+        callback();
+      }
+    },
+  };
+}
+
 function ResponseCard({
   entry,
   category,
   onCategoryChange,
+  onEdit,
 }: {
   entry: RSVPEntry;
   category?: string;
   onCategoryChange?: (id: string, cat: string) => void;
+  onEdit?: (entry: RSVPEntry) => void;
 }) {
   const isAttending = entry.attending === "Da";
   const guestCount = parseInt(entry.guestCount) || 1;
+  const longPress = useLongPress(() => onEdit?.(entry));
 
   return (
-    <div className="relative p-4 bg-white rounded-xl border border-[#232323]/8 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.03)]">
+    <div
+      className="relative p-4 bg-white rounded-xl border border-[#232323]/8 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.03)] select-none touch-none"
+      {...longPress}
+    >
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -136,6 +178,125 @@ function ResponseCard({
   );
 }
 
+function EditGuestModal({
+  entry,
+  onClose,
+  onSave,
+  onDelete,
+}: {
+  entry: RSVPEntry;
+  onClose: () => void;
+  onSave: (id: string, count: number) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}) {
+  const [count, setCount] = useState(parseInt(entry.guestCount) || 1);
+  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const handleSave = async () => {
+    if (count === 0) {
+      if (!confirmDelete) {
+        setConfirmDelete(true);
+        return;
+      }
+      setSaving(true);
+      await onDelete(entry.id);
+      setSaving(false);
+      onClose();
+      return;
+    }
+    setSaving(true);
+    await onSave(entry.id, count);
+    setSaving(false);
+    onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-serif text-lg text-[#232323]">Izmeni gosta</h3>
+          <button
+            onClick={onClose}
+            className="text-[#232323]/30 hover:text-[#232323]/60 transition-colors cursor-pointer"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <p className="text-sm font-medium text-[#232323] mb-4">{entry.name}</p>
+
+        {/* Count editor */}
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <button
+            onClick={() => setCount((c) => Math.max(0, c - 1))}
+            className="w-11 h-11 flex items-center justify-center text-lg bg-[#F5F4DC] rounded-xl border border-[#232323]/10 text-[#232323]/60 hover:text-[#232323] cursor-pointer transition-colors"
+          >
+            −
+          </button>
+          <span className="text-3xl font-serif text-[#232323] w-10 text-center tabular-nums">
+            {count}
+          </span>
+          <button
+            onClick={() => {
+              setCount((c) => c + 1);
+              setConfirmDelete(false);
+            }}
+            className="w-11 h-11 flex items-center justify-center text-lg bg-[#F5F4DC] rounded-xl border border-[#232323]/10 text-[#232323]/60 hover:text-[#232323] cursor-pointer transition-colors"
+          >
+            +
+          </button>
+        </div>
+
+        <p className="text-center text-xs text-[#232323]/30 mb-5">
+          {count === 0
+            ? "Gost će biti obrisan"
+            : `${count} ${getPersonLabel(count)}`}
+        </p>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-colors cursor-pointer disabled:opacity-50 ${
+            count === 0
+              ? confirmDelete
+                ? "bg-red-600 hover:bg-red-700 text-white"
+                : "bg-red-500/10 text-red-600 hover:bg-red-500/20"
+              : "bg-[#AE343F] hover:bg-[#8A2A32] text-white"
+          }`}
+        >
+          {saving ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : count === 0 ? (
+            confirmDelete ? (
+              <>
+                <Trash2 size={14} />
+                Kliknite ponovo za brisanje
+              </>
+            ) : (
+              <>
+                <Trash2 size={14} />
+                Obriši gosta
+              </>
+            )
+          ) : (
+            <>
+              <Check size={14} />
+              Sačuvaj
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface Props {
   slug: string;
   draft?: boolean;
@@ -159,6 +320,7 @@ export default function GuestsCard({ slug, draft }: Props) {
   const [categories, setCategories] = useState<Record<string, string>>({});
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<RSVPEntry | null>(null);
 
   useEffect(() => {
     loadGuestsAction().then((result) => {
@@ -241,6 +403,33 @@ export default function GuestsCard({ slug, draft }: Props) {
     updateGuestCategoryAction(id, cat);
   };
 
+  const handleEditSave = async (id: string, count: number) => {
+    await updateGuestCountAction(id, count);
+    setAttending((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, guestCount: String(count) } : e)),
+    );
+    setTotalGuests(
+      (prev) => {
+        const old = attending.find((e) => e.id === id);
+        const oldCount = old ? parseInt(old.guestCount) || 1 : 0;
+        return prev - oldCount + count;
+      },
+    );
+    toast("Broj gostiju ažuriran");
+  };
+
+  const handleEditDelete = async (id: string) => {
+    await deleteGuestAction(id);
+    const entry = attending.find((e) => e.id === id) || notAttending.find((e) => e.id === id);
+    if (entry?.attending === "Da") {
+      setAttending((prev) => prev.filter((e) => e.id !== id));
+      setTotalGuests((prev) => prev - (parseInt(entry.guestCount) || 1));
+    } else {
+      setNotAttending((prev) => prev.filter((e) => e.id !== id));
+    }
+    toast("Gost obrisan");
+  };
+
   const handleRefresh = () => {
     startRefresh(async () => {
       const result = await refreshGuestsAction();
@@ -273,7 +462,9 @@ export default function GuestsCard({ slug, draft }: Props) {
   };
 
   // Combine all responses and filter
-  const allResponses = [...attending, ...notAttending];
+  const allResponses = [...attending, ...notAttending].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  );
   const filteredResponses = allResponses.filter((r) => {
     const matchesText =
       !q ||
@@ -583,6 +774,7 @@ export default function GuestsCard({ slug, draft }: Props) {
               entry={entry}
               category={entry.attending === "Da" ? categories[entry.id] ?? "" : undefined}
               onCategoryChange={entry.attending === "Da" ? handleCategoryChange : undefined}
+              onEdit={(e) => setEditingEntry(e)}
             />
           ))}
         </div>
@@ -594,6 +786,14 @@ export default function GuestsCard({ slug, draft }: Props) {
         </div>
       )}
 
+      {editingEntry && (
+        <EditGuestModal
+          entry={editingEntry}
+          onClose={() => setEditingEntry(null)}
+          onSave={handleEditSave}
+          onDelete={handleEditDelete}
+        />
+      )}
     </div>
   );
 }

@@ -73,3 +73,16 @@ export async function updateRSVPCategory(
   const c = await col();
   await c.updateOne({ _id: new ObjectId(id) }, { $set: { category } });
 }
+
+export async function updateRSVPGuestCount(
+  id: string,
+  guestCount: number,
+): Promise<void> {
+  const c = await col();
+  await c.updateOne({ _id: new ObjectId(id) }, { $set: { guestCount } });
+}
+
+export async function deleteRSVPResponse(id: string): Promise<void> {
+  const c = await col();
+  await c.deleteOne({ _id: new ObjectId(id) });
+}

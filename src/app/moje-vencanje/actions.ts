@@ -17,6 +17,8 @@ import {
   getRSVPResponses,
   addRSVPResponse,
   updateRSVPCategory,
+  updateRSVPGuestCount,
+  deleteRSVPResponse,
   type RSVPEntry,
 } from "@/lib/rsvp";
 import { del } from "@vercel/blob";
@@ -356,4 +358,33 @@ export async function loadOverviewAction(): Promise<{
   }
 
   return { slug, guestStats, audioStats };
+}
+
+/* ── Guest Edit ────────────────────────────────────────────── */
+
+export async function updateGuestCountAction(
+  id: string,
+  guestCount: number,
+): Promise<{ success: boolean }> {
+  const slug = await getAuthSlug();
+  if (!slug) return { success: false };
+  try {
+    await updateRSVPGuestCount(id, guestCount);
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
+}
+
+export async function deleteGuestAction(
+  id: string,
+): Promise<{ success: boolean }> {
+  const slug = await getAuthSlug();
+  if (!slug) return { success: false };
+  try {
+    await deleteRSVPResponse(id);
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
 }
