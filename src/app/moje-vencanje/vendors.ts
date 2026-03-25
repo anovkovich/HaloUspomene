@@ -50,7 +50,10 @@ export const VENDORS: Vendor[] = [
   { id: "v-markovi-konaci", name: "Etno selo Markovi Konaci", category: "venue", city: "Novi Sad", capacity: "300+", phone: "063222483", website: "etnoselomarkovikonaci.rs", instagram: "@markovikonaci" },
   { id: "v-salas-137", name: "Salaš 137", category: "venue", city: "Novi Sad", capacity: "90-300", phone: "+381 62 773 137", website: "salas137.rs", instagram: "@salas137" },
   { id: "v-petlov-salas", name: "Petlov Salaš", category: "venue", city: "Novi Sad", capacity: "100-200", phone: "+381 66 364664", website: "petlovsalas.rs", instagram: "@restoran_petlov_salas" },
-  // ── Venues: Subotica (8) ──
+  { id: "v-hotel-ns", name: "Hotel Novi Sad", category: "venue", city: "Novi Sad", capacity: "50-310", phone: "+381 21 442-511", website: "hotelnovisad.rs", instagram: "@novisad_hotel" },
+  { id: "v-stella", name: "Stella Svečana sala", category: "venue", city: "Novi Sad", capacity: "150", phone: "+381 65 976 0502", website: "stellajass.com", instagram: "@stella_jass" },
+  { id: "v-barutana", name: "Barutana by Museum", category: "venue", city: "Novi Sad", capacity: "400", phone: "+381 66 8007 064", website: "barutananovisad.com", instagram: "@barutana_by_museum" },
+  // ── Venues: Subotica (8 + 1) ──
   { id: "v-zvonko-bogdan", name: "Vinarija Zvonko Bogdan", category: "venue", city: "Subotica", capacity: "220-280", phone: "+381 66 633 0333", website: "vinarijazvonkobogdan.com", instagram: "@salaszvonkobogdan" },
   { id: "v-sala-zorica", name: "Sala Zorica", category: "venue", city: "Subotica", capacity: "380-400", phone: "+381 64 416 6530", website: "salazorica.rs", instagram: "@salazorica" },
   { id: "v-sala-jelena", name: "Sala Jelena", category: "venue", city: "Subotica", capacity: "230", phone: "+381 24 555 397" },
@@ -59,6 +62,7 @@ export const VENDORS: Vendor[] = [
   { id: "v-elitte-palic", name: "Elitte Palić", category: "venue", city: "Subotica", capacity: "500+", phone: "+381 24 753 245", website: "elittepalic.rs", instagram: "@elittepalic" },
   { id: "v-paligo-palata", name: "PaligoPalata", category: "venue", city: "Subotica", phone: "+381 66 6530381", website: "paligopalata.rs", instagram: "@paligo.palata" },
   { id: "v-ergela-kelebija", name: "Ergela Kelebija", category: "venue", city: "Subotica", capacity: "80-220", phone: "+381 24 789 034", website: "ergelakelebija.rs", instagram: "@ergela.kelebija" },
+  { id: "v-sala-bojana", name: "Sala Bojana", category: "venue", city: "Subotica", capacity: "60", phone: "+381 61 3011667", website: "salabojana.com" },
   // ── Venues: Čačak (7) ──
   { id: "v-morava", name: "Restoran Morava", category: "venue", city: "Čačak", capacity: "600", phone: "+381 32 333 991", website: "moravacacak.com", instagram: "@moravacacak" },
   { id: "v-royal-residence", name: "Royal Residence", category: "venue", city: "Čačak", capacity: "1000", phone: "+381 69 363 1330", website: "royalresidence.rs", instagram: "@hotelroyalresidence" },
@@ -75,7 +79,10 @@ export const VENDORS: Vendor[] = [
   { id: "v-jezero-kg", name: "Restoran Jezero", category: "venue", city: "Kragujevac", capacity: "320-350", phone: "060 610 1920", website: "restoranjezero.rs", instagram: "@restoranjezero.kg" },
   { id: "v-pink-sala", name: "Pink Sala", category: "venue", city: "Kragujevac", capacity: "50-530", phone: "+381 64 660 1345", website: "pinksala.rs" },
   { id: "v-hotel-kg", name: "Hotel Kragujevac", category: "venue", city: "Kragujevac", capacity: "120-400", phone: "+381 34 335-811", website: "hotelkragujevac.com", instagram: "@hotelkragujevackg" },
-  // ── Venues: Niš (7) ──
+  { id: "v-garden-vista", name: "Garden Vista Event Center", category: "venue", city: "Kragujevac", capacity: "200", phone: "060 8201023", website: "gardenvista.rs", instagram: "@restoran_garden_vista" },
+  { id: "v-sala-tea", name: "Svečana sala Tea", category: "venue", city: "Kragujevac", capacity: "200", phone: "063 1823032", website: "svecanasalatea.rs", instagram: "@svecanasalatea" },
+  { id: "v-pevac", name: "Restoran Pevac", category: "venue", city: "Kragujevac", capacity: "90-150", phone: "034-370-313", website: "restoranpevac.com" },
+  // ── Venues: Niš (7 + 2) ──
   { id: "v-perla", name: "Restoran Perla", category: "venue", city: "Niš", capacity: "420+", phone: "063 415 400", website: "perla.rs", instagram: "@restoran_perla" },
   { id: "v-mesecev-konak", name: "Mesečev Konak", category: "venue", city: "Niš", capacity: "400", phone: "+381 63 899 0038", website: "mesecevkonak.com", instagram: "@restoran_mesecev_konak" },
   { id: "v-vidikovac", name: "Hotel Vidikovac", category: "venue", city: "Niš", capacity: "350+", phone: "+381 18 459 1336", website: "hotelvidikovac.rs", instagram: "@vidikovac.hotel" },
@@ -83,6 +90,7 @@ export const VENDORS: Vendor[] = [
   { id: "v-malca", name: "Vinski Podrum Malča", category: "venue", city: "Niš", capacity: "250", phone: "060 601 5747", website: "vinskipodrummalca.com", instagram: "@restoranvinarijemalca" },
   { id: "v-marica", name: "Hotel Marica", category: "venue", city: "Niš", capacity: "90", phone: "+381 18 562 333", website: "hotel-marica.com", instagram: "@hotel.restoran.marica" },
   { id: "v-dusanov-konak", name: "Etno restoran Dušanov Konak", category: "venue", city: "Niš", capacity: "200", phone: "018 333 44 68", website: "dusanovkonak.com", instagram: "@dusanovkonak2019" },
+  { id: "v-royal-place-nis", name: "Restoran Royal Place", category: "venue", city: "Niš", capacity: "300", phone: "+381 60 5907071", instagram: "@restoran_royalplace" },
   // ── Music: Beograd Bendovi (10) ──
   { id: "m-laguna", name: "Laguna Band", category: "music", city: "Beograd", musicType: "Bend", phone: "063 859 0635", website: "lagunabend.com", instagram: "@lagunabend" },
   { id: "m-chegi", name: "CHEGI & Braća Bluz", category: "music", city: "Beograd", musicType: "Orkestar", phone: "066/418-034", website: "chegi-bend.rs", instagram: "@chegi.music" },
