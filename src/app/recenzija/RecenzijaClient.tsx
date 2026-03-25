@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Star, ExternalLink, Copy, Check } from "lucide-react";
+import { Star, Copy, Check, Smartphone } from "lucide-react";
 
 const GOOGLE_REVIEW_URL = "https://g.page/r/CSLwRdnVlsunEAE/review";
 
@@ -11,13 +11,33 @@ function isInstagramBrowser(): boolean {
   return /Instagram/i.test(ua);
 }
 
+function isAndroid(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android/i.test(navigator.userAgent);
+}
+
+function openInExternalBrowser() {
+  if (isAndroid()) {
+    // Android intent:// forces the system default browser
+    const intentUrl = `intent://${GOOGLE_REVIEW_URL.replace("https://", "")}#Intent;scheme=https;end`;
+    window.location.href = intentUrl;
+  } else {
+    // iOS: no programmatic escape from in-app browser
+    // Copy link automatically and let user know
+    navigator.clipboard.writeText(GOOGLE_REVIEW_URL).catch(() => {});
+    window.location.href = GOOGLE_REVIEW_URL;
+  }
+}
+
 export default function RecenzijaClient() {
   const [isInstagram, setIsInstagram] = useState<boolean | null>(null);
+  const [android, setAndroid] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const insta = isInstagramBrowser();
     setIsInstagram(insta);
+    setAndroid(isAndroid());
 
     // If not Instagram in-app browser, redirect immediately
     if (!insta) {
@@ -93,11 +113,6 @@ export default function RecenzijaClient() {
           Ostavite Recenziju
         </h1>
 
-        <p className="text-[#78716c] font-[family-name:var(--font-josefin-sans)] text-sm leading-relaxed">
-          Instagram ne podržava otvaranje Google recenzija direktno. Molimo vas
-          otvorite ovu stranicu u vašem browseru.
-        </p>
-
         {/* Divider */}
         <div className="flex items-center justify-center gap-4">
           <div className="w-12 h-px bg-[#AE343F] opacity-30" />
@@ -105,58 +120,64 @@ export default function RecenzijaClient() {
           <div className="w-12 h-px bg-[#AE343F] opacity-30" />
         </div>
 
-        {/* Instructions */}
-        <div className="bg-white/60 rounded-2xl p-6 space-y-4 text-left">
-          <p className="text-[#232323] font-[family-name:var(--font-josefin-sans)] text-sm font-medium">
-            Kako da otvorite u browseru:
-          </p>
-          <ol className="space-y-3 text-[#78716c] font-[family-name:var(--font-josefin-sans)] text-sm">
-            <li className="flex gap-3">
-              <span className="text-[#AE343F] font-bold shrink-0">1.</span>
-              <span>
-                Dodirnite <strong>⋯</strong> (tri tačke) u gornjem desnom uglu
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <span className="text-[#AE343F] font-bold shrink-0">2.</span>
-              <span>
-                Izaberite{" "}
-                <strong>&quot;Open in browser&quot;</strong> ili{" "}
-                <strong>&quot;Otvori u browseru&quot;</strong>
-              </span>
-            </li>
-          </ol>
-        </div>
+        {android ? (
+          <>
+            {/* Android: intent button opens default browser directly */}
+            <button
+              onClick={openInExternalBrowser}
+              className="flex items-center justify-center gap-2 w-full py-3.5 px-6 bg-[#AE343F] text-white rounded-xl font-[family-name:var(--font-josefin-sans)] text-sm tracking-wide hover:bg-[#952d36] transition-colors"
+            >
+              <Smartphone className="w-4 h-4" />
+              Otvori u browseru
+            </button>
+          </>
+        ) : (
+          <>
+            {/* iOS: guide first, then copy button as alternative */}
+            <div className="bg-white/60 rounded-2xl p-5 space-y-3 text-left">
+              <p className="text-[#232323] font-[family-name:var(--font-josefin-sans)] text-sm font-medium">
+                Otvorite u Safari browseru:
+              </p>
+              <ol className="space-y-2 text-[#78716c] font-[family-name:var(--font-josefin-sans)] text-sm">
+                <li className="flex gap-3">
+                  <span className="text-[#AE343F] font-bold shrink-0">1.</span>
+                  <span>
+                    Dodirnite <strong>⋯</strong> (tri tačke) u gornjem desnom uglu
+                  </span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-[#AE343F] font-bold shrink-0">2.</span>
+                  <span>
+                    Izaberite{" "}
+                    <strong>&quot;Open in browser&quot;</strong>
+                  </span>
+                </li>
+              </ol>
+            </div>
 
-        {/* Action buttons */}
-        <div className="space-y-3">
-          <a
-            href={GOOGLE_REVIEW_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3.5 px-6 bg-[#AE343F] text-white rounded-xl font-[family-name:var(--font-josefin-sans)] text-sm tracking-wide hover:bg-[#952d36] transition-colors"
-          >
-            <ExternalLink className="w-4 h-4" />
-            Otvori Google Recenzije
-          </a>
+            {/* "ILI" divider */}
+            <p className="text-[#a8a29e] font-[family-name:var(--font-josefin-sans)] text-xs tracking-widest uppercase">
+              ili
+            </p>
 
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center justify-center gap-2 w-full py-3 px-6 bg-white/80 text-[#232323] rounded-xl font-[family-name:var(--font-josefin-sans)] text-sm tracking-wide hover:bg-white transition-colors border border-[#e5e5e5]"
-          >
-            {copied ? (
-              <>
-                <Check className="w-4 h-4 text-green-600" />
-                Link kopiran!
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" />
-                Kopiraj link
-              </>
-            )}
-          </button>
-        </div>
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center justify-center gap-2 w-full py-3.5 px-6 bg-[#AE343F] text-white rounded-xl font-[family-name:var(--font-josefin-sans)] text-sm tracking-wide hover:bg-[#952d36] transition-colors"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Link kopiran — otvorite Safari i nalepite
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  Kopiraj link
+                </>
+              )}
+            </button>
+          </>
+        )}
 
         {/* Branding */}
         <p className="text-[#a8a29e] font-[family-name:var(--font-josefin-sans)] text-xs tracking-widest uppercase">
