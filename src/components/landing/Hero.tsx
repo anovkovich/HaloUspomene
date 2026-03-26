@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { ArrowRight, Award, Phone } from "lucide-react";
+import { ArrowRight, Award } from "lucide-react";
 import Link from "next/link";
 import HeroInfoBadge from "./HeroInfoBadge";
 
@@ -38,13 +38,8 @@ const Hero: React.FC = () => {
           from { opacity: 0; transform: scale(0.95); }
           to { opacity: 1; transform: scale(1); }
         }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-20px); }
-        }
         .hero-text { animation: fadeInLeft 0.8s ease-out both; }
         .hero-image { animation: fadeInScale 0.8s ease-out 0.2s both; }
-        .hero-badge { animation: float 5s ease-in-out infinite; }
       `}</style>
 
       <div className="absolute top-[-10%] right-[-5%] w-[70%] sm:w-[60%] md:w-[50%] h-[70%] bg-[#AE343F]/5 rounded-full blur-[80px] sm:blur-[100px] md:blur-[120px] -z-10" />
@@ -126,29 +121,16 @@ const Hero: React.FC = () => {
           <div className="relative hero-image">
             <div className="transform rotate-0 md:hover:rotate-2 md:hover:scale-[1.05] transition-transform duration-700">
               <Image
-                src="/images/phone.webp"
-                alt="HALO Uspomene vintage retro telefon sa brojčanikom — iznajmljivanje audio knjige utisaka za venčanja u Srbiji"
-                width={1536}
-                height={1024}
+                src="/images/retro-telefon-i-website-pozinica.webp"
+                alt="HALO Uspomene — retro telefon, digitalna pozivnica na mobilnom i raspored sedenja na laptopu"
+                width={1466}
+                height={597}
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="w-full h-auto object-cover"
                 priority
               />
             </div>
 
-            <div className="hero-badge absolute hidden lg:flex -bottom-10 -left-10 z-20 bg-[#F5F4DC] p-6 rounded-[2rem] shadow-2xl items-center gap-5 border border-white/20 backdrop-blur-sm">
-              <div className="w-16 h-16 bg-[#AE343F] rounded-2xl flex items-center justify-center text-[#F5F4DC] shadow-lg shadow-[#AE343F]/20">
-                <Phone size={32} />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-[#AE343F] uppercase tracking-[0.2em] mb-1">
-                  Model telefona:
-                </p>
-                <p className="text-lg font-serif font-bold text-[#232323]">
-                  Vintage - Rotary Black
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </div>

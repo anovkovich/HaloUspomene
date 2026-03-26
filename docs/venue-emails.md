@@ -1,7 +1,7 @@
 # Venue Emails — Sale za Venčanja
 
 > Last updated: 2026-03-25
-> Result: **32 emails found** out of 59 venues
+> Result: **42 emails found** out of 59 venues
 
 ---
 
@@ -83,30 +83,30 @@
 | 8   | Imperium Hall               | imperiumhall.rs          | info@imperiumhall.rs            | ✓ found          |
 | 9   | Restoran Stadion            | restoranstadion.com      | —                               | no email online  |
 | 10  | Filmski Grad                | filmskigrad.rs           | —                               | JS-only site     |
-| 11  | Cotier                      | cotier.rs                | —                               | no email online  |
+| 11  | Cotier                      | cotier.rs                | marketing@cotier.rs             | ✓ found          |
 | 12  | Glamoure Event Center       | glamoure.rs              | glamoureeventcenter@gmail.com   | ✓ found          |
 | 13  | Restoran ForS               | fors.rs                  | [email protected]               | ✓ found          |
 | 14  | Zlatna Dvorana              | zlatnadvorana.com        | —                               | no email online  |
-| 15  | Villa Palace                | villapalace.org          | —                               | no email online  |
+| 15  | Villa Palace                | villapalace.org          | villapalacenovisad@gmail.com    | ✓ found          |
 | 16  | Baron Castel                | baron.rs                 | baronfashion@gmail.com          | ✓ found          |
-| 17  | Exclusive NS                | exclusivens.com          | —                               | no email online  |
+| 17  | Exclusive NS                | exclusivens.com          | najlepsevencanjens@gmail.com    | ✓ found          |
 | 18  | Dva Galeba                  | dvagaleba.com            | info@dvagaleba.com              | ✓ found          |
 | 19  | Etno selo Markovi Konaci    | etnoselomarkovikonaci.rs | office@etnoselomarkovikonaci.rs | ✓ found          |
 | 20  | Salaš 137                   | salas137.rs              | info@salas137.rs                | ✓ found          |
-| 21  | Petlov Salaš                | petlovsalas.rs           | —                               | no email online  |
-| 22  | Vinarija Zvonko Bogdan      | vinarijazvonkobogdan.com | —                               | no email online  |
+| 21  | Petlov Salaš                | petlovsalas.rs           | asura021@gmail.com              | ✓ found          |
+| 22  | Vinarija Zvonko Bogdan      | vinarijazvonkobogdan.com | events@vinarijazvonkobogdan.com | ✓ found          |
 | 23  | Sala Zorica                 | salazorica.rs            | salazorica@gmail.com            | ✓ found          |
 | 24  | Sala Jelena                 | —                        | —                               | no website       |
 | 25  | Mirage Sala                 | —                        | —                               | no website       |
 | 26  | Salaš 101                   | —                        | —                               | no website       |
 | 27  | Elitte Palić                | elittepalic.rs           | office@elittepalic.rs           | ✓ found          |
 | 28  | PaligoPalata                | paligopalata.rs          | office@paligopalata.rs          | ✓ found          |
-| 29  | Ergela Kelebija             | ergelakelebija.rs        | —                               | no email online  |
+| 29  | Ergela Kelebija             | ergelakelebija.rs        | office@ergelakelebija.rs        | ✓ found          |
 | 30  | Restoran Morava             | moravacacak.com          | utpmorava@open.telekom.rs       | ✓ found          |
 | 31  | Royal Residence             | royalresidence.rs        | [email protected]               | ✓ found          |
 | 32  | Habanera Luks               | —                        | —                               | no website       |
 | 33  | Restoran Rajičić            | —                        | —                               | no website       |
-| 34  | Radovanje                   | radovanje.rs             | —                               | no email online  |
+| 34  | Radovanje                   | radovanje.rs             | d.dragovic@hotmail.com          | ✓ found          |
 | 35  | Restoran Petrović           | restoran-petrovic.rs     | restoran.petrovic2009@gmail.com | ✓ found          |
 | 36  | Ugostiteljski centar Babić  | —                        | —                               | no website       |
 | 37  | Hotel Ženeva Lux            | zenevalux.com            | office@zenevalux.com            | ✓ found          |
@@ -116,13 +116,13 @@
 | 41  | Restoran Jezero             | restoranjezero.rs        | office@restoranjezero.rs        | ✓ found          |
 | 42  | Pink Sala                   | pinksala.rs              | —                               | no email online  |
 | 43  | Hotel Kragujevac            | hotelkragujevac.com      | recepcija@hotelkragujevac.com   | ✓ found          |
-| 44  | Restoran Perla              | perla.rs                 | —                               | site down (503)  |
+| 44  | Restoran Perla              | perla.rs                 | info@perla.rs                   | ✓ found          |
 | 45  | Mesečev Konak               | mesecevkonak.com         | —                               | dead domain      |
 | 46  | Hotel Vidikovac             | hotelvidikovac.rs        | vidikovac.nis@gmail.com         | ✓ found          |
-| 47  | Restoran Švajcarija         | svajcarija.rs            | —                               | no email online  |
+| 47  | Restoran Švajcarija         | svajcarija.rs            | restoransvajcarija@gmail.com    | ✓ found          |
 | 48  | Vinski Podrum Malča         | vinskipodrummalca.com    | —                               | dead domain      |
 | 49  | Hotel Marica                | hotel-marica.com         | info@hotel-marica.com           | ✓ found          |
-| 50  | Etno restoran Dušanov Konak | dusanovkonak.com         | —                               | no email online  |
+| 50  | Etno restoran Dušanov Konak | dusanovkonak.com         | info@dusanovkonak.com           | ✓ found          |
 | 51  | Hotel Novi Sad              | hotelnovisad.rs          | info@hotelnovisad.rs            | ✓ found          |
 | 52  | Restoran Beskraj            | beskraj.rs               | —                               | dead domain      |
 | 53  | Stella Svečana sala         | stellajass.com           | jasminal.tomic@gmail.com        | ✓ found          |

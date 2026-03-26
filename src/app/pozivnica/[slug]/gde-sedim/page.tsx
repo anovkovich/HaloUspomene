@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 export const dynamicParams = true;
+export const revalidate = 60;
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
