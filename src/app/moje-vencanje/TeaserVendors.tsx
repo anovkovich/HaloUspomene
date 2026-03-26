@@ -12,7 +12,7 @@ import {
   Gift,
   ArrowRight,
 } from "lucide-react";
-import { VENDOR_CATEGORIES } from "./vendors";
+import { CATEGORY_META } from "./vendor-constants";
 import type { VendorCategory } from "./types";
 
 const CATEGORY_ICONS: Record<VendorCategory, React.ReactNode> = {
@@ -37,7 +37,7 @@ export default function TeaserVendors() {
         Vendori DEMO
       </h3>
       <div className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-none">
-        {VENDOR_CATEGORIES.map((cat) => (
+        {CATEGORY_META.map((cat) => (
           <div
             key={cat.id}
             className="snap-start shrink-0 w-36 bg-white rounded-xl border border-[#232323]/10 p-4 flex flex-col items-center gap-2 text-center shadow-sm"
@@ -46,7 +46,6 @@ export default function TeaserVendors() {
             <p className="text-sm font-semibold text-[#232323] leading-tight">
               {cat.labelPlural}
             </p>
-            <p className="text-xs text-[#232323]/40">{cat.count} vendora</p>
           </div>
         ))}
         {/* CTA card */}

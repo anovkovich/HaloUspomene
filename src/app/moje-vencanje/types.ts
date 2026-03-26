@@ -64,10 +64,18 @@ export interface Vendor {
   phone?: string;
   website?: string;
   instagram?: string;
-  facebook?: string;
   capacity?: string;       // venues: max guest count (e.g. "300" or "300+")
   musicType?: string;      // music: "DJ" | "Bend" | "DJ + Bend" etc.
   serviceType?: string;    // photo-video: "Foto" | "Video" | "Foto + Video" etc.
+  bio?: string;            // max 250 chars, short vendor description
+  endorsementCount?: number;
+}
+
+export function getEndorsementLevel(count: number): number {
+  if (count >= 9) return 3;
+  if (count >= 4) return 2;
+  if (count >= 1) return 1;
+  return 0;
 }
 
 export interface VendorCategoryMeta {

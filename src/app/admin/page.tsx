@@ -272,7 +272,17 @@ export default function AdminPage() {
       </div>
 
       {activeTab === "vendori" ? (
-        <VendorAdminTab />
+        <>
+          <div className="mb-4">
+            <a
+              href="/admin/vendors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-[#AE343F] text-white hover:bg-[#AE343F]/90 transition-colors"
+            >
+              <Star size={14} /> Upravljaj vendorima (DB)
+            </a>
+          </div>
+          <VendorAdminTab />
+        </>
       ) : activeTab === "rodjendani" ? (
         <BirthdayAdminList onNeedsLogin={() => setNeedsLogin(true)} />
       ) : (

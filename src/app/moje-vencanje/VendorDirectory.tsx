@@ -1,12 +1,9 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useCallback } from "react";
+import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
-  Phone,
-  Globe,
-  Instagram,
   Building2,
   Music,
   Camera,
@@ -18,22 +15,12 @@ import {
   Palette,
   CircleDot,
   Gift,
-  MapPin,
   Heart,
 } from "lucide-react";
-import { VENDORS, VENDOR_CATEGORIES, CITIES } from "./vendors";
 import { saveVendorFavoritesAction } from "./actions";
-import type { VendorCategory, Vendor } from "./types";
-
-// Shuffle once at module load (VENDORS is static)
-const SHUFFLED_VENDORS = [...VENDORS];
-for (let i = SHUFFLED_VENDORS.length - 1; i > 0; i--) {
-  const j = Math.floor(Math.random() * (i + 1));
-  [SHUFFLED_VENDORS[i], SHUFFLED_VENDORS[j]] = [
-    SHUFFLED_VENDORS[j],
-    SHUFFLED_VENDORS[i],
-  ];
-}
+import type { VendorCategory, VendorCategoryMeta, Vendor } from "./types";
+import { VendorCard } from "./VendorCard";
+import VendorDetailModal from "./VendorDetailModal";
 
 const CATEGORY_ICONS: Record<VendorCategory, React.ReactNode> = {
   venue: <Building2 size={16} />,
@@ -49,22 +36,77 @@ const CATEGORY_ICONS: Record<VendorCategory, React.ReactNode> = {
   gifts: <Gift size={16} />,
 };
 
+// Fisher-Yates shuffle (returns new array)
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 interface Props {
+  vendors: Vendor[];
+  categories: VendorCategoryMeta[];
+  cities: string[];
   favorites: string[];
   onFavoritesChange: React.Dispatch<React.SetStateAction<string[]>>;
   highlighted: string[];
+  myEndorsements: string[];
+  onEndorsementsChange: React.Dispatch<React.SetStateAction<string[]>>;
+  onVendorsChange: React.Dispatch<React.SetStateAction<Vendor[]>>;
 }
 
 export default function VendorDirectory({
+  vendors,
+  categories,
+  cities,
   favorites,
   onFavoritesChange,
   highlighted,
+  myEndorsements,
+  onEndorsementsChange,
+  onVendorsChange,
 }: Props) {
   const [selectedCategory, setSelectedCategory] =
     useState<VendorCategory | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [search, setSearch] = useState("");
+  const [selectedVendorId, setSelectedVendorId] = useState<string | null>(null);
+  const selectedVendor = selectedVendorId
+    ? vendors.find((v) => v.id === selectedVendorId) ?? null
+    : null;
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Shuffle order: set once, stable across vendor data updates
+  const shuffleOrderRef = useRef<string[] | null>(null);
+  if (shuffleOrderRef.current === null && vendors.length > 0) {
+    shuffleOrderRef.current = shuffle(vendors.map((v) => v.id));
+  }
+  // When new vendors are added (not in shuffle order), append them
+  useEffect(() => {
+    if (!shuffleOrderRef.current || vendors.length === 0) return;
+    const existing = new Set(shuffleOrderRef.current);
+    const newIds = vendors.filter((v) => !existing.has(v.id)).map((v) => v.id);
+    if (newIds.length > 0) {
+      shuffleOrderRef.current = [...shuffleOrderRef.current, ...shuffle(newIds)];
+    }
+  }, [vendors]);
+
+  // Map vendors by ID for fast lookup, apply stable shuffle order
+  const vendorMap = useMemo(() => {
+    const m = new Map<string, Vendor>();
+    vendors.forEach((v) => m.set(v.id, v));
+    return m;
+  }, [vendors]);
+
+  const shuffledVendors = useMemo(() => {
+    if (!shuffleOrderRef.current) return vendors;
+    return shuffleOrderRef.current
+      .map((id) => vendorMap.get(id))
+      .filter(Boolean) as Vendor[];
+  }, [vendorMap]);
 
   const debouncedSave = useCallback((updated: string[]) => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -88,37 +130,59 @@ export default function VendorDirectory({
 
   const highlightedSet = useMemo(() => new Set(highlighted), [highlighted]);
   const favoritesSet = useMemo(() => new Set(favorites), [favorites]);
+  const endorsementsSet = useMemo(
+    () => new Set(myEndorsements),
+    [myEndorsements],
+  );
+
+  // Sort order: computed once from initial data, stable across endorsement changes
+  const sortedOrderRef = useRef<string[] | null>(null);
+  if (sortedOrderRef.current === null && shuffledVendors.length > 0) {
+    const hl = shuffledVendors.filter((v) => highlightedSet.has(v.id));
+    const rest = shuffledVendors.filter((v) => !highlightedSet.has(v.id));
+    const endorsed = rest
+      .filter((v) => (v.endorsementCount ?? 0) > 0)
+      .sort((a, b) => (b.endorsementCount ?? 0) - (a.endorsementCount ?? 0));
+    const withBio = rest.filter((v) => (v.endorsementCount ?? 0) === 0 && v.bio);
+    const noBio = rest.filter((v) => (v.endorsementCount ?? 0) === 0 && !v.bio);
+    sortedOrderRef.current = [...hl, ...endorsed, ...withBio, ...noBio].map((v) => v.id);
+  }
 
   const filtered = useMemo(() => {
-    let result = SHUFFLED_VENDORS;
-    if (selectedCategory)
-      result = result.filter((v) => v.category === selectedCategory);
-    if (selectedCity) result = result.filter((v) => v.city === selectedCity);
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      result = result.filter((v) => v.name.toLowerCase().includes(q));
-    }
-    const hl = result.filter((v) => highlightedSet.has(v.id));
-    const rest = result.filter((v) => !highlightedSet.has(v.id));
-    return [...hl, ...rest];
-  }, [
-    selectedCategory,
-    selectedCity,
-    search,
-    SHUFFLED_VENDORS,
-    highlightedSet,
-  ]);
+    if (!sortedOrderRef.current) return [];
+
+    // Apply filters to the stable sorted order
+    const categoryMatch = selectedCategory
+      ? (v: Vendor) => v.category === selectedCategory
+      : () => true;
+    const cityMatch = selectedCity
+      ? (v: Vendor) => v.city === selectedCity
+      : () => true;
+    const searchMatch = search.trim()
+      ? (() => {
+          const q = search.trim().toLowerCase();
+          return (v: Vendor) => v.name.toLowerCase().includes(q);
+        })()
+      : () => true;
+
+    return sortedOrderRef.current
+      .map((id) => vendorMap.get(id))
+      .filter(
+        (v): v is Vendor =>
+          !!v && categoryMatch(v) && cityMatch(v) && searchMatch(v),
+      );
+  }, [selectedCategory, selectedCity, search, vendorMap]);
 
   const favoriteVendors = useMemo(
     () =>
       favorites
-        .map((id) => VENDORS.find((v) => v.id === id))
+        .map((id) => vendors.find((v) => v.id === id))
         .filter(Boolean) as Vendor[],
-    [favorites],
+    [favorites, vendors],
   );
 
   const categoryLabel = selectedCategory
-    ? VENDOR_CATEGORIES.find((c) => c.id === selectedCategory)?.labelPlural
+    ? categories.find((c) => c.id === selectedCategory)?.labelPlural
     : null;
 
   return (
@@ -192,7 +256,7 @@ export default function VendorDirectory({
           className="select select-sm bg-white border-[#232323]/10 text-sm focus:border-[#AE343F] focus:outline-none h-[42px] w-full sm:w-auto sm:min-w-[150px]"
         >
           <option value="">Svi gradovi</option>
-          {CITIES.map((city) => (
+          {cities.map((city) => (
             <option key={city} value={city}>
               {city}
             </option>
@@ -213,7 +277,7 @@ export default function VendorDirectory({
           >
             Svi
           </button>
-          {VENDOR_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() =>
@@ -245,113 +309,31 @@ export default function VendorDirectory({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filtered.map((vendor) => {
-            const isFav = favoritesSet.has(vendor.id);
-            const isHighlighted = highlightedSet.has(vendor.id);
-
-            return (
-              <div
-                key={vendor.id}
-                className={`border rounded-xl p-4 hover:shadow-sm transition-all overflow-hidden relative ${
-                  isHighlighted
-                    ? "border-[#d4af37]/50 bg-gradient-to-br from-[#d4af37]/5 to-[#d4af37]/10 ring-1 ring-[#d4af37]/25 shadow-[0_0_12px_rgba(212,175,55,0.08)]"
-                    : "border-[#232323]/8 hover:border-[#AE343F]/20"
-                }`}
-              >
-                {/* Heart button */}
-                <motion.button
-                  onClick={() => toggleFavorite(vendor.id)}
-                  whileTap={{ scale: 1.4 }}
-                  animate={isFav ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className={`absolute top-3 right-3 cursor-pointer transition-colors ${
-                    isFav
-                      ? "text-[#AE343F]"
-                      : "text-[#232323]/15 hover:text-[#AE343F]/50"
-                  }`}
-                  aria-label={isFav ? "Ukloni iz favorita" : "Dodaj u favorite"}
-                >
-                  <Heart size={18} fill={isFav ? "#AE343F" : "none"} />
-                </motion.button>
-
-                <div className="mb-3 pr-6">
-                  <p className="text-sm font-semibold text-[#232323] truncate flex items-center gap-1.5">
-                    <span className="text-[#AE343F] shrink-0">
-                      {CATEGORY_ICONS[vendor.category]}
-                    </span>
-                    {vendor.name}
-                  </p>
-                  <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                    <p className="text-xs text-[#232323]/40 flex items-center gap-1">
-                      <MapPin size={10} />
-                      {vendor.city}
-                    </p>
-                    {vendor.capacity && (
-                      <span className="text-xs text-[#232323]/40">
-                        · Br. mesta: {vendor.capacity}
-                      </span>
-                    )}
-                    {vendor.musicType && (
-                      <span className="text-xs text-[#232323]/40">
-                        · {vendor.musicType}
-                      </span>
-                    )}
-                    {vendor.serviceType && (
-                      <span className="text-xs text-[#232323]/40">
-                        · {vendor.serviceType}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Contact links */}
-                <div className="flex flex-wrap gap-2">
-                  {vendor.phone ? (
-                    <a
-                      href={`tel:${vendor.phone.replace(/\s/g, "")}`}
-                      className="inline-flex items-center gap-1 text-[10px] text-[#232323]/50 hover:text-[#AE343F] transition-colors"
-                    >
-                      <Phone size={11} /> Pozovi
-                    </a>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] text-[#232323]/20 cursor-default select-none">
-                      <Phone size={11} /> Pozovi
-                    </span>
-                  )}
-                  {vendor.website ? (
-                    <a
-                      href={`https://${vendor.website}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] text-[#232323]/50 hover:text-[#AE343F] transition-colors"
-                    >
-                      <Globe size={11} /> Sajt
-                    </a>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] text-[#232323]/20 cursor-default select-none">
-                      <Globe size={11} /> Sajt
-                    </span>
-                  )}
-                  {vendor.instagram ? (
-                    <a
-                      href={`https://instagram.com/${vendor.instagram.replace("@", "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] text-[#232323]/50 hover:text-[#AE343F] transition-colors"
-                    >
-                      <Instagram size={11} /> IG
-                    </a>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] text-[#232323]/20 cursor-default select-none">
-                      <Instagram size={11} /> IG
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {filtered.map((vendor) => (
+            <VendorCard
+              key={vendor.id}
+              vendor={vendor}
+              isFav={favoritesSet.has(vendor.id)}
+              isHighlighted={highlightedSet.has(vendor.id)}
+              categoryIcon={CATEGORY_ICONS[vendor.category]}
+              onToggleFavorite={toggleFavorite}
+              onSelect={(v) => setSelectedVendorId(v.id)}
+            />
+          ))}
         </div>
       )}
+
+      <VendorDetailModal
+        vendor={selectedVendor}
+        isFav={selectedVendor ? favoritesSet.has(selectedVendor.id) : false}
+        isEndorsed={
+          selectedVendor ? endorsementsSet.has(selectedVendor.id) : false
+        }
+        onClose={() => setSelectedVendorId(null)}
+        onToggleFavorite={toggleFavorite}
+        onToggleEndorsement={onEndorsementsChange}
+        onVendorsChange={onVendorsChange}
+      />
     </div>
   );
 }

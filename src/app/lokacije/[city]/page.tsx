@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { locations, getLocation } from "@/data/locations";
 import { testimonials } from "@/data/testimonials";
-import { VENDORS } from "@/app/moje-vencanje/vendors";
+import { getAllVendors } from "@/lib/vendors";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
@@ -319,7 +319,7 @@ export default async function CityPage({
               Rezervišite vaš audio guest book na vreme i sačuvajte glasove sa
               svog venčanja zauvek. Uz rezervaciju dobijate pristup besplatnom
               planeru venčanja sa{" "}
-              {VENDORS.filter((v) => v.city === loc.name).length}+ vendora u{" "}
+              {(await getAllVendors()).filter((v) => v.city === loc.name).length}+ vendora u{" "}
               {loc.name === "Niš"
                 ? "Nišu"
                 : loc.name === "Beograd"

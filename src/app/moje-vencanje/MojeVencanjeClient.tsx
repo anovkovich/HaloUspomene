@@ -26,8 +26,10 @@ import {
   loadPortalDataAction,
   saveVendorFavoritesAction,
   loadHighlightedVendorsAction,
+  loadVendorsAction,
+  loadMyEndorsementsAction,
 } from "./actions";
-import type { ChecklistItem, PortalBudget } from "./types";
+import type { ChecklistItem, PortalBudget, Vendor, VendorCategoryMeta } from "./types";
 import ChecklistCard from "./ChecklistCard";
 import BudgetCard from "./BudgetCard";
 import Sidebar, { type ActiveView } from "./Sidebar";
@@ -95,6 +97,10 @@ export default function MojeVencanjeClient() {
   });
   const [vendorFavorites, setVendorFavorites] = useState<string[]>([]);
   const [highlightedVendors, setHighlightedVendors] = useState<string[]>([]);
+  const [dbVendors, setDbVendors] = useState<Vendor[]>([]);
+  const [dbCategories, setDbCategories] = useState<VendorCategoryMeta[]>([]);
+  const [dbCities, setDbCities] = useState<string[]>([]);
+  const [myEndorsements, setMyEndorsements] = useState<string[]>([]);
 
   // Read tab from URL query param on mount
   useEffect(() => {
@@ -132,16 +138,23 @@ export default function MojeVencanjeClient() {
             scriptFont: result.scriptFont ?? "great-vibes",
             draft: result.draft ?? false,
           });
-          const [data, highlighted] = await Promise.all([
-            loadPortalDataAction(),
-            loadHighlightedVendorsAction(),
-          ]);
+          const [data, highlighted, vendorData, endorsements] =
+            await Promise.all([
+              loadPortalDataAction(),
+              loadHighlightedVendorsAction(),
+              loadVendorsAction(),
+              loadMyEndorsementsAction(),
+            ]);
           if (data) {
             setChecklist(data.checklist);
             setBudget(data.budget);
             setVendorFavorites(data.vendorFavorites ?? []);
           }
           setHighlightedVendors(highlighted);
+          setDbVendors(vendorData.vendors);
+          setDbCategories(vendorData.categories);
+          setDbCities(vendorData.cities);
+          setMyEndorsements(endorsements);
           setActiveView("overview");
           setPwaSubView("none");
           setState("auth");
@@ -224,16 +237,23 @@ export default function MojeVencanjeClient() {
           draft: json.couple.draft ?? false,
         });
 
-        const [data, highlighted] = await Promise.all([
-          loadPortalDataAction(),
-          loadHighlightedVendorsAction(),
-        ]);
+        const [data, highlighted, vendorData2, endorsements2] =
+          await Promise.all([
+            loadPortalDataAction(),
+            loadHighlightedVendorsAction(),
+            loadVendorsAction(),
+            loadMyEndorsementsAction(),
+          ]);
         if (data) {
           setChecklist(data.checklist);
           setBudget(data.budget);
           setVendorFavorites(data.vendorFavorites ?? []);
         }
         setHighlightedVendors(highlighted);
+        setDbVendors(vendorData2.vendors);
+        setDbCategories(vendorData2.categories);
+        setDbCities(vendorData2.cities);
+        setMyEndorsements(endorsements2);
         setActiveView("overview");
         setPwaSubView("none");
         setState("auth");
@@ -618,9 +638,15 @@ export default function MojeVencanjeClient() {
                   }
                 >
                   <VendorDirectory
+                    vendors={dbVendors}
+                    categories={dbCategories}
+                    cities={dbCities}
                     favorites={vendorFavorites}
                     onFavoritesChange={setVendorFavorites}
                     highlighted={highlightedVendors}
+                    myEndorsements={myEndorsements}
+                    onEndorsementsChange={setMyEndorsements}
+                    onVendorsChange={setDbVendors}
                   />
                 </React.Suspense>
               )}

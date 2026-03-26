@@ -22,7 +22,13 @@ import {
   type RSVPEntry,
 } from "@/lib/rsvp";
 import { del } from "@vercel/blob";
-import type { ChecklistItem, PortalBudget } from "./types";
+import type { ChecklistItem, PortalBudget, Vendor, VendorCategoryMeta } from "./types";
+import { CATEGORY_META } from "./vendor-constants";
+import {
+  getAllVendors as dbGetAllVendors,
+  toggleEndorsement as dbToggleEndorsement,
+  getEndorsementsByCouple as dbGetEndorsementsByCouple,
+} from "@/lib/vendors";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
@@ -388,3 +394,39 @@ export async function deleteGuestAction(
     return { success: false };
   }
 }
+
+/* ── Vendor Directory (DB) ─────────────────────────────────── */
+
+
+export async function loadVendorsAction(): Promise<{
+  vendors: Vendor[];
+  categories: VendorCategoryMeta[];
+  cities: string[];
+}> {
+  const vendors = await dbGetAllVendors();
+
+  const categories: VendorCategoryMeta[] = CATEGORY_META.map((cat) => ({
+    ...cat,
+    count: vendors.filter((v) => v.category === cat.id).length,
+  }));
+
+  const cities = [...new Set(vendors.map((v) => v.city))].sort();
+
+  return { vendors, categories, cities };
+}
+
+export async function loadMyEndorsementsAction(): Promise<string[]> {
+  const slug = await getAuthSlug();
+  if (!slug) return [];
+  return dbGetEndorsementsByCouple(slug);
+}
+
+export async function toggleEndorsementAction(
+  vendorId: string,
+): Promise<{ ok: boolean; endorsed: boolean } | { error: string }> {
+  const slug = await getAuthSlug();
+  if (!slug) return { error: "Niste prijavljeni" };
+  const endorsed = await dbToggleEndorsement(vendorId, slug);
+  return { ok: true, endorsed };
+}
+

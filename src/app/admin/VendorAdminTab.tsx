@@ -18,12 +18,13 @@ import {
   MapPin,
   Check,
 } from "lucide-react";
-import { VENDORS, VENDOR_CATEGORIES, CITIES } from "@/app/moje-vencanje/vendors";
+import { CITIES, CATEGORY_META } from "@/app/moje-vencanje/vendor-constants";
 import {
   loadHighlightedVendorsAction,
   setHighlightedVendorsAction,
+  loadVendorsAction,
 } from "@/app/moje-vencanje/actions";
-import type { VendorCategory } from "@/app/moje-vencanje/types";
+import type { VendorCategory, Vendor, VendorCategoryMeta } from "@/app/moje-vencanje/types";
 
 const CATEGORY_ICONS: Record<VendorCategory, React.ReactNode> = {
   venue: <Building2 size={14} />,
@@ -40,6 +41,8 @@ const CATEGORY_ICONS: Record<VendorCategory, React.ReactNode> = {
 };
 
 export default function VendorAdminTab() {
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [categoryCounts, setCategoryCounts] = useState<VendorCategoryMeta[]>([]);
   const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,14 +51,18 @@ export default function VendorAdminTab() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    loadHighlightedVendorsAction().then((ids) => {
-      setHighlighted(new Set(ids));
-      setLoading(false);
-    });
+    Promise.all([loadHighlightedVendorsAction(), loadVendorsAction()]).then(
+      ([ids, vendorData]) => {
+        setHighlighted(new Set(ids));
+        setVendors(vendorData.vendors);
+        setCategoryCounts(vendorData.categories);
+        setLoading(false);
+      },
+    );
   }, []);
 
   const filtered = useMemo(() => {
-    let result = VENDORS;
+    let result = vendors;
     if (selectedCategory) result = result.filter((v) => v.category === selectedCategory);
     if (selectedCity) result = result.filter((v) => v.city === selectedCity);
     if (search.trim()) {
@@ -82,7 +89,7 @@ export default function VendorAdminTab() {
 
   if (loading) return <p className="text-white/40">Učitavanje vendora...</p>;
 
-  const highlightedVendors = VENDORS.filter((v) => highlighted.has(v.id));
+  const highlightedVendors = vendors.filter((v) => highlighted.has(v.id));
 
   return (
     <div>
@@ -157,9 +164,9 @@ export default function VendorAdminTab() {
               : "bg-white/5 text-white/40 hover:text-white/60"
           }`}
         >
-          Sve ({VENDORS.length})
+          Sve ({vendors.length})
         </button>
-        {VENDOR_CATEGORIES.map((cat) => (
+        {categoryCounts.map((cat) => (
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
