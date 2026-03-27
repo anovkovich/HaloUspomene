@@ -78,8 +78,8 @@ export default function RasporedClient({
   const initialLoadDone = useRef(false);
   const [paidForRaspored, setPaidForRaspored] = useState(initialPaid);
 
-  // Mobile mode
-  const [isMobile, setIsMobile] = useState(false);
+  // Mobile mode (null = not yet detected)
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [mobileSeatTarget, setMobileSeatTarget] = useState<{
     tableId: string;
     seatIndex: number;
@@ -151,9 +151,8 @@ export default function RasporedClient({
   // Detect mobile vs desktop
   useEffect(() => {
     const mobile = window.innerWidth < 768;
-    if (mobile) {
-      setIsMobile(true);
-    } else {
+    setIsMobile(mobile);
+    if (!mobile) {
       // Check if PWA on larger screen (tablet/desktop)
       const standalone =
         window.matchMedia("(display-mode: standalone)").matches ||
@@ -427,6 +426,31 @@ export default function RasporedClient({
     "--theme-border": "rgba(35,35,35,0.12)",
     "--theme-border-light": "rgba(35,35,35,0.06)",
   } as React.CSSProperties;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // LOADING — wait for layout detection before rendering anything
+  // ══════════════════════════════════════════════════════════════════════════
+  if (isMobile === null) {
+    return (
+      <div
+        className="flex items-center justify-center h-dvh"
+        style={themeVars}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <span
+            className="loading loading-spinner loading-md"
+            style={{ color: "var(--theme-primary)" }}
+          />
+          <span
+            className="font-raleway text-sm"
+            style={{ color: "var(--theme-text-light)" }}
+          >
+            Učitavanje...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   // ══════════════════════════════════════════════════════════════════════════
   // MOBILE LAYOUT
