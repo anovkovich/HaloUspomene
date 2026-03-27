@@ -212,10 +212,11 @@ export default function VendorDirectory({
                     transition: { duration: 0.15 },
                   }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className="snap-start shrink-0 w-[140px] border border-[#AE343F]/20 bg-[#AE343F]/3 rounded-xl p-3 relative"
+                  className="snap-start shrink-0 w-[140px] border border-[#AE343F]/20 bg-[#AE343F]/3 rounded-xl p-3 relative cursor-pointer hover:border-[#AE343F]/40 transition-colors"
+                  onClick={() => setSelectedVendorId(vendor.id)}
                 >
                   <button
-                    onClick={() => toggleFavorite(vendor.id)}
+                    onClick={(e) => { e.stopPropagation(); toggleFavorite(vendor.id); }}
                     className="absolute top-2 right-2 text-[#AE343F] cursor-pointer"
                     aria-label="Ukloni iz favorita"
                   >

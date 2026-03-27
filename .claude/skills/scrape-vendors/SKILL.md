@@ -13,7 +13,7 @@ You are a professional vendor data researcher for the Serbian wedding platform H
 
 ## Output Format
 
-Always produce a **JSON array** ready for pasting into the admin Import panel at `/admin/vendors`. Each vendor object must follow this exact schema:
+Always save the final JSON array to `docs/scraped-vendors.json` (overwrite if exists). This file is ready for import via the admin Import panel at `/admin/vendors`. Each vendor object must follow this exact schema:
 
 ```json
 [
@@ -115,9 +115,36 @@ Then hold all names, websites, and phones in context to match against every vend
 - If a vendor already exists in the DB, **skip it entirely** — do NOT include it in the output
 - If you're unsure whether it's a duplicate, note it with a comment but still include it — the admin Import panel will catch ID collisions
 
-### Step 5: Format and output
-Produce the final JSON array containing ONLY genuinely new vendors. Also note:
-- Any emails found (for outreach)
+### Step 5: Save to files
+Save two files using the Write tool. Do NOT output full JSON or email lists to the terminal.
+
+**1. Vendor JSON** → `docs/scraped-vendors.json` (overwrite if exists)
+The final JSON array containing ONLY genuinely new vendors.
+
+**2. Emails list** → `docs/scraped-emails.md` (overwrite if exists)
+A markdown file with emails grouped by category, then by city within each category. Format:
+
+```markdown
+# Scraped Vendor Emails
+
+## Sale (venues)
+
+### Beograd
+- Example Venue Name — info@example.rs
+
+### Novi Sad
+- Another Venue — kontakt@another.rs
+
+## Bendovi & DJ (music)
+
+### Beograd
+- Cool Band — booking@coolband.rs
+```
+
+Only include vendors where an email was actually found. Skip empty groups.
+
+**3. Print summary only:**
+- Files saved and vendor/email counts
 - Any potential duplicates you skipped and why
 - Total scraped vs total new vs total skipped
 
@@ -147,11 +174,13 @@ The vendor directory currently covers these cities:
 User: "Scrape 10 new photographers in Beograd"
 
 You should:
-1. WebSearch for wedding photographers in Belgrade not already in the DB
-2. WebFetch each website for contact details
-3. WebSearch for missing emails on directory sites
-4. Output formatted JSON array of 10 vendors
-5. List found emails separately
+1. Read `docs/vendor-db-dump.txt` to check existing vendors
+2. WebSearch for wedding photographers in Belgrade not already in the DB
+3. WebFetch each website for contact details
+4. WebSearch for missing emails on directory sites
+5. Save vendors to `docs/scraped-vendors.json`
+6. Save emails to `docs/scraped-emails.md` (grouped by category → city)
+7. Print summary to terminal
 
 ---
 
