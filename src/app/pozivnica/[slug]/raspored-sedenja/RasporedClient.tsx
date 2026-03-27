@@ -433,7 +433,7 @@ export default function RasporedClient({
   // ══════════════════════════════════════════════════════════════════════════
   if (isMobile) {
     return (
-      <div className="flex flex-col h-screen" style={themeVars}>
+      <div className="flex flex-col h-dvh" style={themeVars}>
         {/* ── Sticky top bar ── */}
         <div
           className="shrink-0 flex items-center gap-2 px-3"
