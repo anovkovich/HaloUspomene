@@ -18,6 +18,8 @@ import {
   SCRIPT_FONT_CONFIGS,
   getThemeCSSVariables,
   getThemeConfig,
+  buildCustomColorOverrides,
+  blendHex,
 } from "@/app/pozivnica/[slug]/constants";
 import type { ThemeType, ScriptFontType } from "@/app/pozivnica/[slug]/types";
 
@@ -119,6 +121,8 @@ interface FormData {
   // Step 3
   theme: ThemeType;
   scriptFont: ScriptFontType;
+  custom_primary_color: string; // "" means no custom color
+  custom_background_color: string; // "" means no custom background
   // Step 4
   locations: LocationItem[];
   // Step 5
@@ -158,6 +162,8 @@ const defaultFormData: FormData = {
   contact_phone: "",
   theme: "classic_rose",
   scriptFont: "great-vibes",
+  custom_primary_color: "",
+  custom_background_color: "",
   locations: [
     { type: "home", enabled: false, name: "", address: "", time: "" },
     { type: "church", enabled: false, name: "", address: "", time: "" },
@@ -453,6 +459,8 @@ function InvitationPreview({
   groom,
   eventDate,
   useCyrillic,
+  customPrimaryColor,
+  customBackgroundColor,
 }: {
   theme: ThemeType;
   scriptFont: ScriptFontType;
@@ -460,8 +468,20 @@ function InvitationPreview({
   groom: string;
   eventDate: string;
   useCyrillic: boolean;
+  customPrimaryColor?: string;
+  customBackgroundColor?: string;
 }) {
-  const cssVars = getThemeCSSVariables(theme, scriptFont);
+  const baseCssVars = getThemeCSSVariables(theme, scriptFont);
+  const cssVars =
+    customPrimaryColor || customBackgroundColor
+      ? {
+          ...baseCssVars,
+          ...buildCustomColorOverrides(
+            customPrimaryColor || baseCssVars["--theme-primary"],
+            customBackgroundColor || undefined,
+          ),
+        }
+      : baseCssVars;
   const config = getThemeConfig(theme);
 
   const brideName = bride || "Mladini";
@@ -825,6 +845,17 @@ function Step3({
   formData: FormData;
   updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
 }) {
+  const [showColorModal, setShowColorModal] = useState(false);
+  const [tempPrimaryColor, setTempPrimaryColor] = useState(
+    formData.custom_primary_color || "#AE343F",
+  );
+  const [tempBackgroundColor, setTempBackgroundColor] = useState(
+    formData.custom_background_color || "#F5F4DC",
+  );
+
+  const colorInputRef = React.useRef<HTMLInputElement>(null);
+  const bgInputRef = React.useRef<HTMLInputElement>(null);
+
   const themes = Object.entries(THEME_CONFIGS) as [
     ThemeType,
     (typeof THEME_CONFIGS)[ThemeType],
@@ -861,6 +892,8 @@ function Step3({
           groom={formData.groom}
           eventDate={formData.event_date}
           useCyrillic={formData.useCyrillic}
+          customPrimaryColor={formData.custom_primary_color}
+          customBackgroundColor={formData.custom_background_color}
         />
         {formData.useCyrillic && (
           <p className="text-xs text-stone-400 mt-2">
@@ -914,9 +947,13 @@ function Step3({
           <button
             key={key}
             type="button"
-            onClick={() => updateField("theme", key)}
+            onClick={() => {
+              updateField("theme", key);
+              updateField("custom_primary_color", "");
+              updateField("custom_background_color", "");
+            }}
             className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
-              formData.theme === key
+              formData.theme === key && !formData.custom_primary_color
                 ? "border-[#AE343F] shadow-md"
                 : "border-stone-100 hover:border-stone-200"
             }`}
@@ -927,14 +964,213 @@ function Step3({
             />
             <p className="text-sm font-semibold text-stone-700">{cfg.name}</p>
             <p className="text-xs text-stone-400">{cfg.symbolism}</p>
-            {formData.theme === key && (
+            {formData.theme === key && !formData.custom_primary_color && (
               <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-white" />
               </div>
             )}
           </button>
         ))}
+
+        {/* 6th card: Custom colors (primary + background) */}
+        <button
+          type="button"
+          onClick={() => {
+            updateField("theme", "classic_rose");
+            const initPrimary = formData.custom_primary_color || "#AE343F";
+            if (!formData.custom_primary_color) {
+              setTempPrimaryColor(initPrimary);
+            } else {
+              setTempPrimaryColor(formData.custom_primary_color);
+            }
+            if (!formData.custom_background_color) {
+              const autoBg = blendHex("#FFFFFF", initPrimary, 0.06);
+              setTempBackgroundColor(autoBg);
+            } else {
+              setTempBackgroundColor(formData.custom_background_color);
+            }
+            setShowColorModal(true);
+          }}
+          className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
+            formData.custom_primary_color
+              ? "border-[#AE343F] shadow-md"
+              : "border-stone-100 hover:border-stone-200"
+          }`}
+        >
+          {/* Two color swatches (simplified) */}
+          <div className="flex gap-2.5 mb-3">
+            <div
+              className="w-8 h-8 rounded-full border border-black/10 shadow-sm"
+              style={{
+                background: formData.custom_primary_color
+                  ? formData.custom_primary_color
+                  : "linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff)",
+              }}
+            />
+            <div
+              className="w-8 h-8 rounded-full border border-black/10 shadow-sm"
+              style={{
+                background: formData.custom_background_color
+                  ? formData.custom_background_color
+                  : "#F5F4DC",
+              }}
+            />
+          </div>
+
+          <p className="text-sm font-semibold text-stone-700">
+            Prilagođena boja
+          </p>
+          <p className="text-xs text-stone-400">Izaberi svoju</p>
+
+          {/* Selected indicator */}
+          {formData.custom_primary_color && (
+            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
+              <div className="w-2 h-2 rounded-full bg-white" />
+            </div>
+          )}
+        </button>
       </div>
+
+      {/* Pricing note for custom color */}
+      {(formData.custom_primary_color || formData.custom_background_color) &&
+        (() => {
+          const customColorAddon = pricing.addons.find(
+            (addon) => addon.id === "custom_color",
+          );
+          const price = customColorAddon
+            ? formatPrice(customColorAddon.price)
+            : "600 din";
+          return (
+            <div className="mt-4 p-3 rounded-lg border border-amber-200 bg-amber-50 text-sm text-amber-800">
+              ℹ️ Za prilagođenu boju biće vam naplaćeno dodatnih{" "}
+              <strong>{price}</strong>.
+            </div>
+          );
+        })()}
+
+      {/* Color picker modal */}
+      <AnimatePresence>
+        {showColorModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowColorModal(false);
+              }
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-6"
+            >
+              <div>
+                <h2 className="text-xl font-bold text-stone-800">
+                  Prilagođena boja
+                </h2>
+                <p className="text-sm text-stone-400 mt-1">
+                  Izaberite boje za svoju temu
+                </p>
+              </div>
+
+              {/* Color pickers */}
+              <div className="space-y-4">
+                {/* Accent color */}
+                <div>
+                  <label className={labelCls}>Akcenti</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={tempPrimaryColor}
+                      onChange={(e) => setTempPrimaryColor(e.target.value)}
+                      className="w-16 h-16 rounded-xl border-2 border-stone-200 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-mono text-stone-600">
+                        {tempPrimaryColor.toUpperCase()}
+                      </p>
+                      <p className="text-xs text-stone-400 mt-1">
+                        Glavna boja teme
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Background color */}
+                <div>
+                  <label className={labelCls}>Pozadina</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={tempBackgroundColor}
+                      onChange={(e) => setTempBackgroundColor(e.target.value)}
+                      className="w-16 h-16 rounded-xl border-2 border-stone-200 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-mono text-stone-600">
+                        {tempBackgroundColor.toUpperCase()}
+                      </p>
+                      <p className="text-xs text-stone-400 mt-1">
+                        Boja pozadine pozivnice
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className="rounded-2xl overflow-hidden border border-stone-200 p-4">
+                <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3">
+                  Pregled
+                </p>
+                <div
+                  className="rounded-lg p-4 space-y-2 text-center"
+                  style={{
+                    background: tempBackgroundColor,
+                  }}
+                >
+                  <div
+                    className="w-8 h-8 rounded-full mx-auto shadow-sm"
+                    style={{ background: tempPrimaryColor }}
+                  />
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: tempPrimaryColor }}
+                  >
+                    Prilagođena boja
+                  </p>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowColorModal(false)}
+                  className="flex-1 px-4 py-3 rounded-xl border border-stone-200 text-stone-700 font-semibold hover:bg-stone-50 transition-colors"
+                >
+                  Otkaži
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateField("custom_primary_color", tempPrimaryColor);
+                    updateField("custom_background_color", tempBackgroundColor);
+                    setShowColorModal(false);
+                  }}
+                  className="flex-1 px-4 py-3 rounded-xl bg-[#AE343F] text-white font-semibold hover:bg-[#8B2833] transition-colors"
+                >
+                  Potvrdi
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1256,9 +1492,19 @@ function generateRawJson(formData: FormData): string {
     map_enabled: formData.map_enabled,
     paid_for_raspored: formData.extra_raspored,
     paid_for_audio: formData.extra_audio,
-    paid_for_audio_USB: formData.extra_usb_kaseta ? "kaseta" : formData.extra_usb_bocica ? "bocica" : "",
+    paid_for_audio_USB: formData.extra_usb_kaseta
+      ? "kaseta"
+      : formData.extra_usb_bocica
+        ? "bocica"
+        : "",
     paid_for_pdf: false,
     draft: true,
+    ...(formData.custom_primary_color
+      ? { custom_primary_color: formData.custom_primary_color }
+      : {}),
+    ...(formData.custom_background_color
+      ? { custom_background_color: formData.custom_background_color }
+      : {}),
   };
   return JSON.stringify(json, null, 2);
 }
@@ -1444,6 +1690,16 @@ export default function QuestionnaireForm() {
         });
         billTotal += usb.price;
       }
+      if (formData.custom_primary_color || formData.custom_background_color) {
+        const customColor = pricing.addons.find(
+          (a) => a.id === "custom_color",
+        )!;
+        billItems.push({
+          label: "Prilagođena boja teme",
+          amount: formatPrice(customColor.price),
+        });
+        billTotal += customColor.price;
+      }
 
       const isBundle = formData.extra_raspored && formData.extra_audio;
       if (isBundle) {
@@ -1484,6 +1740,9 @@ export default function QuestionnaireForm() {
           : formData.extra_usb_bocica
             ? "USB u bočici"
             : "❌ Ne",
+        "Prilagođena boja": formData.custom_primary_color
+          ? `${formData.custom_primary_color} / bg: ${formData.custom_background_color || "auto"}`
+          : "❌ Ne",
         "⚠️⚠️⚠️ NAPOMENA ⚠️⚠️⚠️": formData.wishes || "(nema)",
 
         // ── Bill ──

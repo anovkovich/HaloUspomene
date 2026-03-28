@@ -22,6 +22,7 @@ interface Couple {
   theme: string;
   paid_for_raspored?: boolean;
   paid_for_audio?: boolean;
+  paid_for_images?: boolean;
   paid_for_audio_USB?: "" | "kaseta" | "bocica";
   draft?: boolean;
   receipt_valid?: boolean;

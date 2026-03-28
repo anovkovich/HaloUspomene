@@ -16,6 +16,10 @@ export default function EditCouplePage() {
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [images, setImages] = useState<Array<{ url: string; pathname: string }>>([]);
+  const [paidForImages, setPaidForImages] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/couples")
@@ -27,6 +31,8 @@ export default function EditCouplePage() {
         if (couple) {
           const { slug: _s, ...data } = couple;
           setJson(JSON.stringify(data, null, 2));
+          setPaidForImages(data.paid_for_images ?? false);
+          setImages(data.images ?? []);
         } else {
           toast.error("Pozivnica nije pronađena");
         }
@@ -87,6 +93,51 @@ export default function EditCouplePage() {
     }
   }
 
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageError(null);
+    setUploading(true);
+
+    const form = new FormData();
+    form.append("image", file);
+
+    const res = await fetch(`/api/admin/couples/${slug}/images`, {
+      method: "POST",
+      body: form,
+    });
+
+    setUploading(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setImageError(data.error || "Greška pri otpremanju");
+      return;
+    }
+
+    const data = await res.json();
+    setImages((prev) => [...prev, { url: data.url, pathname: data.pathname }]);
+    // Reset file input
+    e.target.value = "";
+  }
+
+  async function handleImageDelete(img: { url: string; pathname: string }) {
+    if (!confirm("Obriši sliku?")) return;
+    setImageError(null);
+
+    const res = await fetch(`/api/admin/couples/${slug}/images`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: img.url, pathname: img.pathname }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setImageError(data.error || "Greška pri brisanju");
+      return;
+    }
+    setImages((prev) => prev.filter((i) => i.pathname !== img.pathname));
+  }
+
   if (loading) return <p className="text-white/40">Učitavanje...</p>;
 
   return (
@@ -136,6 +187,90 @@ export default function EditCouplePage() {
           className="w-full px-3 sm:px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white font-mono text-[11px] sm:text-xs leading-relaxed focus:outline-none focus:border-[#AE343F] resize-y"
           spellCheck={false}
         />
+
+        {/* Images toggle */}
+        <div className="flex items-center justify-between px-4 py-3 bg-white/5 border border-white/10 rounded-lg">
+          <span className="text-sm font-medium text-white/70">Slike</span>
+          <button
+            onClick={() => {
+              try {
+                const parsed = JSON.parse(json);
+                parsed.paid_for_images = !paidForImages;
+                setJson(JSON.stringify(parsed, null, 2));
+                setPaidForImages(!paidForImages);
+              } catch {
+                toast.error("Neispravan JSON");
+              }
+            }}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              paidForImages ? "bg-[#AE343F]" : "bg-white/20"
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                paidForImages ? "translate-x-5" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+        </div>
+
+        {paidForImages && (
+          <div className="border border-white/10 rounded-lg p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-white/70">
+                Slike ({images.length}/3)
+              </h3>
+              {images.length < 3 && (
+                <label
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                    uploading
+                      ? "bg-white/5 text-white/30"
+                      : "bg-[#AE343F] hover:bg-[#8A2A32] text-white"
+                  }`}
+                >
+                  {uploading ? "Otpremanje..." : "+ Dodaj sliku"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploading}
+                    onChange={handleImageUpload}
+                  />
+                </label>
+              )}
+            </div>
+
+            {imageError && (
+              <p className="text-red-400 text-xs">{imageError}</p>
+            )}
+
+            {images.length === 0 ? (
+              <p className="text-white/30 text-xs italic">
+                Nema otpremljenih slika.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                {images.map((img) => (
+                  <div key={img.pathname} className="relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img.url}
+                      alt=""
+                      className="w-24 h-24 object-cover rounded-lg border border-white/10"
+                    />
+                    <button
+                      onClick={() => handleImageDelete(img)}
+                      className="absolute top-1 right-1 w-5 h-5 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Obriši sliku"
+                    >
+                      <Trash2 size={10} className="text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {showDeleteModal && (

@@ -32,9 +32,11 @@ export async function upsertCouple(
   data: WeddingData
 ): Promise<void> {
   const c = await col();
+  // Exclude created_at from data to avoid conflict with $setOnInsert
+  const { created_at, ...dataWithoutTimestamp } = data as any;
   await c.updateOne(
     { slug },
-    { $set: { slug, ...data }, $setOnInsert: { created_at: new Date() } },
+    { $set: { slug, ...dataWithoutTimestamp }, $setOnInsert: { created_at: new Date() } },
     { upsert: true }
   );
 }

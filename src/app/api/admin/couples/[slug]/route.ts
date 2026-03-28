@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { upsertCouple, deleteCouple, patchCouple } from "@/lib/couples";
+import { upsertCouple, deleteCouple, patchCouple, getWeddingData } from "@/lib/couples";
 import { deleteRSVPResponses } from "@/lib/rsvp";
 import { deleteSeatingLayout } from "@/lib/seating";
 import { deletePortalData } from "@/lib/portal";
@@ -61,6 +61,18 @@ export async function DELETE(
     if (audioMessages.length > 0) {
       await Promise.allSettled(
         audioMessages.map((m) => del(m.blobUrl))
+      );
+    }
+  } catch {
+    // Continue with deletion even if blob cleanup fails
+  }
+
+  // Delete image blobs from Vercel Blob
+  try {
+    const coupleData = await getWeddingData(slug);
+    if (coupleData?.images && coupleData.images.length > 0) {
+      await Promise.allSettled(
+        coupleData.images.map((img) => del(img.url))
       );
     }
   } catch {

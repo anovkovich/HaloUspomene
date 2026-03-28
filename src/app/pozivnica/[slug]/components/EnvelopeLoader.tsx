@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+import { THEME_CONFIGS } from "../constants";
 
 interface EnvelopeLoaderProps {
   onComplete: () => void;
@@ -49,6 +50,13 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
   const primaryColor = config.colors.primary;
   const waxSealColor = config.colors.waxSeal;
   const waxSealDark = config.colors.waxSealDark;
+
+  // For custom themes, use gold for stamp text for better contrast
+  const presetThemePrimaries = Object.values(THEME_CONFIGS).map(
+    (t) => t.colors.primary
+  );
+  const isCustomTheme = !presetThemePrimaries.includes(primaryColor);
+  const stampTextColor = isCustomTheme ? "#d4af37" : primaryColor;
 
   return (
     <div
@@ -189,7 +197,7 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
               ></div>
               <span
                 className="font-serif text-base sm:text-2xl select-none drop-shadow-md"
-                style={{ color: primaryColor }}
+                style={{ color: stampTextColor }}
               >
                 {initials}
               </span>

@@ -54,6 +54,10 @@ export interface WeddingData {
   paid_for_pdf?: boolean; // Unlocks watermark-free PDF export
   paid_for_audio?: boolean; // Unlocks audio guest book recording
   paid_for_audio_USB?: "" | "kaseta" | "bocica"; // USB suvenir choice
+  paid_for_images?: boolean; // Unlocks photo gallery add-on
+  images?: Array<{ url: string; pathname: string }>; // Up to 3 uploaded photos
+  custom_primary_color?: string; // Custom primary color in hex (e.g. "#A23B8C"), overrides theme
+  custom_background_color?: string; // Custom background color in hex, overrides theme background
   draft?: boolean; // Only visible in dev, returns 404 in production
   receipt_valid?: boolean; // Receipt link is active (set false after payment)
   receipt_created?: string; // ISO date when receipt was generated

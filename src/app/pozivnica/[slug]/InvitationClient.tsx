@@ -13,6 +13,7 @@ import { Countdown } from "./components/Countdown";
 import { Timeline } from "./components/Timeline";
 import { RSVPForm } from "./components/RSVPFrom";
 import { generateInvitationPDF } from "./generateInvitationPDF";
+import PolaroidGallery from "./PolaroidGallery";
 import Link from "next/link";
 import { Download } from "lucide-react";
 
@@ -344,6 +345,8 @@ export default function InvitationClient({
         theme={data.theme}
         scriptFont={data.scriptFont}
         useCyrillic={useCyrillic}
+        customPrimaryColor={data.custom_primary_color}
+        customBackgroundColor={data.custom_background_color}
       >
         <EnvelopeLoader
           names={data.couple_names.full_display}
@@ -359,6 +362,8 @@ export default function InvitationClient({
       theme={data.theme}
       scriptFont={data.scriptFont}
       useCyrillic={useCyrillic}
+      customPrimaryColor={data.custom_primary_color}
+      customBackgroundColor={data.custom_background_color}
     >
       <div
         className={`invitation-page min-h-screen transition-all duration-[2000ms] ease-out ${isRevealed ? "opacity-100" : "opacity-0"}`}
@@ -497,6 +502,11 @@ export default function InvitationClient({
           </div>
         </section>
 
+        {/* Polaroid Gallery — paid add-on */}
+        {data.paid_for_images && data.images && data.images.length > 0 && (
+          <PolaroidGallery images={data.images} useCyrillic={data.useCyrillic} />
+        )}
+
         {/* Countdown Section */}
         {data.countdown_enabled && (
           <section
@@ -515,12 +525,6 @@ export default function InvitationClient({
               >
                 {t.countdown}
               </h2>
-              <p
-                className="font-elegant text-xs uppercase tracking-[0.4em] mb-12"
-                style={{ color: "var(--theme-text-light)" }}
-              >
-                -
-              </p>
               <Countdown targetDate={data.event_date} />
             </div>
           </section>

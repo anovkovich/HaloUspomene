@@ -43,6 +43,12 @@
       "label": "Audio dobrodošlica",
       "price": 1000,
       "note": "Vaša lična poruka dobrodošlice"
+    },
+    {
+      "id": "custom_color",
+      "label": "Prilagođena boja teme",
+      "price": 600,
+      "note": "Prilagodite primarnu boju pozivnice po vašem ukusu."
     }
   ]
 }
