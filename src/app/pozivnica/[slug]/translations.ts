@@ -90,6 +90,7 @@ export interface Translations {
 
   // Date labels
   months: string[];
+  months_genitive: string[];
   days_week: string[];
 }
 
@@ -183,18 +184,32 @@ export const latinTranslations: Translations = {
 
   // Date labels
   months: [
-    "Januar",
-    "Februar",
-    "Mart",
-    "April",
-    "Maj",
-    "Jun",
-    "Jul",
-    "Avgust",
-    "Septembar",
-    "Oktobar",
-    "Novembar",
-    "Decembar",
+    "januar",
+    "februar",
+    "mart",
+    "april",
+    "maj",
+    "jun",
+    "jul",
+    "avgust",
+    "septembar",
+    "oktobar",
+    "novembar",
+    "decembar",
+  ],
+  months_genitive: [
+    "januara",
+    "februara",
+    "marta",
+    "aprila",
+    "maja",
+    "juna",
+    "jula",
+    "avgusta",
+    "septembra",
+    "oktobra",
+    "novembra",
+    "decembra",
   ],
   days_week: [
     "Nedelja",
@@ -297,18 +312,32 @@ export const cyrillicTranslations: Translations = {
 
   // Date labels
   months: [
-    "Јануар",
-    "Фебруар",
-    "Март",
-    "Април",
-    "Мај",
-    "Јун",
-    "Јул",
-    "Август",
-    "Септембар",
-    "Октобар",
-    "Новембар",
-    "Децембар",
+    "јануар",
+    "фебруар",
+    "март",
+    "април",
+    "мај",
+    "јун",
+    "јул",
+    "август",
+    "септембар",
+    "октобар",
+    "новембар",
+    "децембар",
+  ],
+  months_genitive: [
+    "јануара",
+    "фебруара",
+    "марта",
+    "априла",
+    "маја",
+    "јуна",
+    "јула",
+    "августа",
+    "септембра",
+    "октобра",
+    "новембра",
+    "децембра",
   ],
   days_week: [
     "Недеља",

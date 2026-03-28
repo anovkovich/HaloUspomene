@@ -40,7 +40,7 @@ function formatEventDate(
   const dayName = days[date.getDay()];
 
   return {
-    display: `${day} . ${(month + 1).toString().padStart(2, "0")} . ${year}`,
+    display: `${day} . ${(month + 1).toString().padStart(2, "0")} . ${year} .`,
     short: `${day}. ${months[month]} ${year}.`,
     dayName,
   };
@@ -213,7 +213,7 @@ export default function InvitationClient({
       // Format submit_until as "DD. MMMM YYYY."
       const d = new Date(data.submit_until);
       const day = d.getDate().toString().padStart(2, "0");
-      const month = t.months[d.getMonth()];
+      const month = t.months_genitive[d.getMonth()];
       const year = d.getFullYear();
       return {
         isPastDeadline: now > deadline,
@@ -221,7 +221,7 @@ export default function InvitationClient({
         isWeddingDay: now >= eventStart && now <= dayAfterEnd,
         submitUntilDisplay: `${day}. ${month} ${year}.`,
       };
-    }, [data.submit_until, data.event_date, t.months]);
+    }, [data.submit_until, data.event_date, t.months_genitive]);
 
   useEffect(() => {
     if (!isLoading) {
