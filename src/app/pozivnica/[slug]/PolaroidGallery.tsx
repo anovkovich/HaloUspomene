@@ -16,8 +16,6 @@ const LAYOUT_ROTATIONS: Record<number, number[]> = {
   3: [-4, 1.5, -2.5],
 };
 
-const PIN_COLORS = ["#DC2626", "#2563EB", "#16A34A"];
-
 export default function PolaroidGallery({
   images,
   useCyrillic,
@@ -60,7 +58,6 @@ export default function PolaroidGallery({
         <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-6">
           {images.map((img, idx) => {
             const rotation = rotations[idx] ?? 0;
-            const pinColor = PIN_COLORS[idx % PIN_COLORS.length];
 
             return (
               <div
@@ -86,14 +83,14 @@ export default function PolaroidGallery({
                   el.style.zIndex = "";
                 }}
               >
-                {/* Pushpin */}
+                {/* Pushpin - uses theme primary color */}
                 <div
                   className="absolute left-1/2 -translate-x-1/2 z-10 rounded-full"
                   style={{
                     top: "-10px",
                     width: "18px",
                     height: "18px",
-                    backgroundColor: pinColor,
+                    backgroundColor: "var(--theme-primary)",
                     boxShadow: `0 2px 4px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.3)`,
                   }}
                 >
