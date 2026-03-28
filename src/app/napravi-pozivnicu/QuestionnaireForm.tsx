@@ -1720,6 +1720,7 @@ export default function QuestionnaireForm() {
         ...(formData.extra_audio ? { a: 1 } : {}),
         ...(formData.extra_usb_kaseta ? { uk: 1 } : {}),
         ...(formData.extra_usb_bocica ? { ub: 1 } : {}),
+        ...(formData.custom_primary_color || formData.custom_background_color ? { cc: 1 } : {}),
       });
       const receiptUrl = `https://halouspomene.rs/racun?d=${btoa(unescape(encodeURIComponent(receiptData)))}`;
 

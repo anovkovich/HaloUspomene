@@ -222,6 +222,8 @@ interface ReceiptPayload {
   ub?: number; // usb bocica
   rp?: number; // retro phone
   pd?: number; // personalizovana dobrodoslica
+  cc?: number; // custom colors
+  ig?: number; // images
   d: number; // custom discount
   ba?: number; // bank account index (0, 1, 2)
   t: number; // timestamp
@@ -316,6 +318,16 @@ function ReceiptContent() {
     items.push({
       label: "USB u bočici",
       amount: pricing.addons.find((a) => a.id === "usb_bocica")!.price,
+    });
+  if (payload.cc)
+    items.push({
+      label: "Prilagođena boja teme",
+      amount: pricing.addons.find((a) => a.id === "custom_color")!.price,
+    });
+  if (payload.ig)
+    items.push({
+      label: "Polaroid galerija slika",
+      amount: pricing.addons.find((a) => a.id === "custom_color")!.price,
     });
 
   const subtotal = items.reduce((s, i) => s + i.amount, 0);
