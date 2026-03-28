@@ -587,17 +587,63 @@ function Step1({
   formData: FormData;
   updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
 }) {
+  // Calculate current bill based on form selections
+  const calculateCurrentBill = () => {
+    let total = pricing.pozivnica.website.price;
+    if (formData.extra_raspored) total += pricing.pozivnica.raspored.price;
+    if (formData.extra_audio) total += pricing.pozivnica.audio.price;
+    if (formData.extra_usb_kaseta) {
+      const addon = pricing.addons.find((a) => a.id === "usb_kaseta");
+      if (addon) total += addon.price;
+    }
+    if (formData.extra_usb_bocica) {
+      const addon = pricing.addons.find((a) => a.id === "usb_bocica");
+      if (addon) total += addon.price;
+    }
+    if (formData.custom_primary_color || formData.custom_background_color) {
+      const addon = pricing.addons.find((a) => a.id === "custom_color");
+      if (addon) total += addon.price;
+    }
+    // Apply bundle discount
+    if (formData.extra_raspored && formData.extra_audio) {
+      const discount =
+        pricing.pozivnica.bundleFullPrice - pricing.pozivnica.bundlePrice;
+      total -= discount;
+    }
+    return total;
+  };
+
+  const currentTotal = calculateCurrentBill();
+
   return (
     <div>
       {/* Pricing section */}
       <div className="mb-3 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
         <p className="text-2xl font-bold align-end text-[#AE343F]">
-          Cena pozivnice je od {formatPrice(pricing.pozivnica.website.price)}
+          Ukupna cena: {formatPrice(currentTotal)}
         </p>
         <p className="font-semibold text-sm text-[#8B2833] mt-2">
           <small>
-            Kompletni paket sa rasporedom sedenja i audio knjigom:{" "}
-            {formatPrice(pricing.pozivnica.bundlePrice)}
+            Bazna cena: {formatPrice(pricing.pozivnica.website.price)}
+            {formData.extra_raspored ||
+            formData.extra_audio ||
+            formData.extra_usb_kaseta ||
+            formData.extra_usb_bocica ||
+            formData.custom_primary_color ||
+            formData.custom_background_color ? (
+              <>
+                {" "}
+                + dodaci
+                {formData.extra_raspored && formData.extra_audio && (
+                  <> • Popust -
+                  {formatPrice(
+                    pricing.pozivnica.bundleFullPrice -
+                      pricing.pozivnica.bundlePrice
+                  )}
+                  </>
+                )}
+              </>
+            ) : null}
           </small>
         </p>
       </div>
