@@ -115,7 +115,16 @@ export default function EditCouplePage() {
     }
 
     const data = await res.json();
-    setImages((prev) => [...prev, { url: data.url, pathname: data.pathname }]);
+    const updatedImages = [...images, { url: data.url, pathname: data.pathname }];
+    setImages(updatedImages);
+    // Sync images to JSON
+    try {
+      const parsed = JSON.parse(json);
+      parsed.images = updatedImages;
+      setJson(JSON.stringify(parsed, null, 2));
+    } catch {
+      /* ignore JSON parse errors */
+    }
     // Reset file input
     e.target.value = "";
   }
@@ -135,7 +144,16 @@ export default function EditCouplePage() {
       setImageError(data.error || "Greška pri brisanju");
       return;
     }
-    setImages((prev) => prev.filter((i) => i.pathname !== img.pathname));
+    const updatedImages = images.filter((i) => i.pathname !== img.pathname);
+    setImages(updatedImages);
+    // Sync images to JSON
+    try {
+      const parsed = JSON.parse(json);
+      parsed.images = updatedImages.length > 0 ? updatedImages : undefined;
+      setJson(JSON.stringify(parsed, null, 2));
+    } catch {
+      /* ignore JSON parse errors */
+    }
   }
 
   if (loading) return <p className="text-white/40">Učitavanje...</p>;

@@ -6,8 +6,8 @@ import InvitationClient from "./InvitationClient";
 // Allow slugs not in generateStaticParams (new couples added via admin)
 export const dynamicParams = true;
 
-// Revalidate from DB every 60 seconds (picks up admin changes)
-export const revalidate = 60;
+// Revalidate from DB every 10 seconds (picks up admin changes quickly)
+export const revalidate = 10;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
