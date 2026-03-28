@@ -159,6 +159,8 @@ export default function AdminPage() {
       ub: c.paid_for_audio_USB === "bocica" ? 1 : 0,
       rp: extras?.retro_phone ? 1 : 0,
       pd: extras?.dobrodoslica ? 1 : 0,
+      cc: (c as any).custom_primary_color || (c as any).custom_background_color ? 1 : 0,
+      ig: (c as any).paid_for_images ? 1 : 0,
       d: c.custom_discount ?? 0,
       ba: bankAccountIdx,
       t: Date.now(),
