@@ -1,5 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   CheckSquare,
@@ -216,50 +217,65 @@ export default function PlaniranjeVencanjaPage() {
               />
             </div>
 
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#AE343F]/10 rounded-full mb-6">
-                <Sparkles size={14} className="text-[#AE343F]" />
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#AE343F]">
-                  BESPLATNO uz našu pozivnicu!
-                </span>
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#232323] mb-6 leading-[1.1]">
-                Planer za{" "}
-                <span className="text-[#AE343F] italic">Venčanje</span>
-              </h1>
-
-              <p className="text-lg sm:text-xl text-[#232323]/60 leading-relaxed mb-8 max-w-xl">
-                Checklista zadataka, budžet kalkulator i direktorijum vendora —
-                sve što vam treba da organizujete venčanje bez stresa.
-                Registrujte se za 10 sekundi.
-              </p>
-
-              {/* Feature pills */}
-              <div className="flex flex-wrap gap-3 mb-8">
-                {[
-                  { icon: <CheckSquare size={14} />, label: "Checklista" },
-                  { icon: <Wallet size={14} />, label: "Budžet" },
-                  { icon: <Store size={14} />, label: "Vendori" },
-                  { icon: <Smartphone size={14} />, label: "Aplikacija" },
-                ].map((pill) => (
-                  <span
-                    key={pill.label}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#232323]/8 rounded-full text-sm text-[#232323]/60"
-                  >
-                    <span className="text-[#AE343F]">{pill.icon}</span>
-                    {pill.label}
-                  </span>
-                ))}
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="flex items-center gap-4 text-sm text-[#232323]/40">
-                  <span className="flex items-center gap-1.5">
-                    <Clock size={14} className="text-[#AE343F]" />
-                    Registracija za 10 sekundi
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+              {/* Text */}
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#AE343F]/10 rounded-full mb-6">
+                  <Sparkles size={14} className="text-[#AE343F]" />
+                  <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#AE343F]">
+                    BESPLATNO uz našu pozivnicu!
                   </span>
                 </div>
+
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#232323] mb-6 leading-[1.1]">
+                  Planer za{" "}
+                  <span className="text-[#AE343F] italic">Venčanje</span>
+                </h1>
+
+                <p className="text-lg sm:text-xl text-[#232323]/60 leading-relaxed mb-8 max-w-xl">
+                  Checklista zadataka, budžet kalkulator i direktorijum vendora
+                  — sve što vam treba da organizujete venčanje bez stresa.
+                  Registrujte se za 10 sekundi.
+                </p>
+
+                {/* Feature pills */}
+                <div className="flex flex-wrap gap-3 mb-8">
+                  {[
+                    { icon: <CheckSquare size={14} />, label: "Checklista" },
+                    { icon: <Wallet size={14} />, label: "Budžet" },
+                    { icon: <Store size={14} />, label: "Vendori" },
+                    { icon: <Smartphone size={14} />, label: "Aplikacija" },
+                  ].map((pill) => (
+                    <span
+                      key={pill.label}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#232323]/8 rounded-full text-sm text-[#232323]/60"
+                    >
+                      <span className="text-[#AE343F]">{pill.icon}</span>
+                      {pill.label}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <div className="flex items-center gap-4 text-sm text-[#232323]/40">
+                    <span className="flex items-center gap-1.5">
+                      <Clock size={14} className="text-[#AE343F]" />
+                      Registracija za 10 sekundi
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Image */}
+              <div className="flex justify-center lg:justify-end">
+                <Image
+                  src="/images/planer-za-vencanje.webp"
+                  alt="HALO Uspomene online planer za venčanje — checklista, budžet kalkulator, direktorijum vendora"
+                  width={600}
+                  height={376}
+                  priority
+                  className="w-full max-w-md lg:max-w-lg object-contain"
+                />
               </div>
             </div>
           </div>

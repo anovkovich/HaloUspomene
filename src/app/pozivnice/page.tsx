@@ -1,5 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Check,
@@ -357,67 +358,82 @@ export default function PozivnicePage() {
               />
             </div>
 
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#AE343F]/10 rounded-full mb-6">
-                <Heart size={14} className="text-[#AE343F]" fill="#AE343F" />
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#AE343F]">
-                  Digitalna + PDF za štampu
-                </span>
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#232323] mb-6 leading-[1.1]">
-                Website Pozivnica{" "}
-                <span className="text-[#AE343F] italic">za Venčanje</span>
-              </h1>
-
-              <p className="text-lg sm:text-xl text-[#232323]/60 leading-relaxed mb-8 max-w-2xl">
-                Personalizovana web stranica sa RSVP potvrdom, odbrojavanjem,
-                mapom i programom dana. Uz web pozivnicu dobijate i besplatnu
-                PDF pozivnicu za štampu sa QR kodom.
-              </p>
-
-              <div className="flex flex-wrap gap-3 mb-8">
-                {[
-                  { icon: <Check size={16} />, label: "RSVP" },
-                  { icon: <Timer size={16} />, label: "Odbrojavanje" },
-                  { icon: <MapPin size={16} />, label: "Mapa" },
-                  { icon: <Palette size={16} />, label: "5 tema" },
-                  { icon: <FileDown size={16} />, label: "PDF besplatno" },
-                ].map((pill) => (
-                  <span
-                    key={pill.label}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#232323]/8 rounded-full text-sm text-[#232323]/60"
-                  >
-                    <span className="text-[#AE343F]">{pill.icon}</span>
-                    {pill.label}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+              {/* Text */}
+              <div className="lg:col-span-7">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#AE343F]/10 rounded-full mb-6">
+                  <Heart size={14} className="text-[#AE343F]" fill="#AE343F" />
+                  <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#AE343F]">
+                    Digitalna + PDF za štampu
                   </span>
-                ))}
+                </div>
+
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#232323] mb-6 leading-[1.1]">
+                  Website Pozivnica{" "}
+                  <span className="text-[#AE343F] italic">za Venčanje</span>
+                </h1>
+
+                <p className="text-lg sm:text-xl text-[#232323]/60 leading-relaxed mb-8 max-w-2xl">
+                  Personalizovana web stranica sa RSVP potvrdom, odbrojavanjem,
+                  mapom i programom dana. Uz web pozivnicu dobijate i besplatnu
+                  PDF pozivnicu za štampu sa QR kodom.
+                </p>
+
+                <div className="flex flex-wrap gap-3 mb-8">
+                  {[
+                    { icon: <Check size={16} />, label: "RSVP" },
+                    { icon: <Timer size={16} />, label: "Odbrojavanje" },
+                    { icon: <MapPin size={16} />, label: "Mapa" },
+                    { icon: <Palette size={16} />, label: "5 tema" },
+                    { icon: <FileDown size={16} />, label: "PDF besplatno" },
+                  ].map((pill) => (
+                    <span
+                      key={pill.label}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#232323]/8 rounded-full text-sm text-[#232323]/60"
+                    >
+                      <span className="text-[#AE343F]">{pill.icon}</span>
+                      {pill.label}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <Link
+                    href="/napravi-pozivnicu"
+                    className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full"
+                  >
+                    Napravi svoju pozivnicu
+                  </Link>
+                  <Link
+                    href="/cene"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-[#232323]/10 text-[#232323]/70 text-sm uppercase tracking-widest font-medium hover:border-[#AE343F] hover:text-[#AE343F] transition-all rounded-full"
+                  >
+                    Pogledajte cene
+                    <ArrowRight size={16} />
+                  </Link>
+                </div>
+
+                <div className="flex items-center gap-6 text-sm text-[#232323]/40">
+                  <span className="font-bold text-[#AE343F]">
+                    od {formatPrice(pricing.pozivnica.website.price)}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Clock size={14} className="text-[#AE343F]" />
+                    Gotova za 24h
+                  </span>
+                </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <Link
-                  href="/napravi-pozivnicu"
-                  className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full"
-                >
-                  Napravi svoju pozivnicu
-                </Link>
-                <Link
-                  href="/cene"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-[#232323]/10 text-[#232323]/70 text-sm uppercase tracking-widest font-medium hover:border-[#AE343F] hover:text-[#AE343F] transition-all rounded-full"
-                >
-                  Pogledajte cene
-                  <ArrowRight size={16} />
-                </Link>
-              </div>
-
-              <div className="flex items-center gap-6 text-sm text-[#232323]/40">
-                <span className="font-bold text-[#AE343F]">
-                  od {formatPrice(pricing.pozivnica.website.price)}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Clock size={14} className="text-[#AE343F]" />
-                  Gotova za 24h
-                </span>
+              {/* Image */}
+              <div className="lg:col-span-5 flex justify-center lg:justify-end">
+                <Image
+                  src="/images/website-pozivnice.webp"
+                  alt="HALO Uspomene website pozivnica za venčanje — digitalna pozivnica sa RSVP, odbrojavanjem, mapom i PDF za štampu"
+                  width={797}
+                  height={874}
+                  priority
+                  className="w-full max-w-md lg:max-w-lg object-contain"
+                />
               </div>
             </div>
           </div>
