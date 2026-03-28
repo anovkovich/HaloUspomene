@@ -296,8 +296,8 @@ export default function PlaniranjeVencanjaPage() {
             <div className="bg-[#F5F4DC]/50 border border-[#d4af37]/20 rounded-2xl p-6 sm:p-8">
               <p className="text-[#232323]/70 leading-relaxed mb-4">
                 <strong className="text-[#232323]">Ne, ne morate.</strong> Mnogi
-                parovi još nemaju sve podatke za pozivnicu — datum venčanja,
-                lokaciju, program dana. I to je potpuno u redu.
+                parovi na početku planiranja nemaju sve podatke za pozivnicu —
+                datum venčanja, lokaciju, program dana. I to je potpuno u redu.
               </p>
               <p className="text-[#232323]/70 leading-relaxed mb-4">
                 Registrujte se putem{" "}
@@ -308,13 +308,14 @@ export default function PlaniranjeVencanjaPage() {
                   brze registracije
                 </Link>{" "}
                 na dnu stranice i odmah počnite da koristite checklistu, budžet
-                i direktorijum vendora. Naš će već biti u kontaktu sa vama pa
-                ćete nam dostaviti informacije kada budete znali sve — nakon
-                toga mi ćemo napraviti pozivnicu za manje od 24h.
+                i direktorijum vendora. Naš tim će biti u kontaktu sa Vama, pa
+                ćete nam, kada budete imali sve potrebne informacije, iste
+                proslediti — nakon čega ćemo izraditi Vašu pozivnicu u roku
+                kraćem od 24 sata.
               </p>
               <p className="text-sm text-[#232323]/50 italic">
-                Ukratko: registrujte se odmah → planirajte → pozivnicu napravimo
-                zajedno kad budete imali sve podatke.
+                Ukratko: registrujte se odmah → planirajte → pozivnicu zajedno
+                kreiramo kad budete imali sve potrebne podatke.
               </p>
             </div>
           </div>

@@ -10,6 +10,7 @@ import {
   ChevronDown,
   FileDown,
   QrCode,
+  Link2,
 } from "lucide-react";
 import type { TableData } from "./types";
 
@@ -40,6 +41,11 @@ async function downloadQR(slug: string) {
   a.click();
 }
 
+function copyGdeSedimLink(slug: string, onCopied: () => void) {
+  const url = `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
+  navigator.clipboard.writeText(url).then(onCopied);
+}
+
 export default function Toolbar({
   slug,
   coupleNames,
@@ -53,6 +59,7 @@ export default function Toolbar({
   onDownloadPDF,
 }: Props) {
   const [downloadOpen, setDownloadOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -161,6 +168,28 @@ export default function Toolbar({
             >
               <QrCode size={14} style={{ color: "var(--theme-primary)" }} />
               Preuzmi QR kod
+            </button>
+            <div
+              className="h-px"
+              style={{ backgroundColor: "var(--theme-border-light)" }}
+            />
+            <button
+              onClick={() => {
+                copyGdeSedimLink(slug, () => {
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
+                });
+                setDownloadOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
+              style={{ color: "var(--theme-text)" }}
+            >
+              {linkCopied ? (
+                <Check size={14} style={{ color: "var(--theme-primary)" }} />
+              ) : (
+                <Link2 size={14} style={{ color: "var(--theme-primary)" }} />
+              )}
+              {linkCopied ? "Link kopiran!" : "Kopiraj link Gde sedim"}
             </button>
           </div>
         )}
