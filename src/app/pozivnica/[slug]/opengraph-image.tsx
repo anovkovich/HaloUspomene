@@ -14,14 +14,20 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }));
 }
 
-const MONTHS = [
+const MONTHS_LATIN = [
   "januar", "februar", "mart", "april", "maj", "jun",
   "jul", "avgust", "septembar", "oktobar", "novembar", "decembar",
 ];
 
-function formatDate(iso: string): string {
+const MONTHS_CYRILLIC = [
+  "јануар", "фебруар", "март", "април", "мај", "јун",
+  "јул", "август", "септембар", "октобар", "новембар", "децембар",
+];
+
+function formatDate(iso: string, useCyrillic = false): string {
   const d = new Date(iso);
-  return `${d.getDate()}. ${MONTHS[d.getMonth()]} ${d.getFullYear()}.`;
+  const months = useCyrillic ? MONTHS_CYRILLIC : MONTHS_LATIN;
+  return `${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}.`;
 }
 
 const SCRIPT_FONT_FILES: Record<ScriptFontType, string> = {
@@ -54,7 +60,7 @@ export default async function OGImage({
 
   const theme = THEME_CONFIGS[data.theme] ?? THEME_CONFIGS.classic_rose;
   const primary = theme.colors.primary;
-  const dateStr = formatDate(data.event_date);
+  const dateStr = formatDate(data.event_date, data.useCyrillic);
   const scriptFontKey = data.scriptFont ?? "great-vibes";
   const scriptFontFile = SCRIPT_FONT_FILES[scriptFontKey] ?? "GreatVibes-Regular.ttf";
 
