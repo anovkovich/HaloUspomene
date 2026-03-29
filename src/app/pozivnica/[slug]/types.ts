@@ -58,6 +58,7 @@ export interface WeddingData {
   images?: Array<{ url: string; pathname: string }>; // Up to 3 uploaded photos
   custom_primary_color?: string; // Custom primary color in hex (e.g. "#A23B8C"), overrides theme
   custom_background_color?: string; // Custom background color in hex, overrides theme background
+  stamp_color?: string; // Custom wax seal color in hex (e.g. "#8B2252"), overrides theme waxSeal
   draft?: boolean; // Only visible in dev, returns 404 in production
   receipt_valid?: boolean; // Receipt link is active (set false after payment)
   receipt_created?: string; // ISO date when receipt was generated

@@ -352,6 +352,7 @@ export default function InvitationClient({
           names={data.couple_names.full_display}
           eventDate={formattedDate.short}
           onComplete={() => setIsLoading(false)}
+          stampColor={data.stamp_color}
         />
       </ThemeProvider>
     );
