@@ -1,52 +1,54 @@
 {
   "packages": {
     "essential": {
-      "name": "Essential",
+      "name": "Audio Guest Book",
       "price": 9000
-    },
-    "fullService": {
-      "name": "Full Service",
-      "price": 10000
     }
+  },
+  "pozivnica": {
+    "website": {
+      "label": "Website pozivnica",
+      "price": 5000
+    },
+    "pdf": {
+      "label": "PDF pozivnica",
+      "price": 0
+    },
+    "raspored": {
+      "label": "Raspored sedenja",
+      "price": 2500
+    },
+    "audio": {
+      "label": "Digitalna audio knjiga",
+      "price": 3000
+    },
+    "bundlePrice": 8500,
+    "bundleFullPrice": 10500
   },
   "addons": [
     {
       "id": "usb_kaseta",
-      "label": "USB retro kaseta",
+      "label": "Retro kaseta — USB",
       "price": 2500,
-      "note": "Fizički suvenir"
+      "note": "Fizički retro suvenir"
     },
     {
       "id": "usb_bocica",
-      "label": "Uspomene u boci — USB u bočici",
+      "label": "USB Uspomene u bočici",
       "price": 2000,
       "note": "Fizički suvenir"
     },
     {
-      "id": "mini_govornica",
-      "label": "MINI govornica",
-      "price": 3000,
-      "note": "Drvena, kompaktna"
+      "id": "personalizovana_dobrodoslica",
+      "label": "Audio dobrodošlica",
+      "price": 1000,
+      "note": "Vaša lična poruka dobrodošlice"
     },
     {
-      "id": "maxi_govornica",
-      "label": "MAXI govornica",
-      "price": 5000,
-      "note": "Centralni detalj sale"
-    },
-    {
-      "id": "website_pozivnica",
-      "label": "Website pozivnica",
-      "price": 5000,
-      "note": ""
+      "id": "custom_color",
+      "label": "Prilagođena boja teme",
+      "price": 600,
+      "note": "Prilagodite primarnu boju pozivnice po vašem ukusu."
     }
-  ],
-  "discounts": {
-    "bundleWebsitePozivnica": {
-      "label": "Website pozivnica uz Audio Uspomene paket",
-      "active": true,
-      "percent": 30,
-      "discountedPrice": 3500
-    }
-  }
+  ]
 }

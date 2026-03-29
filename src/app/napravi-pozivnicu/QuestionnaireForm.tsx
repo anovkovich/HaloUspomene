@@ -18,6 +18,8 @@ import {
   SCRIPT_FONT_CONFIGS,
   getThemeCSSVariables,
   getThemeConfig,
+  buildCustomColorOverrides,
+  blendHex,
 } from "@/app/pozivnica/[slug]/constants";
 import type { ThemeType, ScriptFontType } from "@/app/pozivnica/[slug]/types";
 
@@ -104,6 +106,11 @@ interface FormData {
   groom: string;
   full_display: string;
   useCyrillic: boolean;
+  // Extras
+  extra_raspored: boolean;
+  extra_audio: boolean;
+  extra_usb_kaseta: boolean;
+  extra_usb_bocica: boolean;
   // Step 2
   event_date: string; // combined "YYYY-MM-DDTHH:MM"
   event_date_only: string; // "YYYY-MM-DD" for DatePicker
@@ -114,6 +121,8 @@ interface FormData {
   // Step 3
   theme: ThemeType;
   scriptFont: ScriptFontType;
+  custom_primary_color: string; // "" means no custom color
+  custom_background_color: string; // "" means no custom background
   // Step 4
   locations: LocationItem[];
   // Step 5
@@ -141,6 +150,10 @@ const defaultFormData: FormData = {
   groom: "",
   full_display: "",
   useCyrillic: false,
+  extra_raspored: false,
+  extra_audio: false,
+  extra_usb_kaseta: false,
+  extra_usb_bocica: false,
   event_date: "",
   event_date_only: "",
   event_time: "18:00",
@@ -149,6 +162,8 @@ const defaultFormData: FormData = {
   contact_phone: "",
   theme: "classic_rose",
   scriptFont: "great-vibes",
+  custom_primary_color: "",
+  custom_background_color: "",
   locations: [
     { type: "home", enabled: false, name: "", address: "", time: "" },
     { type: "church", enabled: false, name: "", address: "", time: "" },
@@ -237,6 +252,195 @@ function Toggle({
   );
 }
 
+const EXTRAS = [
+  {
+    key: "extra_raspored" as const,
+    label: "Raspored sedenja",
+    price: `+${formatPrice(pricing.pozivnica.raspored.price)}`,
+  },
+  {
+    key: "extra_audio" as const,
+    label: "Audio knjiga utisaka",
+    price: `+${formatPrice(pricing.pozivnica.audio.price)}`,
+  },
+  {
+    key: "extra_usb_kaseta" as const,
+    label: "USB retro kaseta",
+    price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}`,
+  },
+  {
+    key: "extra_usb_bocica" as const,
+    label: "USB u bočici",
+    price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}`,
+  },
+];
+
+function ExtrasAccordion({
+  formData,
+  updateField,
+}: {
+  formData: FormData;
+  updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+}) {
+  const count = EXTRAS.filter(({ key }) => formData[key]).length;
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="mt-8 pt-5 border-t border-stone-100">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between cursor-pointer group"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-stone-300 group-hover:text-stone-400 transition-colors">
+            Dodatne usluge (opciono)
+          </span>
+          {count > 0 && (
+            <span className="w-4 h-4 rounded-full bg-[#AE343F] text-white text-[9px] font-bold flex items-center justify-center">
+              {count}
+            </span>
+          )}
+        </div>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          className={`text-stone-300 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M4 6l4 4 4-4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-2">
+          {EXTRAS.filter(
+            ({ key }) =>
+              key !== "extra_usb_kaseta" && key !== "extra_usb_bocica",
+          ).map(({ key, label, price }) => (
+            <label
+              key={key}
+              className="flex items-center gap-2.5 py-0.5 cursor-pointer group"
+            >
+              <input
+                type="checkbox"
+                checked={formData[key]}
+                onChange={(e) => updateField(key, e.target.checked)}
+                className="w-3.5 h-3.5 accent-[#AE343F] cursor-pointer shrink-0 opacity-60"
+              />
+              <span className="text-xs text-stone-400 group-hover:text-stone-500 transition-colors">
+                {label}
+              </span>
+              <span className="text-[10px] text-stone-300 ml-auto shrink-0">
+                {price}
+              </span>
+            </label>
+          ))}
+          {/* USB options — nested under audio, mutually exclusive */}
+          <div
+            className={`ml-5 space-y-2 ${!formData.extra_audio ? "opacity-50 pointer-events-none" : ""}`}
+          >
+            {[
+              {
+                key: "extra_usb_kaseta" as const,
+                other: "extra_usb_bocica" as const,
+                label: "USB retro kaseta",
+                price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}`,
+              },
+              {
+                key: "extra_usb_bocica" as const,
+                other: "extra_usb_kaseta" as const,
+                label: "USB u bočici",
+                price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}`,
+              },
+            ].map(({ key, other, label, price }) => (
+              <label
+                key={key}
+                className="flex items-center gap-2.5 py-0.5 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={formData[key]}
+                  onChange={(e) => {
+                    updateField(key, e.target.checked);
+                    if (e.target.checked) updateField(other, false);
+                  }}
+                  className="w-3.5 h-3.5 accent-[#AE343F] cursor-pointer shrink-0 opacity-60"
+                />
+                <span
+                  className={`text-xs transition-colors ${!formData.extra_audio ? "text-stone-300" : "text-stone-400 group-hover:text-stone-500"}`}
+                >
+                  {label}
+                </span>
+                <span className="text-[10px] text-stone-300 ml-auto shrink-0">
+                  {price}
+                </span>
+              </label>
+            ))}
+          </div>
+          {/* Sum + discount */}
+          {(() => {
+            let sum = pricing.pozivnica.website.price;
+            if (formData.extra_raspored)
+              sum += pricing.pozivnica.raspored.price;
+            if (formData.extra_audio) sum += pricing.pozivnica.audio.price;
+            if (formData.extra_usb_kaseta)
+              sum += pricing.addons.find((a) => a.id === "usb_kaseta")!.price;
+            if (formData.extra_usb_bocica)
+              sum += pricing.addons.find((a) => a.id === "usb_bocica")!.price;
+            const isFullBundle =
+              formData.extra_raspored && formData.extra_audio;
+            const discount = isFullBundle
+              ? pricing.pozivnica.bundleFullPrice -
+                pricing.pozivnica.bundlePrice
+              : 0;
+            const total = sum - discount;
+            return (
+              <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
+                {isFullBundle && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-green-600">
+                      Popust (kompletni paket)
+                    </span>
+                    <span className="text-[10px] text-green-600 font-medium">
+                      -{formatPrice(discount)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-stone-500 font-medium">
+                    Ukupno
+                  </span>
+                  <span className="text-xs text-[#AE343F] font-bold">
+                    {isFullBundle && (
+                      <span className="line-through text-stone-300 font-normal mr-1.5">
+                        {formatPrice(sum)}
+                      </span>
+                    )}
+                    {formatPrice(total)}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+          <p className="text-[10px] text-stone-300 mt-2">
+            <a href="/cene" className="text-[#AE343F]/60 hover:underline">
+              Pogledajte detaljne cene
+            </a>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StepHeading({ title, desc }: { title: string; desc?: string }) {
   return (
     <div className="mb-8">
@@ -255,6 +459,8 @@ function InvitationPreview({
   groom,
   eventDate,
   useCyrillic,
+  customPrimaryColor,
+  customBackgroundColor,
 }: {
   theme: ThemeType;
   scriptFont: ScriptFontType;
@@ -262,12 +468,24 @@ function InvitationPreview({
   groom: string;
   eventDate: string;
   useCyrillic: boolean;
+  customPrimaryColor?: string;
+  customBackgroundColor?: string;
 }) {
-  const cssVars = getThemeCSSVariables(theme, scriptFont);
+  const baseCssVars = getThemeCSSVariables(theme, scriptFont);
+  const cssVars =
+    customPrimaryColor || customBackgroundColor
+      ? {
+          ...baseCssVars,
+          ...buildCustomColorOverrides(
+            customPrimaryColor || baseCssVars["--theme-primary"],
+            customBackgroundColor || undefined,
+          ),
+        }
+      : baseCssVars;
   const config = getThemeConfig(theme);
 
-  const brideName = bride || "Mlada";
-  const groomName = groom || "Mladoženja";
+  const brideName = bride || "Mladini";
+  const groomName = groom || "Mladoženjini";
   const dateDisplay = formatPreviewDate(eventDate.split("T")[0]);
   const celebrateLove = useCyrillic ? "Прославите Љубав" : "Celebrate Love";
 
@@ -280,7 +498,6 @@ function InvitationPreview({
         minHeight: "300px",
       }}
     >
-
       {/* Preview label */}
       <div className="absolute top-3 right-3 z-10">
         <span
@@ -375,22 +592,19 @@ function Step1({
       {/* Pricing section */}
       <div className="mb-3 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
         <p className="text-2xl font-bold align-end text-[#AE343F]">
-          Redovna cena pozivnice je{" "}
-          {formatPrice(
-            pricing.addons.find((a) => a.id === "website_pozivnica")!.price,
-          )}
+          Cena pozivnice je od {formatPrice(pricing.pozivnica.website.price)}
         </p>
         <p className="font-semibold text-sm text-[#8B2833] mt-2">
-          Iskomuniciraćemo{" "}
           <small>
-            ukoliko imate kupon ili ostvarujete pravo na neki popust
+            Kompletni paket sa rasporedom sedenja i audio knjigom:{" "}
+            {formatPrice(pricing.pozivnica.bundlePrice)}
           </small>
         </p>
       </div>
 
       {/* Live preview section */}
       <a
-        href="/pozivnica/sara-nikola"
+        href="/pozivnica/ana-dejan"
         target="_blank"
         rel="noopener noreferrer"
         className="mb-6 inline-flex justify-between w-full gap-2 px-4 py-2.5 bg-[#AE343F] text-white rounded-lg hover:bg-[#932d35] transition-colors text-sm font-medium"
@@ -470,6 +684,9 @@ function Step1({
           </p>
         )}
       </div>
+
+      {/* Extras accordion */}
+      <ExtrasAccordion formData={formData} updateField={updateField} />
     </div>
   );
 }
@@ -628,6 +845,17 @@ function Step3({
   formData: FormData;
   updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
 }) {
+  const [showColorModal, setShowColorModal] = useState(false);
+  const [tempPrimaryColor, setTempPrimaryColor] = useState(
+    formData.custom_primary_color || "#AE343F",
+  );
+  const [tempBackgroundColor, setTempBackgroundColor] = useState(
+    formData.custom_background_color || "#F5F4DC",
+  );
+
+  const colorInputRef = React.useRef<HTMLInputElement>(null);
+  const bgInputRef = React.useRef<HTMLInputElement>(null);
+
   const themes = Object.entries(THEME_CONFIGS) as [
     ThemeType,
     (typeof THEME_CONFIGS)[ThemeType],
@@ -664,6 +892,8 @@ function Step3({
           groom={formData.groom}
           eventDate={formData.event_date}
           useCyrillic={formData.useCyrillic}
+          customPrimaryColor={formData.custom_primary_color}
+          customBackgroundColor={formData.custom_background_color}
         />
         {formData.useCyrillic && (
           <p className="text-xs text-stone-400 mt-2">
@@ -717,9 +947,13 @@ function Step3({
           <button
             key={key}
             type="button"
-            onClick={() => updateField("theme", key)}
+            onClick={() => {
+              updateField("theme", key);
+              updateField("custom_primary_color", "");
+              updateField("custom_background_color", "");
+            }}
             className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
-              formData.theme === key
+              formData.theme === key && !formData.custom_primary_color
                 ? "border-[#AE343F] shadow-md"
                 : "border-stone-100 hover:border-stone-200"
             }`}
@@ -730,14 +964,213 @@ function Step3({
             />
             <p className="text-sm font-semibold text-stone-700">{cfg.name}</p>
             <p className="text-xs text-stone-400">{cfg.symbolism}</p>
-            {formData.theme === key && (
+            {formData.theme === key && !formData.custom_primary_color && (
               <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-white" />
               </div>
             )}
           </button>
         ))}
+
+        {/* 6th card: Custom colors (primary + background) */}
+        <button
+          type="button"
+          onClick={() => {
+            updateField("theme", "classic_rose");
+            const initPrimary = formData.custom_primary_color || "#AE343F";
+            if (!formData.custom_primary_color) {
+              setTempPrimaryColor(initPrimary);
+            } else {
+              setTempPrimaryColor(formData.custom_primary_color);
+            }
+            if (!formData.custom_background_color) {
+              const autoBg = blendHex("#FFFFFF", initPrimary, 0.06);
+              setTempBackgroundColor(autoBg);
+            } else {
+              setTempBackgroundColor(formData.custom_background_color);
+            }
+            setShowColorModal(true);
+          }}
+          className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
+            formData.custom_primary_color
+              ? "border-[#AE343F] shadow-md"
+              : "border-stone-100 hover:border-stone-200"
+          }`}
+        >
+          {/* Two color swatches (simplified) */}
+          <div className="flex gap-2.5 mb-3">
+            <div
+              className="w-8 h-8 rounded-full border border-black/10 shadow-sm"
+              style={{
+                background: formData.custom_primary_color
+                  ? formData.custom_primary_color
+                  : "linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff)",
+              }}
+            />
+            <div
+              className="w-8 h-8 rounded-full border border-black/10 shadow-sm"
+              style={{
+                background: formData.custom_background_color
+                  ? formData.custom_background_color
+                  : "#F5F4DC",
+              }}
+            />
+          </div>
+
+          <p className="text-sm font-semibold text-stone-700">
+            Prilagođena boja
+          </p>
+          <p className="text-xs text-stone-400">Izaberi svoju</p>
+
+          {/* Selected indicator */}
+          {formData.custom_primary_color && (
+            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
+              <div className="w-2 h-2 rounded-full bg-white" />
+            </div>
+          )}
+        </button>
       </div>
+
+      {/* Pricing note for custom color */}
+      {(formData.custom_primary_color || formData.custom_background_color) &&
+        (() => {
+          const customColorAddon = pricing.addons.find(
+            (addon) => addon.id === "custom_color",
+          );
+          const price = customColorAddon
+            ? formatPrice(customColorAddon.price)
+            : "600 din";
+          return (
+            <div className="mt-4 p-3 rounded-lg border border-amber-200 bg-amber-50 text-sm text-amber-800">
+              ℹ️ Za prilagođenu boju biće vam naplaćeno dodatnih{" "}
+              <strong>{price}</strong>.
+            </div>
+          );
+        })()}
+
+      {/* Color picker modal */}
+      <AnimatePresence>
+        {showColorModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowColorModal(false);
+              }
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-6"
+            >
+              <div>
+                <h2 className="text-xl font-bold text-stone-800">
+                  Prilagođena boja
+                </h2>
+                <p className="text-sm text-stone-400 mt-1">
+                  Izaberite boje za svoju temu
+                </p>
+              </div>
+
+              {/* Color pickers */}
+              <div className="space-y-4">
+                {/* Accent color */}
+                <div>
+                  <label className={labelCls}>Akcenti</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={tempPrimaryColor}
+                      onChange={(e) => setTempPrimaryColor(e.target.value)}
+                      className="w-16 h-16 rounded-xl border-2 border-stone-200 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-mono text-stone-600">
+                        {tempPrimaryColor.toUpperCase()}
+                      </p>
+                      <p className="text-xs text-stone-400 mt-1">
+                        Glavna boja teme
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Background color */}
+                <div>
+                  <label className={labelCls}>Pozadina</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={tempBackgroundColor}
+                      onChange={(e) => setTempBackgroundColor(e.target.value)}
+                      className="w-16 h-16 rounded-xl border-2 border-stone-200 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-mono text-stone-600">
+                        {tempBackgroundColor.toUpperCase()}
+                      </p>
+                      <p className="text-xs text-stone-400 mt-1">
+                        Boja pozadine pozivnice
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className="rounded-2xl overflow-hidden border border-stone-200 p-4">
+                <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3">
+                  Pregled
+                </p>
+                <div
+                  className="rounded-lg p-4 space-y-2 text-center"
+                  style={{
+                    background: tempBackgroundColor,
+                  }}
+                >
+                  <div
+                    className="w-8 h-8 rounded-full mx-auto shadow-sm"
+                    style={{ background: tempPrimaryColor }}
+                  />
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: tempPrimaryColor }}
+                  >
+                    Prilagođena boja
+                  </p>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowColorModal(false)}
+                  className="flex-1 px-4 py-3 rounded-xl border border-stone-200 text-stone-700 font-semibold hover:bg-stone-50 transition-colors"
+                >
+                  Otkaži
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateField("custom_primary_color", tempPrimaryColor);
+                    updateField("custom_background_color", tempBackgroundColor);
+                    setShowColorModal(false);
+                  }}
+                  className="flex-1 px-4 py-3 rounded-xl bg-[#AE343F] text-white font-semibold hover:bg-[#8B2833] transition-colors"
+                >
+                  Potvrdi
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1005,53 +1438,75 @@ function Step6({
 // ─── Raw JSON generator ───────────────────────────────────────────────────────
 
 function generateRawJson(formData: FormData): string {
-  // Only hall location
-  const hallLocStr = formData.locations
-    .filter((l) => l.enabled && l.type === "hall")
-    .map(
-      (l) =>
-        `    { name: "${l.name}", time: "${l.time}", address: "${l.address}", map_url: "TODO", type: "${l.type}" }`,
-    )
-    .join(",\n");
+  const eventDate = new Date(formData.event_date);
+  const dd = String(eventDate.getDate()).padStart(2, "0");
+  const mm = String(eventDate.getMonth() + 1).padStart(2, "0");
+  const autoPassword = `${formData.groom}${dd}${mm}`;
 
-  // Timeline from all enabled locations
-  const timelineStr = formData.locations
-    .filter((l) => l.enabled)
-    .map((l) => {
-      const typeToIcon: Record<string, string> = {
-        home: "Home",
-        church: "Church",
-        ceremony: "Heart",
-        hall: "Utensils",
-      };
-      const icon = typeToIcon[l.type] || "MapPin";
-      return `    { title: "${l.name}", time: "${l.time}", description: "${l.address}", icon: "${icon}" }`;
-    })
-    .join(",\n");
-
-  const lines = [
-    `import { WeddingData } from "@/app/pozivnica/[slug]/types";`,
-    ``,
-    `const weddingData: WeddingData = {`,
-    `  theme: "${formData.theme}",`,
-    `  scriptFont: "${formData.scriptFont}",`,
-    `  useCyrillic: ${formData.useCyrillic},`,
-    `  rsvp_form_url: "TODO",`,
-    `  entry_IDs: { name: "entry.TODO", attending: "entry.TODO", plusOnes: "entry.TODO", details: "entry.TODO" },`,
-    `  couple_names: { bride: "${formData.bride}", groom: "${formData.groom}", full_display: "${formData.full_display}" },`,
-    `  event_date: "${formData.event_date}",`,
-    `  submit_until: "${formData.submit_until}",`,
-    `  tagline: "${formData.tagline}",`,
-    `  thankYouFooter: "${formData.thankYouFooter}",`,
-    `  locations: [\n${hallLocStr}\n  ],`,
-    `  timeline: [\n${timelineStr}\n  ],`,
-    `  countdown_enabled: ${formData.countdown_enabled},`,
-    `  map_enabled: ${formData.map_enabled},`,
-    `};`,
-    ``,
-    `export default weddingData;`,
-  ];
-  return lines.join("\n");
+  const json = {
+    theme: formData.theme,
+    scriptFont: formData.scriptFont,
+    useCyrillic: formData.useCyrillic,
+    potvrde_password: autoPassword,
+    couple_names: {
+      bride: formData.bride,
+      groom: formData.groom,
+      full_display: formData.full_display,
+    },
+    event_date: formData.event_date,
+    submit_until: formData.submit_until_date,
+    tagline: formData.tagline,
+    thankYouFooter: formData.thankYouFooter,
+    locations: formData.locations
+      .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
+      .map((l) => ({
+        name: l.name,
+        address: l.address,
+        map_url: "",
+        type: l.type,
+      })),
+    timeline: formData.locations
+      .filter((l) => l.enabled)
+      .map((l) => {
+        const typeToIcon: Record<string, string> = {
+          home: "Home",
+          church: "Church",
+          ceremony: "Heart",
+          hall: "Utensils",
+        };
+        const typeToWhat: Record<string, string> = {
+          home: "Polazak od kuće",
+          church: "Crkveno venčanje",
+          ceremony: "Građansko venčanje",
+          hall: "Skup u svečanoj sali",
+        };
+        return {
+          title: l.name,
+          time: l.time,
+          description: l.address,
+          what: typeToWhat[l.type] || "",
+          icon: typeToIcon[l.type] || "MapPin",
+        };
+      }),
+    countdown_enabled: formData.countdown_enabled,
+    map_enabled: formData.map_enabled,
+    paid_for_raspored: formData.extra_raspored,
+    paid_for_audio: formData.extra_audio,
+    paid_for_audio_USB: formData.extra_usb_kaseta
+      ? "kaseta"
+      : formData.extra_usb_bocica
+        ? "bocica"
+        : "",
+    paid_for_pdf: false,
+    draft: true,
+    ...(formData.custom_primary_color
+      ? { custom_primary_color: formData.custom_primary_color }
+      : {}),
+    ...(formData.custom_background_color
+      ? { custom_background_color: formData.custom_background_color }
+      : {}),
+  };
+  return JSON.stringify(json, null, 2);
 }
 
 // ─── Main form ────────────────────────────────────────────────────────────────
@@ -1063,6 +1518,22 @@ export default function QuestionnaireForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Read URL params from /cene page
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.toString()) {
+      setFormData((prev) => ({
+        ...prev,
+        extra_raspored: params.get("raspored") === "1" || prev.extra_raspored,
+        extra_audio: params.get("audio") === "1" || prev.extra_audio,
+        extra_usb_kaseta:
+          params.get("usb_kaseta") === "1" || prev.extra_usb_kaseta,
+        extra_usb_bocica:
+          params.get("usb_bocica") === "1" || prev.extra_usb_bocica,
+      }));
+    }
+  }, []);
 
   // Prepopulate hall venue time if it's already enabled
   React.useEffect(() => {
@@ -1097,6 +1568,12 @@ export default function QuestionnaireForm() {
         }
       }
 
+      // Clear USB extras when audio is unchecked
+      if (key === "extra_audio" && !value) {
+        updated.extra_usb_kaseta = false;
+        updated.extra_usb_bocica = false;
+      }
+
       // Auto-switch font when language changes
       if (key === "useCyrillic") {
         const toCyrillic = value as boolean;
@@ -1111,7 +1588,14 @@ export default function QuestionnaireForm() {
     });
   };
 
+  const [stepError, setStepError] = useState("");
+
   const goNext = () => {
+    if (step === 1 && (!formData.bride.trim() || !formData.groom.trim())) {
+      setStepError("Unesite imena mladenaca pre nego što nastavite.");
+      return;
+    }
+    setStepError("");
     setDirection(1);
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
   };
@@ -1148,44 +1632,126 @@ export default function QuestionnaireForm() {
     setIsSubmitting(true);
     try {
       const formattedDate = formData.event_date
-        ? new Date(formData.event_date).toLocaleDateString("sr-RS", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
+        ? new Date(formData.event_date).toLocaleDateString(
+            formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
+            {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            },
+          )
         : "";
+
+      // ── Build bill ──────────────────────────────────────────────────
+      const billItems: {
+        label: string;
+        amount: string;
+        bold?: boolean;
+        discount?: boolean;
+      }[] = [];
+      let billTotal = 0;
+
+      billItems.push({
+        label: "Website pozivnica",
+        amount: formatPrice(pricing.pozivnica.website.price),
+      });
+      billTotal += pricing.pozivnica.website.price;
+
+      billItems.push({ label: "PDF pozivnica za štampu", amount: "BESPLATNO" });
+
+      if (formData.extra_raspored) {
+        billItems.push({
+          label: "Raspored sedenja",
+          amount: formatPrice(pricing.pozivnica.raspored.price),
+        });
+        billTotal += pricing.pozivnica.raspored.price;
+      }
+      if (formData.extra_audio) {
+        billItems.push({
+          label: "Audio knjiga utisaka",
+          amount: formatPrice(pricing.pozivnica.audio.price),
+        });
+        billTotal += pricing.pozivnica.audio.price;
+      }
+      if (formData.extra_usb_kaseta) {
+        const usb = pricing.addons.find((a) => a.id === "usb_kaseta")!;
+        billItems.push({
+          label: "USB retro kaseta",
+          amount: formatPrice(usb.price),
+        });
+        billTotal += usb.price;
+      }
+      if (formData.extra_usb_bocica) {
+        const usb = pricing.addons.find((a) => a.id === "usb_bocica")!;
+        billItems.push({
+          label: "USB u bočici",
+          amount: formatPrice(usb.price),
+        });
+        billTotal += usb.price;
+      }
+      if (formData.custom_primary_color || formData.custom_background_color) {
+        const customColor = pricing.addons.find(
+          (a) => a.id === "custom_color",
+        )!;
+        billItems.push({
+          label: "Prilagođena boja teme",
+          amount: formatPrice(customColor.price),
+        });
+        billTotal += customColor.price;
+      }
+
+      const isBundle = formData.extra_raspored && formData.extra_audio;
+      if (isBundle) {
+        const discount =
+          pricing.pozivnica.bundleFullPrice - pricing.pozivnica.bundlePrice;
+        billItems.push({
+          label: "Popust (kompletni paket)",
+          amount: `-${formatPrice(discount)}`,
+          discount: true,
+        });
+        billTotal -= discount;
+      }
+
+      const receiptData = JSON.stringify({
+        par: formData.full_display,
+        datum: formattedDate,
+        ...(formData.extra_raspored ? { r: 1 } : {}),
+        ...(formData.extra_audio ? { a: 1 } : {}),
+        ...(formData.extra_usb_kaseta ? { uk: 1 } : {}),
+        ...(formData.extra_usb_bocica ? { ub: 1 } : {}),
+        ...(formData.custom_primary_color || formData.custom_background_color ? { cc: 1 } : {}),
+      });
+      const receiptUrl = `https://halouspomene.rs/racun?d=${btoa(unescape(encodeURIComponent(receiptData)))}`;
 
       const payload: Record<string, string> = {
         access_key: WEB3FORMS_ACCESS_KEY || "",
-        subject: `Nova Pozivnica - ${formData.bride} & ${formData.groom} - ${formattedDate}`,
+        subject: `Nova Pozivnica - ${formData.full_display} - ${formattedDate}`,
         from_name: "Halo Pozivnice",
-        mlada: formData.bride,
-        mladozenja: formData.groom,
-        prikaz_para: formData.full_display,
-        pismo: formData.useCyrillic ? "Ćirilica" : "Latinica",
-        datum_vencanja: formattedDate,
-        vreme_vencanja: formData.event_time,
-        rok_za_prijavu: formData.submit_until,
-        kontakt_telefon: `+381${formData.contact_phone}`,
-        tema: formData.theme,
-        font: formData.scriptFont,
-        tagline: formData.tagline,
-        zahvalnica: formData.thankYouFooter,
-        odbrojavanje: formData.countdown_enabled ? "Da" : "Ne",
-        mapa: formData.map_enabled ? "Da" : "Ne",
-        napomene: formData.wishes,
-        _raw_json: generateRawJson(formData),
-      };
 
-      formData.locations
-        .filter((l) => l.enabled)
-        .forEach((loc, i) => {
-          payload[`lokacija_${i + 1}_tip`] = loc.type;
-          payload[`lokacija_${i + 1}_naziv`] = loc.name;
-          payload[`lokacija_${i + 1}_adresa`] = loc.address;
-          payload[`lokacija_${i + 1}_vreme`] = loc.time;
-        });
+        // ── Human-readable essentials ──
+        Par: formData.full_display,
+        "Datum venčanja": `${formattedDate}, ${formData.event_time}h`,
+        "Rok za prijavu": formData.submit_until,
+        "Kontakt telefon": `+381${formData.contact_phone}`,
+        "Raspored sedenja": formData.extra_raspored ? "✅ DA" : "❌ Ne",
+        "Audio knjiga": formData.extra_audio ? "✅ DA" : "❌ Ne",
+        "USB suvenir": formData.extra_usb_kaseta
+          ? "USB retro kaseta"
+          : formData.extra_usb_bocica
+            ? "USB u bočici"
+            : "❌ Ne",
+        "Prilagođena boja": formData.custom_primary_color
+          ? `${formData.custom_primary_color} / bg: ${formData.custom_background_color || "auto"}`
+          : "❌ Ne",
+        "⚠️⚠️⚠️ NAPOMENA ⚠️⚠️⚠️": formData.wishes || "(nema)",
+
+        // ── Bill ──
+        "🧾 Račun": receiptUrl,
+
+        // ── JSON for admin panel (copy-paste) ──
+        "📋 JSON": generateRawJson(formData),
+      };
 
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
@@ -1226,11 +1792,14 @@ export default function QuestionnaireForm() {
             Venčanje:{" "}
             {new Date(
               formData.event_date_only + "T12:00:00",
-            ).toLocaleDateString("sr-RS", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
+            ).toLocaleDateString(
+              formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
+              {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              },
+            )}
           </p>
         )}
         <p className="text-[#8B2833] text-sm">
@@ -1330,14 +1899,19 @@ export default function QuestionnaireForm() {
           </button>
 
           {step < TOTAL_STEPS ? (
-            <button
-              type="button"
-              onClick={goNext}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#8B2833] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20"
-            >
-              Dalje
-              <ChevronRight size={16} />
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                type="button"
+                onClick={goNext}
+                className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#8B2833] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20"
+              >
+                Dalje
+                <ChevronRight size={16} />
+              </button>
+              {stepError && (
+                <p className="text-xs text-[#AE343F]">{stepError}</p>
+              )}
+            </div>
           ) : (
             <button
               type="button"

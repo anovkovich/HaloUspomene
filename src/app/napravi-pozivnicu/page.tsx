@@ -97,6 +97,13 @@ export default function NapraviPozivnicuPage() {
             kao i za sva venčanja u Srbiji i regionu.
           </p>
         </div>
+
+        {/* Link to birthday invitation */}
+        <div className="max-w-3xl mx-auto mt-12 px-4 text-center">
+          <a href="/napravi-deciju-pozivnicu" className="birthday-link-btn">
+            Tražite pozivnicu za dečiji rođendan? →
+          </a>
+        </div>
       </main>
       <Footer />
     </>

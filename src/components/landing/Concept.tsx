@@ -1,28 +1,35 @@
 import React from "react";
-import { Heart, Infinity as InfinityIcon, HeartHandshake } from "lucide-react";
+import {
+  Globe,
+  Mic,
+  HeartHandshake,
+  Sparkles,
+  Phone,
+  FileDown,
+} from "lucide-react";
 
 const points = [
   {
     icon: (
-      <Heart
+      <Globe
         className="text-[#AE343F] w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10"
         size={20}
       />
     ),
-    title: "Iskrenost & Moć emocija",
+    title: "Pozivnica koja oduševljava",
     description:
-      "Smeh dok vam kum čestita. Drhtaj u glasu Vaše majke kroz suze sreće. To su trenuci koje nijedna fotografija ne može da sačuva — ali glas može.",
+      "Personalizovana web stranica sa animacijama, odbrojavanjem i programom dana. Gosti potvrde dolazak jednim klikom — vi sve pratite na portalu. Plus besplatna PDF pozivnica za štampu.",
   },
   {
     icon: (
-      <InfinityIcon
+      <Mic
         className="text-[#AE343F] w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10"
         size={20}
       />
     ),
-    title: "Nasleđe za generacije",
+    title: "Glasovi koji ostaju zauvek",
     description:
-      "Jednog dana pustićete svojoj deci glas njihovog dede na Vašoj svadbi, osmeh bake, porodičnu istoriju kroz sačuvan zvuk. Poklon koji je večan.",
+      "Digitalna audio knjiga utisaka — gosti skeniraju QR kod i snimaju poruke sa telefona. Ili iznajmite naš vintage retro telefon za autentičan doživljaj koji postaje centralni detalj sale.",
   },
   {
     icon: (
@@ -33,7 +40,7 @@ const points = [
     ),
     title: "Mi brinemo o svemu",
     description:
-      "Tu smo za dogovor, tehničku podršku, sve do finalnih snimaka — brzo i lako, vaš jedini zadatak je da uživate. Za sve ostalo smo tu mi.",
+      "Od izrade pozivnice do dostave retro telefona — brzo i lako, vaš jedini zadatak je da uživate. Pozivnica gotova za 24h, telefon stiže kurirskom službom ili lično u Novom Sadu.",
   },
 ];
 
@@ -41,7 +48,7 @@ const Concept: React.FC = () => {
   return (
     <section
       id="zasto-mi"
-      className="py-16 sm:py-24 md:py-32 bg-gradient-to-t from-[#f5f4dc] to-[#faf9f6] relative overflow-hidden"
+      className="pt-16 pb-8 sm:pt-24 sm:pb-10 md:pt-32 md:pb-12 bg-gradient-to-t from-[#f5f4dc] to-[#faf9f6] relative overflow-hidden"
     >
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center mb-12 sm:mb-16 md:mb-24">
@@ -50,13 +57,12 @@ const Concept: React.FC = () => {
             <span className="italic text-[#AE343F]">nas</span>?
           </h2>
           <p className="text-xl text-[#232323]/50 leading-relaxed font-light">
-            Jer znamo da je vaše venčanje jedinstveno i zaslužuje uspomene koje
-            traju večno.
+            Digitalna pozivnica, raspored sedenja, audio knjiga utisaka i retro
+            telefon — sve za vaše savršeno venčanje na jednom mestu.
           </p>
           <p className="text-sm text-[#232323]/30 mt-3">
-            To je moguće uz naš retro telefon poznat i kao audio knjiga
-            uspomena, telefon za poruke, audio spomenar ili retro telefon sa
-            rotirajućim brojčanikom.
+            Website pozivnica za venčanje sa besplatnom PDF verzijom za štampu +
+            audio knjiga uspomena — digitalna ili uz retro telefon.
           </p>
         </div>
 

@@ -16,7 +16,7 @@ export type ScriptFontType =
 
 export interface Location {
   name: string;
-  time: string;
+  time?: string;
   address: string;
   lat?: number;
   lng?: number;
@@ -28,35 +28,41 @@ export interface TimelineItem {
   title: string;
   time: string;
   description?: string;
+  what?: string; // e.g. "Polazak od kuće", "Crkveno venčanje", "Skup u svečanoj sali"
   icon: string;
-}
-
-export interface Entry_IDs {
-  name: string;
-  attending: string;
-  plusOnes: string;
-  details: string;
 }
 
 export interface WeddingData {
   theme: ThemeType;
   scriptFont?: ScriptFontType;
   useCyrillic?: boolean; // Use Cyrillic script for static text
-  rsvp_form_url: string;
-  entry_IDs: Entry_IDs;
+  potvrde_password?: string; // Password to access the /potvrde admin page (format: GroomNameDDMM)
   couple_names: {
     bride: string;
     groom: string;
     full_display: string;
   };
-  event_date: string; // ISO string or YYYY-MM-DD
-  submit_until: string;
+  event_date: string; // ISO string: YYYY-MM-DDTHH:mm:ss
+  submit_until: string; // ISO date: YYYY-MM-DD — deadline for RSVP submissions
   tagline?: string;
   thankYouFooter?: string;
   locations: Location[];
   timeline: TimelineItem[];
   countdown_enabled: boolean;
   map_enabled: boolean;
+  paid_for_raspored?: boolean; // Unlocks full seating chart (default: false = demo, 1 seat only)
+  paid_for_pdf?: boolean; // Unlocks watermark-free PDF export
+  paid_for_audio?: boolean; // Unlocks audio guest book recording
+  paid_for_audio_USB?: "" | "kaseta" | "bocica"; // USB suvenir choice
+  paid_for_images?: boolean; // Unlocks photo gallery add-on
+  images?: Array<{ url: string; pathname: string }>; // Up to 3 uploaded photos
+  custom_primary_color?: string; // Custom primary color in hex (e.g. "#A23B8C"), overrides theme
+  custom_background_color?: string; // Custom background color in hex, overrides theme background
+  stamp_color?: string; // Custom wax seal color in hex (e.g. "#8B2252"), overrides theme waxSeal
+  draft?: boolean; // Only visible in dev, returns 404 in production
+  receipt_valid?: boolean; // Receipt link is active (set false after payment)
+  receipt_created?: string; // ISO date when receipt was generated
+  custom_discount?: number; // Custom discount in RSD on website pozivnica
 }
 
 // Comprehensive theme configuration

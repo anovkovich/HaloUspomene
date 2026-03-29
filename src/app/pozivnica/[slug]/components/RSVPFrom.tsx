@@ -2,46 +2,54 @@
 
 import React, { useState } from "react";
 import { Heart, Check, Send, Users, MessageSquare, User } from "lucide-react";
-import { Entry_IDs } from "../types";
 import { useTheme } from "./ThemeProvider";
 
 interface RSVPFormProps {
-  formUrl: string;
-  entry_IDs: Entry_IDs;
+  slug: string;
 }
 
-export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
+export const RSVPForm: React.FC<RSVPFormProps> = ({ slug }) => {
   const { t } = useTheme();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     attending: "Da",
-    plusOnes: "1",
+    guestCount: "1",
     details: "",
   });
 
   const isAttending = formData.attending === "Da";
 
+  const [error, setError] = useState("");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    const params = new URLSearchParams();
-    params.append(entry_IDs.name, formData.name);
-    params.append(entry_IDs.attending, formData.attending);
-    params.append(entry_IDs.plusOnes, isAttending ? formData.plusOnes : "0");
-    params.append(entry_IDs.details, isAttending ? formData.details || "-" : "-");
+    setError("");
 
     try {
-      await fetch(formUrl, {
+      const res = await fetch(`/api/pozivnica/${slug}/rsvp`, {
         method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          attending: formData.attending,
+          guestCount: isAttending ? parseInt(formData.guestCount) : 0,
+          details: isAttending ? formData.details || "" : "",
+        }),
       });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Greška pri slanju");
+        setLoading(false);
+        return;
+      }
     } catch {
-      // no-cors responses are opaque, submission still goes through
+      setError("Greška pri slanju. Pokušajte ponovo.");
+      setLoading(false);
+      return;
     }
 
     setLoading(false);
@@ -50,7 +58,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
 
   const resetForm = () => {
     setSubmitted(false);
-    setFormData({ name: "", attending: "Da", plusOnes: "1", details: "" });
+    setFormData({ name: "", attending: "Da", guestCount: "1", details: "" });
   };
 
   // Helper for pluralization
@@ -155,7 +163,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
             </p>
             <p className="text-xs" style={{ color: "var(--theme-text-light)" }}>
               {isAttending
-                ? `${formData.plusOnes} ${getPersonLabel(parseInt(formData.plusOnes))}`
+                ? `${formData.guestCount} ${getPersonLabel(parseInt(formData.guestCount))}`
                 : t.notAttending}
             </p>
           </div>
@@ -352,9 +360,9 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                   onClick={() =>
                     setFormData({
                       ...formData,
-                      plusOnes: Math.max(
+                      guestCount: Math.max(
                         1,
-                        parseInt(formData.plusOnes) - 1,
+                        parseInt(formData.guestCount) - 1,
                       ).toString(),
                     })
                   }
@@ -370,14 +378,14 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                   className="text-4xl font-elegant w-16 text-center"
                   style={{ color: "var(--theme-text)" }}
                 >
-                  {formData.plusOnes}
+                  {formData.guestCount}
                 </span>
                 <button
                   type="button"
                   onClick={() =>
                     setFormData({
                       ...formData,
-                      plusOnes: (parseInt(formData.plusOnes) + 1).toString(),
+                      guestCount: (parseInt(formData.guestCount) + 1).toString(),
                     })
                   }
                   className="w-12 h-12 rounded-full flex items-center justify-center transition-colors"
@@ -425,6 +433,13 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                 }}
               />
             </div>
+          )}
+
+          {/* Error message */}
+          {error && (
+            <p className="text-sm text-center" style={{ color: "#c0392b" }}>
+              {error}
+            </p>
           )}
 
           {/* Submit button */}

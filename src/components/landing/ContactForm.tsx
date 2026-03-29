@@ -5,7 +5,6 @@ import {
   Calendar,
   User,
   MapPin,
-  Package,
   Send,
   CheckCircle2,
   Loader2,
@@ -14,7 +13,6 @@ import {
   MessageCircle,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
-import { analytics } from "@/utils/analytics";
 
 // Web3Forms access key - get yours free at https://web3forms.com
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
@@ -29,7 +27,6 @@ const ContactForm: React.FC = () => {
     phone: "",
     date: "",
     location: "",
-    package: "Full Service",
     acceptedTerms: false,
   });
 
@@ -40,7 +37,7 @@ const ContactForm: React.FC = () => {
 
     try {
       const formattedDate = formData.date
-        ? new Date(formData.date).toLocaleDateString("sr-RS", {
+        ? new Date(formData.date).toLocaleDateString("sr-Latn-RS", {
             weekday: "long",
             year: "numeric",
             month: "long",
@@ -55,14 +52,13 @@ const ContactForm: React.FC = () => {
         },
         body: JSON.stringify({
           access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `Nova rezervacija - ${formData.name} - ${formattedDate}`,
+          subject: `Retro Telefon - Nova rezervacija - ${formData.name} - ${formattedDate}`,
           from_name: "HALO Uspomene",
           name: formData.name,
           telefon: `+381${formData.phone}`,
           datum_dogadjaja: formattedDate,
           lokacija: formData.location,
-          paket:
-            formData.package === "Full Service" ? "Full Service" : "Essential",
+          paket: "Audio Guest Book",
           opsti_uslovi: formData.acceptedTerms
             ? "Prihvaćeni"
             : "Nisu prihvaćeni",
@@ -76,10 +72,6 @@ const ContactForm: React.FC = () => {
       }
 
       setIsSubmitted(true);
-      analytics.formSubmit("contact");
-      analytics.packageClick(
-        formData.package === "Full Service" ? "Full Service" : "Essential",
-      );
     } catch (err) {
       setError(
         err instanceof Error
@@ -99,7 +91,6 @@ const ContactForm: React.FC = () => {
       phone: "",
       date: "",
       location: "",
-      package: "Full Service",
       acceptedTerms: false,
     });
   };
@@ -114,8 +105,8 @@ const ContactForm: React.FC = () => {
           Hvala Vam, {formData.name.split(" ")[0]}!
         </h3>
         <p className="text-[#F5F4DC]/60 text-lg mb-8">
-          Vaš upit za {new Date(formData.date).toLocaleDateString("sr-RS")} je
-          uspešno primljen. <br />
+          Vaš upit za {new Date(formData.date).toLocaleDateString("sr-Latn-RS")}{" "}
+          je uspešno primljen. <br />
           Odgovorićemo Vam u najkraćem roku sa potvrdom dostupnosti.
         </p>
         <button
@@ -134,6 +125,18 @@ const ContactForm: React.FC = () => {
         onSubmit={handleSubmit}
         className="space-y-10 bg-white/5 backdrop-blur-md p-6 sm:p-10 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/10 shadow-2xl relative"
       >
+        {/* Form context note */}
+        <div className="flex items-center gap-3 text-[#F5F4DC]/40 text-sm">
+          <MessageCircle size={16} className="text-[#AE343F] shrink-0" />
+          <span>
+            Ova forma je za rezervaciju{" "}
+            <strong className="text-[#F5F4DC]/60">
+              Retro Telefona Uspomena
+            </strong>{" "}
+            na Vašem venčanju.
+          </span>
+        </div>
+
         {/* Error Message */}
         {error && (
           <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400">
@@ -211,61 +214,18 @@ const ContactForm: React.FC = () => {
               placeholder="npr. Beograd, Sala XY"
               className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
               value={formData.location}
-              onChange={(e) => {
-                const newLocation = e.target.value;
-                const isNS =
-                  newLocation.toLowerCase().includes("novi sad") ||
-                  newLocation.toLowerCase().includes("novom sadu");
-                setFormData({
-                  ...formData,
-                  location: newLocation,
-                  package:
-                    !isNS && formData.package === "Full Service"
-                      ? "Essential"
-                      : formData.package,
-                });
-              }}
+              onChange={(e) =>
+                setFormData({ ...formData, location: e.target.value })
+              }
               disabled={isLoading}
             />
           </div>
 
-          {/* Package Select */}
-          <div className="md:col-span-2 space-y-3">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
-              <Package size={14} className="text-[#AE343F]" /> Izaberite Paket
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {["Essential", "Full Service"].map((pkg) => {
-                const loc = formData.location.toLowerCase();
-                const isNoviSad = loc.includes("novi sad") || loc.includes("novom sadu");
-                const isDisabled =
-                  isLoading || (pkg === "Full Service" && !isNoviSad);
-                return (
-                  <div key={pkg} className="flex flex-col gap-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        !isDisabled &&
-                        setFormData({ ...formData, package: pkg })
-                      }
-                      disabled={isDisabled}
-                      className={`py-4 rounded-2xl border transition-all text-sm font-bold uppercase tracking-widest ${
-                        formData.package === pkg && !isDisabled
-                          ? "bg-[#AE343F] border-[#AE343F] text-[#F5F4DC] shadow-lg shadow-[#AE343F]/20"
-                          : "bg-white/5 border-white/10 text-[#F5F4DC]/40"
-                      } ${isDisabled ? "opacity-30 cursor-not-allowed" : "hover:border-white/20"}`}
-                    >
-                      {pkg} Paket
-                    </button>
-                    {pkg === "Full Service" && !isNoviSad && (
-                        <p className="text-[#F5F4DC]/30 text-xs text-center">
-                          Dostupno samo u Novom Sadu
-                        </p>
-                      )}
-                  </div>
-                );
-              })}
-            </div>
+          {/* Package info */}
+          <div className="md:col-span-2">
+            <p className="text-[#F5F4DC]/30 text-xs pl-1">
+              Lična dostava i montaža dostupna je samo u Novom Sadu.
+            </p>
           </div>
         </div>
 

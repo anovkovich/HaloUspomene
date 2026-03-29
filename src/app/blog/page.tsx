@@ -1,11 +1,11 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Clock, ArrowRight, Tag } from "lucide-react";
 import { blogPosts } from "@/data/blog/posts";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
+import BlogClient from "./BlogClient";
 
 export const metadata: Metadata = {
   title: "Blog — Audio Guest Book Saveti i Vodiči",
@@ -17,8 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default function BlogPage() {
-  const featured = blogPosts.filter((p) => p.featured);
   const categories = [...new Set(blogPosts.map((p) => p.category))];
+
+  // Strip content to keep client bundle small
+  const posts = blogPosts.map(({ content: _, ...rest }) => rest);
 
   return (
     <>
@@ -47,65 +49,7 @@ export default function BlogPage() {
             </p>
           </div>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {categories.map((cat) => (
-              <span
-                key={cat}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white rounded-full text-sm font-medium text-[#232323]/60 border border-stone-100"
-              >
-                <Tag size={14} />
-                {cat}
-              </span>
-            ))}
-          </div>
-
-          {/* Featured Posts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {featured.map((post) => (
-              <article
-                key={post.slug}
-                className="bg-white rounded-3xl overflow-hidden shadow-sm border border-stone-100 hover:shadow-lg transition-shadow duration-300 flex flex-col"
-              >
-                <div className="p-6 sm:p-8 flex flex-col flex-1">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="px-3 py-1 bg-[#AE343F]/10 rounded-full text-xs font-bold text-[#AE343F] uppercase tracking-wider">
-                      {post.category}
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-[#232323]/40">
-                      <Clock size={12} />
-                      {post.readTime} min
-                    </span>
-                  </div>
-
-                  <h2 className="text-xl font-serif font-semibold text-[#232323] mb-3 leading-snug">
-                    {post.title}
-                  </h2>
-
-                  <p className="text-[#232323]/50 text-sm leading-relaxed mb-6 flex-1">
-                    {post.description}
-                  </p>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-[#232323]/30">
-                      {new Date(post.publishDate).toLocaleDateString("sr-RS", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </span>
-                    <Link
-                      href={`/blog/${post.slug}`}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[#AE343F] hover:gap-3 transition-all"
-                    >
-                      Pročitaj
-                      <ArrowRight size={16} />
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+          <BlogClient posts={posts} categories={categories} />
 
           {/* CTA */}
           <div className="text-center mt-16 sm:mt-20">

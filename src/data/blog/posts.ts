@@ -9,7 +9,7 @@ function loadContent(slug: string): string {
     "data",
     "blog",
     "content",
-    `${slug}.md`,
+    `${slug}.mdx`,
   );
   return fs.readFileSync(filePath, "utf-8");
 }
@@ -200,6 +200,29 @@ const allBlogPosts: BlogPost[] = [
     readTime: 8,
     featured: true,
     content: loadContent("website-pozivnica-audio-guest-book"),
+  },
+  {
+    slug: "website-pozivnica-kompletan-vodic",
+    title:
+      "Od Pozivnice do Rasporeda Sedenja: Kako smo rešili celu organizaciju venčanja",
+    description:
+      "Kompletan vodič kroz HALO Uspomene — od slanja linka gostima, RSVP-a, rasporeda sedenja, PDF pozivnice za štampu, do Audio Knjige Utisaka i Retro Telefona Uspomena.",
+    category: "Vodič",
+    tags: [
+      "website pozivnica venčanje",
+      "online pozivnica",
+      "RSVP forma venčanje",
+      "raspored sedenja venčanje",
+      "audio guest book venčanje",
+      "retro telefon uspomena",
+      "PDF pozivnica",
+      "organizacija venčanja",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-03-15",
+    readTime: 14,
+    featured: true,
+    content: loadContent("website-pozivnica-kompletan-vodic"),
   },
   {
     slug: "srpske-svadbene-tradicije-moderni-trendovi",
