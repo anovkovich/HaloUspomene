@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Calendar,
   User,
@@ -11,11 +11,105 @@ import {
   AlertCircle,
   Phone,
   MessageCircle,
+  HelpCircle,
+  ChevronDown,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
 
 // Web3Forms access key - get yours free at https://web3forms.com
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+
+const HEARD_ABOUT_OPTIONS = [
+  { value: "Google pretraga", label: "Google pretraga" },
+  { value: "Preporuka AI agenta", label: "Preporuka AI agenta" },
+  { value: "Instagram reklama", label: "Instagram reklama" },
+  { value: "Instagram preporuka", label: "Instagram preporuka" },
+  { value: "Preporuka prijatelja", label: "Preporuka prijatelja" },
+  { value: "Drugo", label: "Drugo" },
+];
+
+interface CustomDropdownProps {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}
+
+const CustomDropdown: React.FC<CustomDropdownProps> = ({
+  value,
+  onChange,
+  disabled = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
+
+  const selectedLabel =
+    HEARD_ABOUT_OPTIONS.find((opt) => opt.value === value)?.label ||
+    "Izaberite opciju";
+
+  return (
+    <div ref={dropdownRef} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className="w-full flex items-center justify-between bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none hover:border-[#AE343F]/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
+      >
+        <span
+          className={`${
+            !value ? "text-white/20" : "text-[#F5F4DC]"
+          } transition-colors`}
+        >
+          {selectedLabel}
+        </span>
+        <ChevronDown
+          size={20}
+          className={`text-[#AE343F] transition-transform duration-300 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-[#232323] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 z-50 overflow-hidden">
+          {HEARD_ABOUT_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              className={`w-full text-left px-4 py-3 transition-all border-b border-white/5 last:border-b-0 ${
+                value === option.value
+                  ? "bg-[#AE343F]/20 text-[#AE343F] font-medium"
+                  : "text-[#F5F4DC]/80 hover:bg-white/5 hover:text-[#F5F4DC]"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ContactForm: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -27,6 +121,7 @@ const ContactForm: React.FC = () => {
     phone: "",
     date: "",
     location: "",
+    howHeardAbout: "",
     acceptedTerms: false,
   });
 
@@ -58,6 +153,7 @@ const ContactForm: React.FC = () => {
           telefon: `+381${formData.phone}`,
           datum_dogadjaja: formattedDate,
           lokacija: formData.location,
+          kako_je_cuo: formData.howHeardAbout || "Nije navedeno",
           paket: "Audio Guest Book",
           opsti_uslovi: formData.acceptedTerms
             ? "Prihvaćeni"
@@ -91,6 +187,7 @@ const ContactForm: React.FC = () => {
       phone: "",
       date: "",
       location: "",
+      howHeardAbout: "",
       acceptedTerms: false,
     });
   };
@@ -216,6 +313,21 @@ const ContactForm: React.FC = () => {
               value={formData.location}
               onChange={(e) =>
                 setFormData({ ...formData, location: e.target.value })
+              }
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* How Heard About Dropdown */}
+          <div className="space-y-3 md:col-span-2">
+            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+              <HelpCircle size={14} className="text-[#AE343F]" /> Kako ste čuli
+              za nas
+            </label>
+            <CustomDropdown
+              value={formData.howHeardAbout}
+              onChange={(value) =>
+                setFormData({ ...formData, howHeardAbout: value })
               }
               disabled={isLoading}
             />
