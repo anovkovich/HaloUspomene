@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Phone, Calendar, Trash2, Copy, Check, X } from "lucide-react";
+import DatePicker from "@/components/ui/DatePicker";
 import type { PhoneRental } from "@/lib/phone-rentals";
 
 interface PhoneRentalModalProps {
@@ -184,11 +185,11 @@ export default function PhoneRentalModal({ onClose, bankAccountIdx }: PhoneRenta
                 onChange={(e) => setContactName(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#AE343F]"
               />
-              <input
-                type="date"
+              <DatePicker
                 value={rentalDate}
-                onChange={(e) => setRentalDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#AE343F]"
+                onChange={setRentalDate}
+                placeholder="Izaberite datum"
+                variant="dark"
               />
               <div className="flex items-center gap-2">
                 <input

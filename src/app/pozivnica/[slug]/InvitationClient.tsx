@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { Heart, Calendar, MapPin, Clock, Mic, Church } from "lucide-react";
 // MapPin and Clock retained for Feature Cards section below
 import { WeddingData } from "./types";
@@ -53,6 +54,12 @@ function scrollTo(elementId: string) {
     element.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
+
+// Countdown animation - bigger and more visible
+const countdownAnim = {
+  hidden: { opacity: 0, scale: 0.9, y: 30 },
+  show: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
+};
 
 const LOCATION_TYPE_LABELS: Record<string, { latin: string; cyrillic: string; icon: React.ReactNode }> = {
   hall: { latin: "Svečana sala", cyrillic: "Свечана сала", icon: <MapPin size={14} /> },
@@ -519,7 +526,13 @@ export default function InvitationClient({
           >
             {renderDivider("top")}
             {renderDivider("bottom")}
-            <div className="max-w-4xl mx-auto text-center">
+            <motion.div
+              className="max-w-4xl mx-auto text-center"
+              variants={countdownAnim}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-100px" }}
+            >
               <h2
                 className="text-5xl sm:text-8xl font-script mb-4"
                 style={{ color: "var(--theme-primary)" }}
@@ -527,7 +540,7 @@ export default function InvitationClient({
                 {t.countdown}
               </h2>
               <Countdown targetDate={data.event_date} />
-            </div>
+            </motion.div>
           </section>
         )}
 

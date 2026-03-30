@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Zap, FileJson } from "lucide-react";
 import Link from "next/link";
+import DatePicker from "@/components/ui/DatePicker";
 
 const TEMPLATE = `{
   "theme": "classic_rose",
@@ -220,14 +221,14 @@ export default function NovaPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-white/60 mb-1">
+                <label className="block text-sm text-white/60 mb-3">
                   Datum venčanja <span className="text-white/25">(opciono)</span>
                 </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={eventDate}
-                  onChange={(e) => setEventDate(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#AE343F] [color-scheme:dark]"
+                  onChange={setEventDate}
+                  placeholder="Izaberite datum"
+                  variant="dark"
                 />
               </div>
 

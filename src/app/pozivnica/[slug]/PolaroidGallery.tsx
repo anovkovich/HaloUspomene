@@ -55,14 +55,17 @@ export default function PolaroidGallery({
         </div>
 
         {/* Polaroid cluster */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-6">
+        <div
+          className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-6"
+          style={{ perspective: "1000px" }}
+        >
           {images.map((img, idx) => {
             const rotation = rotations[idx] ?? 0;
 
             return (
               <div
                 key={img.pathname}
-                className="relative transition-all duration-300 ease-out cursor-default"
+                className="relative cursor-default transition-all duration-300 ease-out"
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   filter:
@@ -70,14 +73,14 @@ export default function PolaroidGallery({
                 }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLDivElement;
-                  el.style.transform = `rotate(${rotation * 0.4}deg) translateY(-8px) scale(1.04)`;
+                  el.style.transform = `rotate(${rotation * 0.4}deg) translateY(-8px) scale(1.04) translateZ(0)`;
                   el.style.filter =
                     "drop-shadow(0 16px 32px rgba(0,0,0,0.28)) drop-shadow(0 4px 10px rgba(0,0,0,0.18))";
                   el.style.zIndex = "10";
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLDivElement;
-                  el.style.transform = `rotate(${rotation}deg)`;
+                  el.style.transform = `rotate(${rotation}deg) translateZ(0)`;
                   el.style.filter =
                     "drop-shadow(0 8px 20px rgba(0,0,0,0.22)) drop-shadow(0 2px 6px rgba(0,0,0,0.12))";
                   el.style.zIndex = "";

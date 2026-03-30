@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import {
   Church,
   Users,
@@ -34,6 +35,11 @@ const IconMap: Record<
   HouseHeart,
 };
 
+const slideInItem = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
+
 interface TimelineProps {
   items: TimelineItem[];
 }
@@ -57,10 +63,14 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
           const isEven = index % 2 === 0;
 
           return (
-            <div
+            <motion.div
               key={index}
               className={`relative flex items-center w-full md:justify-between ${isEven ? "md:flex-row-reverse" : ""}`}
-              style={{ animationDelay: `${index * 150}ms` }}
+              variants={slideInItem}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ delay: index * 0.08 }}
             >
               {/* Desktop Spacer */}
               <div className="hidden md:block md:w-5/12"></div>
@@ -171,7 +181,7 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
