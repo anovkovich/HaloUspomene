@@ -1,11 +1,29 @@
 import { NextResponse } from "next/server";
 import { getWeddingData } from "@/data/pozivnice";
+import { getPhoneRentalById } from "@/lib/phone-rentals";
 
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
+
+  // Handle phone rental IDs (tel-xxx)
+  if (slug.startsWith("tel-")) {
+    const rental = await getPhoneRentalById(slug);
+    if (!rental) {
+      return NextResponse.json({ valid: false }, { status: 404 });
+    }
+    return NextResponse.json({
+      valid: rental.receipt_valid ?? false,
+      created: rental.receipt_created ?? null,
+      customDiscount: rental.custom_discount ?? 0,
+      contactName: rental.contact_name,
+      rentalDate: rental.rental_date,
+    });
+  }
+
+  // Handle couple invitations
   const data = await getWeddingData(slug);
 
   if (!data) {

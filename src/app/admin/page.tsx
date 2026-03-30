@@ -2,10 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, CalendarPlus } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, CalendarPlus, Phone } from "lucide-react";
 import DeleteModal from "./DeleteModal";
 import BirthdayAdminList from "./BirthdayAdminList";
 import VendorAdminTab from "./VendorAdminTab";
+import PhoneRentalModal from "./PhoneRentalModal";
+import AdminCalendar from "./AdminCalendar";
 
 type AdminTab = "pozivnice" | "rodjendani" | "vendori";
 
@@ -45,7 +47,13 @@ export default function AdminPage() {
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [bankAccountIdx, setBankAccountIdx] = useState(0);
+  const [showPhoneRental, setShowPhoneRental] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/couples")
@@ -183,16 +191,31 @@ export default function AdminPage() {
   }
 
   async function handleInvalidateReceipt(slug: string) {
+    const couple = couples.find((c) => c.slug === slug);
+
     setCouples((prev) =>
       prev.map((c) =>
         c.slug === slug ? { ...c, receipt_valid: false } : c
       )
     );
+
     await fetch(`/api/admin/couples/${slug}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ receipt_valid: false }),
     });
+
+    // Also mark phone rental as paid if it exists
+    if (couple?.couple_names?.full_display) {
+      await fetch("/api/admin/phone-rentals/by-contact", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contact_name: couple.couple_names.full_display,
+          receipt_valid: false,
+        }),
+      }).catch(() => {}); // Silently fail if phone rental doesn't exist
+    }
   }
 
   async function handleSetDiscount(slug: string, amount: number) {
@@ -219,6 +242,9 @@ export default function AdminPage() {
 
   return (
     <div>
+      {/* Admin Calendar */}
+      <AdminCalendar couples={couples} />
+
       {/* Bank account selector */}
       <div className="flex items-center gap-3 mb-6">
         <span className="text-xs text-white/30">Žiro račun:</span>
@@ -294,12 +320,21 @@ export default function AdminPage() {
         <h2 className="text-2xl font-semibold text-white">
           Pozivnice ({couples.length})
         </h2>
-        <button
-          onClick={() => router.push("/admin/nova")}
-          className="flex items-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-        >
-          <Plus size={16} /> Nova pozivnica
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowPhoneRental(true)}
+            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+            title="Iznajmljivanje telefona"
+          >
+            <Phone size={16} />
+          </button>
+          <button
+            onClick={() => router.push("/admin/nova")}
+            className="flex items-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+          >
+            <Plus size={16} /> Nova pozivnica
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -527,6 +562,24 @@ export default function AdminPage() {
                   copiedSlug={copiedSlug}
                   onGenerate={async (extras) => {
                     await handleGenerateReceipt(c.slug);
+
+                    // If retro phone is enabled, create a phone rental record
+                    if (extras.retro_phone && c.event_date) {
+                      const eventDate = new Date(c.event_date);
+
+                      await fetch("/api/admin/phone-rentals", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          contact_name: c.couple_names?.full_display || c.slug,
+                          rental_date: eventDate.toISOString().split("T")[0],
+                          dobrodoslica: extras.dobrodoslica || false,
+                          receipt_valid: true,
+                          receipt_created: new Date().toISOString(),
+                        }),
+                      });
+                    }
+
                     const url = buildReceiptUrl(c, extras);
                     await navigator.clipboard.writeText(url);
                     setCopiedSlug(c.slug);
@@ -546,6 +599,13 @@ export default function AdminPage() {
           );
         })}
       </div>
+
+      {mounted && showPhoneRental && (
+        <PhoneRentalModal
+          onClose={() => setShowPhoneRental(false)}
+          bankAccountIdx={bankAccountIdx}
+        />
+      )}
 
       {deleteSlug && (
         <DeleteModal

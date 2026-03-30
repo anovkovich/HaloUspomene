@@ -294,10 +294,14 @@ function ReceiptContent() {
       )!.price,
     });
 
-  items.push(
-    { label: "Website pozivnica", amount: pricing.pozivnica.website.price },
-    { label: "PDF pozivnica za štampu", amount: 0, free: true },
-  );
+  // Only add website items for invitations, not phone rentals
+  const isPhoneRental = payload.s.startsWith("tel-");
+  if (!isPhoneRental) {
+    items.push(
+      { label: "Website pozivnica", amount: pricing.pozivnica.website.price },
+      { label: "PDF pozivnica za štampu", amount: 0, free: true },
+    );
+  }
 
   if (payload.r)
     items.push({
