@@ -9,6 +9,14 @@ interface EnvelopeLoaderProps {
   onComplete: () => void;
   names: string;
   eventDate?: string;
+  stampColor?: string; // Custom wax seal color, overrides theme
+}
+
+function darkenHex(hex: string, factor = 0.72): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `#${Math.round(r * factor).toString(16).padStart(2, "0")}${Math.round(g * factor).toString(16).padStart(2, "0")}${Math.round(b * factor).toString(16).padStart(2, "0")}`;
 }
 
 // Extract initials from names (e.g., "Emilija & Aleksa" -> "E&A")
@@ -24,6 +32,7 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
   onComplete,
   names,
   eventDate = "Jun 06, 2026",
+  stampColor,
 }) => {
   const { config, t } = useTheme();
   const [stage, setStage] = useState<
@@ -48,15 +57,15 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
 
   // Use theme colors
   const primaryColor = config.colors.primary;
-  const waxSealColor = config.colors.waxSeal;
-  const waxSealDark = config.colors.waxSealDark;
+  const waxSealColor = stampColor ?? config.colors.waxSeal;
+  const waxSealDark = stampColor ? darkenHex(stampColor) : config.colors.waxSealDark;
 
-  // For custom themes, use gold for stamp text for better contrast
+  // For custom themes or custom stamp color, use gold for stamp text for better contrast
   const presetThemePrimaries = Object.values(THEME_CONFIGS).map(
     (t) => t.colors.primary
   );
   const isCustomTheme = !presetThemePrimaries.includes(primaryColor);
-  const stampTextColor = isCustomTheme ? "#d4af37" : primaryColor;
+  const stampTextColor = isCustomTheme || stampColor ? "#d4af37" : primaryColor;
 
   return (
     <div
