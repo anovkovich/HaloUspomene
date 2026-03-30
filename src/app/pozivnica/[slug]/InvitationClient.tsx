@@ -58,7 +58,7 @@ function scrollTo(elementId: string) {
 // Countdown animation - bigger and more visible
 const countdownAnim = {
   hidden: { opacity: 0, scale: 0.9, y: 30 },
-  show: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
+  show: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.7 } },
 };
 
 const LOCATION_TYPE_LABELS: Record<string, { latin: string; cyrillic: string; icon: React.ReactNode }> = {
