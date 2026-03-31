@@ -61,8 +61,15 @@ const countdownAnim = {
   show: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.7 } },
 };
 
-const LOCATION_TYPE_LABELS: Record<string, { latin: string; cyrillic: string; icon: React.ReactNode }> = {
-  hall: { latin: "Svečana sala", cyrillic: "Свечана сала", icon: <MapPin size={14} /> },
+const LOCATION_TYPE_LABELS: Record<
+  string,
+  { latin: string; cyrillic: string; icon: React.ReactNode }
+> = {
+  hall: {
+    latin: "Svečana sala",
+    cyrillic: "Свечана сала",
+    icon: <MapPin size={14} />,
+  },
   church: { latin: "Crkva", cyrillic: "Црква", icon: <Church size={14} /> },
 };
 
@@ -101,7 +108,9 @@ function LocationMapSection({
                   onClick={() => setActiveIdx(i)}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-full font-elegant text-xs uppercase tracking-[0.15em] transition-all cursor-pointer"
                   style={{
-                    backgroundColor: isActive ? "var(--theme-primary)" : "transparent",
+                    backgroundColor: isActive
+                      ? "var(--theme-primary)"
+                      : "transparent",
                     color: isActive ? "#fff" : "var(--theme-text-light)",
                     border: isActive
                       ? "1px solid var(--theme-primary)"
@@ -391,8 +400,8 @@ export default function InvitationClient({
               className={`flex items-center gap-3 transition-all duration-1000 delay-300 ${isRevealed ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
             >
               <p
-                className="font-elegant uppercase tracking-[0.4em] text-[9px] sm:text-[11px]"
-                style={{ color: "var(--theme-text-light)" }}
+                className="font-elegant uppercase tracking-[0.4em] text-[10px] sm:text-[12px] font-semibold"
+                style={{ color: "var(--theme-text)", opacity: 0.6 }}
               >
                 {t.celebrateLove}
               </p>
@@ -441,8 +450,8 @@ export default function InvitationClient({
 
             {/* Tagline */}
             <div
-              className={`font-serif italic text-base sm:text-2xl max-w-2xl mx-auto leading-relaxed font-light px-10 transition-all duration-[1500ms] delay-1000 ${isRevealed ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
-              style={{ color: "var(--theme-text-muted)", opacity: 0.7 }}
+              className={`font-serif italic text-lg sm:text-2xl max-w-2xl mx-auto leading-tight font-normal px-10 transition-all duration-[1500ms] delay-1000 ${isRevealed ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
+              style={{ color: "var(--theme-text-muted)", opacity: 0.9 }}
             >
               {data.tagline?.split(/\\n|\n/).map((line, i, arr) => (
                 <React.Fragment key={i}>
@@ -512,7 +521,10 @@ export default function InvitationClient({
 
         {/* Polaroid Gallery — paid add-on */}
         {data.paid_for_images && data.images && data.images.length > 0 && (
-          <PolaroidGallery images={data.images} useCyrillic={data.useCyrillic} />
+          <PolaroidGallery
+            images={data.images}
+            useCyrillic={data.useCyrillic}
+          />
         )}
 
         {/* Countdown Section */}
@@ -563,12 +575,12 @@ export default function InvitationClient({
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="relative p-10 sm:p-14 text-center group overflow-hidden transition-all duration-500"
+                className="relative p-10 sm:p-14 text-center group overflow-hidden transition-all duration-500 hover:shadow-xl"
                 style={{
                   background: `linear-gradient(to bottom, var(--theme-background), var(--theme-surface))`,
                   borderRadius: "var(--theme-radius)",
                   border: `1px solid var(--theme-border-light)`,
-                  boxShadow: "var(--theme-shadow)",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
                 }}
               >
                 <div
@@ -579,31 +591,53 @@ export default function InvitationClient({
                 />
 
                 <div
-                  className="relative w-16 h-16 mx-auto mb-8 rounded-full flex items-center justify-center transition-colors"
+                  className="relative w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-7 sm:mb-10 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-105"
                   onClick={() => {
                     scrollTo(item.link!);
                   }}
                   style={{
                     backgroundColor: "var(--theme-surface)",
-                    border: `1px solid var(--theme-border)`,
+                    border: `1.5px solid var(--theme-border)`,
+                    boxShadow: "0 2px 12px rgba(0, 0, 0, 0.06)",
                   }}
                 >
                   <item.icon
-                    size={24}
-                    strokeWidth={1}
+                    size={28}
+                    strokeWidth={1.2}
                     style={{ color: "var(--theme-primary)" }}
                   />
                 </div>
 
-                <h3
-                  className="font-elegant text-sm mb-6 tracking-[0.4em] uppercase"
-                  style={{ color: "var(--theme-primary)" }}
-                >
-                  {item.title}
-                </h3>
+                <div className="flex items-center justify-center gap-3 mb-6 sm:mb-8">
+                  <div
+                    style={{
+                      width: "24px",
+                      height: "1px",
+                      backgroundColor: "var(--theme-primary)",
+                      opacity: 0.4,
+                    }}
+                  />
+                  <h3
+                    className="font-elegant text-sm sm:text-base tracking-[0.4em] uppercase font-semibold"
+                    style={{
+                      color: "var(--theme-primary)",
+                      letterSpacing: "0.15em",
+                    }}
+                  >
+                    {item.title}
+                  </h3>
+                  <div
+                    style={{
+                      width: "24px",
+                      height: "1px",
+                      backgroundColor: "var(--theme-primary)",
+                      opacity: 0.4,
+                    }}
+                  />
+                </div>
                 <p
-                  className="font-serif text-base sm:text-lg leading-[2.2] whitespace-pre-line"
-                  style={{ color: "var(--theme-text-muted)" }}
+                  className="font-serif text-lg sm:text-xl leading-[1.6] whitespace-pre-line font-light"
+                  style={{ color: "var(--theme-text)", opacity: 0.95 }}
                 >
                   {item.content}
                 </p>
@@ -630,12 +664,6 @@ export default function InvitationClient({
               >
                 {t.protocol}
               </h2>
-              <p
-                className="font-serif text-sm sm:text-base leading-relaxed"
-                style={{ color: "var(--theme-text-light)" }}
-              >
-                {t.ourDayPlan}
-              </p>
             </div>
             <Timeline items={data.timeline} />
             {renderDivider("bottom")}
@@ -667,13 +695,13 @@ export default function InvitationClient({
               {t.rsvpTitle}
             </h2>
             <p
-              className="font-serif text-sm sm:text-base leading-relaxed"
-              style={{ color: "var(--theme-text-muted)" }}
+              className="font-serif text-base sm:text-lg leading-none max-w-xl mx-auto"
+              style={{ color: "var(--theme-text)", opacity: 0.9 }}
             >
               {t.rsvpSubtitle}{" "}
               <span
-                className="font-semibold"
-                style={{ color: "var(--theme-text)" }}
+                className="font-semibold block mt-2"
+                style={{ color: "var(--theme-primary)" }}
               >
                 {submitUntilDisplay}
               </span>
@@ -756,6 +784,20 @@ export default function InvitationClient({
               {data.couple_names.full_display}
             </p>
 
+            <div
+              className="font-serif italic text-lg sm:text-2xl tracking-wide px-3 mb-8"
+              style={{ color: "var(--theme-primary)", opacity: 0.9 }}
+            >
+              {(data.thankYouFooter || t.thankYouFooter)
+                .split(/\\n|\n/)
+                .map((line, i, arr) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < arr.length - 1 && <div className="h-6" />}
+                  </React.Fragment>
+                ))}
+            </div>
+
             <div className="flex items-center justify-center gap-4 mb-8">
               <div
                 className="w-12 h-px"
@@ -776,18 +818,6 @@ export default function InvitationClient({
                   opacity: 0.3,
                 }}
               />
-            </div>
-
-            <div
-              className="font-elegant text-xs uppercase tracking-[0.3em] px-3"
-              style={{ color: "var(--theme-text-light)" }}
-            >
-              {(data.thankYouFooter || t.thankYouFooter).split(/\\n|\n/).map((line, i, arr) => (
-                <React.Fragment key={i}>
-                  {line}
-                  {i < arr.length - 1 && <div className="h-6" />}
-                </React.Fragment>
-              ))}
             </div>
 
             <p
@@ -819,7 +849,14 @@ export default function InvitationClient({
           </Link>
 
           <button
-            onClick={() => generateInvitationPDF(data, slug, data.paid_for_pdf ?? false, useCyrillic)}
+            onClick={() =>
+              generateInvitationPDF(
+                data,
+                slug,
+                data.paid_for_pdf ?? false,
+                useCyrillic,
+              )
+            }
             className="flex items-center gap-1 mb-5 mx-auto text-[9px] uppercase tracking-[0.2em] transition-opacity hover:opacity-40 cursor-pointer"
             style={{ color: "var(--theme-text-light)", opacity: 0.15 }}
           >
