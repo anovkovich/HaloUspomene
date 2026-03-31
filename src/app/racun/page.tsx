@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
 import { pricing, formatPrice } from "@/data/pricing";
+import { decodeFromBase64 } from "@/lib/encoding";
 
 const CYR_TO_LAT: Record<string, string> = {
   А: "A",
@@ -247,7 +248,7 @@ function ReceiptContent() {
 
     let data: ReceiptPayload;
     try {
-      data = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+      data = decodeFromBase64<ReceiptPayload>(encoded);
       if (!data.s) {
         router.replace("/");
         return;
@@ -257,7 +258,7 @@ function ReceiptContent() {
       return;
     }
 
-    fetch(`/api/racun/${data.s}`)
+    fetch(`/api/racun/${data.s}/`)
       .then((res) => res.json())
       .then((apiData) => {
         if (!apiData.valid) {

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, CalendarPlus, Phone } from "lucide-react";
+import { encodeToBase64 } from "@/lib/encoding";
 import DeleteModal from "./DeleteModal";
 import BirthdayAdminList from "./BirthdayAdminList";
 import VendorAdminTab from "./VendorAdminTab";
@@ -173,7 +174,7 @@ export default function AdminPage() {
       ba: bankAccountIdx,
       t: Date.now(),
     };
-    return `https://halouspomene.rs/racun?d=${btoa(unescape(encodeURIComponent(JSON.stringify(data))))}`;
+    return `https://halouspomene.rs/racun?d=${encodeToBase64(data)}`;
   }
 
   async function handleGenerateReceipt(slug: string) {
@@ -183,11 +184,32 @@ export default function AdminPage() {
         c.slug === slug ? { ...c, receipt_valid: true, receipt_created: now } : c
       )
     );
-    await fetch(`/api/admin/couples/${slug}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ receipt_valid: true, receipt_created: now }),
-    });
+    try {
+      const res = await fetch(`/api/admin/couples/${slug}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receipt_valid: true, receipt_created: now }),
+      });
+      if (!res.ok) {
+        console.error(`Failed to set receipt_valid: ${res.status} ${res.statusText}`);
+        alert(`Greška: Nisu mogli podesiti račun (${res.status})`);
+        // Revert optimistic update
+        setCouples((prev) =>
+          prev.map((c) =>
+            c.slug === slug ? { ...c, receipt_valid: false } : c
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error generating receipt:", error);
+      alert("Greška: Problem sa konekcijom");
+      // Revert optimistic update
+      setCouples((prev) =>
+        prev.map((c) =>
+          c.slug === slug ? { ...c, receipt_valid: false } : c
+        )
+      );
+    }
   }
 
   async function handleInvalidateReceipt(slug: string) {
