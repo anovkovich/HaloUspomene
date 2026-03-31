@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Trash2, MapPin } from "lucide-react";
 import Link from "next/link";
 import DeleteModal from "../DeleteModal";
+import PlannerStatsSection from "@/app/pozivnica/[slug]/PlannerStatsSection";
 
 export default function EditCouplePage() {
   const params = useParams<{ slug: string }>();
@@ -289,6 +290,20 @@ export default function EditCouplePage() {
             )}
           </div>
         )}
+
+        {/* Planner Stats Section */}
+        <div className="border border-white/10 rounded-lg p-4 bg-white/5">
+          <PlannerStatsSection
+            slug={slug}
+            themeVariables={{
+              "--theme-primary": "#AE343F",
+              "--theme-text": "#ffffff",
+              "--theme-surface": "rgba(255, 255, 255, 0.05)",
+              "--theme-border": "rgba(255, 255, 255, 0.15)",
+            }}
+            useCyrillic={true}
+          />
+        </div>
       </div>
 
       {showDeleteModal && (
