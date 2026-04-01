@@ -130,7 +130,7 @@ export default async function OGImage() {
               letterSpacing: "0.1em",
             }}
           >
-            od 9.000 din · Dostava u celoj Srbiji
+            Dostava u celoj Srbiji
           </span>
 
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>

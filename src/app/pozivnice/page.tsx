@@ -27,7 +27,7 @@ import {
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
-import { pricing, formatPrice } from "@/data/pricing";
+import { pricing, formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
 import { THEME_CONFIGS } from "@/app/pozivnica/[slug]/constants";
 import type { ThemeType, ThemeConfig } from "@/app/pozivnica/[slug]/types";
 
@@ -851,8 +851,17 @@ export default function PozivnicePage() {
                 <p className="text-xs text-[#232323]/40 mb-2">
                   Vintage telefon za glasovne poruke gostiju
                 </p>
-                <span className="text-xs font-bold text-[#AE343F]">
-                  {formatPrice(pricing.packages.essential.price)}
+                <span className="text-xs font-bold text-[#AE343F] flex items-center gap-2">
+                  {isAudioDiscountActive() ? (
+                    <>
+                      <span className="line-through text-[#AE343F]/40 text-[10px]">
+                        {formatPrice(pricing.packages.essential.price)}
+                      </span>
+                      <span>{formatPrice(getAudioPrice())}</span>
+                    </>
+                  ) : (
+                    formatPrice(pricing.packages.essential.price)
+                  )}
                 </span>
               </Link>
             </div>

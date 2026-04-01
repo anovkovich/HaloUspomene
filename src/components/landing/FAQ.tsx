@@ -1,5 +1,5 @@
 import React from "react";
-import { pricing, formatPrice } from "@/data/pricing";
+import { pricing, formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
 
 interface FAQItem {
   question: string;
@@ -95,7 +95,7 @@ const faqData: FAQItem[] = [
   {
     category: "Cene",
     question: "Koliko košta iznajmljivanje audio guest book telefona?",
-    answer: `Audio guest book paket (${formatPrice(pricing.packages.essential.price)}) — kurirska dostava u celoj Srbiji, vintage telefon, elegantno uputstvo, svi snimci u digitalnom formatu, besplatan povrat. Lična dostava i montaža dostupna je samo u Novom Sadu. Dodaci: Personalizovana audio dobrodošlica (${formatPrice(pricing.addons.find((a) => a.id === "personalizovana_dobrodoslica")!.price)}), Retro kaseta USB (${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}), Uspomene u boci (${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}). Website pozivnica: od 5.000 din — uključuje besplatnu PDF pozivnicu za štampu. Uz raspored sedenja (2.000 din) i digitalnu audio knjigu (3.000 din) kompletni paket košta 8.000 din. Sve cene su fiksne tokom cele godine, bez skrivenih troškova.`,
+    answer: `Audio guest book paket (${formatPrice(getAudioPrice())}${isAudioDiscountActive() ? ` — redovna cena ${formatPrice(pricing.packages.essential.price)}` : ""}) — kurirska dostava u celoj Srbiji, vintage telefon, elegantno uputstvo, svi snimci u digitalnom formatu, besplatan povrat. Lična dostava i montaža dostupna je samo u Novom Sadu. Dodaci: Personalizovana audio dobrodošlica (${formatPrice(pricing.addons.find((a) => a.id === "personalizovana_dobrodoslica")!.price)}), Retro kaseta USB (${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}), Uspomene u boci (${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}). Website pozivnica: od 5.000 din — uključuje besplatnu PDF pozivnicu za štampu. Uz raspored sedenja (2.000 din) i digitalnu audio knjigu (3.000 din) kompletni paket košta 8.000 din. Sve cene su fiksne tokom cele godine, bez skrivenih troškova.`,
   },
   {
     category: "Cene",

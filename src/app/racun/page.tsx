@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
-import { pricing, formatPrice } from "@/data/pricing";
+import { pricing, formatPrice, getAudioPrice } from "@/data/pricing";
 import { decodeFromBase64 } from "@/lib/encoding";
 
 const CYR_TO_LAT: Record<string, string> = {
@@ -285,7 +285,7 @@ function ReceiptContent() {
   if (payload.rp)
     items.push({
       label: "Audio Guest Book — telefon",
-      amount: pricing.packages.essential.price,
+      amount: getAudioPrice(),
     });
   if (payload.pd)
     items.push({

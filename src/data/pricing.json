@@ -2,7 +2,9 @@
   "packages": {
     "essential": {
       "name": "Audio Guest Book",
-      "price": 9000
+      "price": 9000,
+      "discountPrice": 8000,
+      "discountActive": true
     }
   },
   "pozivnica": {

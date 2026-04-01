@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, CalendarPlus, Phone } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
+import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
 import BirthdayAdminList from "./BirthdayAdminList";
 import VendorAdminTab from "./VendorAdminTab";
@@ -703,7 +704,7 @@ function ReceiptDropdown({
         >
           {/* Retro Phone toggle */}
           <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
-            <span className="text-[11px] text-white/50">Retro telefon (9.000)</span>
+            <span className="text-[11px] text-white/50">Retro telefon ({getAudioPrice()})</span>
             <button
               onClick={() => {
                 const next = !retroPhone;

@@ -23,7 +23,7 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import ContactForm from "@/components/landing/ContactForm";
-import { pricing, formatPrice } from "@/data/pricing";
+import { pricing, formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
 import RelatedPosts from "./RelatedPosts";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   title:
     "Telefon Uspomena za Venčanje — Retro Telefon za Audio Poruke | HALO Uspomene",
   description:
-    "Telefon uspomena za venčanja u Srbiji. Iznajmite retro telefon sa brojčanikom — gosti ostavljaju glasovne poruke. Audio guest book od 9.000 din. Dostava u Beograd, Novi Sad i celu Srbiju.",
+    "Telefon uspomena za venčanja u Srbiji. Iznajmite retro telefon sa brojčanikom — gosti ostavljaju glasovne poruke. Audio guest book sa dostavom u Beograd, Novi Sad i celu Srbiju.",
   keywords: [
     "telefon uspomena",
     "telefon uspomena za venčanje",
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Telefon Uspomena za Venčanje | HALO Uspomene",
     description:
-      "Iznajmite retro telefon za venčanje — gosti podižu slušalicu i ostavljaju glasovne poruke. Audio guest book od 9.000 din sa dostavom u celoj Srbiji.",
+      "Iznajmite retro telefon za venčanje — gosti podižu slušalicu i ostavljaju glasovne poruke. Audio guest book sa dostavom u celoj Srbiji.",
     type: "website",
     url: `${siteUrl}/telefon-uspomena`,
     siteName: "Halo Uspomene",
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Telefon Uspomena za Venčanje | HALO Uspomene",
     description:
-      "Retro telefon za glasovne poruke gostiju na venčanju. Audio guest book — 9.000 din, dostava u celoj Srbiji.",
+      "Retro telefon za glasovne poruke gostiju na venčanju. Audio guest book sa dostavom u celoj Srbiji.",
   },
   alternates: {
     canonical: `${siteUrl}/telefon-uspomena`,
@@ -169,13 +169,13 @@ export default function TelefonUspomenaPage() {
     "@type": "Product",
     name: "Telefon Uspomena — Retro Telefon za Venčanja",
     description:
-      "Iznajmljivanje retro telefona sa brojčanikom za venčanja u Srbiji. Gosti ostavljaju glasovne poruke — audio guest book od 9.000 din sa dostavom u celoj Srbiji.",
+      "Iznajmljivanje retro telefona sa brojčanikom za venčanja u Srbiji. Gosti ostavljaju glasovne poruke — audio guest book sa dostavom u celoj Srbiji.",
     image: `${siteUrl}/images/phone.webp`,
     brand: { "@type": "Brand", name: "HALO Uspomene" },
     url: `${siteUrl}/telefon-uspomena`,
     offers: {
       "@type": "Offer",
-      price: "9000",
+      price: String(getAudioPrice()),
       priceCurrency: "RSD",
       availability: "https://schema.org/InStock",
       seller: { "@type": "Organization", name: "Halo Uspomene" },
@@ -323,9 +323,18 @@ export default function TelefonUspomenaPage() {
                     <Truck size={14} className="text-[#AE343F]" />
                     Dostava u celoj Srbiji
                   </span>
-                  <span className="font-bold text-[#AE343F]">
-                    {formatPrice(pricing.packages.essential.price)}
-                  </span>
+                  {isAudioDiscountActive() ? (
+                    <span className="font-bold text-[#AE343F] flex items-center gap-2">
+                      <span className="line-through text-[#AE343F]/40 text-sm">
+                        {formatPrice(pricing.packages.essential.price)}
+                      </span>
+                      <span>{formatPrice(getAudioPrice())}</span>
+                    </span>
+                  ) : (
+                    <span className="font-bold text-[#AE343F]">
+                      {formatPrice(pricing.packages.essential.price)}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -494,9 +503,20 @@ export default function TelefonUspomenaPage() {
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-4">
                 Audio Guest Book paket
               </h2>
-              <p className="text-3xl font-serif font-bold text-[#AE343F]">
-                {formatPrice(pricing.packages.essential.price)}
-              </p>
+              {isAudioDiscountActive() ? (
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-lg font-serif text-[#AE343F]/40 line-through">
+                    {formatPrice(pricing.packages.essential.price)}
+                  </p>
+                  <p className="text-3xl font-serif font-bold text-[#AE343F]">
+                    {formatPrice(getAudioPrice())}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-3xl font-serif font-bold text-[#AE343F]">
+                  {formatPrice(pricing.packages.essential.price)}
+                </p>
+              )}
             </div>
 
             <div className="max-w-md mx-auto mb-12">
@@ -549,7 +569,7 @@ export default function TelefonUspomenaPage() {
                 Dodaci
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {pricing.addons.map((addon) => (
+                {pricing.addons.filter(a => a.id !== 'custom_color').map((addon) => (
                   <div
                     key={addon.id}
                     className="bg-white rounded-xl p-5 border border-[#d4af37]/20 text-center"
@@ -600,9 +620,20 @@ export default function TelefonUspomenaPage() {
                     Retro Telefon Uspomena
                   </h3>
                 </div>
-                <p className="text-2xl font-serif font-bold text-[#AE343F] mb-4">
-                  {formatPrice(pricing.packages.essential.price)}
-                </p>
+                {isAudioDiscountActive() ? (
+                  <div className="mb-4">
+                    <p className="text-sm font-serif text-[#AE343F]/40 line-through mb-1">
+                      {formatPrice(pricing.packages.essential.price)}
+                    </p>
+                    <p className="text-2xl font-serif font-bold text-[#AE343F]">
+                      {formatPrice(getAudioPrice())}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-serif font-bold text-[#AE343F] mb-4">
+                    {formatPrice(pricing.packages.essential.price)}
+                  </p>
+                )}
                 <ul className="space-y-2 mb-4">
                   {[
                     "Fizički vintage telefon na venčanju",
@@ -843,7 +874,8 @@ export default function TelefonUspomenaPage() {
             Pančevo, Šabac i svi ostali gradovi u Srbiji.
           </p>
           <p>
-            Telefon uspomena cena: Audio Guest Book paket košta 9.000 din sa
+            Telefon uspomena cena: Audio Guest Book paket košta {formatPrice(getAudioPrice())}
+            {isAudioDiscountActive() && ` (snižena cena, redovna ${formatPrice(pricing.packages.essential.price)})`} sa
             besplatnom dostavom i povratom. Dodaci: USB retro kaseta 2.500 din,
             USB bočica 2.000 din, personalizovana audio dobrodošlica 1.000 din.
             Telefon uspomena Beograd — kurirska dostava. Telefon uspomena Novi

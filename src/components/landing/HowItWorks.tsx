@@ -11,6 +11,7 @@ import {
   Award,
 } from "lucide-react";
 import Link from "next/link";
+import { formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
 
 const HowItWorks: React.FC = () => {
   return (
@@ -256,16 +257,20 @@ const HowItWorks: React.FC = () => {
                 Vašeg venčanja.
               </p>
               <div className="flex flex-wrap gap-2 mb-4">
-                {["Audio Guest Book — 9.000 din", "Lična dostava — Novi Sad"].map(
-                  (tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-[#F5F4DC]/50 font-medium"
-                    >
-                      {tag}
-                    </span>
-                  ),
-                )}
+                {["Lična dostava — Novi Sad"].map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-[#F5F4DC]/50 font-medium"
+                  >
+                    {tag}
+                  </span>
+                ))}
+                <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-[#F5F4DC]/50 font-medium">
+                  Audio Guest Book — {formatPrice(getAudioPrice())}
+                  {isAudioDiscountActive() && (
+                    <span className="ml-2 text-[#d4af37]">(sniženo)</span>
+                  )}
+                </span>
               </div>
             </div>
             <Link

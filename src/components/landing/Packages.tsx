@@ -1,6 +1,7 @@
 import React from "react";
 import { Check, Phone, Package } from "lucide-react";
 import Link from "next/link";
+import { formatPrice, getAudioPrice, isAudioDiscountActive, pricing } from "@/data/pricing";
 
 const features = [
   "Autentični vintage telefon",
@@ -44,9 +45,23 @@ const Packages: React.FC = () => {
                 <h3 className="text-lg sm:text-xl font-serif text-[#232323] leading-tight">
                   Audio Guest Book
                 </h3>
-                <p className="text-sm font-semibold text-[#AE343F]">
-                  9.000 din
-                </p>
+                {isAudioDiscountActive() ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-[#AE343F]/40 line-through">
+                      {formatPrice(pricing.packages.essential.price)}
+                    </span>
+                    <span className="text-sm font-bold text-[#AE343F]">
+                      {formatPrice(getAudioPrice())}
+                    </span>
+                    <span className="text-xs bg-[#AE343F] text-white px-2 py-0.5 rounded font-bold">
+                      SNIŽENO
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-sm font-semibold text-[#AE343F]">
+                    {formatPrice(pricing.packages.essential.price)}
+                  </p>
+                )}
               </div>
             </div>
 

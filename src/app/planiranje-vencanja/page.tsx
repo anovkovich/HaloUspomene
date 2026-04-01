@@ -20,6 +20,7 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import QuickStartForm from "./QuickStartForm";
+import { formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
@@ -471,7 +472,9 @@ export default function PlaniranjeVencanjaPage() {
                   Retro telefon za glasovne poruke gostiju
                 </p>
                 <span className="text-xs text-[#AE343F] font-medium inline-flex items-center gap-1">
-                  9.000 din <ArrowRight size={12} />
+                  {formatPrice(getAudioPrice())}
+                  {isAudioDiscountActive() && <span className="text-[10px] ml-1">(sniženo)</span>}
+                  <ArrowRight size={12} />
                 </span>
               </Link>
               <Link
