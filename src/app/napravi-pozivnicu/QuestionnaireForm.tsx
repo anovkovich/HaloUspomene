@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -10,6 +10,10 @@ import {
   Loader2,
   AlertCircle,
   Heart,
+  HelpCircle,
+  X,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
 import { pricing, formatPrice } from "@/data/pricing";
@@ -167,8 +171,8 @@ const defaultFormData: FormData = {
   locations: [
     { type: "home", enabled: false, name: "", address: "", time: "" },
     { type: "church", enabled: false, name: "", address: "", time: "" },
-    { type: "ceremony", enabled: false, name: "", address: "", time: "" },
     { type: "hall", enabled: true, name: "", address: "", time: "" },
+    { type: "ceremony", enabled: false, name: "", address: "", time: "" },
   ],
   tagline: "",
   thankYouFooter: "",
@@ -236,10 +240,10 @@ function Toggle({
   label: string;
 }) {
   return (
-    <label className="flex items-start gap-2 sm:gap-3 cursor-pointer">
+    <label className="flex items-center gap-2 sm:gap-3 cursor-pointer">
       <div
         onClick={() => onChange(!checked)}
-        className={`relative w-10 h-6 sm:w-11 sm:h-6 rounded-full transition-colors duration-200 flex-shrink-0 mt-0.5 flex items-center ${checked ? "bg-[#AE343F]" : "bg-stone-200"}`}
+        className={`relative w-10 h-6 sm:w-11 sm:h-6 rounded-full transition-colors duration-200 flex-shrink-0 flex items-center ${checked ? "bg-[#AE343F]" : "bg-stone-200"}`}
       >
         <div
           className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? "sm:translate-x-6 translate-x-5" : "translate-x-1"}`}
@@ -696,6 +700,76 @@ function Step1({
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 9); // 09–21
 const MINUTES = ["00", "15", "30", "45"];
 
+function TimeInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (t: string) => void;
+}) {
+  const parts = value.split(":");
+  const h = parts[0] || "";
+  const m = parts[1] || "";
+  const minRef = useRef<HTMLInputElement>(null);
+  const hrRef = useRef<HTMLInputElement>(null);
+
+  const digitCls =
+    "w-8 bg-transparent text-center text-stone-800 text-base outline-none font-medium placeholder:text-stone-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+
+  const handleHour = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 2);
+    const clamped =
+      digits.length === 2
+        ? String(Math.min(Number(digits), 23)).padStart(2, "0")
+        : digits;
+    onChange(`${clamped}:${m}`);
+    if (clamped.length === 2) minRef.current?.focus();
+  };
+
+  const handleMinute = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 2);
+    const clamped =
+      digits.length === 2
+        ? String(Math.min(Number(digits), 59)).padStart(2, "0")
+        : digits;
+    onChange(`${h}:${clamped}`);
+  };
+
+  const handleMinKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !m) {
+      e.preventDefault();
+      hrRef.current?.focus();
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center border-b border-stone-200 focus-within:border-[#AE343F] transition-colors py-2.5 px-1">
+      <input
+        ref={hrRef}
+        type="text"
+        inputMode="numeric"
+        className={digitCls}
+        value={h}
+        onChange={(e) => handleHour(e.target.value)}
+        placeholder="HH"
+        maxLength={2}
+      />
+      <span className="text-stone-400 font-bold text-base select-none">:</span>
+      <input
+        ref={minRef}
+        type="text"
+        inputMode="numeric"
+        className={digitCls}
+        value={m}
+        onChange={(e) => handleMinute(e.target.value)}
+        onKeyDown={handleMinKeyDown}
+        placeholder="MM"
+        maxLength={2}
+      />
+    </div>
+  );
+}
+
 function TimePicker({
   value,
   onChange,
@@ -734,6 +808,86 @@ function TimePicker({
         ))}
       </select>
       <span className="text-stone-500 text-sm ml-1">h</span>
+    </div>
+  );
+}
+
+function PhoneTagInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const tags = value ? value.split(",").filter((t) => t.trim()) : [];
+  const [draft, setDraft] = useState("");
+
+  const commitTag = (raw: string) => {
+    const cleaned = raw.replace(/[^0-9 ]/g, "").trim();
+    if (!cleaned) return;
+    const next = tags.length ? `${value},${cleaned}` : cleaned;
+    onChange(next);
+    setDraft("");
+  };
+
+  const removeTag = (idx: number) => {
+    onChange(tags.filter((_, i) => i !== idx).join(","));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (raw.includes(",")) {
+      commitTag(raw.replace(",", ""));
+      return;
+    }
+    setDraft(raw.replace(/^\+?381/, "").replace(/\D/g, ""));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      commitTag(draft);
+    }
+    if (e.key === "Backspace" && !draft && tags.length) {
+      removeTag(tags.length - 1);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 border-b border-stone-200 focus-within:border-[#AE343F] transition-colors py-1">
+      {tags.map((tag, i) => (
+        <span
+          key={i}
+          className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-1 text-sm text-stone-700"
+        >
+          +381 {tag.trim()}
+          <button
+            type="button"
+            onClick={() => removeTag(i)}
+            className="text-stone-400 hover:text-[#AE343F] transition-colors"
+          >
+            <X size={12} />
+          </button>
+        </span>
+      ))}
+      {tags.length < 2 && (
+        <div className="flex items-center flex-1 min-w-[120px]">
+          <span className="py-1.5 pl-1 pr-2 text-stone-400 text-base select-none">
+            +381
+          </span>
+          <input
+            type="tel"
+            className="flex-1 bg-transparent py-1.5 pr-1 text-stone-800 text-base outline-none placeholder:text-stone-300"
+            placeholder={tags.length ? "Drugi broj" : "6X XXX XXXX"}
+            value={draft}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onBlur={() => {
+              if (draft.trim()) commitTag(draft);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -812,25 +966,24 @@ function Step2({
         </div>
 
         {/* Contact phone */}
-        <Field label="Vaš kontakt telefon (za naš tim, nije na pozivnici)">
-          <div className="flex items-center border-b border-stone-200 focus-within:border-[#AE343F] transition-colors">
-            <span className="py-2.5 pl-1 pr-2 text-stone-400 text-base select-none">
-              +381
-            </span>
-            <input
-              type="tel"
-              className="flex-1 bg-transparent py-2.5 pr-1 text-stone-800 text-base outline-none placeholder:text-stone-300"
-              placeholder="6X XXX XXXX"
-              value={formData.contact_phone}
-              onChange={(e) =>
-                updateField(
-                  "contact_phone",
-                  e.target.value.replace(/^\+?381/, ""),
-                )
-              }
-            />
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5">
+            <label className={labelCls + " !mb-0"}>Vaš kontakt telefon</label>
+            <div className="group relative">
+              <HelpCircle size={14} className="text-stone-400 cursor-help" />
+              <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-lg bg-stone-800 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10">
+                Da vas kontaktiramo ukoliko nešto zatreba. Međutim, možete uneti
+                i dva broja razdvojena zarezom i staviti napomenu ako ih želite
+                na PDF pozivnici!
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-800" />
+              </div>
+            </div>
           </div>
-        </Field>
+          <PhoneTagInput
+            value={formData.contact_phone}
+            onChange={(v) => updateField("contact_phone", v)}
+          />
+        </div>
       </div>
     </div>
   );
@@ -1190,8 +1343,7 @@ const VENUE_DEFS: {
     type: "home",
     emoji: "🏠",
     title: "Polazak od kuće",
-    subtitle:
-      "Ukoliko imate dva polaska, drugi unesite u napomeni na poslednjem koraku",
+    subtitle: "Početna tačka vašeg svadbenog dana",
     namePlaceholder: "npr. Kuća Jovanovića",
     addressPlaceholder: "npr. Cara Dušana 12, Novi Sad",
     timePlaceholder: "npr. 14:00",
@@ -1206,15 +1358,6 @@ const VENUE_DEFS: {
     timePlaceholder: "npr. 15:30",
   },
   {
-    type: "ceremony",
-    emoji: "💍",
-    title: "Građansko venčanje",
-    subtitle: "Ceremonijalno venčanje kod matičara",
-    namePlaceholder: "npr. Matičarska služba / restoran Vila Mir",
-    addressPlaceholder: "npr. Bulevar Mihajla Pupina 25",
-    timePlaceholder: "npr. 16:00",
-  },
-  {
     type: "hall",
     emoji: "🎊",
     title: "Svečana sala / restoran",
@@ -1223,12 +1366,23 @@ const VENUE_DEFS: {
     addressPlaceholder: "npr. Futoška 44, Novi Sad",
     timePlaceholder: "npr. 18:00",
   },
+  {
+    type: "ceremony",
+    emoji: "💍",
+    title: "Građansko venčanje",
+    subtitle: "Ceremonijalno venčanje kod matičara",
+    namePlaceholder: "npr. Matičarska služba / restoran Vila Mir",
+    addressPlaceholder: "npr. Bulevar Mihajla Pupina 25",
+    timePlaceholder: "npr. 16:00",
+  },
 ];
 
 function Step4({
   formData,
   toggleLocation,
   updateLocation,
+  addDuplicateHome,
+  removeDuplicateHome,
 }: {
   formData: FormData;
   toggleLocation: (i: number) => void;
@@ -1237,7 +1391,35 @@ function Step4({
     f: "name" | "address" | "time",
     v: string,
   ) => void;
+  addDuplicateHome: () => void;
+  removeDuplicateHome: (i: number) => void;
 }) {
+  // Build render list: pair each location with its VENUE_DEF template
+  const defByType = Object.fromEntries(
+    VENUE_DEFS.map((d) => [d.type, d]),
+  ) as Record<LocationType, (typeof VENUE_DEFS)[number]>;
+  const items: {
+    loc: LocationItem;
+    def: (typeof VENUE_DEFS)[number];
+    idx: number;
+    isDuplicate: boolean;
+  }[] = [];
+  for (let i = 0; i < formData.locations.length; i++) {
+    const loc = formData.locations[i];
+    const def = defByType[loc.type];
+    const isDuplicate =
+      loc.type === "home" &&
+      i > 0 &&
+      formData.locations[i - 1]?.type === "home";
+    items.push({ loc, def, idx: i, isDuplicate });
+  }
+
+  // Check if a second home already exists
+  const homeCount = formData.locations.filter((l) => l.type === "home").length;
+  const firstHomeIdx = formData.locations.findIndex((l) => l.type === "home");
+  const firstHomeEnabled =
+    firstHomeIdx >= 0 && formData.locations[firstHomeIdx].enabled;
+
   return (
     <div>
       <StepHeading
@@ -1246,48 +1428,59 @@ function Step4({
       />
 
       <div className="space-y-3">
-        {VENUE_DEFS.map((def, i) => {
-          const loc = formData.locations[i];
+        {items.map(({ loc, def, idx, isDuplicate }) => {
           const active = loc.enabled;
+          const homeLabel = isDuplicate ? "Polazak od kuće (2)" : def.title;
+          const homeSubtitle = isDuplicate
+            ? "Druga početna tačka (npr. mladina kuća)"
+            : def.subtitle;
 
           return (
             <div
-              key={def.type}
+              key={`${loc.type}-${idx}`}
               className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                 active ? "border-[#AE343F]/30 shadow-sm" : "border-stone-100"
               }`}
             >
-              {/* Header row — always visible, click to toggle */}
-              <button
-                type="button"
-                onClick={() => toggleLocation(i)}
-                className={`w-full flex items-center gap-4 px-5 py-4 text-left transition-colors ${
-                  active ? "bg-[#AE343F]/5" : "bg-stone-50/60 hover:bg-stone-50"
+              {/* Header row */}
+              <div
+                className={`flex items-center gap-4 px-5 py-4 transition-colors ${
+                  active ? "bg-[#AE343F]/5" : "bg-stone-50/60"
                 }`}
               >
-                {/* Toggle circle */}
-                <div
-                  className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
-                    active
-                      ? "border-[#AE343F] bg-[#AE343F]"
-                      : "border-stone-300 bg-white"
-                  }`}
+                <button
+                  type="button"
+                  onClick={() =>
+                    isDuplicate ? toggleLocation(idx) : toggleLocation(idx)
+                  }
+                  className="flex items-center gap-4 flex-1 text-left"
                 >
-                  {active && <div className="w-2 h-2 rounded-full bg-white" />}
-                </div>
-
-                <span className="text-xl shrink-0">{def.emoji}</span>
-
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`font-semibold text-sm ${active ? "text-stone-800" : "text-stone-400"}`}
+                  {/* Toggle circle */}
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
+                      active
+                        ? "border-[#AE343F] bg-[#AE343F]"
+                        : "border-stone-300 bg-white"
+                    }`}
                   >
-                    {def.title}
-                  </p>
-                  <p className="text-xs text-stone-400 truncate">
-                    {def.subtitle}
-                  </p>
-                </div>
+                    {active && (
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    )}
+                  </div>
+
+                  <span className="text-xl shrink-0">{def.emoji}</span>
+
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`font-semibold text-sm ${active ? "text-stone-800" : "text-stone-400"}`}
+                    >
+                      {homeLabel}
+                    </p>
+                    <p className="text-xs text-stone-400 truncate">
+                      {homeSubtitle}
+                    </p>
+                  </div>
+                </button>
 
                 {/* Time badge when filled */}
                 {active && loc.time && (
@@ -1295,7 +1488,46 @@ function Step4({
                     {loc.time}
                   </span>
                 )}
-              </button>
+
+                {/* Add second home button */}
+                {loc.type === "home" &&
+                  active &&
+                  !isDuplicate &&
+                  homeCount < 2 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addDuplicateHome();
+                      }}
+                      className="group relative flex items-center justify-center w-7 h-7 rounded-full border border-dashed border-stone-300 hover:border-[#AE343F] hover:bg-[#AE343F]/5 transition-colors shrink-0"
+                      title="Dodaj drugi polazak"
+                    >
+                      <Plus
+                        size={14}
+                        className="text-stone-400 group-hover:text-[#AE343F] transition-colors"
+                      />
+                    </button>
+                  )}
+
+                {/* Remove duplicate home button */}
+                {isDuplicate && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeDuplicateHome(idx);
+                    }}
+                    className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-red-50 transition-colors shrink-0"
+                    title="Ukloni drugi polazak"
+                  >
+                    <Trash2
+                      size={14}
+                      className="text-stone-400 hover:text-red-500 transition-colors"
+                    />
+                  </button>
+                )}
+              </div>
 
               {/* Expanded fields */}
               {active && (
@@ -1304,28 +1536,31 @@ function Step4({
                     <Field label="Naziv">
                       <TextInput
                         value={loc.name}
-                        onChange={(v) => updateLocation(i, "name", v)}
-                        placeholder={def.namePlaceholder}
+                        onChange={(v) => updateLocation(idx, "name", v)}
+                        placeholder={
+                          isDuplicate
+                            ? "npr. Kuća Petrovića"
+                            : def.namePlaceholder
+                        }
                       />
                     </Field>
                     <div>
                       <label className={labelCls}>Vreme</label>
-                      <input
-                        type="text"
-                        className={inputCls + " text-center"}
+                      <TimeInput
                         value={loc.time}
-                        onChange={(e) =>
-                          updateLocation(i, "time", e.target.value)
-                        }
-                        placeholder={def.timePlaceholder}
+                        onChange={(v) => updateLocation(idx, "time", v)}
                       />
                     </div>
                   </div>
                   <Field label="Adresa">
                     <TextInput
                       value={loc.address}
-                      onChange={(v) => updateLocation(i, "address", v)}
-                      placeholder={def.addressPlaceholder}
+                      onChange={(v) => updateLocation(idx, "address", v)}
+                      placeholder={
+                        isDuplicate
+                          ? "npr. Bulevar Oslobođenja 5, Novi Sad"
+                          : def.addressPlaceholder
+                      }
                     />
                   </Field>
                 </div>
@@ -1334,6 +1569,15 @@ function Step4({
           );
         })}
       </div>
+
+      {/* Hint about adding second home */}
+      {firstHomeEnabled && homeCount < 2 && (
+        <p className="text-xs text-stone-400 mt-3 text-center">
+          Imate dva polaska? Kliknite{" "}
+          <Plus size={10} className="inline -mt-0.5" /> pored &ldquo;Polazak od
+          kuće&rdquo;.
+        </p>
+      )}
 
       <p className="text-xs text-stone-300 mt-4 text-center">
         Google Maps linkove dodajemo mi nakon prijema upitnika.
@@ -1356,23 +1600,31 @@ function Step5({
         desc="Personalizovana poruka i zahvalnica na pozivnici."
       />
       <div className="space-y-6">
-        <Field label="Tagline (citat / poruka u heroju pozivnice)">
+        <Field label="Tagline (citat / poruka pozivnice)">
           <textarea
             className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
+            maxLength={220}
             value={formData.tagline}
             onChange={(e) => updateField("tagline", e.target.value)}
             placeholder="npr. Najlepše priče se ne pišu same — pomozite nam da naše novo poglavlje otvorimo na najlepši način!"
           />
+          <p className="text-xs text-stone-300 text-right">
+            {formData.tagline.length}/220
+          </p>
         </Field>
         <Field label="Zahvalnica (poruka na dnu pozivnice)">
           <textarea
             className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
+            maxLength={120}
             value={formData.thankYouFooter}
             onChange={(e) => updateField("thankYouFooter", e.target.value)}
             placeholder="npr. Naša radost je potpuna samo uz ljude koje volimo! Hvala što ste tu."
           />
+          <p className="text-xs text-stone-300 text-right">
+            {formData.thankYouFooter.length}/120
+          </p>
         </Field>
       </div>
     </div>
@@ -1399,15 +1651,15 @@ function Step6({
         <div className="bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl px-5 py-4 text-sm text-[#8B2833] leading-relaxed">
           <p className="font-semibold mb-1">🎉 Skoro sve je spremno!</p>
           <p>
-            Google formu za prijavljivanje gostiju, odbrojavanje i mapu ćemo
-            podesiti sami — vi samo kliknite <em>Pošalji zahtev</em> i mi ćemo
-            se pobrinuti za sve tehničke detalje.
+            Nakon kreiranja pozivnice, na portalu <strong>Moje Venčanje</strong>{" "}
+            možete pratiti potvrde gostiju, organizovati raspored sedenja,
+            planirati budžet i još mnogo toga. Kredencijale za prijavu ćete
+            dobiti zajedno sa pozivnicom.
           </p>
         </div>
 
         <div className="space-y-5">
           <p className={labelCls}>Šta prikazati gostima?</p>
-          <div></div>
 
           <Toggle
             checked={formData.countdown_enabled}
@@ -1417,7 +1669,7 @@ function Step6({
           <Toggle
             checked={formData.map_enabled}
             onChange={(v) => updateField("map_enabled", v)}
-            label="Interaktivna google mapa do lokacije sale"
+            label="Interaktivna google mapa do lokacija venčanja (crkva & sala)"
           />
         </div>
 
@@ -1465,8 +1717,9 @@ function generateRawJson(formData: FormData): string {
         map_url: "",
         type: l.type,
       })),
-    timeline: formData.locations
+    timeline: [...formData.locations]
       .filter((l) => l.enabled)
+      .sort((a, b) => a.time.localeCompare(b.time))
       .map((l) => {
         const typeToIcon: Record<string, string> = {
           home: "Home",
@@ -1537,7 +1790,9 @@ export default function QuestionnaireForm() {
 
   // Prepopulate hall venue time if it's already enabled
   React.useEffect(() => {
-    const hallVenue = formData.locations[3];
+    const hallIdx = formData.locations.findIndex((l) => l.type === "hall");
+    if (hallIdx < 0) return;
+    const hallVenue = formData.locations[hallIdx];
     if (
       hallVenue.enabled &&
       formData.event_time &&
@@ -1545,7 +1800,9 @@ export default function QuestionnaireForm() {
     ) {
       setFormData((prev) => {
         const locations = [...prev.locations];
-        locations[3] = { ...locations[3], time: prev.event_time };
+        const hi = locations.findIndex((l) => l.type === "hall");
+        if (hi >= 0)
+          locations[hi] = { ...locations[hi], time: prev.event_time };
         return { ...prev, locations };
       });
     }
@@ -1595,6 +1852,33 @@ export default function QuestionnaireForm() {
       setStepError("Unesite imena mladenaca pre nego što nastavite.");
       return;
     }
+    if (step === 2) {
+      if (!formData.event_date_only) {
+        setStepError("Izaberite datum venčanja.");
+        return;
+      }
+      if (!formData.submit_until_date) {
+        setStepError("Izaberite rok za potvrdu dolaska.");
+        return;
+      }
+      if (!formData.contact_phone.trim()) {
+        setStepError("Unesite vaš kontakt telefon.");
+        return;
+      }
+    }
+    if (step === 4) {
+      const incomplete = formData.locations.find(
+        (l) => l.enabled && (!l.time || !/^\d{2}:\d{2}$/.test(l.time)),
+      );
+      if (incomplete) {
+        setStepError("Unesite vreme za sve uključene lokacije.");
+        return;
+      }
+    }
+    if (step === 5 && !formData.tagline.trim()) {
+      setStepError("Unesite tagline poruku za pozivnicu.");
+      return;
+    }
     setStepError("");
     setDirection(1);
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
@@ -1610,9 +1894,44 @@ export default function QuestionnaireForm() {
       const wasEnabled = locations[idx].enabled;
       locations[idx] = { ...locations[idx], enabled: !locations[idx].enabled };
       // Prepopulate time for hall venue when enabling
-      if (!wasEnabled && idx === 3 && formData.event_time) {
+      if (
+        !wasEnabled &&
+        locations[idx].type === "hall" &&
+        formData.event_time
+      ) {
         locations[idx] = { ...locations[idx], time: formData.event_time };
       }
+      // If disabling the first home, also remove any duplicate home
+      if (wasEnabled && locations[idx].type === "home" && idx === 0) {
+        const dupeIdx = locations.findIndex(
+          (l, i) => i > 0 && l.type === "home",
+        );
+        if (dupeIdx > 0) locations.splice(dupeIdx, 1);
+      }
+      return { ...prev, locations };
+    });
+
+  const addDuplicateHome = () =>
+    setFormData((prev) => {
+      const hasTwo =
+        prev.locations.filter((l) => l.type === "home").length >= 2;
+      if (hasTwo) return prev;
+      // Insert right after first home
+      const firstHomeIdx = prev.locations.findIndex((l) => l.type === "home");
+      const locations = [...prev.locations];
+      locations.splice(firstHomeIdx + 1, 0, {
+        type: "home",
+        enabled: true,
+        name: "",
+        address: "",
+        time: "",
+      });
+      return { ...prev, locations };
+    });
+
+  const removeDuplicateHome = (idx: number) =>
+    setFormData((prev) => {
+      const locations = prev.locations.filter((_, i) => i !== idx);
       return { ...prev, locations };
     });
 
@@ -1643,87 +1962,6 @@ export default function QuestionnaireForm() {
           )
         : "";
 
-      // ── Build bill ──────────────────────────────────────────────────
-      const billItems: {
-        label: string;
-        amount: string;
-        bold?: boolean;
-        discount?: boolean;
-      }[] = [];
-      let billTotal = 0;
-
-      billItems.push({
-        label: "Website pozivnica",
-        amount: formatPrice(pricing.pozivnica.website.price),
-      });
-      billTotal += pricing.pozivnica.website.price;
-
-      billItems.push({ label: "PDF pozivnica za štampu", amount: "BESPLATNO" });
-
-      if (formData.extra_raspored) {
-        billItems.push({
-          label: "Raspored sedenja",
-          amount: formatPrice(pricing.pozivnica.raspored.price),
-        });
-        billTotal += pricing.pozivnica.raspored.price;
-      }
-      if (formData.extra_audio) {
-        billItems.push({
-          label: "Audio knjiga utisaka",
-          amount: formatPrice(pricing.pozivnica.audio.price),
-        });
-        billTotal += pricing.pozivnica.audio.price;
-      }
-      if (formData.extra_usb_kaseta) {
-        const usb = pricing.addons.find((a) => a.id === "usb_kaseta")!;
-        billItems.push({
-          label: "USB retro kaseta",
-          amount: formatPrice(usb.price),
-        });
-        billTotal += usb.price;
-      }
-      if (formData.extra_usb_bocica) {
-        const usb = pricing.addons.find((a) => a.id === "usb_bocica")!;
-        billItems.push({
-          label: "USB u bočici",
-          amount: formatPrice(usb.price),
-        });
-        billTotal += usb.price;
-      }
-      if (formData.custom_primary_color || formData.custom_background_color) {
-        const customColor = pricing.addons.find(
-          (a) => a.id === "custom_color",
-        )!;
-        billItems.push({
-          label: "Prilagođena boja teme",
-          amount: formatPrice(customColor.price),
-        });
-        billTotal += customColor.price;
-      }
-
-      const isBundle = formData.extra_raspored && formData.extra_audio;
-      if (isBundle) {
-        const discount =
-          pricing.pozivnica.bundleFullPrice - pricing.pozivnica.bundlePrice;
-        billItems.push({
-          label: "Popust (kompletni paket)",
-          amount: `-${formatPrice(discount)}`,
-          discount: true,
-        });
-        billTotal -= discount;
-      }
-
-      const receiptData = JSON.stringify({
-        par: formData.full_display,
-        datum: formattedDate,
-        ...(formData.extra_raspored ? { r: 1 } : {}),
-        ...(formData.extra_audio ? { a: 1 } : {}),
-        ...(formData.extra_usb_kaseta ? { uk: 1 } : {}),
-        ...(formData.extra_usb_bocica ? { ub: 1 } : {}),
-        ...(formData.custom_primary_color || formData.custom_background_color ? { cc: 1 } : {}),
-      });
-      const receiptUrl = `https://halouspomene.rs/racun?d=${btoa(unescape(encodeURIComponent(receiptData)))}`;
-
       const payload: Record<string, string> = {
         access_key: WEB3FORMS_ACCESS_KEY || "",
         subject: `Nova Pozivnica - ${formData.full_display} - ${formattedDate}`,
@@ -1745,9 +1983,6 @@ export default function QuestionnaireForm() {
           ? `${formData.custom_primary_color} / bg: ${formData.custom_background_color || "auto"}`
           : "❌ Ne",
         "⚠️⚠️⚠️ NAPOMENA ⚠️⚠️⚠️": formData.wishes || "(nema)",
-
-        // ── Bill ──
-        "🧾 Račun": receiptUrl,
 
         // ── JSON for admin panel (copy-paste) ──
         "📋 JSON": generateRawJson(formData),
@@ -1868,6 +2103,8 @@ export default function QuestionnaireForm() {
                 formData={formData}
                 toggleLocation={toggleLocation}
                 updateLocation={updateLocation}
+                addDuplicateHome={addDuplicateHome}
+                removeDuplicateHome={removeDuplicateHome}
               />
             )}
             {step === 5 && (
