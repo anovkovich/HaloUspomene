@@ -193,3 +193,63 @@ export function getScriptFontConfig(font: ScriptFontType): ScriptFontConfig {
 export function getThemeConfig(theme: ThemeType): ThemeConfig {
   return THEME_CONFIGS[theme];
 }
+
+// Convert hex to RGB components
+export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
+}
+
+// Blend two hex colors by ratio
+export function blendHex(hex1: string, hex2: string, ratio: number): string {
+  const rgb1 = hexToRgb(hex1);
+  const rgb2 = hexToRgb(hex2);
+  if (!rgb1 || !rgb2) return hex1;
+
+  const r = Math.round(rgb1.r * (1 - ratio) + rgb2.r * ratio);
+  const g = Math.round(rgb1.g * (1 - ratio) + rgb2.g * ratio);
+  const b = Math.round(rgb1.b * (1 - ratio) + rgb2.b * ratio);
+
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
+// Build CSS variable overrides for custom primary and optional background colors
+export function buildCustomColorOverrides(
+  primaryHex: string,
+  bgHex?: string
+): Record<string, string> {
+  const rgb = hexToRgb(primaryHex);
+  if (!rgb) return {};
+
+  const { r, g, b } = rgb;
+  // Lighten by 15% toward white for the "light" variant
+  const lr = Math.min(255, Math.round(r + (255 - r) * 0.15));
+  const lg = Math.min(255, Math.round(g + (255 - g) * 0.15));
+  const lb = Math.min(255, Math.round(b + (255 - b) * 0.15));
+  const light = `#${lr.toString(16).padStart(2, "0")}${lg.toString(16).padStart(2, "0")}${lb.toString(16).padStart(2, "0")}`;
+
+  const overrides: Record<string, string> = {
+    "--theme-primary": primaryHex,
+    "--theme-primary-light": light,
+    "--theme-primary-muted": `rgba(${r},${g},${b},0.12)`,
+    "--theme-wax-seal": primaryHex,
+    "--theme-wax-seal-dark": light,
+    "--theme-border": `rgba(${r},${g},${b},0.2)`,
+    "--theme-border-light": `rgba(${r},${g},${b},0.1)`,
+  };
+
+  // If custom background provided, use it without blending (respects user's explicit choice)
+  if (bgHex) {
+    overrides["--theme-background"] = bgHex;
+    overrides["--theme-surface"] = bgHex;
+    overrides["--theme-surface-alt"] = bgHex;
+  }
+
+  return overrides;
+}

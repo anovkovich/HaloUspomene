@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -10,6 +10,10 @@ import {
   Loader2,
   AlertCircle,
   Heart,
+  HelpCircle,
+  X,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
 import { pricing, formatPrice } from "@/data/pricing";
@@ -18,6 +22,8 @@ import {
   SCRIPT_FONT_CONFIGS,
   getThemeCSSVariables,
   getThemeConfig,
+  buildCustomColorOverrides,
+  blendHex,
 } from "@/app/pozivnica/[slug]/constants";
 import type { ThemeType, ScriptFontType } from "@/app/pozivnica/[slug]/types";
 
@@ -104,6 +110,11 @@ interface FormData {
   groom: string;
   full_display: string;
   useCyrillic: boolean;
+  // Extras
+  extra_raspored: boolean;
+  extra_audio: boolean;
+  extra_usb_kaseta: boolean;
+  extra_usb_bocica: boolean;
   // Step 2
   event_date: string; // combined "YYYY-MM-DDTHH:MM"
   event_date_only: string; // "YYYY-MM-DD" for DatePicker
@@ -114,6 +125,8 @@ interface FormData {
   // Step 3
   theme: ThemeType;
   scriptFont: ScriptFontType;
+  custom_primary_color: string; // "" means no custom color
+  custom_background_color: string; // "" means no custom background
   // Step 4
   locations: LocationItem[];
   // Step 5
@@ -141,6 +154,10 @@ const defaultFormData: FormData = {
   groom: "",
   full_display: "",
   useCyrillic: false,
+  extra_raspored: false,
+  extra_audio: false,
+  extra_usb_kaseta: false,
+  extra_usb_bocica: false,
   event_date: "",
   event_date_only: "",
   event_time: "18:00",
@@ -149,11 +166,13 @@ const defaultFormData: FormData = {
   contact_phone: "",
   theme: "classic_rose",
   scriptFont: "great-vibes",
+  custom_primary_color: "",
+  custom_background_color: "",
   locations: [
     { type: "home", enabled: false, name: "", address: "", time: "" },
     { type: "church", enabled: false, name: "", address: "", time: "" },
-    { type: "ceremony", enabled: false, name: "", address: "", time: "" },
     { type: "hall", enabled: true, name: "", address: "", time: "" },
+    { type: "ceremony", enabled: false, name: "", address: "", time: "" },
   ],
   tagline: "",
   thankYouFooter: "",
@@ -221,10 +240,10 @@ function Toggle({
   label: string;
 }) {
   return (
-    <label className="flex items-start gap-2 sm:gap-3 cursor-pointer">
+    <label className="flex items-center gap-2 sm:gap-3 cursor-pointer">
       <div
         onClick={() => onChange(!checked)}
-        className={`relative w-10 h-6 sm:w-11 sm:h-6 rounded-full transition-colors duration-200 flex-shrink-0 mt-0.5 flex items-center ${checked ? "bg-[#AE343F]" : "bg-stone-200"}`}
+        className={`relative w-10 h-6 sm:w-11 sm:h-6 rounded-full transition-colors duration-200 flex-shrink-0 flex items-center ${checked ? "bg-[#AE343F]" : "bg-stone-200"}`}
       >
         <div
           className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? "sm:translate-x-6 translate-x-5" : "translate-x-1"}`}
@@ -234,6 +253,195 @@ function Toggle({
         {label}
       </span>
     </label>
+  );
+}
+
+const EXTRAS = [
+  {
+    key: "extra_raspored" as const,
+    label: "Raspored sedenja",
+    price: `+${formatPrice(pricing.pozivnica.raspored.price)}`,
+  },
+  {
+    key: "extra_audio" as const,
+    label: "Audio knjiga utisaka",
+    price: `+${formatPrice(pricing.pozivnica.audio.price)}`,
+  },
+  {
+    key: "extra_usb_kaseta" as const,
+    label: "USB retro kaseta",
+    price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}`,
+  },
+  {
+    key: "extra_usb_bocica" as const,
+    label: "USB u bočici",
+    price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}`,
+  },
+];
+
+function ExtrasAccordion({
+  formData,
+  updateField,
+}: {
+  formData: FormData;
+  updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+}) {
+  const count = EXTRAS.filter(({ key }) => formData[key]).length;
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="mt-8 pt-5 border-t border-stone-100">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between cursor-pointer group"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-stone-300 group-hover:text-stone-400 transition-colors">
+            Dodatne usluge (opciono)
+          </span>
+          {count > 0 && (
+            <span className="w-4 h-4 rounded-full bg-[#AE343F] text-white text-[9px] font-bold flex items-center justify-center">
+              {count}
+            </span>
+          )}
+        </div>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+          className={`text-stone-300 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M4 6l4 4 4-4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-2">
+          {EXTRAS.filter(
+            ({ key }) =>
+              key !== "extra_usb_kaseta" && key !== "extra_usb_bocica",
+          ).map(({ key, label, price }) => (
+            <label
+              key={key}
+              className="flex items-center gap-2.5 py-0.5 cursor-pointer group"
+            >
+              <input
+                type="checkbox"
+                checked={formData[key]}
+                onChange={(e) => updateField(key, e.target.checked)}
+                className="w-3.5 h-3.5 accent-[#AE343F] cursor-pointer shrink-0 opacity-60"
+              />
+              <span className="text-xs text-stone-400 group-hover:text-stone-500 transition-colors">
+                {label}
+              </span>
+              <span className="text-[10px] text-stone-300 ml-auto shrink-0">
+                {price}
+              </span>
+            </label>
+          ))}
+          {/* USB options — nested under audio, mutually exclusive */}
+          <div
+            className={`ml-5 space-y-2 ${!formData.extra_audio ? "opacity-50 pointer-events-none" : ""}`}
+          >
+            {[
+              {
+                key: "extra_usb_kaseta" as const,
+                other: "extra_usb_bocica" as const,
+                label: "USB retro kaseta",
+                price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}`,
+              },
+              {
+                key: "extra_usb_bocica" as const,
+                other: "extra_usb_kaseta" as const,
+                label: "USB u bočici",
+                price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}`,
+              },
+            ].map(({ key, other, label, price }) => (
+              <label
+                key={key}
+                className="flex items-center gap-2.5 py-0.5 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={formData[key]}
+                  onChange={(e) => {
+                    updateField(key, e.target.checked);
+                    if (e.target.checked) updateField(other, false);
+                  }}
+                  className="w-3.5 h-3.5 accent-[#AE343F] cursor-pointer shrink-0 opacity-60"
+                />
+                <span
+                  className={`text-xs transition-colors ${!formData.extra_audio ? "text-stone-300" : "text-stone-400 group-hover:text-stone-500"}`}
+                >
+                  {label}
+                </span>
+                <span className="text-[10px] text-stone-300 ml-auto shrink-0">
+                  {price}
+                </span>
+              </label>
+            ))}
+          </div>
+          {/* Sum + discount */}
+          {(() => {
+            let sum = pricing.pozivnica.website.price;
+            if (formData.extra_raspored)
+              sum += pricing.pozivnica.raspored.price;
+            if (formData.extra_audio) sum += pricing.pozivnica.audio.price;
+            if (formData.extra_usb_kaseta)
+              sum += pricing.addons.find((a) => a.id === "usb_kaseta")!.price;
+            if (formData.extra_usb_bocica)
+              sum += pricing.addons.find((a) => a.id === "usb_bocica")!.price;
+            const isFullBundle =
+              formData.extra_raspored && formData.extra_audio;
+            const discount = isFullBundle
+              ? pricing.pozivnica.bundleFullPrice -
+                pricing.pozivnica.bundlePrice
+              : 0;
+            const total = sum - discount;
+            return (
+              <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
+                {isFullBundle && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-green-600">
+                      Popust (kompletni paket)
+                    </span>
+                    <span className="text-[10px] text-green-600 font-medium">
+                      -{formatPrice(discount)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-stone-500 font-medium">
+                    Ukupno
+                  </span>
+                  <span className="text-xs text-[#AE343F] font-bold">
+                    {isFullBundle && (
+                      <span className="line-through text-stone-300 font-normal mr-1.5">
+                        {formatPrice(sum)}
+                      </span>
+                    )}
+                    {formatPrice(total)}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+          <p className="text-[10px] text-stone-300 mt-2">
+            <a href="/cene" className="text-[#AE343F]/60 hover:underline">
+              Pogledajte detaljne cene
+            </a>
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -255,6 +463,8 @@ function InvitationPreview({
   groom,
   eventDate,
   useCyrillic,
+  customPrimaryColor,
+  customBackgroundColor,
 }: {
   theme: ThemeType;
   scriptFont: ScriptFontType;
@@ -262,12 +472,24 @@ function InvitationPreview({
   groom: string;
   eventDate: string;
   useCyrillic: boolean;
+  customPrimaryColor?: string;
+  customBackgroundColor?: string;
 }) {
-  const cssVars = getThemeCSSVariables(theme, scriptFont);
+  const baseCssVars = getThemeCSSVariables(theme, scriptFont);
+  const cssVars =
+    customPrimaryColor || customBackgroundColor
+      ? {
+          ...baseCssVars,
+          ...buildCustomColorOverrides(
+            customPrimaryColor || baseCssVars["--theme-primary"],
+            customBackgroundColor || undefined,
+          ),
+        }
+      : baseCssVars;
   const config = getThemeConfig(theme);
 
-  const brideName = bride || "Mlada";
-  const groomName = groom || "Mladoženja";
+  const brideName = bride || "Mladini";
+  const groomName = groom || "Mladoženjini";
   const dateDisplay = formatPreviewDate(eventDate.split("T")[0]);
   const celebrateLove = useCyrillic ? "Прославите Љубав" : "Celebrate Love";
 
@@ -280,7 +502,6 @@ function InvitationPreview({
         minHeight: "300px",
       }}
     >
-
       {/* Preview label */}
       <div className="absolute top-3 right-3 z-10">
         <span
@@ -375,22 +596,19 @@ function Step1({
       {/* Pricing section */}
       <div className="mb-3 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
         <p className="text-2xl font-bold align-end text-[#AE343F]">
-          Redovna cena pozivnice je{" "}
-          {formatPrice(
-            pricing.addons.find((a) => a.id === "website_pozivnica")!.price,
-          )}
+          Cena pozivnice je od {formatPrice(pricing.pozivnica.website.price)}
         </p>
         <p className="font-semibold text-sm text-[#8B2833] mt-2">
-          Iskomuniciraćemo{" "}
           <small>
-            ukoliko imate kupon ili ostvarujete pravo na neki popust
+            Kompletni paket sa rasporedom sedenja i audio knjigom:{" "}
+            {formatPrice(pricing.pozivnica.bundlePrice)}
           </small>
         </p>
       </div>
 
       {/* Live preview section */}
       <a
-        href="/pozivnica/sara-nikola"
+        href="/pozivnica/ana-dejan"
         target="_blank"
         rel="noopener noreferrer"
         className="mb-6 inline-flex justify-between w-full gap-2 px-4 py-2.5 bg-[#AE343F] text-white rounded-lg hover:bg-[#932d35] transition-colors text-sm font-medium"
@@ -470,6 +688,9 @@ function Step1({
           </p>
         )}
       </div>
+
+      {/* Extras accordion */}
+      <ExtrasAccordion formData={formData} updateField={updateField} />
     </div>
   );
 }
@@ -478,6 +699,76 @@ function Step1({
 
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 9); // 09–21
 const MINUTES = ["00", "15", "30", "45"];
+
+function TimeInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (t: string) => void;
+}) {
+  const parts = value.split(":");
+  const h = parts[0] || "";
+  const m = parts[1] || "";
+  const minRef = useRef<HTMLInputElement>(null);
+  const hrRef = useRef<HTMLInputElement>(null);
+
+  const digitCls =
+    "w-8 bg-transparent text-center text-stone-800 text-base outline-none font-medium placeholder:text-stone-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+
+  const handleHour = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 2);
+    const clamped =
+      digits.length === 2
+        ? String(Math.min(Number(digits), 23)).padStart(2, "0")
+        : digits;
+    onChange(`${clamped}:${m}`);
+    if (clamped.length === 2) minRef.current?.focus();
+  };
+
+  const handleMinute = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 2);
+    const clamped =
+      digits.length === 2
+        ? String(Math.min(Number(digits), 59)).padStart(2, "0")
+        : digits;
+    onChange(`${h}:${clamped}`);
+  };
+
+  const handleMinKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !m) {
+      e.preventDefault();
+      hrRef.current?.focus();
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center border-b border-stone-200 focus-within:border-[#AE343F] transition-colors py-2.5 px-1">
+      <input
+        ref={hrRef}
+        type="text"
+        inputMode="numeric"
+        className={digitCls}
+        value={h}
+        onChange={(e) => handleHour(e.target.value)}
+        placeholder="HH"
+        maxLength={2}
+      />
+      <span className="text-stone-400 font-bold text-base select-none">:</span>
+      <input
+        ref={minRef}
+        type="text"
+        inputMode="numeric"
+        className={digitCls}
+        value={m}
+        onChange={(e) => handleMinute(e.target.value)}
+        onKeyDown={handleMinKeyDown}
+        placeholder="MM"
+        maxLength={2}
+      />
+    </div>
+  );
+}
 
 function TimePicker({
   value,
@@ -517,6 +808,86 @@ function TimePicker({
         ))}
       </select>
       <span className="text-stone-500 text-sm ml-1">h</span>
+    </div>
+  );
+}
+
+function PhoneTagInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const tags = value ? value.split(",").filter((t) => t.trim()) : [];
+  const [draft, setDraft] = useState("");
+
+  const commitTag = (raw: string) => {
+    const cleaned = raw.replace(/[^0-9 ]/g, "").trim();
+    if (!cleaned) return;
+    const next = tags.length ? `${value},${cleaned}` : cleaned;
+    onChange(next);
+    setDraft("");
+  };
+
+  const removeTag = (idx: number) => {
+    onChange(tags.filter((_, i) => i !== idx).join(","));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (raw.includes(",")) {
+      commitTag(raw.replace(",", ""));
+      return;
+    }
+    setDraft(raw.replace(/^\+?381/, "").replace(/\D/g, ""));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      commitTag(draft);
+    }
+    if (e.key === "Backspace" && !draft && tags.length) {
+      removeTag(tags.length - 1);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 border-b border-stone-200 focus-within:border-[#AE343F] transition-colors py-1">
+      {tags.map((tag, i) => (
+        <span
+          key={i}
+          className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-1 text-sm text-stone-700"
+        >
+          +381 {tag.trim()}
+          <button
+            type="button"
+            onClick={() => removeTag(i)}
+            className="text-stone-400 hover:text-[#AE343F] transition-colors"
+          >
+            <X size={12} />
+          </button>
+        </span>
+      ))}
+      {tags.length < 2 && (
+        <div className="flex items-center flex-1 min-w-[120px]">
+          <span className="py-1.5 pl-1 pr-2 text-stone-400 text-base select-none">
+            +381
+          </span>
+          <input
+            type="tel"
+            className="flex-1 bg-transparent py-1.5 pr-1 text-stone-800 text-base outline-none placeholder:text-stone-300"
+            placeholder={tags.length ? "Drugi broj" : "6X XXX XXXX"}
+            value={draft}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onBlur={() => {
+              if (draft.trim()) commitTag(draft);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -595,25 +966,24 @@ function Step2({
         </div>
 
         {/* Contact phone */}
-        <Field label="Vaš kontakt telefon (za naš tim, nije na pozivnici)">
-          <div className="flex items-center border-b border-stone-200 focus-within:border-[#AE343F] transition-colors">
-            <span className="py-2.5 pl-1 pr-2 text-stone-400 text-base select-none">
-              +381
-            </span>
-            <input
-              type="tel"
-              className="flex-1 bg-transparent py-2.5 pr-1 text-stone-800 text-base outline-none placeholder:text-stone-300"
-              placeholder="6X XXX XXXX"
-              value={formData.contact_phone}
-              onChange={(e) =>
-                updateField(
-                  "contact_phone",
-                  e.target.value.replace(/^\+?381/, ""),
-                )
-              }
-            />
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5">
+            <label className={labelCls + " !mb-0"}>Vaš kontakt telefon</label>
+            <div className="group relative">
+              <HelpCircle size={14} className="text-stone-400 cursor-help" />
+              <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-lg bg-stone-800 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10">
+                Da vas kontaktiramo ukoliko nešto zatreba. Međutim, možete uneti
+                i dva broja razdvojena zarezom i staviti napomenu ako ih želite
+                na PDF pozivnici!
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-800" />
+              </div>
+            </div>
           </div>
-        </Field>
+          <PhoneTagInput
+            value={formData.contact_phone}
+            onChange={(v) => updateField("contact_phone", v)}
+          />
+        </div>
       </div>
     </div>
   );
@@ -628,6 +998,17 @@ function Step3({
   formData: FormData;
   updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
 }) {
+  const [showColorModal, setShowColorModal] = useState(false);
+  const [tempPrimaryColor, setTempPrimaryColor] = useState(
+    formData.custom_primary_color || "#AE343F",
+  );
+  const [tempBackgroundColor, setTempBackgroundColor] = useState(
+    formData.custom_background_color || "#F5F4DC",
+  );
+
+  const colorInputRef = React.useRef<HTMLInputElement>(null);
+  const bgInputRef = React.useRef<HTMLInputElement>(null);
+
   const themes = Object.entries(THEME_CONFIGS) as [
     ThemeType,
     (typeof THEME_CONFIGS)[ThemeType],
@@ -664,6 +1045,8 @@ function Step3({
           groom={formData.groom}
           eventDate={formData.event_date}
           useCyrillic={formData.useCyrillic}
+          customPrimaryColor={formData.custom_primary_color}
+          customBackgroundColor={formData.custom_background_color}
         />
         {formData.useCyrillic && (
           <p className="text-xs text-stone-400 mt-2">
@@ -717,9 +1100,13 @@ function Step3({
           <button
             key={key}
             type="button"
-            onClick={() => updateField("theme", key)}
+            onClick={() => {
+              updateField("theme", key);
+              updateField("custom_primary_color", "");
+              updateField("custom_background_color", "");
+            }}
             className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
-              formData.theme === key
+              formData.theme === key && !formData.custom_primary_color
                 ? "border-[#AE343F] shadow-md"
                 : "border-stone-100 hover:border-stone-200"
             }`}
@@ -730,14 +1117,213 @@ function Step3({
             />
             <p className="text-sm font-semibold text-stone-700">{cfg.name}</p>
             <p className="text-xs text-stone-400">{cfg.symbolism}</p>
-            {formData.theme === key && (
+            {formData.theme === key && !formData.custom_primary_color && (
               <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-white" />
               </div>
             )}
           </button>
         ))}
+
+        {/* 6th card: Custom colors (primary + background) */}
+        <button
+          type="button"
+          onClick={() => {
+            updateField("theme", "classic_rose");
+            const initPrimary = formData.custom_primary_color || "#AE343F";
+            if (!formData.custom_primary_color) {
+              setTempPrimaryColor(initPrimary);
+            } else {
+              setTempPrimaryColor(formData.custom_primary_color);
+            }
+            if (!formData.custom_background_color) {
+              const autoBg = blendHex("#FFFFFF", initPrimary, 0.06);
+              setTempBackgroundColor(autoBg);
+            } else {
+              setTempBackgroundColor(formData.custom_background_color);
+            }
+            setShowColorModal(true);
+          }}
+          className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
+            formData.custom_primary_color
+              ? "border-[#AE343F] shadow-md"
+              : "border-stone-100 hover:border-stone-200"
+          }`}
+        >
+          {/* Two color swatches (simplified) */}
+          <div className="flex gap-2.5 mb-3">
+            <div
+              className="w-8 h-8 rounded-full border border-black/10 shadow-sm"
+              style={{
+                background: formData.custom_primary_color
+                  ? formData.custom_primary_color
+                  : "linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff)",
+              }}
+            />
+            <div
+              className="w-8 h-8 rounded-full border border-black/10 shadow-sm"
+              style={{
+                background: formData.custom_background_color
+                  ? formData.custom_background_color
+                  : "#F5F4DC",
+              }}
+            />
+          </div>
+
+          <p className="text-sm font-semibold text-stone-700">
+            Prilagođena boja
+          </p>
+          <p className="text-xs text-stone-400">Izaberi svoju</p>
+
+          {/* Selected indicator */}
+          {formData.custom_primary_color && (
+            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
+              <div className="w-2 h-2 rounded-full bg-white" />
+            </div>
+          )}
+        </button>
       </div>
+
+      {/* Pricing note for custom color */}
+      {(formData.custom_primary_color || formData.custom_background_color) &&
+        (() => {
+          const customColorAddon = pricing.addons.find(
+            (addon) => addon.id === "custom_color",
+          );
+          const price = customColorAddon
+            ? formatPrice(customColorAddon.price)
+            : "600 din";
+          return (
+            <div className="mt-4 p-3 rounded-lg border border-amber-200 bg-amber-50 text-sm text-amber-800">
+              ℹ️ Za prilagođenu boju biće vam naplaćeno dodatnih{" "}
+              <strong>{price}</strong>.
+            </div>
+          );
+        })()}
+
+      {/* Color picker modal */}
+      <AnimatePresence>
+        {showColorModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowColorModal(false);
+              }
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-6"
+            >
+              <div>
+                <h2 className="text-xl font-bold text-stone-800">
+                  Prilagođena boja
+                </h2>
+                <p className="text-sm text-stone-400 mt-1">
+                  Izaberite boje za svoju temu
+                </p>
+              </div>
+
+              {/* Color pickers */}
+              <div className="space-y-4">
+                {/* Accent color */}
+                <div>
+                  <label className={labelCls}>Akcenti</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={tempPrimaryColor}
+                      onChange={(e) => setTempPrimaryColor(e.target.value)}
+                      className="w-16 h-16 rounded-xl border-2 border-stone-200 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-mono text-stone-600">
+                        {tempPrimaryColor.toUpperCase()}
+                      </p>
+                      <p className="text-xs text-stone-400 mt-1">
+                        Glavna boja teme
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Background color */}
+                <div>
+                  <label className={labelCls}>Pozadina</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={tempBackgroundColor}
+                      onChange={(e) => setTempBackgroundColor(e.target.value)}
+                      className="w-16 h-16 rounded-xl border-2 border-stone-200 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-mono text-stone-600">
+                        {tempBackgroundColor.toUpperCase()}
+                      </p>
+                      <p className="text-xs text-stone-400 mt-1">
+                        Boja pozadine pozivnice
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className="rounded-2xl overflow-hidden border border-stone-200 p-4">
+                <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3">
+                  Pregled
+                </p>
+                <div
+                  className="rounded-lg p-4 space-y-2 text-center"
+                  style={{
+                    background: tempBackgroundColor,
+                  }}
+                >
+                  <div
+                    className="w-8 h-8 rounded-full mx-auto shadow-sm"
+                    style={{ background: tempPrimaryColor }}
+                  />
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: tempPrimaryColor }}
+                  >
+                    Prilagođena boja
+                  </p>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowColorModal(false)}
+                  className="flex-1 px-4 py-3 rounded-xl border border-stone-200 text-stone-700 font-semibold hover:bg-stone-50 transition-colors"
+                >
+                  Otkaži
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateField("custom_primary_color", tempPrimaryColor);
+                    updateField("custom_background_color", tempBackgroundColor);
+                    setShowColorModal(false);
+                  }}
+                  className="flex-1 px-4 py-3 rounded-xl bg-[#AE343F] text-white font-semibold hover:bg-[#8B2833] transition-colors"
+                >
+                  Potvrdi
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -757,8 +1343,7 @@ const VENUE_DEFS: {
     type: "home",
     emoji: "🏠",
     title: "Polazak od kuće",
-    subtitle:
-      "Ukoliko imate dva polaska, drugi unesite u napomeni na poslednjem koraku",
+    subtitle: "Početna tačka vašeg svadbenog dana",
     namePlaceholder: "npr. Kuća Jovanovića",
     addressPlaceholder: "npr. Cara Dušana 12, Novi Sad",
     timePlaceholder: "npr. 14:00",
@@ -773,15 +1358,6 @@ const VENUE_DEFS: {
     timePlaceholder: "npr. 15:30",
   },
   {
-    type: "ceremony",
-    emoji: "💍",
-    title: "Građansko venčanje",
-    subtitle: "Ceremonijalno venčanje kod matičara",
-    namePlaceholder: "npr. Matičarska služba / restoran Vila Mir",
-    addressPlaceholder: "npr. Bulevar Mihajla Pupina 25",
-    timePlaceholder: "npr. 16:00",
-  },
-  {
     type: "hall",
     emoji: "🎊",
     title: "Svečana sala / restoran",
@@ -790,12 +1366,23 @@ const VENUE_DEFS: {
     addressPlaceholder: "npr. Futoška 44, Novi Sad",
     timePlaceholder: "npr. 18:00",
   },
+  {
+    type: "ceremony",
+    emoji: "💍",
+    title: "Građansko venčanje",
+    subtitle: "Ceremonijalno venčanje kod matičara",
+    namePlaceholder: "npr. Matičarska služba / restoran Vila Mir",
+    addressPlaceholder: "npr. Bulevar Mihajla Pupina 25",
+    timePlaceholder: "npr. 16:00",
+  },
 ];
 
 function Step4({
   formData,
   toggleLocation,
   updateLocation,
+  addDuplicateHome,
+  removeDuplicateHome,
 }: {
   formData: FormData;
   toggleLocation: (i: number) => void;
@@ -804,7 +1391,35 @@ function Step4({
     f: "name" | "address" | "time",
     v: string,
   ) => void;
+  addDuplicateHome: () => void;
+  removeDuplicateHome: (i: number) => void;
 }) {
+  // Build render list: pair each location with its VENUE_DEF template
+  const defByType = Object.fromEntries(
+    VENUE_DEFS.map((d) => [d.type, d]),
+  ) as Record<LocationType, (typeof VENUE_DEFS)[number]>;
+  const items: {
+    loc: LocationItem;
+    def: (typeof VENUE_DEFS)[number];
+    idx: number;
+    isDuplicate: boolean;
+  }[] = [];
+  for (let i = 0; i < formData.locations.length; i++) {
+    const loc = formData.locations[i];
+    const def = defByType[loc.type];
+    const isDuplicate =
+      loc.type === "home" &&
+      i > 0 &&
+      formData.locations[i - 1]?.type === "home";
+    items.push({ loc, def, idx: i, isDuplicate });
+  }
+
+  // Check if a second home already exists
+  const homeCount = formData.locations.filter((l) => l.type === "home").length;
+  const firstHomeIdx = formData.locations.findIndex((l) => l.type === "home");
+  const firstHomeEnabled =
+    firstHomeIdx >= 0 && formData.locations[firstHomeIdx].enabled;
+
   return (
     <div>
       <StepHeading
@@ -813,48 +1428,59 @@ function Step4({
       />
 
       <div className="space-y-3">
-        {VENUE_DEFS.map((def, i) => {
-          const loc = formData.locations[i];
+        {items.map(({ loc, def, idx, isDuplicate }) => {
           const active = loc.enabled;
+          const homeLabel = isDuplicate ? "Polazak od kuće (2)" : def.title;
+          const homeSubtitle = isDuplicate
+            ? "Druga početna tačka (npr. mladina kuća)"
+            : def.subtitle;
 
           return (
             <div
-              key={def.type}
+              key={`${loc.type}-${idx}`}
               className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                 active ? "border-[#AE343F]/30 shadow-sm" : "border-stone-100"
               }`}
             >
-              {/* Header row — always visible, click to toggle */}
-              <button
-                type="button"
-                onClick={() => toggleLocation(i)}
-                className={`w-full flex items-center gap-4 px-5 py-4 text-left transition-colors ${
-                  active ? "bg-[#AE343F]/5" : "bg-stone-50/60 hover:bg-stone-50"
+              {/* Header row */}
+              <div
+                className={`flex items-center gap-4 px-5 py-4 transition-colors ${
+                  active ? "bg-[#AE343F]/5" : "bg-stone-50/60"
                 }`}
               >
-                {/* Toggle circle */}
-                <div
-                  className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
-                    active
-                      ? "border-[#AE343F] bg-[#AE343F]"
-                      : "border-stone-300 bg-white"
-                  }`}
+                <button
+                  type="button"
+                  onClick={() =>
+                    isDuplicate ? toggleLocation(idx) : toggleLocation(idx)
+                  }
+                  className="flex items-center gap-4 flex-1 text-left"
                 >
-                  {active && <div className="w-2 h-2 rounded-full bg-white" />}
-                </div>
-
-                <span className="text-xl shrink-0">{def.emoji}</span>
-
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`font-semibold text-sm ${active ? "text-stone-800" : "text-stone-400"}`}
+                  {/* Toggle circle */}
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
+                      active
+                        ? "border-[#AE343F] bg-[#AE343F]"
+                        : "border-stone-300 bg-white"
+                    }`}
                   >
-                    {def.title}
-                  </p>
-                  <p className="text-xs text-stone-400 truncate">
-                    {def.subtitle}
-                  </p>
-                </div>
+                    {active && (
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    )}
+                  </div>
+
+                  <span className="text-xl shrink-0">{def.emoji}</span>
+
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`font-semibold text-sm ${active ? "text-stone-800" : "text-stone-400"}`}
+                    >
+                      {homeLabel}
+                    </p>
+                    <p className="text-xs text-stone-400 truncate">
+                      {homeSubtitle}
+                    </p>
+                  </div>
+                </button>
 
                 {/* Time badge when filled */}
                 {active && loc.time && (
@@ -862,7 +1488,46 @@ function Step4({
                     {loc.time}
                   </span>
                 )}
-              </button>
+
+                {/* Add second home button */}
+                {loc.type === "home" &&
+                  active &&
+                  !isDuplicate &&
+                  homeCount < 2 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addDuplicateHome();
+                      }}
+                      className="group relative flex items-center justify-center w-7 h-7 rounded-full border border-dashed border-stone-300 hover:border-[#AE343F] hover:bg-[#AE343F]/5 transition-colors shrink-0"
+                      title="Dodaj drugi polazak"
+                    >
+                      <Plus
+                        size={14}
+                        className="text-stone-400 group-hover:text-[#AE343F] transition-colors"
+                      />
+                    </button>
+                  )}
+
+                {/* Remove duplicate home button */}
+                {isDuplicate && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeDuplicateHome(idx);
+                    }}
+                    className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-red-50 transition-colors shrink-0"
+                    title="Ukloni drugi polazak"
+                  >
+                    <Trash2
+                      size={14}
+                      className="text-stone-400 hover:text-red-500 transition-colors"
+                    />
+                  </button>
+                )}
+              </div>
 
               {/* Expanded fields */}
               {active && (
@@ -871,28 +1536,31 @@ function Step4({
                     <Field label="Naziv">
                       <TextInput
                         value={loc.name}
-                        onChange={(v) => updateLocation(i, "name", v)}
-                        placeholder={def.namePlaceholder}
+                        onChange={(v) => updateLocation(idx, "name", v)}
+                        placeholder={
+                          isDuplicate
+                            ? "npr. Kuća Petrovića"
+                            : def.namePlaceholder
+                        }
                       />
                     </Field>
                     <div>
                       <label className={labelCls}>Vreme</label>
-                      <input
-                        type="text"
-                        className={inputCls + " text-center"}
+                      <TimeInput
                         value={loc.time}
-                        onChange={(e) =>
-                          updateLocation(i, "time", e.target.value)
-                        }
-                        placeholder={def.timePlaceholder}
+                        onChange={(v) => updateLocation(idx, "time", v)}
                       />
                     </div>
                   </div>
                   <Field label="Adresa">
                     <TextInput
                       value={loc.address}
-                      onChange={(v) => updateLocation(i, "address", v)}
-                      placeholder={def.addressPlaceholder}
+                      onChange={(v) => updateLocation(idx, "address", v)}
+                      placeholder={
+                        isDuplicate
+                          ? "npr. Bulevar Oslobođenja 5, Novi Sad"
+                          : def.addressPlaceholder
+                      }
                     />
                   </Field>
                 </div>
@@ -901,6 +1569,15 @@ function Step4({
           );
         })}
       </div>
+
+      {/* Hint about adding second home */}
+      {firstHomeEnabled && homeCount < 2 && (
+        <p className="text-xs text-stone-400 mt-3 text-center">
+          Imate dva polaska? Kliknite{" "}
+          <Plus size={10} className="inline -mt-0.5" /> pored &ldquo;Polazak od
+          kuće&rdquo;.
+        </p>
+      )}
 
       <p className="text-xs text-stone-300 mt-4 text-center">
         Google Maps linkove dodajemo mi nakon prijema upitnika.
@@ -923,23 +1600,31 @@ function Step5({
         desc="Personalizovana poruka i zahvalnica na pozivnici."
       />
       <div className="space-y-6">
-        <Field label="Tagline (citat / poruka u heroju pozivnice)">
+        <Field label="Tagline (citat / poruka pozivnice)">
           <textarea
             className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
+            maxLength={220}
             value={formData.tagline}
             onChange={(e) => updateField("tagline", e.target.value)}
             placeholder="npr. Najlepše priče se ne pišu same — pomozite nam da naše novo poglavlje otvorimo na najlepši način!"
           />
+          <p className="text-xs text-stone-300 text-right">
+            {formData.tagline.length}/220
+          </p>
         </Field>
         <Field label="Zahvalnica (poruka na dnu pozivnice)">
           <textarea
             className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
+            maxLength={120}
             value={formData.thankYouFooter}
             onChange={(e) => updateField("thankYouFooter", e.target.value)}
             placeholder="npr. Naša radost je potpuna samo uz ljude koje volimo! Hvala što ste tu."
           />
+          <p className="text-xs text-stone-300 text-right">
+            {formData.thankYouFooter.length}/120
+          </p>
         </Field>
       </div>
     </div>
@@ -966,15 +1651,15 @@ function Step6({
         <div className="bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl px-5 py-4 text-sm text-[#8B2833] leading-relaxed">
           <p className="font-semibold mb-1">🎉 Skoro sve je spremno!</p>
           <p>
-            Google formu za prijavljivanje gostiju, odbrojavanje i mapu ćemo
-            podesiti sami — vi samo kliknite <em>Pošalji zahtev</em> i mi ćemo
-            se pobrinuti za sve tehničke detalje.
+            Nakon kreiranja pozivnice, na portalu <strong>Moje Venčanje</strong>{" "}
+            možete pratiti potvrde gostiju, organizovati raspored sedenja,
+            planirati budžet i još mnogo toga. Kredencijale za prijavu ćete
+            dobiti zajedno sa pozivnicom.
           </p>
         </div>
 
         <div className="space-y-5">
           <p className={labelCls}>Šta prikazati gostima?</p>
-          <div></div>
 
           <Toggle
             checked={formData.countdown_enabled}
@@ -984,7 +1669,7 @@ function Step6({
           <Toggle
             checked={formData.map_enabled}
             onChange={(v) => updateField("map_enabled", v)}
-            label="Interaktivna google mapa do lokacije sale"
+            label="Interaktivna google mapa do lokacija venčanja (crkva & sala)"
           />
         </div>
 
@@ -1005,53 +1690,76 @@ function Step6({
 // ─── Raw JSON generator ───────────────────────────────────────────────────────
 
 function generateRawJson(formData: FormData): string {
-  // Only hall location
-  const hallLocStr = formData.locations
-    .filter((l) => l.enabled && l.type === "hall")
-    .map(
-      (l) =>
-        `    { name: "${l.name}", time: "${l.time}", address: "${l.address}", map_url: "TODO", type: "${l.type}" }`,
-    )
-    .join(",\n");
+  const eventDate = new Date(formData.event_date);
+  const dd = String(eventDate.getDate()).padStart(2, "0");
+  const mm = String(eventDate.getMonth() + 1).padStart(2, "0");
+  const autoPassword = `${formData.groom}${dd}${mm}`;
 
-  // Timeline from all enabled locations
-  const timelineStr = formData.locations
-    .filter((l) => l.enabled)
-    .map((l) => {
-      const typeToIcon: Record<string, string> = {
-        home: "Home",
-        church: "Church",
-        ceremony: "Heart",
-        hall: "Utensils",
-      };
-      const icon = typeToIcon[l.type] || "MapPin";
-      return `    { title: "${l.name}", time: "${l.time}", description: "${l.address}", icon: "${icon}" }`;
-    })
-    .join(",\n");
-
-  const lines = [
-    `import { WeddingData } from "@/app/pozivnica/[slug]/types";`,
-    ``,
-    `const weddingData: WeddingData = {`,
-    `  theme: "${formData.theme}",`,
-    `  scriptFont: "${formData.scriptFont}",`,
-    `  useCyrillic: ${formData.useCyrillic},`,
-    `  rsvp_form_url: "TODO",`,
-    `  entry_IDs: { name: "entry.TODO", attending: "entry.TODO", plusOnes: "entry.TODO", details: "entry.TODO" },`,
-    `  couple_names: { bride: "${formData.bride}", groom: "${formData.groom}", full_display: "${formData.full_display}" },`,
-    `  event_date: "${formData.event_date}",`,
-    `  submit_until: "${formData.submit_until}",`,
-    `  tagline: "${formData.tagline}",`,
-    `  thankYouFooter: "${formData.thankYouFooter}",`,
-    `  locations: [\n${hallLocStr}\n  ],`,
-    `  timeline: [\n${timelineStr}\n  ],`,
-    `  countdown_enabled: ${formData.countdown_enabled},`,
-    `  map_enabled: ${formData.map_enabled},`,
-    `};`,
-    ``,
-    `export default weddingData;`,
-  ];
-  return lines.join("\n");
+  const json = {
+    theme: formData.theme,
+    scriptFont: formData.scriptFont,
+    useCyrillic: formData.useCyrillic,
+    potvrde_password: autoPassword,
+    couple_names: {
+      bride: formData.bride,
+      groom: formData.groom,
+      full_display: formData.full_display,
+    },
+    event_date: formData.event_date,
+    submit_until: formData.submit_until_date,
+    tagline: formData.tagline,
+    thankYouFooter: formData.thankYouFooter,
+    locations: formData.locations
+      .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
+      .map((l) => ({
+        name: l.name,
+        address: l.address,
+        map_url: "",
+        type: l.type,
+      })),
+    timeline: [...formData.locations]
+      .filter((l) => l.enabled)
+      .sort((a, b) => a.time.localeCompare(b.time))
+      .map((l) => {
+        const typeToIcon: Record<string, string> = {
+          home: "Home",
+          church: "Church",
+          ceremony: "Heart",
+          hall: "Utensils",
+        };
+        const typeToWhat: Record<string, string> = {
+          home: "Polazak od kuće",
+          church: "Crkveno venčanje",
+          ceremony: "Građansko venčanje",
+          hall: "Skup u svečanoj sali",
+        };
+        return {
+          title: l.name,
+          time: l.time,
+          description: l.address,
+          what: typeToWhat[l.type] || "",
+          icon: typeToIcon[l.type] || "MapPin",
+        };
+      }),
+    countdown_enabled: formData.countdown_enabled,
+    map_enabled: formData.map_enabled,
+    paid_for_raspored: formData.extra_raspored,
+    paid_for_audio: formData.extra_audio,
+    paid_for_audio_USB: formData.extra_usb_kaseta
+      ? "kaseta"
+      : formData.extra_usb_bocica
+        ? "bocica"
+        : "",
+    paid_for_pdf: false,
+    draft: true,
+    ...(formData.custom_primary_color
+      ? { custom_primary_color: formData.custom_primary_color }
+      : {}),
+    ...(formData.custom_background_color
+      ? { custom_background_color: formData.custom_background_color }
+      : {}),
+  };
+  return JSON.stringify(json, null, 2);
 }
 
 // ─── Main form ────────────────────────────────────────────────────────────────
@@ -1064,9 +1772,27 @@ export default function QuestionnaireForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Read URL params from /cene page
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.toString()) {
+      setFormData((prev) => ({
+        ...prev,
+        extra_raspored: params.get("raspored") === "1" || prev.extra_raspored,
+        extra_audio: params.get("audio") === "1" || prev.extra_audio,
+        extra_usb_kaseta:
+          params.get("usb_kaseta") === "1" || prev.extra_usb_kaseta,
+        extra_usb_bocica:
+          params.get("usb_bocica") === "1" || prev.extra_usb_bocica,
+      }));
+    }
+  }, []);
+
   // Prepopulate hall venue time if it's already enabled
   React.useEffect(() => {
-    const hallVenue = formData.locations[3];
+    const hallIdx = formData.locations.findIndex((l) => l.type === "hall");
+    if (hallIdx < 0) return;
+    const hallVenue = formData.locations[hallIdx];
     if (
       hallVenue.enabled &&
       formData.event_time &&
@@ -1074,7 +1800,9 @@ export default function QuestionnaireForm() {
     ) {
       setFormData((prev) => {
         const locations = [...prev.locations];
-        locations[3] = { ...locations[3], time: prev.event_time };
+        const hi = locations.findIndex((l) => l.type === "hall");
+        if (hi >= 0)
+          locations[hi] = { ...locations[hi], time: prev.event_time };
         return { ...prev, locations };
       });
     }
@@ -1097,6 +1825,12 @@ export default function QuestionnaireForm() {
         }
       }
 
+      // Clear USB extras when audio is unchecked
+      if (key === "extra_audio" && !value) {
+        updated.extra_usb_kaseta = false;
+        updated.extra_usb_bocica = false;
+      }
+
       // Auto-switch font when language changes
       if (key === "useCyrillic") {
         const toCyrillic = value as boolean;
@@ -1111,7 +1845,41 @@ export default function QuestionnaireForm() {
     });
   };
 
+  const [stepError, setStepError] = useState("");
+
   const goNext = () => {
+    if (step === 1 && (!formData.bride.trim() || !formData.groom.trim())) {
+      setStepError("Unesite imena mladenaca pre nego što nastavite.");
+      return;
+    }
+    if (step === 2) {
+      if (!formData.event_date_only) {
+        setStepError("Izaberite datum venčanja.");
+        return;
+      }
+      if (!formData.submit_until_date) {
+        setStepError("Izaberite rok za potvrdu dolaska.");
+        return;
+      }
+      if (!formData.contact_phone.trim()) {
+        setStepError("Unesite vaš kontakt telefon.");
+        return;
+      }
+    }
+    if (step === 4) {
+      const incomplete = formData.locations.find(
+        (l) => l.enabled && (!l.time || !/^\d{2}:\d{2}$/.test(l.time)),
+      );
+      if (incomplete) {
+        setStepError("Unesite vreme za sve uključene lokacije.");
+        return;
+      }
+    }
+    if (step === 5 && !formData.tagline.trim()) {
+      setStepError("Unesite tagline poruku za pozivnicu.");
+      return;
+    }
+    setStepError("");
     setDirection(1);
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
   };
@@ -1126,9 +1894,44 @@ export default function QuestionnaireForm() {
       const wasEnabled = locations[idx].enabled;
       locations[idx] = { ...locations[idx], enabled: !locations[idx].enabled };
       // Prepopulate time for hall venue when enabling
-      if (!wasEnabled && idx === 3 && formData.event_time) {
+      if (
+        !wasEnabled &&
+        locations[idx].type === "hall" &&
+        formData.event_time
+      ) {
         locations[idx] = { ...locations[idx], time: formData.event_time };
       }
+      // If disabling the first home, also remove any duplicate home
+      if (wasEnabled && locations[idx].type === "home" && idx === 0) {
+        const dupeIdx = locations.findIndex(
+          (l, i) => i > 0 && l.type === "home",
+        );
+        if (dupeIdx > 0) locations.splice(dupeIdx, 1);
+      }
+      return { ...prev, locations };
+    });
+
+  const addDuplicateHome = () =>
+    setFormData((prev) => {
+      const hasTwo =
+        prev.locations.filter((l) => l.type === "home").length >= 2;
+      if (hasTwo) return prev;
+      // Insert right after first home
+      const firstHomeIdx = prev.locations.findIndex((l) => l.type === "home");
+      const locations = [...prev.locations];
+      locations.splice(firstHomeIdx + 1, 0, {
+        type: "home",
+        enabled: true,
+        name: "",
+        address: "",
+        time: "",
+      });
+      return { ...prev, locations };
+    });
+
+  const removeDuplicateHome = (idx: number) =>
+    setFormData((prev) => {
+      const locations = prev.locations.filter((_, i) => i !== idx);
       return { ...prev, locations };
     });
 
@@ -1148,44 +1951,42 @@ export default function QuestionnaireForm() {
     setIsSubmitting(true);
     try {
       const formattedDate = formData.event_date
-        ? new Date(formData.event_date).toLocaleDateString("sr-RS", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
+        ? new Date(formData.event_date).toLocaleDateString(
+            formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
+            {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            },
+          )
         : "";
 
       const payload: Record<string, string> = {
         access_key: WEB3FORMS_ACCESS_KEY || "",
-        subject: `Nova Pozivnica - ${formData.bride} & ${formData.groom} - ${formattedDate}`,
+        subject: `Nova Pozivnica - ${formData.full_display} - ${formattedDate}`,
         from_name: "Halo Pozivnice",
-        mlada: formData.bride,
-        mladozenja: formData.groom,
-        prikaz_para: formData.full_display,
-        pismo: formData.useCyrillic ? "Ćirilica" : "Latinica",
-        datum_vencanja: formattedDate,
-        vreme_vencanja: formData.event_time,
-        rok_za_prijavu: formData.submit_until,
-        kontakt_telefon: `+381${formData.contact_phone}`,
-        tema: formData.theme,
-        font: formData.scriptFont,
-        tagline: formData.tagline,
-        zahvalnica: formData.thankYouFooter,
-        odbrojavanje: formData.countdown_enabled ? "Da" : "Ne",
-        mapa: formData.map_enabled ? "Da" : "Ne",
-        napomene: formData.wishes,
-        _raw_json: generateRawJson(formData),
-      };
 
-      formData.locations
-        .filter((l) => l.enabled)
-        .forEach((loc, i) => {
-          payload[`lokacija_${i + 1}_tip`] = loc.type;
-          payload[`lokacija_${i + 1}_naziv`] = loc.name;
-          payload[`lokacija_${i + 1}_adresa`] = loc.address;
-          payload[`lokacija_${i + 1}_vreme`] = loc.time;
-        });
+        // ── Human-readable essentials ──
+        Par: formData.full_display,
+        "Datum venčanja": `${formattedDate}, ${formData.event_time}h`,
+        "Rok za prijavu": formData.submit_until,
+        "Kontakt telefon": `+381${formData.contact_phone}`,
+        "Raspored sedenja": formData.extra_raspored ? "✅ DA" : "❌ Ne",
+        "Audio knjiga": formData.extra_audio ? "✅ DA" : "❌ Ne",
+        "USB suvenir": formData.extra_usb_kaseta
+          ? "USB retro kaseta"
+          : formData.extra_usb_bocica
+            ? "USB u bočici"
+            : "❌ Ne",
+        "Prilagođena boja": formData.custom_primary_color
+          ? `${formData.custom_primary_color} / bg: ${formData.custom_background_color || "auto"}`
+          : "❌ Ne",
+        "⚠️⚠️⚠️ NAPOMENA ⚠️⚠️⚠️": formData.wishes || "(nema)",
+
+        // ── JSON for admin panel (copy-paste) ──
+        "📋 JSON": generateRawJson(formData),
+      };
 
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
@@ -1226,11 +2027,14 @@ export default function QuestionnaireForm() {
             Venčanje:{" "}
             {new Date(
               formData.event_date_only + "T12:00:00",
-            ).toLocaleDateString("sr-RS", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
+            ).toLocaleDateString(
+              formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
+              {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              },
+            )}
           </p>
         )}
         <p className="text-[#8B2833] text-sm">
@@ -1299,6 +2103,8 @@ export default function QuestionnaireForm() {
                 formData={formData}
                 toggleLocation={toggleLocation}
                 updateLocation={updateLocation}
+                addDuplicateHome={addDuplicateHome}
+                removeDuplicateHome={removeDuplicateHome}
               />
             )}
             {step === 5 && (
@@ -1330,14 +2136,19 @@ export default function QuestionnaireForm() {
           </button>
 
           {step < TOTAL_STEPS ? (
-            <button
-              type="button"
-              onClick={goNext}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#8B2833] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20"
-            >
-              Dalje
-              <ChevronRight size={16} />
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                type="button"
+                onClick={goNext}
+                className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#8B2833] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20"
+              >
+                Dalje
+                <ChevronRight size={16} />
+              </button>
+              {stepError && (
+                <p className="text-xs text-[#AE343F]">{stepError}</p>
+              )}
+            </div>
           ) : (
             <button
               type="button"

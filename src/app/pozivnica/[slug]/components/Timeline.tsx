@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import {
   Church,
   Users,
@@ -34,6 +35,11 @@ const IconMap: Record<
   HouseHeart,
 };
 
+const slideInItem = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
+
 interface TimelineProps {
   items: TimelineItem[];
 }
@@ -41,15 +47,15 @@ interface TimelineProps {
 export const Timeline: React.FC<TimelineProps> = ({ items }) => {
   return (
     <div className="relative max-w-3xl mx-auto px-6 py-12">
-      {/* Central Line with gradient */}
-      <div className="absolute left-8 md:left-1/2 transform -translate-x-1/2 h-full w-px top-0">
-        <div
-          className="h-full w-full"
-          style={{
-            background: `linear-gradient(to bottom, transparent, var(--theme-primary), transparent)`,
-          }}
-        />
-      </div>
+      {/* Central Line */}
+      <div
+        className="absolute left-8 md:left-1/2 -translate-x-1/2 w-px"
+        style={{
+          top: 0,
+          bottom: 0,
+          background: `linear-gradient(to bottom, transparent, var(--theme-primary) 12%, var(--theme-primary) 88%, transparent)`,
+        }}
+      />
 
       <div className="space-y-12 sm:space-y-16">
         {items.map((item, index) => {
@@ -57,10 +63,14 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
           const isEven = index % 2 === 0;
 
           return (
-            <div
+            <motion.div
               key={index}
               className={`relative flex items-center w-full md:justify-between ${isEven ? "md:flex-row-reverse" : ""}`}
-              style={{ animationDelay: `${index * 150}ms` }}
+              variants={slideInItem}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ delay: index * 0.08 }}
             >
               {/* Desktop Spacer */}
               <div className="hidden md:block md:w-5/12"></div>
@@ -141,6 +151,16 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
                       {item.time}
                     </span>
 
+                    {/* What */}
+                    {item.what && (
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1.5"
+                        style={{ color: "var(--theme-primary)", opacity: 0.6 }}
+                      >
+                        {item.what}
+                      </p>
+                    )}
+
                     {/* Title */}
                     <h4
                       className="text-xl sm:text-2xl font-serif mb-2 leading-tight"
@@ -161,33 +181,11 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
-      {/* End ornament */}
-      <div className="flex justify-center mt-16">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-12 h-px"
-            style={{
-              background: `linear-gradient(to right, transparent, var(--theme-border))`,
-            }}
-          />
-          <Heart
-            size={16}
-            style={{ color: "var(--theme-primary)", opacity: 0.4 }}
-            strokeWidth={1}
-          />
-          <div
-            className="w-12 h-px"
-            style={{
-              background: `linear-gradient(to left, transparent, var(--theme-border))`,
-            }}
-          />
-        </div>
-      </div>
     </div>
   );
 };

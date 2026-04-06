@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 const navLinks = [
-  { name: "Paketi", href: "/#paketi" },
-  { name: "Utisci", href: "/#utisci" },
-  { name: "FAQ", href: "/#faq" },
+  { name: "Planer", href: "/planiranje-vencanja" },
+  { name: "Pozivnice", href: "/pozivnice" },
+  { name: "Telefon", href: "/telefon-uspomena" },
+  { name: "Cene", href: "/cene" },
   { name: "Blog", href: "/blog" },
-  { name: "Lokacije", href: "/lokacije" },
 ];
 
 const Navbar: React.FC = () => {
@@ -26,16 +27,18 @@ const Navbar: React.FC = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${isScrolled ? "bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/5 py-2" : "bg-transparent py-6"}`}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${isScrolled ? "bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/5 py-2" : `${isMenuOpen ? "bg-[#F5F4DC]" : "bg-transparent"} py-6`}`}
     >
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between">
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center gap-3 group">
-              <img
+              <Image
                 src="/images/full-logo.png"
                 alt="HALO Uspomene - Audio Guest Book za Venčanja u Srbiji"
-                className="h-14 mb-1"
+                width={3519}
+                height={1798}
+                className="h-14 mb-1 w-auto"
               />
             </Link>
           </div>
@@ -54,10 +57,10 @@ const Navbar: React.FC = () => {
               ))}
             </ul>
             <Link
-              href="/#kontakt"
-              className="btn bg-[#232323] hover:bg-[#AE343F] text-[#F5F4DC] rounded-full px-10 shadow-xl shadow-black/10 border-none transition-all"
+              href="/moje-vencanje"
+              className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] rounded-full px-10 shadow-xl shadow-[#AE343F]/20 border-none transition-all"
             >
-              KONTAKT
+              MOJE VENČANJE
             </Link>
           </div>
 
@@ -73,29 +76,29 @@ const Navbar: React.FC = () => {
 
       {/* Mobile menu with CSS transition */}
       <div
-        className={`lg:hidden absolute top-full left-0 w-full bg-[#F5F4DC] border-b border-[#232323]/10 shadow-2xl transition-all duration-300 overflow-hidden ${
+        className={`lg:hidden absolute top-full left-0 w-full bg-[#F5F4DC] -mt-px shadow-2xl transition-all duration-300 overflow-hidden ${
           isMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <ul className="p-4 sm:p-6 space-y-4">
+        <ul className="py-2">
           {navLinks.map((link) => (
             <li key={link.name}>
               <Link
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="block text-2xl font-serif text-[#232323] hover:text-[#AE343F] py-2 transition-colors min-h-[44px] flex items-center"
+                className="block text-xl font-serif text-[#232323] hover:text-[#AE343F] hover:bg-[#232323]/3 py-3.5 text-center transition-colors min-h-[44px]"
               >
                 {link.name}
               </Link>
             </li>
           ))}
-          <li className="pt-4">
+          <li className="px-4 sm:px-6 pt-3 pb-4">
             <Link
-              href="/#kontakt"
+              href="/moje-vencanje"
               onClick={() => setIsMenuOpen(false)}
               className="btn bg-[#AE343F] hover:bg-[#8A2A32] w-full text-[#F5F4DC] rounded-xl text-lg border-none min-h-[48px]"
             >
-              Zakažite razgovor
+              Moje venčanje
             </Link>
           </li>
         </ul>

@@ -1,7 +1,17 @@
 import React from "react";
-import { Award, Check, ArrowRight } from "lucide-react";
+import {
+  Check,
+  Globe,
+  FileDown,
+  LayoutDashboard,
+  Mic,
+  Phone,
+  ArrowRight,
+  Sparkles,
+  Award,
+} from "lucide-react";
 import Link from "next/link";
-import { pricing, formatPrice } from "@/data/pricing";
+import { formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
 
 const HowItWorks: React.FC = () => {
   return (
@@ -26,7 +36,6 @@ const HowItWorks: React.FC = () => {
           animation: "dotWave 12s ease-in-out infinite",
         }}
       />
-      {/* Glow accent */}
       <div className="absolute top-0 left-1/3 w-96 h-96 bg-[#AE343F]/8 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="container mx-auto px-4 relative z-10">
@@ -44,78 +53,149 @@ const HowItWorks: React.FC = () => {
 
         {/* Bento grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-          {/* — Main card — */}
-          <div className="md:col-span-2 bg-white/[0.07] border border-white/10 rounded-3xl p-7 sm:p-10 relative overflow-hidden group hover:border-white/20 transition-colors">
+          {/* ═══ MAIN: Website pozivnica hero ═══ */}
+          <div className="md:col-span-2 bg-gradient-to-br from-[#AE343F]/20 to-[#8B2833]/30 border border-[#AE343F]/40 rounded-3xl p-7 sm:p-10 relative overflow-hidden group hover:border-[#AE343F]/60 transition-colors">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#AE343F] mb-4">
-              Audio Guest Book
+              Digitalna pozivnica
             </p>
-            <h3 className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#F5F4DC] mb-4 leading-tight">
-              Vintage telefon koji čuva glasove
-              <br />
-              <span className="text-[#F5F4DC]/70 font-light">
-                Vaših najdražih — zauvek
-              </span>
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#F5F4DC] mb-2 leading-tight">
+              Website pozivnica za venčanje
             </h3>
-            <p className="text-[#F5F4DC]/70 text-sm sm:text-base leading-relaxed max-w-lg">
-              Gosti podižu slušalicu i ostavljaju glasovnu poruku. Vi dobijate
-              digitalni album svih snimaka — glasovi kuma, roditelja,
-              prijatelja, tačno onakvi kakvi su bili na Vaš najlepši dan.
+            <p className="text-[#F5F4DC]/50 font-serif text-lg sm:text-xl mb-5">
+              + besplatna PDF pozivnica za štampu
             </p>
-            <div className="mt-6 flex flex-wrap gap-2">
+            <p className="text-[#F5F4DC]/60 text-sm sm:text-base leading-relaxed max-w-lg mb-6">
+              Personalizovana web stranica sa RSVP formom, odbrojavanjem,
+              programom dana i interaktivnom mapom. Gosti potvrde dolazak
+              jednim klikom — bez poziva, nikad lakše.
+            </p>
+
+            {/* Feature pills */}
+            <div className="grid grid-cols-2 gap-2 max-w-md">
               {[
-                "Essential paket",
-                "Full Service — Novi Sad",
-                "Dostava širom Srbije",
-              ].map((tag) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-[#F5F4DC]/70 font-medium"
+                { icon: <Globe size={13} />, label: "6 dizajnerskih tema" },
+                { icon: <FileDown size={13} />, label: "PDF za štampu — besplatno" },
+                { icon: <Check size={13} />, label: "RSVP potvrda dolaska" },
+                { icon: <Check size={13} />, label: "Latinica i ćirilica" },
+              ].map((f) => (
+                <div
+                  key={f.label}
+                  className="flex items-center gap-2 text-xs text-[#F5F4DC]/60"
                 >
-                  {tag}
-                </span>
+                  <span className="text-[#AE343F]">{f.icon}</span>
+                  {f.label}
+                </div>
               ))}
             </div>
           </div>
 
-          {/* — Award card — */}
+          {/* ═══ Price card ═══ */}
           <div className="bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-3xl p-7 sm:p-8 flex flex-col justify-between hover:border-[#d4af37]/40 transition-colors">
-            {/* Desktop: icon alone at top */}
-            <Award size={28} className="text-[#d4af37] hidden sm:block" />
             <div>
-              {/* Mobile: icon + label in one row */}
-              <div className="flex items-center gap-2 mb-3 sm:hidden">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <Award size={20} className="text-[#d4af37] shrink-0" />
                 <p className="text-[#d4af37] text-[10px] font-black uppercase tracking-[0.25em]">
                   Najpovoljniji u Srbiji
                 </p>
               </div>
-              {/* Desktop: label below icon */}
-              <p className="text-[#d4af37] text-[10px] font-black uppercase tracking-[0.25em] mb-3 hidden sm:block">
-                Najpovoljniji u Srbiji
+              <p className="text-[#F5F4DC] font-serif text-3xl sm:text-4xl font-bold leading-none mb-1">
+                od 5.000 din
               </p>
-              <p className="text-[#F5F4DC] font-serif text-4xl font-bold leading-none mb-3">
-                Već od
-                <span className="hidden sm:inline">
-                  <br />
-                </span>
-                <span className="sm:hidden"> </span>
-                {formatPrice(pricing.packages.essential.price)}
+              <p className="text-[#F5F4DC]/40 text-xs mb-4">
+                ili kompletni paket 8.000 din
               </p>
-              <div className="space-y-1.5 mt-4">
+              <div className="space-y-1.5">
                 {[
-                  "Troškovi povratka uređaja uključeni u cenu",
+                  "Besplatna PDF pozivnica uključena",
                   "Fiksne cene — bez skrivenih troškova",
+                  "Popust za kompletni paket",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <Check size={12} className="text-[#d4af37] shrink-0" />
-                    <span className="text-[#F5F4DC]/70 text-xs">{item}</span>
+                    <span className="text-[#F5F4DC]/60 text-xs">{item}</span>
                   </div>
                 ))}
               </div>
             </div>
+            <Link
+              href="/cene"
+              className="mt-6 w-full py-3 bg-[#d4af37]/20 border border-[#d4af37]/30 text-[#d4af37] text-sm font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 hover:bg-[#d4af37]/30 transition-all"
+            >
+              Pogledajte cene
+              <ArrowRight size={14} />
+            </Link>
           </div>
 
-          {/* — How it works compact — */}
+          {/* ═══ Add-ons: Raspored + Audio ═══ */}
+          <div className="bg-white/[0.07] border border-white/10 rounded-3xl p-7 sm:p-8 hover:border-white/20 transition-colors">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#AE343F] mb-5">
+              Dodaci uz pozivnicu
+            </p>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
+                  <FileDown size={14} className="text-[#AE343F]" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[#F5F4DC] text-sm font-semibold">
+                      Pozivnica za štampu
+                    </p>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-green-400 bg-green-400/10 px-2.5 py-0.5 rounded-full">
+                      Besplatno
+                    </span>
+                  </div>
+                  <p className="text-[#F5F4DC]/40 text-xs mt-0.5">
+                    Elegantna PDF pozivnica u A5 formatu sa QR kodom za potvrdu dolaska
+                  </p>
+                </div>
+              </div>
+
+              <div className="h-px bg-white/5" />
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
+                  <LayoutDashboard size={14} className="text-[#AE343F]" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[#F5F4DC] text-sm font-semibold">
+                      Raspored sedenja
+                    </p>
+                    <span className="text-[#F5F4DC]/70 text-sm font-bold tabular-nums">
+                      2.000 din
+                    </span>
+                  </div>
+                  <p className="text-[#F5F4DC]/40 text-xs mt-0.5">
+                    Drag-and-drop editor za stolove, gosti pronalaze svoje mesto putem linka
+                  </p>
+                </div>
+              </div>
+
+              <div className="h-px bg-white/5" />
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
+                  <Mic size={14} className="text-[#AE343F]" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[#F5F4DC] text-sm font-semibold">
+                      Digitalna audio knjiga
+                    </p>
+                    <span className="text-[#F5F4DC]/70 text-sm font-bold tabular-nums">
+                      3.000 din
+                    </span>
+                  </div>
+                  <p className="text-[#F5F4DC]/40 text-xs mt-0.5">
+                    Gosti snimaju poruke skeniranjem QR koda — bez aplikacije
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ═══ How it works ═══ */}
           <div className="bg-white/[0.07] border border-white/10 rounded-3xl p-7 sm:p-8 hover:border-white/20 transition-colors">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#AE343F] mb-6">
               Kako funkcioniše
@@ -124,18 +204,23 @@ const HowItWorks: React.FC = () => {
               {[
                 {
                   n: "01",
-                  t: "Rezervišete",
-                  d: "Izaberete paket i datum u kontakt formi na dnu stranice",
+                  t: "Popunite upitnik",
+                  d: "Imena, datum, lokacija, tema — sve u 6 koraka",
                 },
                 {
                   n: "02",
-                  t: "Telefon stiže",
-                  d: "Kurirskom službom ili lično ukoliko ste u NS",
+                  t: "Mi kreiramo pozivnicu",
+                  d: "Vaša personalizovana stranica gotova za 24h",
                 },
                 {
                   n: "03",
-                  t: "Dobijate blago",
-                  d: "Svi snimci najčešće za dva dana spremni za preuzimanje",
+                  t: "Podelite sa gostima",
+                  d: "Pošaljite link ili QR kod — gosti potvrde dolazak online",
+                },
+                {
+                  n: "04",
+                  t: "Organizujte raspored sedenja",
+                  d: "Jednostavno rasporedite goste, a oni na dan venčanja brzo pronalaze gde sede",
                 },
               ].map((s) => (
                 <div key={s.n} className="flex items-start gap-4">
@@ -153,87 +238,65 @@ const HowItWorks: React.FC = () => {
             </div>
           </div>
 
-          {/* — Add-ons card — */}
-          <div className="bg-white/[0.07] border border-white/10 rounded-3xl p-7 sm:p-8 hover:border-white/20 transition-colors">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#AE343F] mb-5">
-              Dodaci
-            </p>
-            <div className="space-y-3">
-              {[
-                {
-                  label: "USB retro kaseta",
-                  desc: "Snimci na vintage kasetnoj USB memoriji",
-                  price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}`,
-                },
-                {
-                  label: "Uspomene u boci",
-                  desc: "USB poruke elegantno spakovane u mini bočicu",
-                  price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}`,
-                },
-                {
-                  label: "MINI & MAXI govornice",
-                  desc: "Drvene govornice koje postaje centralni dekor ",
-                  price: "samo za NS",
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex justify-between items-start py-2 border-b border-white/5 last:border-0 gap-3"
-                >
-                  <div>
-                    <p className="text-[#F5F4DC]/70 text-sm">{item.label}</p>
-                    <p className="text-[#F5F4DC]/35 text-xs mt-0.5">
-                      {item.desc}
-                    </p>
-                  </div>
-                  <span className="text-[#F5F4DC] text-sm font-bold tabular-nums shrink-0">
-                    {item.price}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* — Digital invite card — */}
-          <div className="bg-gradient-to-br from-[#AE343F]/30 to-[#8B2833]/40 border border-[#AE343F]/60 rounded-3xl p-7 sm:p-8 flex flex-col justify-between hover:border-[#AE343F]/80 transition-colors group shadow-lg shadow-[#AE343F]/20">
+          {/* ═══ Retro phone promo ═══ */}
+          <div className="bg-white/[0.07] border border-white/10 rounded-3xl p-7 sm:p-8 hover:border-white/20 transition-colors flex flex-col justify-between">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#AE343F] mb-4">
-                Website pozivnica
+              <div className="flex items-center gap-2 mb-4">
+                <Phone size={16} className="text-[#d4af37]" />
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37]">
+                  Retro telefon
+                </p>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-serif text-[#F5F4DC] mb-3 leading-tight">
+                Vintage telefon koji čuva glasove
+                <span className="text-[#F5F4DC]/50"> — zauvek</span>
+              </h3>
+              <p className="text-[#F5F4DC]/50 text-sm leading-relaxed mb-4">
+                Gosti podižu slušalicu i ostavljaju glasovnu poruku.
+                Autentični retro doživljaj koji postaje centralni detalj
+                Vašeg venčanja.
               </p>
-              <p className="text-[#F5F4DC]/70 text-sm leading-relaxed mb-4">
-                Najpovoljnija personalizovana website pozivnica na tržištu sa
-                svim detaljima Vašeg venčanja — RSVP forma za potvrdu dolaska,
-                interaktivna mapa lokacija, odbrojavanje do velikog dana.
-              </p>
-              <div className="space-y-2 mb-6">
-                {[
-                  "6 dizajnerskih tema na izbor",
-                  "Brzo i jednostavno konfigurisanje",
-                ].map((feature) => (
-                  <div key={feature} className="flex items-center gap-2">
-                    <Check size={14} className="text-[#AE343F] shrink-0" />
-                    <span className="text-[#F5F4DC]/60 text-xs">{feature}</span>
-                  </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {["Lična dostava — Novi Sad"].map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-[#F5F4DC]/50 font-medium"
+                  >
+                    {tag}
+                  </span>
                 ))}
-              </div>
-            </div>
-            <div className="space-y-4 mt-auto">
-              <div className="flex gap-4 items-center justify-between">
-                <span className=" text-[#F5F4DC] text-xs font-bold">
-                  {formatPrice(
-                    pricing.discounts.bundleWebsitePozivnica.discountedPrice,
-                  )}{" "}
-                  uz bundle popust!
+                <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-[#F5F4DC]/50 font-medium">
+                  Audio Guest Book — {formatPrice(getAudioPrice())}
+                  {isAudioDiscountActive() && (
+                    <span className="ml-2 text-[#d4af37]">(sniženo)</span>
+                  )}
                 </span>
-                <Link
-                  href="/napravi-pozivnicu"
-                  className="w-full py-3 px-4 bg-[#AE343F] text-white text-sm font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 hover:bg-white hover:text-[#AE343F] transition-all shadow-lg shadow-[#AE343F]/40"
-                >
-                  Kreirajte Vašu pozivnicu
-                </Link>
               </div>
             </div>
+            <Link
+              href="/telefon-uspomena"
+              className="flex items-center gap-2 text-sm text-[#d4af37] font-medium hover:underline mt-auto"
+            >
+              Saznajte više <ArrowRight size={14} />
+            </Link>
           </div>
+        </div>
+
+        {/* CTA */}
+        <div className="mt-8 sm:mt-10 text-center">
+          <Link
+            href="/cene"
+            className="inline-flex items-center gap-3 px-8 py-4 rounded-full text-sm uppercase tracking-[0.15em] font-medium transition-all hover:opacity-80"
+            style={{
+              backgroundColor: "#AE343F",
+              color: "#fff",
+              boxShadow: "0 4px 20px rgba(174,52,63,0.3)",
+            }}
+          >
+            <Sparkles size={16} />
+            Izaberite šta vam treba — pogledajte sve cene
+            <ArrowRight size={16} />
+          </Link>
         </div>
       </div>
     </section>

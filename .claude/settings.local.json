@@ -3,7 +3,21 @@
     "allow": [
       "Bash(cd \"C:/Users/Aleksa/Documents/_nextjs_start/HaloUspomene\" && npx tsc --noEmit 2>&1 | head -50)",
       "Bash(# Rename blog content file\nmv \"src/data/blog/content/digitalna-pozivnica-audio-guest-book.md\" \"src/data/blog/content/website-pozivnica-audio-guest-book.md\"\n\n# Find and rename the image\nfind . -name \"digitalna-pozivnica.png\" -not -path \"*/node_modules/*\")",
-      "Bash(mv \"./public/images/gallery/digitalna-pozivnica.png\" \"./public/images/gallery/website-pozivnica.png\"\nmv \"./out/images/gallery/digitalna-pozivnica.png\" \"./out/images/gallery/website-pozivnica.png\")"
+      "Bash(mv \"./public/images/gallery/digitalna-pozivnica.png\" \"./public/images/gallery/website-pozivnica.png\"\nmv \"./out/images/gallery/digitalna-pozivnica.png\" \"./out/images/gallery/website-pozivnica.png\")",
+      "Bash(cd \"C:\\\\Users\\\\Aleksa\\\\Documents\\\\_nextjs_start\\\\HaloUspomene\" && npm install googleapis)",
+      "Bash(ls /c/Users/Aleksa/Documents/_nextjs_start/HaloUspomene/src/app/pozivnica/\\\\[slug\\\\]/potvrde/)",
+      "Bash(cd \"C:/Users/Aleksa/Documents/_nextjs_start/HaloUspomene\" && npx tsc --noEmit 2>&1)",
+      "Bash(cd \"C:/Users/Aleksa/Documents/_nextjs_start/HaloUspomene\" && sed -i 's/generateAndDownloadPDF\\(tables, attending, coupleNames\\)/generateAndDownloadPDF\\(tables, attending, coupleNames, slug\\)/' \"src/app/pozivnica/[slug]/raspored-sedenja/RasporedClient.tsx\")",
+      "Bash(grep:*)",
+      "Bash(head:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(npx next:*)",
+      "WebFetch(domain:developers.cloudflare.com)",
+      "WebSearch",
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:www.weddingwonderland.rs)",
+      "Bash(grep -oP 'city: \"\"\"\"[^\"\"\"\"]*\"\"\"\"' src/app/moje-vencanje/vendors.ts)"
     ]
   }
 }
