@@ -62,6 +62,7 @@ export default function NovaPage() {
   const [groom, setGroom] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [password, setPassword] = useState("");
+  const [isPremium, setIsPremium] = useState(false);
 
   async function handleSave() {
     setError("");
@@ -95,6 +96,14 @@ export default function NovaPage() {
         paid_for_audio: false,
         paid_for_audio_USB: "",
         paid_for_pdf: false,
+        ...(isPremium
+          ? {
+              premium: true,
+              premium_paid: true,
+              premium_created_at: new Date().toISOString(),
+              theme: "luxury_gold",
+            }
+          : {}),
       };
       if (eventDate) {
         body.event_date = `${eventDate}T16:00:00`;
@@ -245,8 +254,21 @@ export default function NovaPage() {
                 />
               </div>
 
+              {/* Premium toggle */}
+              <label className="flex items-center gap-3 cursor-pointer pt-2 border-t border-white/5">
+                <input
+                  type="checkbox"
+                  checked={isPremium}
+                  onChange={(e) => setIsPremium(e.target.checked)}
+                  className="w-4 h-4 rounded border-white/30 accent-[#d4af37]"
+                />
+                <span className="text-sm text-[#d4af37] font-medium">
+                  Premium AI (plaćeno unapred)
+                </span>
+              </label>
+
               <div className="text-xs text-white/25 space-y-1 pt-2 border-t border-white/5">
-                <p>draft: true · sve paid_for opcije: false</p>
+                <p>draft: true · sve paid_for opcije: false{isPremium ? " · premium: true · premium_paid: true" : ""}</p>
                 <p>Par može koristiti /moje-vencanje odmah</p>
               </div>
             </div>

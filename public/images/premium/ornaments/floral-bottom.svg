@@ -1,0 +1,25 @@
+<svg viewBox="0 0 400 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bottom floral arrangement growing upward -->
+  <!-- Left cluster -->
+  <path d="M30 140 Q25 100 40 80 Q55 60 50 40" stroke="#8FAE7E" stroke-width="1.5" opacity="0.35"/>
+  <path d="M50 140 Q55 110 45 90" stroke="#8FAE7E" stroke-width="1" opacity="0.25"/>
+  <ellipse cx="42" cy="75" rx="14" ry="8" fill="#8FAE7E" opacity="0.12" transform="rotate(-25 42 75)"/>
+  <ellipse cx="35" cy="55" rx="11" ry="6" fill="#8FAE7E" opacity="0.1" transform="rotate(15 35 55)"/>
+  <ellipse cx="55" cy="85" rx="10" ry="6" fill="#8FAE7E" opacity="0.1" transform="rotate(-10 55 85)"/>
+  <circle cx="48" cy="42" r="5" fill="#d4af37" opacity="0.15"/>
+  <circle cx="38" cy="52" r="3.5" fill="#C8A07E" opacity="0.12"/>
+  <!-- Center grass/leaves -->
+  <path d="M180 140 Q175 100 185 70" stroke="#8FAE7E" stroke-width="0.8" opacity="0.2"/>
+  <path d="M200 140 Q205 105 195 80" stroke="#8FAE7E" stroke-width="0.8" opacity="0.2"/>
+  <path d="M220 140 Q225 100 215 75" stroke="#8FAE7E" stroke-width="0.8" opacity="0.2"/>
+  <ellipse cx="185" cy="72" rx="8" ry="5" fill="#8FAE7E" opacity="0.08" transform="rotate(-20 185 72)"/>
+  <ellipse cx="215" cy="78" rx="8" ry="5" fill="#8FAE7E" opacity="0.08" transform="rotate(20 215 78)"/>
+  <!-- Right cluster -->
+  <path d="M370 140 Q375 100 360 80 Q345 60 350 40" stroke="#8FAE7E" stroke-width="1.5" opacity="0.35"/>
+  <path d="M350 140 Q345 110 355 90" stroke="#8FAE7E" stroke-width="1" opacity="0.25"/>
+  <ellipse cx="358" cy="75" rx="14" ry="8" fill="#8FAE7E" opacity="0.12" transform="rotate(25 358 75)"/>
+  <ellipse cx="365" cy="55" rx="11" ry="6" fill="#8FAE7E" opacity="0.1" transform="rotate(-15 365 55)"/>
+  <ellipse cx="345" cy="85" rx="10" ry="6" fill="#8FAE7E" opacity="0.1" transform="rotate(10 345 85)"/>
+  <circle cx="352" cy="42" r="5" fill="#d4af37" opacity="0.15"/>
+  <circle cx="362" cy="52" r="3.5" fill="#C8A07E" opacity="0.12"/>
+</svg>

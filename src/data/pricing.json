@@ -52,5 +52,11 @@
       "price": 600,
       "note": "Prilagodite primarnu boju pozivnice po vašem ukusu."
     }
-  ]
+  ],
+  "premium": {
+    "label": "Premium AI Pozivnica",
+    "price": 15000,
+    "promoPrice": 12000,
+    "promoActive": true
+  }
 }

@@ -1,0 +1,16 @@
+<svg viewBox="0 0 500 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer ornate arch -->
+  <path d="M50 650 L50 200 Q50 50 250 50 Q450 50 450 200 L450 650" stroke="#d4af37" stroke-width="2"/>
+  <path d="M70 650 L70 210 Q70 70 250 70 Q430 70 430 210 L430 650" stroke="#d4af37" stroke-width="1"/>
+  <!-- Top ornament -->
+  <circle cx="250" cy="50" r="8" stroke="#d4af37" stroke-width="1.5"/>
+  <circle cx="250" cy="50" r="3" fill="#d4af37"/>
+  <!-- Side flourishes -->
+  <path d="M50 300 Q20 300 20 270 Q20 240 50 240" stroke="#d4af37" stroke-width="1" fill="none"/>
+  <path d="M450 300 Q480 300 480 270 Q480 240 450 240" stroke="#d4af37" stroke-width="1" fill="none"/>
+  <path d="M50 400 Q20 400 20 370 Q20 340 50 340" stroke="#d4af37" stroke-width="1" fill="none"/>
+  <path d="M450 400 Q480 400 480 370 Q480 340 450 340" stroke="#d4af37" stroke-width="1" fill="none"/>
+  <!-- Bottom ornamental line -->
+  <path d="M100 630 Q250 660 400 630" stroke="#d4af37" stroke-width="1" fill="none"/>
+  <path d="M120 645 Q250 670 380 645" stroke="#d4af37" stroke-width="0.5" fill="none"/>
+</svg>

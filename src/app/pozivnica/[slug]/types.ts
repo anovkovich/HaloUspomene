@@ -14,6 +14,23 @@ export type ScriptFontType =
   | "caveat"
   | "bad-script";
 
+// Premium AI types
+export type PremiumThemeType = "watercolor" | "disney_pixar" | "line_art";
+
+export interface EnvelopeItem {
+  type:
+    | "clover"
+    | "dried_flower"
+    | "champagne"
+    | "boutonniere"
+    | "bouquet"
+    | "rings"
+    | "tulips"
+    | "roses"
+    | "gold_bow";
+  zone: number; // 0-8 predefined snap position
+}
+
 export interface Location {
   name: string;
   time?: string;
@@ -63,6 +80,15 @@ export interface WeddingData {
   receipt_valid?: boolean; // Receipt link is active (set false after payment)
   receipt_created?: string; // ISO date when receipt was generated
   custom_discount?: number; // Custom discount in RSD on website pozivnica
+  // Premium AI fields
+  premium?: boolean;
+  premium_theme?: PremiumThemeType;
+  ai_couple_image_url?: string;
+  envelope_items?: EnvelopeItem[];
+  envelope_style?: "classic" | "wing";
+  envelope_rose_petals?: boolean;
+  premium_paid?: boolean;
+  premium_created_at?: string; // ISO timestamp for 2-min preview lock
 }
 
 // Comprehensive theme configuration

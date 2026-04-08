@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <rect x="12" y="15" width="56" height="50" rx="4" fill="#FFFDF5" stroke="#d4af37" stroke-width="1.5"/>
+  <text x="40" y="35" text-anchor="middle" font-family="serif" font-size="7" fill="#d4af37" font-weight="bold">SAVE</text>
+  <text x="40" y="44" text-anchor="middle" font-family="serif" font-size="6" fill="#d4af37">THE DATE</text>
+  <line x1="25" y1="50" x2="55" y2="50" stroke="#d4af37" stroke-width="0.5" opacity="0.5"/>
+  <rect x="32" y="54" width="16" height="6" rx="1" fill="#d4af37" opacity="0.15"/>
+</svg>

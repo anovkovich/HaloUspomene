@@ -1,0 +1,25 @@
+<svg viewBox="0 0 400 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top floral garland / hanging leaves -->
+  <!-- Left vine -->
+  <path d="M0 0 Q20 30 40 20 Q60 10 80 25 Q100 40 90 60" stroke="#8FAE7E" stroke-width="1.2" opacity="0.4"/>
+  <ellipse cx="40" cy="18" rx="12" ry="7" fill="#8FAE7E" opacity="0.15" transform="rotate(-20 40 18)"/>
+  <ellipse cx="70" cy="15" rx="10" ry="6" fill="#8FAE7E" opacity="0.12" transform="rotate(15 70 15)"/>
+  <ellipse cx="25" cy="28" rx="8" ry="5" fill="#8FAE7E" opacity="0.1" transform="rotate(-30 25 28)"/>
+  <!-- Center drooping vine -->
+  <path d="M160 0 Q170 40 190 50 Q210 60 200 80 Q190 100 200 110" stroke="#8FAE7E" stroke-width="1" opacity="0.3"/>
+  <ellipse cx="185" cy="45" rx="10" ry="6" fill="#8FAE7E" opacity="0.12" transform="rotate(-15 185 45)"/>
+  <ellipse cx="205" cy="65" rx="9" ry="5" fill="#8FAE7E" opacity="0.1" transform="rotate(20 205 65)"/>
+  <!-- Small flowers -->
+  <circle cx="190" cy="50" r="3" fill="#d4af37" opacity="0.2"/>
+  <circle cx="200" cy="78" r="2.5" fill="#d4af37" opacity="0.15"/>
+  <!-- Right vine -->
+  <path d="M400 0 Q380 30 360 20 Q340 10 320 25 Q300 40 310 60" stroke="#8FAE7E" stroke-width="1.2" opacity="0.4"/>
+  <ellipse cx="360" cy="18" rx="12" ry="7" fill="#8FAE7E" opacity="0.15" transform="rotate(20 360 18)"/>
+  <ellipse cx="330" cy="15" rx="10" ry="6" fill="#8FAE7E" opacity="0.12" transform="rotate(-15 330 15)"/>
+  <ellipse cx="375" cy="28" rx="8" ry="5" fill="#8FAE7E" opacity="0.1" transform="rotate(30 375 28)"/>
+  <!-- Center top flower cluster -->
+  <path d="M200 0 Q195 15 200 25" stroke="#8FAE7E" stroke-width="0.8" opacity="0.3"/>
+  <circle cx="200" cy="8" r="4" fill="#d4af37" opacity="0.15"/>
+  <circle cx="195" cy="12" r="3" fill="#C8A07E" opacity="0.12"/>
+  <circle cx="205" cy="11" r="3" fill="#C8A07E" opacity="0.12"/>
+</svg>

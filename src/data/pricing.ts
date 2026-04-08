@@ -18,3 +18,15 @@ export function isAudioDiscountActive(): boolean {
   const { discountPrice, discountActive } = pricing.packages.essential as any;
   return !!(discountActive && discountPrice);
 }
+
+/** Returns effective premium price: promoPrice when active, otherwise regular price */
+export function getPremiumPrice(): number {
+  const { price, promoPrice, promoActive } = pricing.premium as any;
+  return promoActive && promoPrice ? promoPrice : price;
+}
+
+/** True if a premium promo is currently active */
+export function isPremiumPromoActive(): boolean {
+  const { promoPrice, promoActive } = pricing.premium as any;
+  return !!(promoActive && promoPrice);
+}

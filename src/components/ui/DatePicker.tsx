@@ -11,6 +11,7 @@ interface DatePickerProps {
   placeholder?: string;
   variant?: "dark" | "light";
   showQuickActions?: boolean;
+  accentColor?: string;
 }
 
 const MONTHS = [
@@ -27,6 +28,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   placeholder = "Izaberite datum",
   variant = "dark",
   showQuickActions = true,
+  accentColor,
 }) => {
   const isLight = variant === "light";
   const [isOpen, setIsOpen] = useState(false);
@@ -45,28 +47,29 @@ const DatePicker: React.FC<DatePickerProps> = ({
   minDateObj.setHours(0, 0, 0, 0);
 
   // Colors based on variant
+  const ac = accentColor || "#AE343F";
   const colors = isLight
     ? {
-        accent: "#AE343F",
-        accentHover: "#8B2833",
+        accent: ac,
+        accentHover: accentColor ? accentColor : "#8B2833",
         text: "#1a1a1a",
         textMuted: "#78716c",
         textPlaceholder: "#a8a29e",
         bg: "#faf9f6",
         bgDropdown: "#ffffff",
         border: "#e7e5e4",
-        borderFocus: "#AE343F",
+        borderFocus: ac,
       }
     : {
-        accent: "#AE343F",
-        accentHover: "#8A2A32",
+        accent: ac,
+        accentHover: accentColor ? accentColor : "#8A2A32",
         text: "#F5F4DC",
         textMuted: "rgba(255,255,255,0.6)",
         textPlaceholder: "rgba(255,255,255,0.2)",
         bg: "transparent",
         bgDropdown: "#1a1a1a",
         border: "rgba(255,255,255,0.1)",
-        borderFocus: "#AE343F",
+        borderFocus: ac,
       };
 
   const formatDisplayDate = (dateStr: string) => {
@@ -207,9 +210,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
         onClick={() => (isOpen ? setIsOpen(false) : handleOpen())}
         className={`w-full flex items-center justify-between py-3 px-4 text-left focus:outline-none transition-all group ${
           isLight
-            ? "bg-[#faf9f6] border border-stone-200 rounded-xl focus:border-[#AE343F] focus:ring-2 focus:ring-[#AE343F]/10"
-            : "bg-transparent border-b border-white/10 focus:border-[#AE343F]"
-        } ${isOpen && isLight ? "border-[#AE343F] ring-2 ring-[#AE343F]/10" : ""}`}
+            ? "bg-[#faf9f6] border border-stone-200 rounded-xl"
+            : "bg-transparent border-b border-white/10"
+        }`}
+        style={{
+          ...(isOpen || undefined
+            ? { borderColor: colors.accent, boxShadow: isLight ? `0 0 0 2px ${colors.accent}1a` : undefined }
+            : {}),
+        }}
       >
         <span style={{ color: value ? colors.text : colors.textPlaceholder }}>
           {value ? formatDisplayDate(value) : placeholder}

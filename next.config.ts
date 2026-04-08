@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
         source: "/pozivnica/(.*)",
         headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }],
       },
+      // Premium invitation pages — revalidate each visit
+      {
+        source: "/premium-pozivnica/(.*)",
+        headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }],
+      },
       // Birthday invitation pages — revalidate each visit (content changes: RSVP)
       {
         source: "/deciji-rodjendan/(.*)",

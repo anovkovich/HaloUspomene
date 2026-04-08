@@ -14,9 +14,15 @@ import {
   X,
   Plus,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
-import { pricing, formatPrice } from "@/data/pricing";
+import {
+  pricing,
+  formatPrice,
+  getPremiumPrice,
+  isPremiumPromoActive,
+} from "@/data/pricing";
 import {
   THEME_CONFIGS,
   SCRIPT_FONT_CONFIGS,
@@ -25,7 +31,23 @@ import {
   buildCustomColorOverrides,
   blendHex,
 } from "@/app/pozivnica/[slug]/constants";
-import type { ThemeType, ScriptFontType } from "@/app/pozivnica/[slug]/types";
+import type {
+  ThemeType,
+  ScriptFontType,
+  PremiumThemeType,
+  EnvelopeItem,
+} from "@/app/pozivnica/[slug]/types";
+import { getThemeClasses } from "./premium-theme";
+import dynamic from "next/dynamic";
+
+const PremiumStepAIPhoto = dynamic(
+  () => import("./steps/PremiumStepAIPhoto"),
+  { ssr: false },
+);
+const PremiumStepEnvelopeLab = dynamic(
+  () => import("./steps/PremiumStepEnvelopeLab"),
+  { ssr: false },
+);
 
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 
@@ -110,6 +132,16 @@ interface FormData {
   groom: string;
   full_display: string;
   useCyrillic: boolean;
+  // Premium AI
+  premium: boolean;
+  premium_theme: PremiumThemeType | "";
+  ai_couple_image_url: string;
+  premium_city: string;
+  premium_car: string;
+  couple_description: string;
+  envelope_items: EnvelopeItem[];
+  envelope_style: "classic" | "wing";
+  envelope_rose_petals: boolean;
   // Extras
   extra_raspored: boolean;
   extra_audio: boolean;
@@ -138,22 +170,60 @@ interface FormData {
   wishes: string;
 }
 
-const TOTAL_STEPS = 6;
+// Step keys for validation — independent of step number
+type StepKey =
+  | "couple_info"
+  | "ai_photo"
+  | "envelope_lab"
+  | "date_rsvp"
+  | "design"
+  | "locations"
+  | "personal"
+  | "settings";
 
-const STEP_TITLES = [
-  "Informacije o paru",
-  "Datum i rok za prijavu",
-  "Dizajn",
-  "Lokacije",
-  "Lični detalji",
-  "Podešavanja",
+const CLASSIC_STEPS: { key: StepKey; title: string }[] = [
+  { key: "couple_info", title: "Informacije o paru" },
+  { key: "date_rsvp", title: "Datum i rok za prijavu" },
+  { key: "design", title: "Dizajn" },
+  { key: "locations", title: "Lokacije" },
+  { key: "personal", title: "Lični detalji" },
+  { key: "settings", title: "Podešavanja" },
 ];
+
+const PREMIUM_STEPS: { key: StepKey; title: string }[] = [
+  { key: "couple_info", title: "Informacije o paru" },
+  { key: "ai_photo", title: "Stil pozivnice" },
+  { key: "envelope_lab", title: "Envelope Lab" },
+  { key: "date_rsvp", title: "Datum i rok za prijavu" },
+  { key: "locations", title: "Lokacije" },
+  { key: "personal", title: "Lični detalji" },
+  { key: "settings", title: "Podešavanja" },
+];
+
+function getSteps(isPremium: boolean) {
+  if (!isPremium) return CLASSIC_STEPS;
+  return PREMIUM_STEPS;
+}
+
+function getStepKey(step: number, isPremium: boolean): StepKey {
+  const steps = getSteps(isPremium);
+  return steps[step - 1]?.key ?? "couple_info";
+}
 
 const defaultFormData: FormData = {
   bride: "",
   groom: "",
   full_display: "",
   useCyrillic: false,
+  premium: false,
+  premium_theme: "",
+  ai_couple_image_url: "",
+  premium_city: "",
+  premium_car: "",
+  couple_description: "",
+  envelope_items: [],
+  envelope_style: "classic",
+  envelope_rose_petals: false,
   extra_raspored: false,
   extra_audio: false,
   extra_usb_kaseta: false,
@@ -184,7 +254,7 @@ const defaultFormData: FormData = {
 // ─── Shared UI helpers ────────────────────────────────────────────────────────
 
 const inputCls =
-  "w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300";
+  "w-full border-b border-stone-200 focus:border-[var(--accent,#AE343F)] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300";
 
 const labelCls =
   "block text-xs font-bold uppercase tracking-[0.18em] text-stone-400 mb-1.5";
@@ -243,7 +313,7 @@ function Toggle({
     <label className="flex items-center gap-2 sm:gap-3 cursor-pointer">
       <div
         onClick={() => onChange(!checked)}
-        className={`relative w-10 h-6 sm:w-11 sm:h-6 rounded-full transition-colors duration-200 flex-shrink-0 flex items-center ${checked ? "bg-[#AE343F]" : "bg-stone-200"}`}
+        className={`relative w-10 h-6 sm:w-11 sm:h-6 rounded-full transition-colors duration-200 flex-shrink-0 flex items-center ${checked ? "bg-[var(--accent,#AE343F)]" : "bg-stone-200"}`}
       >
         <div
           className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? "sm:translate-x-6 translate-x-5" : "translate-x-1"}`}
@@ -301,7 +371,7 @@ function ExtrasAccordion({
             Dodatne usluge (opciono)
           </span>
           {count > 0 && (
-            <span className="w-4 h-4 rounded-full bg-[#AE343F] text-white text-[9px] font-bold flex items-center justify-center">
+            <span className="w-4 h-4 rounded-full bg-[var(--accent,#AE343F)] text-white text-[9px] font-bold flex items-center justify-center">
               {count}
             </span>
           )}
@@ -337,7 +407,7 @@ function ExtrasAccordion({
                 type="checkbox"
                 checked={formData[key]}
                 onChange={(e) => updateField(key, e.target.checked)}
-                className="w-3.5 h-3.5 accent-[#AE343F] cursor-pointer shrink-0 opacity-60"
+                className="w-3.5 h-3.5 accent-[var(--accent,#AE343F)] cursor-pointer shrink-0 opacity-60"
               />
               <span className="text-xs text-stone-400 group-hover:text-stone-500 transition-colors">
                 {label}
@@ -376,7 +446,7 @@ function ExtrasAccordion({
                     updateField(key, e.target.checked);
                     if (e.target.checked) updateField(other, false);
                   }}
-                  className="w-3.5 h-3.5 accent-[#AE343F] cursor-pointer shrink-0 opacity-60"
+                  className="w-3.5 h-3.5 accent-[var(--accent,#AE343F)] cursor-pointer shrink-0 opacity-60"
                 />
                 <span
                   className={`text-xs transition-colors ${!formData.extra_audio ? "text-stone-300" : "text-stone-400 group-hover:text-stone-500"}`}
@@ -422,7 +492,7 @@ function ExtrasAccordion({
                   <span className="text-xs text-stone-500 font-medium">
                     Ukupno
                   </span>
-                  <span className="text-xs text-[#AE343F] font-bold">
+                  <span className="text-xs text-[var(--accent,#AE343F)] font-bold">
                     {isFullBundle && (
                       <span className="line-through text-stone-300 font-normal mr-1.5">
                         {formatPrice(sum)}
@@ -435,7 +505,7 @@ function ExtrasAccordion({
             );
           })()}
           <p className="text-[10px] text-stone-300 mt-2">
-            <a href="/cene" className="text-[#AE343F]/60 hover:underline">
+            <a href="/cene" className="text-[var(--accent,#AE343F)]/60 hover:underline">
               Pogledajte detaljne cene
             </a>
           </p>
@@ -584,6 +654,7 @@ function InvitationPreview({
 
 // ─── Step 1 ───────────────────────────────────────────────────────────────────
 
+
 function Step1({
   formData,
   updateField,
@@ -591,19 +662,41 @@ function Step1({
   formData: FormData;
   updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
 }) {
+  const tc = getThemeClasses(formData.premium);
+
   return (
     <div>
       {/* Pricing section */}
-      <div className="mb-3 p-5 bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl">
-        <p className="text-2xl font-bold align-end text-[#AE343F]">
-          Cena pozivnice je od {formatPrice(pricing.pozivnica.website.price)}
-        </p>
-        <p className="font-semibold text-sm text-[#8B2833] mt-2">
-          <small>
-            Kompletni paket sa rasporedom sedenja i audio knjigom:{" "}
-            {formatPrice(pricing.pozivnica.bundlePrice)}
-          </small>
-        </p>
+      <div className={`mb-3 p-5 ${tc.pricingBox}`}>
+        {formData.premium ? (
+          <>
+            <div className="flex items-baseline gap-3">
+              <p className={`text-2xl font-bold ${tc.priceText}`}>
+                {formatPrice(getPremiumPrice())}
+              </p>
+              {isPremiumPromoActive() && (
+                <span className={`text-sm line-through opacity-50 ${tc.priceText}`}>
+                  {formatPrice((pricing.premium as any).price)}
+                </span>
+              )}
+            </div>
+            <p className={`text-xs mt-1.5 ${tc.priceSubtext}`}>
+              Luksuzne pozivnice sa animacijama, jedinstvene i personalizovane, sa AI generisanim ilustracijama na osnovu Vašeg opisa mladenaca i modernim kovertama na ekranu dobrodošlice.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className={`text-2xl font-bold ${tc.priceText}`}>
+              Cena pozivnice je od {formatPrice(pricing.pozivnica.website.price)}
+            </p>
+            <p className={`font-semibold text-sm mt-2 ${tc.priceSubtext}`}>
+              <small>
+                Kompletni paket sa rasporedom sedenja i audio knjigom:{" "}
+                {formatPrice(pricing.pozivnica.bundlePrice)}
+              </small>
+            </p>
+          </>
+        )}
       </div>
 
       {/* Live preview section */}
@@ -611,31 +704,27 @@ function Step1({
         href="/pozivnica/ana-dejan"
         target="_blank"
         rel="noopener noreferrer"
-        className="mb-6 inline-flex justify-between w-full gap-2 px-4 py-2.5 bg-[#AE343F] text-white rounded-lg hover:bg-[#932d35] transition-colors text-sm font-medium"
+        className={`mb-6 flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg transition-colors text-xs sm:text-sm font-medium text-center ${
+          formData.premium
+            ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white hover:from-[#c5a028] hover:to-[#b89520]"
+            : "bg-[var(--accent,#AE343F)] text-white hover:bg-[var(--accent-dark,#932d35)]"
+        }`}
       >
-        <span>🎁 Pogledajte live primer pozivnice:</span>
-        <span className="inline-flex items-center gap-2">
-          Otvori u novom tabu
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-            />
-          </svg>
-        </span>
+        <span>Pogledajte live primer pozivnice</span>
+        <svg
+          className="w-3.5 h-3.5 shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+          />
+        </svg>
       </a>
-
-      <StepHeading
-        title="Informacije o paru"
-        desc="Unesite ime i prezime mladenaca."
-      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
         <Field label="Ime mlade">
@@ -670,11 +759,16 @@ function Step1({
             <button
               key={label}
               type="button"
+              disabled={formData.premium && val === true}
               onClick={() => updateField("useCyrillic", val)}
               className={`px-5 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                formData.useCyrillic === val
-                  ? "bg-[#AE343F] border-[#AE343F] text-white"
-                  : "border-stone-200 text-stone-500 hover:border-stone-300"
+                formData.premium && val === true
+                  ? "border-stone-100 text-stone-300 cursor-not-allowed opacity-50"
+                  : formData.useCyrillic === val
+                    ? formData.premium
+                      ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] border-[#d4af37] text-white"
+                      : "bg-[var(--accent,#AE343F)] border-[var(--accent,#AE343F)] text-white"
+                    : "border-stone-200 text-stone-500 hover:border-stone-300"
               }`}
             >
               {label}
@@ -689,8 +783,31 @@ function Step1({
         )}
       </div>
 
-      {/* Extras accordion */}
-      <ExtrasAccordion formData={formData} updateField={updateField} />
+      {/* Extras accordion or premium included note */}
+      {formData.premium ? (
+        <div className="mt-8 pt-5 border-t border-[#d4af37]/15">
+          <button
+            type="button"
+            className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#d4af37] cursor-help inline-flex items-center gap-1.5 relative"
+            onClick={(e) => {
+              const tip = e.currentTarget.querySelector("[data-tip]");
+              if (tip) tip.classList.toggle("hidden");
+            }}
+          >
+            Sve dodatne usluge su uključene uz Premium pozivnicu!
+            <HelpCircle size={12} className="opacity-60" />
+            <span
+              data-tip
+              className="hidden absolute bottom-full left-0 mb-2 p-3 bg-white rounded-xl border border-[#d4af37]/20 shadow-lg text-xs text-[#8B7355] text-left normal-case tracking-normal whitespace-normal w-[250px] z-50 pointer-events-none"
+            >
+              Raspored sedenja, audio knjiga utisaka, prilagođena boja teme i
+              svi dodaci su uključeni u Premium AI paket.
+            </span>
+          </button>
+        </div>
+      ) : (
+        <ExtrasAccordion formData={formData} updateField={updateField} />
+      )}
     </div>
   );
 }
@@ -743,7 +860,7 @@ function TimeInput({
   };
 
   return (
-    <div className="flex items-center justify-center border-b border-stone-200 focus-within:border-[#AE343F] transition-colors py-2.5 px-1">
+    <div className="flex items-center justify-center border-b border-stone-200 focus-within:border-[var(--accent,#AE343F)] transition-colors py-2.5 px-1">
       <input
         ref={hrRef}
         type="text"
@@ -780,7 +897,7 @@ function TimePicker({
   const [h, m] = value.split(":") ?? ["18", "00"];
 
   const selectCls =
-    "bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-stone-800 text-base outline-none focus:border-[#AE343F] transition-colors cursor-pointer appearance-none text-center font-medium";
+    "bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-stone-800 text-base outline-none focus:border-[var(--accent,#AE343F)] transition-colors cursor-pointer appearance-none text-center font-medium";
 
   return (
     <div className="flex items-center gap-2">
@@ -854,7 +971,7 @@ function PhoneTagInput({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 border-b border-stone-200 focus-within:border-[#AE343F] transition-colors py-1">
+    <div className="flex flex-wrap items-center gap-1.5 border-b border-stone-200 focus-within:border-[var(--accent,#AE343F)] transition-colors py-1">
       {tags.map((tag, i) => (
         <span
           key={i}
@@ -864,7 +981,7 @@ function PhoneTagInput({
           <button
             type="button"
             onClick={() => removeTag(i)}
-            className="text-stone-400 hover:text-[#AE343F] transition-colors"
+            className="text-stone-400 hover:text-[var(--accent,#AE343F)] transition-colors"
           >
             <X size={12} />
           </button>
@@ -934,6 +1051,7 @@ function Step2({
             onChange={handleWeddingDateChange}
             placeholder="Izaberite datum"
             variant="light"
+            accentColor={formData.premium ? "#d4af37" : undefined}
             showQuickActions={false}
           />
         </div>
@@ -951,6 +1069,7 @@ function Step2({
             onChange={handleDeadlineDateChange}
             placeholder="Izaberite krajnji datum"
             variant="light"
+            accentColor={formData.premium ? "#d4af37" : undefined}
             showQuickActions={false}
           />
           {formData.submit_until && (
@@ -1065,7 +1184,7 @@ function Step3({
             onChange={(e) =>
               updateField("scriptFont", e.target.value as ScriptFontType)
             }
-            className="w-full appearance-none bg-white border border-stone-200 rounded-xl px-4 py-3 pr-10 text-stone-800 text-sm font-medium outline-none focus:border-[#AE343F] focus:ring-2 focus:ring-[#AE343F]/10 transition-all cursor-pointer"
+            className="w-full appearance-none bg-white border border-stone-200 rounded-xl px-4 py-3 pr-10 text-stone-800 text-sm font-medium outline-none focus:border-[var(--accent,#AE343F)] focus:ring-2 focus:ring-[var(--accent,#AE343F)]/10 transition-all cursor-pointer"
           >
             {availableFonts.map(([key, cfg]) => (
               <option key={key} value={key}>
@@ -1107,7 +1226,7 @@ function Step3({
             }}
             className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
               formData.theme === key && !formData.custom_primary_color
-                ? "border-[#AE343F] shadow-md"
+                ? "border-[var(--accent,#AE343F)] shadow-md"
                 : "border-stone-100 hover:border-stone-200"
             }`}
           >
@@ -1118,7 +1237,7 @@ function Step3({
             <p className="text-sm font-semibold text-stone-700">{cfg.name}</p>
             <p className="text-xs text-stone-400">{cfg.symbolism}</p>
             {formData.theme === key && !formData.custom_primary_color && (
-              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
+              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[var(--accent,#AE343F)] flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-white" />
               </div>
             )}
@@ -1146,7 +1265,7 @@ function Step3({
           }}
           className={`relative p-4 rounded-2xl border-2 text-left transition-all ${
             formData.custom_primary_color
-              ? "border-[#AE343F] shadow-md"
+              ? "border-[var(--accent,#AE343F)] shadow-md"
               : "border-stone-100 hover:border-stone-200"
           }`}
         >
@@ -1177,7 +1296,7 @@ function Step3({
 
           {/* Selected indicator */}
           {formData.custom_primary_color && (
-            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
+            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[var(--accent,#AE343F)] flex items-center justify-center">
               <div className="w-2 h-2 rounded-full bg-white" />
             </div>
           )}
@@ -1315,7 +1434,7 @@ function Step3({
                     updateField("custom_background_color", tempBackgroundColor);
                     setShowColorModal(false);
                   }}
-                  className="flex-1 px-4 py-3 rounded-xl bg-[#AE343F] text-white font-semibold hover:bg-[#8B2833] transition-colors"
+                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--accent,#AE343F)] text-white font-semibold hover:bg-[var(--accent-dark,#8B2833)] transition-colors"
                 >
                   Potvrdi
                 </button>
@@ -1439,27 +1558,25 @@ function Step4({
             <div
               key={`${loc.type}-${idx}`}
               className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
-                active ? "border-[#AE343F]/30 shadow-sm" : "border-stone-100"
+                active ? "border-[var(--accent,#AE343F)]/30 shadow-sm" : "border-stone-100"
               }`}
             >
               {/* Header row */}
               <div
-                className={`flex items-center gap-4 px-5 py-4 transition-colors ${
-                  active ? "bg-[#AE343F]/5" : "bg-stone-50/60"
+                className={`flex items-center flex-wrap gap-3 sm:gap-4 px-4 sm:px-5 py-4 transition-colors ${
+                  active ? "bg-[var(--accent,#AE343F)]/5" : "bg-stone-50/60"
                 }`}
               >
                 <button
                   type="button"
-                  onClick={() =>
-                    isDuplicate ? toggleLocation(idx) : toggleLocation(idx)
-                  }
-                  className="flex items-center gap-4 flex-1 text-left"
+                  onClick={() => toggleLocation(idx)}
+                  className="flex items-center gap-3 flex-1 text-left"
                 >
                   {/* Toggle circle */}
                   <div
                     className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
                       active
-                        ? "border-[#AE343F] bg-[#AE343F]"
+                        ? "border-[var(--accent,#AE343F)] bg-[var(--accent,#AE343F)]"
                         : "border-stone-300 bg-white"
                     }`}
                   >
@@ -1468,26 +1585,12 @@ function Step4({
                     )}
                   </div>
 
-                  <span className="text-xl shrink-0">{def.emoji}</span>
-
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`font-semibold text-sm ${active ? "text-stone-800" : "text-stone-400"}`}
-                    >
-                      {homeLabel}
-                    </p>
-                    <p className="text-xs text-stone-400 truncate">
-                      {homeSubtitle}
-                    </p>
-                  </div>
+                  <p
+                    className={`font-semibold text-sm ${active ? "text-stone-800" : "text-stone-400"}`}
+                  >
+                    {homeLabel}
+                  </p>
                 </button>
-
-                {/* Time badge when filled */}
-                {active && loc.time && (
-                  <span className="text-xs font-bold text-[#AE343F] bg-[#AE343F]/10 px-2.5 py-1 rounded-full shrink-0">
-                    {loc.time}
-                  </span>
-                )}
 
                 {/* Add second home button */}
                 {loc.type === "home" &&
@@ -1500,12 +1603,12 @@ function Step4({
                         e.stopPropagation();
                         addDuplicateHome();
                       }}
-                      className="group relative flex items-center justify-center w-7 h-7 rounded-full border border-dashed border-stone-300 hover:border-[#AE343F] hover:bg-[#AE343F]/5 transition-colors shrink-0"
+                      className="group relative flex items-center justify-center w-7 h-7 rounded-full border border-dashed border-stone-300 hover:border-[var(--accent,#AE343F)] hover:bg-[var(--accent,#AE343F)]/5 transition-colors shrink-0"
                       title="Dodaj drugi polazak"
                     >
                       <Plus
                         size={14}
-                        className="text-stone-400 group-hover:text-[#AE343F] transition-colors"
+                        className="text-stone-400 group-hover:text-[var(--accent,#AE343F)] transition-colors"
                       />
                     </button>
                   )}
@@ -1570,18 +1673,22 @@ function Step4({
         })}
       </div>
 
-      {/* Hint about adding second home */}
-      {firstHomeEnabled && homeCount < 2 && (
-        <p className="text-xs text-stone-400 mt-3 text-center">
-          Imate dva polaska? Kliknite{" "}
-          <Plus size={10} className="inline -mt-0.5" /> pored &ldquo;Polazak od
-          kuće&rdquo;.
-        </p>
-      )}
+      {!formData.premium && (
+        <>
+          {/* Hint about adding second home */}
+          {firstHomeEnabled && homeCount < 2 && (
+            <p className="text-xs text-stone-400 mt-3 text-center">
+              Imate dva polaska? Kliknite{" "}
+              <Plus size={10} className="inline -mt-0.5" /> pored &ldquo;Polazak od
+              kuće&rdquo;.
+            </p>
+          )}
 
-      <p className="text-xs text-stone-300 mt-4 text-center">
-        Google Maps linkove dodajemo mi nakon prijema upitnika.
-      </p>
+          <p className="text-xs text-stone-300 mt-4 text-center">
+            Google Maps linkove dodajemo mi nakon prijema upitnika.
+          </p>
+        </>
+      )}
     </div>
   );
 }
@@ -1602,7 +1709,7 @@ function Step5({
       <div className="space-y-6">
         <Field label="Tagline (citat / poruka pozivnice)">
           <textarea
-            className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
+            className="w-full border-b border-stone-200 focus:border-[var(--accent,#AE343F)] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
             maxLength={220}
             value={formData.tagline}
@@ -1615,7 +1722,7 @@ function Step5({
         </Field>
         <Field label="Zahvalnica (poruka na dnu pozivnice)">
           <textarea
-            className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
+            className="w-full border-b border-stone-200 focus:border-[var(--accent,#AE343F)] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
             maxLength={120}
             value={formData.thankYouFooter}
@@ -1648,7 +1755,7 @@ function Step6({
       />
       <div className="space-y-6">
         {/* Info box */}
-        <div className="bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl px-5 py-4 text-sm text-[#8B2833] leading-relaxed">
+        <div className="bg-[var(--accent,#AE343F)]/5 border border-[var(--accent,#AE343F)]/15 rounded-2xl px-5 py-4 text-sm text-[#8B2833] leading-relaxed">
           <p className="font-semibold mb-1">🎉 Skoro sve je spremno!</p>
           <p>
             Nakon kreiranja pozivnice, na portalu <strong>Moje Venčanje</strong>{" "}
@@ -1675,7 +1782,7 @@ function Step6({
 
         <Field label="Posebne napomene ili zahtevi (opciono)">
           <textarea
-            className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
+            className="w-full border-b border-stone-200 focus:border-[var(--accent,#AE343F)] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
             value={formData.wishes}
             onChange={(e) => updateField("wishes", e.target.value)}
@@ -1711,12 +1818,15 @@ function generateRawJson(formData: FormData): string {
     thankYouFooter: formData.thankYouFooter,
     locations: formData.locations
       .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
-      .map((l) => ({
-        name: l.name,
-        address: l.address,
-        map_url: "",
-        type: l.type,
-      })),
+      .map((l) => {
+        const query = [l.name, l.address].filter(Boolean).join(", ");
+        return {
+          name: l.name,
+          address: l.address,
+          map_url: query ? `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed` : "",
+          type: l.type,
+        };
+      }),
     timeline: [...formData.locations]
       .filter((l) => l.enabled)
       .sort((a, b) => a.time.localeCompare(b.time))
@@ -1764,13 +1874,22 @@ function generateRawJson(formData: FormData): string {
 
 // ─── Main form ────────────────────────────────────────────────────────────────
 
-export default function QuestionnaireForm() {
+export default function QuestionnaireForm({
+  onPremiumChange,
+}: {
+  onPremiumChange?: (isPremium: boolean) => void;
+}) {
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState<FormData>(defaultFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Notify parent about premium mode changes
+  React.useEffect(() => {
+    onPremiumChange?.(formData.premium);
+  }, [formData.premium, onPremiumChange]);
 
   // Read URL params from /cene page
   React.useEffect(() => {
@@ -1847,12 +1966,61 @@ export default function QuestionnaireForm() {
 
   const [stepError, setStepError] = useState("");
 
-  const goNext = () => {
-    if (step === 1 && (!formData.bride.trim() || !formData.groom.trim())) {
-      setStepError("Unesite imena mladenaca pre nego što nastavite.");
-      return;
+
+  const handlePremiumToggle = () => {
+    if (!formData.premium) {
+      updateField("premium", true);
+      updateField("useCyrillic", false);
+    } else {
+      updateField("premium", false);
     }
-    if (step === 2) {
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
+
+  const steps = getSteps(formData.premium);
+  const totalSteps = steps.length;
+  const currentStepKey = getStepKey(step, formData.premium);
+
+  // When toggling premium off while on a premium-only step, jump to step 1
+  React.useEffect(() => {
+    if (step > totalSteps) {
+      setStep(1);
+    }
+  }, [formData.premium, step, totalSteps]);
+
+  const goNext = () => {
+    const key = currentStepKey;
+    if (key === "couple_info") {
+      if (!formData.bride.trim() || !formData.groom.trim()) {
+        setStepError("Unesite imena mladenaca pre nego što nastavite.");
+        return;
+      }
+    }
+    if (key === "ai_photo") {
+      if (!formData.premium_theme) {
+        setStepError("Izaberite stil pozivnice pre nego što nastavite.");
+        return;
+      }
+      // Async background whitening — fire and forget when leaving this step
+      if (formData.ai_couple_image_url && formData.premium_theme === "line_art") {
+        fetch("/api/premium-pozivnica/whiten-bg", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageUrl: formData.ai_couple_image_url }),
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.resultUrl && d.resultUrl !== formData.ai_couple_image_url) {
+              updateField("ai_couple_image_url", d.resultUrl);
+            }
+          })
+          .catch(() => {});
+      }
+    }
+    // envelope_lab has no mandatory validation
+    if (key === "date_rsvp") {
       if (!formData.event_date_only) {
         setStepError("Izaberite datum venčanja.");
         return;
@@ -1866,7 +2034,7 @@ export default function QuestionnaireForm() {
         return;
       }
     }
-    if (step === 4) {
+    if (key === "locations") {
       const incomplete = formData.locations.find(
         (l) => l.enabled && (!l.time || !/^\d{2}:\d{2}$/.test(l.time)),
       );
@@ -1875,15 +2043,16 @@ export default function QuestionnaireForm() {
         return;
       }
     }
-    if (step === 5 && !formData.tagline.trim()) {
+    if (key === "personal" && !formData.tagline.trim()) {
       setStepError("Unesite tagline poruku za pozivnicu.");
       return;
     }
     setStepError("");
     setDirection(1);
-    setStep((s) => Math.min(s + 1, TOTAL_STEPS));
+    setStep((s) => Math.min(s + 1, totalSteps));
   };
   const goPrev = () => {
+    setStepError("");
     setDirection(-1);
     setStep((s) => Math.max(s - 1, 1));
   };
@@ -1946,10 +2115,86 @@ export default function QuestionnaireForm() {
       return { ...prev, locations };
     });
 
+  const [premiumSlug, setPremiumSlug] = useState("");
+
   const handleSubmit = async () => {
     setError(null);
     setIsSubmitting(true);
     try {
+      if (formData.premium) {
+        // Premium flow: create couple in MongoDB directly
+        const res = await fetch("/api/premium-pozivnica/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bride: formData.bride,
+            groom: formData.groom,
+            full_display: formData.full_display,
+            useCyrillic: formData.useCyrillic,
+            event_date: formData.event_date,
+            submit_until_date: formData.submit_until_date,
+            theme: formData.theme,
+            scriptFont: formData.scriptFont,
+            premium_theme: formData.premium_theme,
+            ai_couple_image_url: formData.ai_couple_image_url,
+            premium_city: formData.premium_city,
+            premium_car: formData.premium_car,
+            couple_description: formData.couple_description,
+            envelope_items: formData.envelope_items,
+            envelope_style: formData.envelope_style,
+            envelope_rose_petals: formData.envelope_rose_petals,
+            tagline: formData.tagline,
+            thankYouFooter: formData.thankYouFooter,
+            countdown_enabled: formData.countdown_enabled,
+            map_enabled: formData.map_enabled,
+            custom_primary_color: formData.custom_primary_color,
+            custom_background_color: formData.custom_background_color,
+            locations: formData.locations
+              .filter(
+                (l) =>
+                  l.enabled && (l.type === "hall" || l.type === "church"),
+              )
+              .map((l) => ({
+                name: l.name,
+                address: l.address,
+                map_url: "",
+                type: l.type,
+              })),
+            timeline: [...formData.locations]
+              .filter((l) => l.enabled)
+              .sort((a, b) => a.time.localeCompare(b.time))
+              .map((l) => {
+                const typeToIcon: Record<string, string> = {
+                  home: "Home",
+                  church: "Church",
+                  ceremony: "Heart",
+                  hall: "Utensils",
+                };
+                const typeToWhat: Record<string, string> = {
+                  home: "Polazak od kuće",
+                  church: "Crkveno venčanje",
+                  ceremony: "Građansko venčanje",
+                  hall: "Skup u svečanoj sali",
+                };
+                return {
+                  title: l.name,
+                  time: l.time,
+                  description: l.address,
+                  what: typeToWhat[l.type] || "",
+                  icon: typeToIcon[l.type] || "MapPin",
+                };
+              }),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok)
+          throw new Error(data.error || "Greška pri kreiranju pozivnice");
+        setPremiumSlug(data.slug);
+        setIsSubmitted(true);
+        return;
+      }
+
+      // Classic flow: send via Web3Forms
       const formattedDate = formData.event_date
         ? new Date(formData.event_date).toLocaleDateString(
             formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
@@ -2011,19 +2256,33 @@ export default function QuestionnaireForm() {
 
   // Success screen
   if (isSubmitted) {
+    const successAccent = formData.premium ? "#d4af37" : "#AE343F";
+    const successTextMuted = formData.premium ? "#8B7355" : "#8B2833";
     return (
-      <div className="bg-white rounded-3xl shadow-sm border border-stone-100 p-12 text-center max-w-2xl mx-auto">
-        <div className="w-20 h-20 bg-[#AE343F] rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-[#AE343F]/25">
-          <CheckCircle2 size={40} className="text-white" />
+      <div className={`p-12 text-center max-w-2xl mx-auto ${getThemeClasses(formData.premium).card}`}>
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg"
+          style={{ backgroundColor: successAccent, boxShadow: `0 10px 25px ${successAccent}40` }}
+        >
+          {formData.premium ? (
+            <Sparkles size={40} className="text-white" />
+          ) : (
+            <CheckCircle2 size={40} className="text-white" />
+          )}
         </div>
-        <h2 className="text-3xl font-serif text-[#AE343F] mb-4">
+        <h2
+          className="text-3xl font-serif mb-4"
+          style={{ color: successAccent }}
+        >
           Hvala, {formData.bride} i {formData.groom}!
         </h2>
-        <p className="text-[#8B2833] text-lg mb-3">
-          Uspešno smo primili sve podatke za vašu pozivnicu.
+        <p className="text-lg mb-3" style={{ color: successTextMuted }}>
+          {formData.premium
+            ? "Uspešno smo primili sve podatke za vašu Premium AI pozivnicu."
+            : "Uspešno smo primili sve podatke za vašu pozivnicu."}
         </p>
         {formData.event_date_only && (
-          <p className="text-[#AE343F]/70 mb-8">
+          <p className="text-[var(--accent,#AE343F)]/70 mb-8">
             Venčanje:{" "}
             {new Date(
               formData.event_date_only + "T12:00:00",
@@ -2037,41 +2296,122 @@ export default function QuestionnaireForm() {
             )}
           </p>
         )}
-        <p className="text-[#8B2833] text-sm">
-          Uskoro ćemo napraviti vašu pozivnicu i kontaktirati vas.
+        {formData.premium && premiumSlug && (
+          <a
+            href={`/premium-pozivnica/${premiumSlug}`}
+            className="inline-flex items-center gap-2 px-6 py-3 mb-6 rounded-2xl bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white font-medium text-sm shadow-lg shadow-[#d4af37]/25 hover:from-[#c5a028] hover:to-[#b89520] transition-all"
+          >
+            <Sparkles size={16} />
+            Pogledajte preview pozivnice
+          </a>
+        )}
+        <p style={{ color: successTextMuted }} className="text-sm">
+          {formData.premium
+            ? "Vaša pozivnica je vidljiva 2 minuta. Nakon toga će biti zaključana do uplate."
+            : "Uskoro ćemo napraviti vašu pozivnicu i kontaktirati vas."}
         </p>
       </div>
     );
   }
 
-  const progress = ((step - 1) / (TOTAL_STEPS - 1)) * 100;
+  const progress = ((step - 1) / (totalSteps - 1)) * 100;
+  const tc = getThemeClasses(formData.premium);
+
+  // Map step key to component
+  const renderStep = () => {
+    const key = currentStepKey;
+    switch (key) {
+      case "couple_info":
+        return <Step1 formData={formData} updateField={updateField} />;
+      case "ai_photo":
+        return (
+          <PremiumStepAIPhoto
+            premiumTheme={formData.premium_theme}
+            premiumCity={formData.premium_city}
+            premiumCar={formData.premium_car}
+            coupleDescription={formData.couple_description}
+            aiCoupleImageUrl={formData.ai_couple_image_url}
+            bride={formData.bride}
+            groom={formData.groom}
+            onThemeChange={(theme) => updateField("premium_theme", theme)}
+            onCityChange={(city) => updateField("premium_city", city)}
+            onCarChange={(car) => updateField("premium_car", car)}
+            onDescriptionChange={(desc) => updateField("couple_description", desc)}
+            onImageGenerated={(url) => updateField("ai_couple_image_url", url)}
+          />
+        );
+      case "envelope_lab":
+        return (
+          <PremiumStepEnvelopeLab
+            envelopeItems={formData.envelope_items}
+            envelopeStyle={formData.envelope_style}
+            onItemsChange={(items) => updateField("envelope_items", items)}
+            onStyleChange={(s) => updateField("envelope_style", s)}
+          />
+        );
+      case "date_rsvp":
+        return <Step2 formData={formData} updateField={updateField} />;
+      case "design":
+        return <Step3 formData={formData} updateField={updateField} />;
+      case "locations":
+        return (
+          <Step4
+            formData={formData}
+            toggleLocation={toggleLocation}
+            updateLocation={updateLocation}
+            addDuplicateHome={addDuplicateHome}
+            removeDuplicateHome={removeDuplicateHome}
+          />
+        );
+      case "personal":
+        return <Step5 formData={formData} updateField={updateField} />;
+      case "settings":
+        return <Step6 formData={formData} updateField={updateField} />;
+      default:
+        return null;
+    }
+  };
+
+  // Accent color: gold for premium, red for classic
+  const accent = formData.premium ? "#d4af37" : "#AE343F";
+  const accentDark = formData.premium ? "#c5a028" : "#8B2833";
+
+  const formTopRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div
+      ref={formTopRef}
+      className="max-w-2xl mx-auto"
+      style={{ "--accent": accent, "--accent-dark": accentDark } as React.CSSProperties}
+    >
       {/* Progress indicator */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-3">
-          <span className="text-sm font-medium text-[#8B2833]">
-            {STEP_TITLES[step - 1]}
+          <span className={`text-sm font-medium ${tc.stepTitle}`}>
+            {steps[step - 1]?.title}
           </span>
-          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#AE343F]">
-            Korak {step} od {TOTAL_STEPS}
+          <span
+            className={`text-xs font-bold uppercase tracking-[0.18em] ${tc.stepCounter}`}
+          >
+            Korak {step} od {totalSteps}
           </span>
         </div>
-        <div className="w-full h-1.5 bg-[#AE343F]/15 rounded-full overflow-hidden">
+        <div
+          className={`w-full h-1.5 rounded-full overflow-hidden ${tc.progressTrack}`}
+        >
           <motion.div
-            className="h-full bg-[#AE343F] rounded-full"
+            className={`h-full rounded-full ${tc.progressBar}`}
             initial={false}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.4 }}
           />
         </div>
         <div className="flex justify-between mt-3">
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+          {Array.from({ length: totalSteps }, (_, i) => (
             <div
               key={i}
               className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${
-                i + 1 <= step ? "bg-[#AE343F]" : "bg-[#AE343F]/25"
+                i + 1 <= step ? tc.dotActive : tc.dotInactive
               }`}
             />
           ))}
@@ -2079,7 +2419,7 @@ export default function QuestionnaireForm() {
       </div>
 
       {/* Card */}
-      <div className="bg-white rounded-3xl shadow-sm border border-stone-100 overflow-hidden">
+      <div className={`overflow-hidden ${tc.card}`}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={step}
@@ -2087,74 +2427,60 @@ export default function QuestionnaireForm() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: direction * -40 }}
             transition={{ duration: 0.28, ease: "easeInOut" }}
-            className="p-8"
+            className="p-4 sm:p-8"
           >
-            {step === 1 && (
-              <Step1 formData={formData} updateField={updateField} />
-            )}
-            {step === 2 && (
-              <Step2 formData={formData} updateField={updateField} />
-            )}
-            {step === 3 && (
-              <Step3 formData={formData} updateField={updateField} />
-            )}
-            {step === 4 && (
-              <Step4
-                formData={formData}
-                toggleLocation={toggleLocation}
-                updateLocation={updateLocation}
-                addDuplicateHome={addDuplicateHome}
-                removeDuplicateHome={removeDuplicateHome}
-              />
-            )}
-            {step === 5 && (
-              <Step5 formData={formData} updateField={updateField} />
-            )}
-            {step === 6 && (
-              <Step6 formData={formData} updateField={updateField} />
-            )}
+            {renderStep()}
           </motion.div>
         </AnimatePresence>
 
         {error && (
-          <div className="mx-8 mb-4 flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-500 text-sm">
+          <div className="mx-4 sm:mx-8 mb-4 flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-500 text-sm">
             <AlertCircle size={18} className="shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Navigation */}
-        <div className="px-8 pb-8 flex justify-between items-center">
-          <button
-            type="button"
-            onClick={goPrev}
-            disabled={step === 1}
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-stone-200 text-stone-500 hover:border-stone-300 hover:text-stone-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed font-medium text-sm"
-          >
-            <ChevronLeft size={16} />
-            Nazad
-          </button>
+        <div className="px-4 pb-4 sm:px-8 sm:pb-8 flex justify-between items-center gap-3">
+          {step === 1 ? (
+            <button
+              type="button"
+              onClick={handlePremiumToggle}
+              className={`flex items-center justify-center gap-2 flex-1 py-3 rounded-2xl border text-xs sm:text-sm font-medium transition-all ${
+                formData.premium
+                  ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] border-[#d4af37] text-white shadow-lg shadow-[#d4af37]/25"
+                  : "border-[#d4af37]/40 text-[#d4af37] hover:border-[#d4af37] hover:bg-[#d4af37]/5 animate-[premiumGlow_2s_ease-in-out_infinite]"
+              }`}
+            >
+              <Sparkles size={14} className={formData.premium ? "" : "animate-spin"} style={formData.premium ? {} : { animationDuration: "3s" }} />
+              Premium
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={goPrev}
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl transition-all font-medium text-sm ${tc.buttonSecondary}`}
+            >
+              <ChevronLeft size={16} />
+              Nazad
+            </button>
+          )}
 
-          {step < TOTAL_STEPS ? (
-            <div className="flex flex-col items-end gap-1">
-              <button
-                type="button"
-                onClick={goNext}
-                className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#8B2833] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20"
-              >
-                Dalje
-                <ChevronRight size={16} />
-              </button>
-              {stepError && (
-                <p className="text-xs text-[#AE343F]">{stepError}</p>
-              )}
-            </div>
+          {step < totalSteps ? (
+            <button
+              type="button"
+              onClick={goNext}
+              className={`flex items-center gap-2 px-8 py-3 rounded-2xl transition-all font-medium text-sm ${tc.buttonPrimary}`}
+            >
+              Dalje
+              <ChevronRight size={16} />
+            </button>
           ) : (
             <button
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#8B2833] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`flex items-center gap-2 px-8 py-3 rounded-2xl transition-all font-medium text-sm whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${tc.buttonPrimary}`}
             >
               {isSubmitting ? (
                 <>
@@ -2164,12 +2490,15 @@ export default function QuestionnaireForm() {
               ) : (
                 <>
                   Pošalji zahtev
-                  <Send size={16} />
+                  <Send size={14} />
                 </>
               )}
             </button>
           )}
         </div>
+        {stepError && (
+          <p className={`text-xs text-center px-4 pb-4 sm:px-8 sm:pb-6 ${tc.errorText}`}>{stepError}</p>
+        )}
       </div>
     </div>
   );
