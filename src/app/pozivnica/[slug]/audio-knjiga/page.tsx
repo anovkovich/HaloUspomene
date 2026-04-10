@@ -2,7 +2,7 @@ import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 import { notFound } from "next/navigation";
-import { getWeddingData, getAllWeddingSlugs } from "@/data/pozivnice";
+import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import { getAudioMessages } from "@/lib/audio";
 import { getThemeCSSVariables } from "../constants";
 import AudioKnjigaClient from "./AudioKnjigaClient";
@@ -28,7 +28,7 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams() {
-  const slugs = await getAllWeddingSlugs();
+  const slugs = await getClassicWeddingSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 

@@ -2,7 +2,8 @@
 // All functions are now async — callers must await them.
 export {
   getWeddingData,
-  getAllWeddingSlugs,
+  getClassicWeddingSlugs,
+  getPremiumWeddingSlugs,
   getAllCouples,
   upsertCouple,
   deleteCouple,

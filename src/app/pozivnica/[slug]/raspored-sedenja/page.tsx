@@ -2,7 +2,7 @@ import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 import { notFound } from "next/navigation";
-import { getWeddingData, getAllWeddingSlugs } from "@/data/pozivnice";
+import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import { getRSVPResponses } from "@/lib/rsvp";
 import { getThemeCSSVariables } from "../constants";
 import RasporedClient from "./RasporedClient";
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function generateStaticParams() {
-  const slugs = await getAllWeddingSlugs(); return slugs.map((slug) => ({ slug }));
+  const slugs = await getClassicWeddingSlugs(); return slugs.map((slug) => ({ slug }));
 }
 
 export default async function RasporedSedenja({ params }: PageProps) {

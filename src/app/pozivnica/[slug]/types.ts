@@ -87,6 +87,9 @@ export interface WeddingData {
   envelope_items?: EnvelopeItem[];
   envelope_style?: "classic" | "wing";
   envelope_rose_petals?: boolean;
+  premium_city?: string; // Watercolor theme: city background key
+  premium_car?: string; // Watercolor theme: car illustration key
+  couple_description?: string; // Line art theme: AI couple description
   premium_paid?: boolean;
   premium_created_at?: string; // ISO timestamp for 2-min preview lock
 }

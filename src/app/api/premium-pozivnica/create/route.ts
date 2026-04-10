@@ -83,6 +83,9 @@ export async function POST(request: NextRequest) {
       envelope_items: body.envelope_items || undefined,
       envelope_style: body.envelope_style || "classic",
       envelope_rose_petals: body.envelope_rose_petals || false,
+      premium_city: body.premium_city || undefined,
+      premium_car: body.premium_car || undefined,
+      couple_description: body.couple_description || undefined,
       premium_paid: false,
       premium_created_at: new Date().toISOString(),
     };

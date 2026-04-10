@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
 import type { EnvelopeItem } from "@/app/pozivnica/[slug]/types";
+import { getLoaderTheme } from "./envelopeThemes";
+
 type Stage = "sealed" | "opening" | "extracted" | "fadeout";
 
 interface PremiumEnvelopeLoaderProps {
@@ -11,6 +13,8 @@ interface PremiumEnvelopeLoaderProps {
   names: string;
   eventDate?: string;
   envelopeItems?: EnvelopeItem[];
+  /** Invitation theme — unknown values fall back to watercolor. */
+  theme?: string;
 }
 
 const ITEM_SRCS: Record<string, string> = {
@@ -71,11 +75,13 @@ export default function PremiumEnvelopeLoader({
   names,
   eventDate,
   envelopeItems = [],
+  theme = "watercolor",
 }: PremiumEnvelopeLoaderProps) {
   const [stage, setStage] = useState<Stage>("sealed");
   const [isMobile, setIsMobile] = useState(false);
   const initials = getInitials(names);
   const dateParts = parseDateParts(eventDate);
+  const t = getLoaderTheme(theme);
 
   useEffect(() => {
     setIsMobile(window.innerWidth < 640);
@@ -100,10 +106,6 @@ export default function PremiumEnvelopeLoader({
   const isOpen = stage !== "sealed";
   const isExtracted = stage === "extracted" || stage === "fadeout";
 
-  // Gold palette
-  const gold = "#d4af37";
-  const goldDark = "#b89520";
-
   return (
     <div
       className={`fixed inset-0 z-[100] flex items-center justify-center ${
@@ -112,8 +114,14 @@ export default function PremiumEnvelopeLoader({
           : "opacity-100"
       }`}
       style={{
-        backgroundColor: stage === "fadeout" ? "transparent" : isOpen ? "rgba(255, 253, 245, 0.5)" : "#fffdf5",
-        backdropFilter: stage === "fadeout" ? "none" : isOpen ? "blur(6px)" : "none",
+        background:
+          stage === "fadeout"
+            ? "transparent"
+            : isOpen
+              ? t.overlay.bgOpen
+              : t.overlay.bgSealed,
+        backdropFilter:
+          stage === "fadeout" ? "none" : isOpen ? t.overlay.backdropFilterOpen : "none",
         transition: "all 1.5s ease",
       }}
     >
@@ -126,33 +134,41 @@ export default function PremiumEnvelopeLoader({
           ${stage === "fadeout" ? "opacity-30 blur-sm scale-90" : "opacity-100"}`}
         >
           {/* 1. BACK SIDE */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#f5ead6] to-[#efe0c8] rounded-sm border border-[#d4af37]/30 z-0 shadow-inner">
+          <div
+            className="absolute inset-0 rounded-sm z-0 shadow-inner"
+            style={{ background: t.envelope.back, border: `1px solid ${t.envelope.backBorder}` }}
+          >
             <div className="absolute inset-0 bg-black/5" />
           </div>
 
           {/* 2. THE CARD (Invitation) */}
           <div
-            className={`absolute inset-2 sm:inset-3 bg-gradient-to-b from-white to-[#fdfcfa] shadow-2xl flex flex-col items-center justify-center text-center p-4 sm:p-12 border border-stone-100 will-change-transform transition-all duration-[2200ms]
+            className={`absolute inset-2 sm:inset-3 flex flex-col items-center justify-center text-center p-4 sm:p-12 will-change-transform transition-all duration-[2200ms]
               ${stage === "sealed" ? "opacity-0 scale-95 z-10" : ""}
               ${stage === "opening" ? "opacity-100 scale-100 z-10" : ""}
-              ${isExtracted ? "z-10 shadow-[0_60px_130px_-30px_rgba(0,0,0,0.35)]" : ""}
+              ${isExtracted ? "z-10" : ""}
             `}
             style={{
+              background: t.card.bg,
+              border: `1px solid ${t.card.border}`,
+              boxShadow: isExtracted ? t.card.shadowExtracted : t.card.shadow,
+              backdropFilter: t.card.backdropFilter,
+              WebkitBackdropFilter: t.card.backdropFilter,
               transform: isExtracted
                 ? "translateY(-80%) scale(1.03)"
                 : "translateY(0) scale(1)",
               backfaceVisibility: "hidden",
               transitionTimingFunction: "cubic-bezier(0.19, 1, 0.22, 1)",
-            }}
+            } as React.CSSProperties}
           >
             {/* Decorative borders */}
             <div
               className="absolute inset-2 sm:inset-3 pointer-events-none"
-              style={{ border: `1px solid ${gold}33` }}
+              style={{ border: `1px solid ${t.card.innerBorder1}` }}
             />
             <div
               className="absolute inset-3 sm:inset-4 pointer-events-none"
-              style={{ border: `1px solid ${gold}1a` }}
+              style={{ border: `1px solid ${t.card.innerBorder2}` }}
             />
 
             {/* Corner ornaments */}
@@ -165,45 +181,45 @@ export default function PremiumEnvelopeLoader({
               <div
                 key={i}
                 className={`absolute ${pos} w-4 h-4 sm:w-6 sm:h-6`}
-                style={{ borderColor: `${gold}4d`, borderWidth: "2px" }}
+                style={{ borderColor: t.card.cornerColor, borderWidth: "2px" }}
               />
             ))}
 
             <p
               className="font-elegant uppercase tracking-[0.25em] sm:tracking-[0.4em] text-[5px] sm:text-[8px] mb-0.5 sm:mb-1"
-              style={{ color: "#9a8a6e" }}
+              style={{ color: t.text.label }}
             >
               Pozivamo Vas
             </p>
             <h2
               className="font-script text-xl sm:text-4xl leading-tight px-1 sm:px-2 select-none"
-              style={{ color: gold }}
+              style={{ color: t.text.names }}
             >
               {names}
             </h2>
             <div className="flex items-center gap-1 sm:gap-1.5 my-1 sm:my-2">
-              <div className="w-3 sm:w-5 h-px" style={{ background: `linear-gradient(to right, transparent, ${gold}66)` }} />
-              <Heart size={5} className="sm:hidden" style={{ color: `${gold}88` }} fill="currentColor" />
-              <Heart size={6} className="hidden sm:block" style={{ color: `${gold}88` }} fill="currentColor" />
-              <div className="w-3 sm:w-5 h-px" style={{ background: `linear-gradient(to left, transparent, ${gold}66)` }} />
+              <div className="w-3 sm:w-5 h-px" style={{ background: `linear-gradient(to right, transparent, ${t.text.dividerLine})` }} />
+              <Heart size={5} className="sm:hidden" style={{ color: t.text.heart }} fill="currentColor" />
+              <Heart size={6} className="hidden sm:block" style={{ color: t.text.heart }} fill="currentColor" />
+              <div className="w-3 sm:w-5 h-px" style={{ background: `linear-gradient(to left, transparent, ${t.text.dividerLine})` }} />
             </div>
             {dateParts ? (
               <div className="flex flex-col items-center leading-none select-none mt-0.5 sm:mt-1">
                 <span
                   className="font-serif font-bold text-[40px] sm:text-[64px] leading-[0.82]"
-                  style={{ color: "#dcc88c", letterSpacing: "-0.02em" }}
+                  style={{ color: t.text.dateDay, letterSpacing: "-0.02em" }}
                 >
                   {dateParts.day}
                 </span>
                 <span
                   className="font-serif font-semibold text-[14px] sm:text-[22px] leading-none -mt-0.5"
-                  style={{ color: gold, letterSpacing: "0.3em" }}
+                  style={{ color: t.text.dateMonth, letterSpacing: "0.3em" }}
                 >
                   {dateParts.month}
                 </span>
                 <span
                   className="font-elegant text-[10px] sm:text-[15px] leading-none mt-0.5 sm:mt-1"
-                  style={{ color: "#8B7355", letterSpacing: "0.35em" }}
+                  style={{ color: t.text.dateYear, letterSpacing: "0.35em" }}
                 >
                   {dateParts.year}
                 </span>
@@ -211,7 +227,7 @@ export default function PremiumEnvelopeLoader({
             ) : (
               <p
                 className="font-serif italic text-[8px] sm:text-xs tracking-[0.15em] sm:tracking-[0.3em]"
-                style={{ color: "#8B7355" }}
+                style={{ color: t.text.dateYear }}
               >
                 {eventDate}
               </p>
@@ -258,22 +274,43 @@ export default function PremiumEnvelopeLoader({
             <div
               className="absolute inset-0 rounded-b-sm shadow-lg"
               style={{
+                background: t.envelope.pocket,
+                border: `1px solid ${t.envelope.backBorder}`,
                 clipPath: "polygon(0 0%, 50% 55%, 100% 0%, 100% 100%, 0 100%)",
-                background: "linear-gradient(to bottom, #f0ead8 0%, #ebe5d3 40%, #e5dfcd 100%)",
-                borderBottom: "1px solid rgba(212,175,55,0.15)",
               }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                clipPath: "polygon(0 0%, 50% 55%, 100% 0%, 100% 100%, 0 100%)",
-                background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(0,0,0,0.03) 100%)",
-              }}
-            />
+            ></div>
+
+            {/* Gold ^ fold line on the bottom of the pocket —
+                the upward triangle where the bottom flap creases in a
+                classic envelope. Apex sits around the vertical midline so
+                it reads as a real fold crease, not a shallow bend. The
+                top V-slot line is intentionally omitted because it would
+                cross through the card's text area and break the layout. */}
+            <svg
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              preserveAspectRatio="none"
+              viewBox="0 0 100 100"
+            >
+              <polyline
+                points="0,100 50,55 100,100"
+                fill="none"
+                stroke={t.envelope.wingStroke}
+                strokeWidth="1.5"
+                strokeOpacity={t.envelope.wingStrokeOpacity}
+                strokeLinejoin="miter"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
           </div>
 
-          {/* 4. WAX SEAL */}
-          <div className="absolute top-[56%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 sm:w-[80px] sm:h-[80px] z-[60]">
+          {/* 4. SEAL — wax stamp (watercolor) or paper-cut medallion (line art) */}
+          <div
+            className={`absolute top-[56%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] ${
+              t.seal.kind === "wax"
+                ? "w-28 h-28 sm:w-[168px] sm:h-[168px]"
+                : "w-20 h-20 sm:w-[120px] sm:h-[120px]"
+            }`}
+          >
             <motion.div
               className="w-full h-full"
               initial={{ scale: 1, opacity: 1 }}
@@ -288,75 +325,119 @@ export default function PremiumEnvelopeLoader({
                   : {}
               }
             >
-              <div
-                className="relative w-full h-full rounded-full flex items-center justify-center"
-                style={{
-                  background: `radial-gradient(circle at 35% 35%, #e8c84a, ${gold} 40%, ${goldDark} 80%, #8b6914)`,
-                  boxShadow: `0 10px 30px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3), inset 0 2px 6px rgba(255,255,255,0.25), inset 0 -3px 6px rgba(0,0,0,0.25)`,
-                  border: `2px solid ${goldDark}`,
-                }}
-              >
-                {/* Outer ring */}
-                <div
-                  className="absolute inset-1 sm:inset-1.5 rounded-full"
-                  style={{ border: "1.5px solid rgba(255,255,255,0.2)" }}
-                />
-                {/* Inner ring */}
-                <div
-                  className="absolute inset-2 sm:inset-2.5 rounded-full"
-                  style={{ border: "1px solid rgba(255,255,255,0.1)" }}
-                />
-                <span
-                  className="font-serif text-base sm:text-2xl select-none"
-                  style={{
-                    color: "#fff",
-                    textShadow: "0 1px 3px rgba(0,0,0,0.4), 0 0 8px rgba(255,255,255,0.15)",
-                  }}
-                >
-                  {initials}
-                </span>
-                {/* Glossy highlight */}
-                <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_25%,_rgba(255,255,255,0.25),_transparent_45%)]" />
-                {/* Bottom ambient */}
-                <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_70%_80%,_rgba(139,105,20,0.15),_transparent_40%)]" />
-              </div>
+              {t.seal.kind === "wax" ? (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  {/* Real 3D gold wax seal image */}
+                  <img
+                    src="/images/premium/envelope-details/gold-wax.webp"
+                    alt="Wax seal"
+                    className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl pointer-events-none select-none"
+                  />
+                  {/* Initials overlaid on the empty center of the seal */}
+                  <span
+                    className="relative font-serif text-lg sm:text-2xl font-semibold select-none"
+                    style={{
+                      color: "#7a5318",
+                      textShadow:
+                        "0 1px 1px rgba(255,232,150,0.8), 0 0 6px rgba(90,55,10,0.35)",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    {initials}
+                  </span>
+                </div>
+              ) : (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  {/* Real 3D platinum wax seal image — line_art theme */}
+                  <img
+                    src="/images/premium/envelope-details/platinum-wax.webp"
+                    alt="Platinum wax seal"
+                    className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl pointer-events-none select-none"
+                  />
+                  {/* Initials overlaid on the empty center of the seal */}
+                  <span
+                    className="relative font-serif text-lg sm:text-2xl font-semibold select-none"
+                    style={{
+                      color: "#1a1a1a",
+                      textShadow:
+                        "0 1px 1px rgba(245,247,252,0.85), 0 0 6px rgba(30,35,50,0.25)",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    {initials}
+                  </span>
+                </div>
+              )}
             </motion.div>
           </div>
 
           {/* 5. FLAP */}
           <div
-            className="absolute top-0 left-0 right-0 h-[56%] origin-top transition-transform duration-[1400ms] will-change-transform"
+            className={`absolute top-0 left-0 right-0 h-[56%] origin-top preserve-3d transition-transform duration-[1400ms] cubic-bezier(0.4, 0, 0.2, 1) will-change-transform`}
             style={{
               transform: isOpen ? "rotateX(180deg)" : "rotateX(0deg)",
-              zIndex: stage === "sealed" ? 40 : 5,
-              transformStyle: "preserve-3d",
+              zIndex: stage === "sealed" || stage === "opening" ? 40 : 5,
             }}
           >
             {/* Outer Flap */}
             <div
-              className="absolute inset-0 shadow-sm"
+              className="absolute inset-0 backface-hidden shadow-sm"
               style={{
+                background: t.envelope.flapOuter,
                 clipPath: "polygon(0 0, 100% 0, 50% 100%)",
-                background: "linear-gradient(to bottom, #f0ead8, #ebe5d0)",
-                backfaceVisibility: "hidden",
               }}
-            />
+            ></div>
+
+            {/* Outer flap gold edge — drawn as SVG sibling (not clipped) so the
+                full stroke width is visible along the slanted V of the flap */}
+            <svg
+              className="absolute inset-0 w-full h-full pointer-events-none backface-hidden"
+              preserveAspectRatio="none"
+              viewBox="0 0 100 100"
+            >
+              <polyline
+                points="0,0 50,100 100,0"
+                fill="none"
+                stroke={t.envelope.wingStroke}
+                strokeWidth="1.5"
+                strokeOpacity={t.envelope.wingStrokeOpacity}
+                strokeLinejoin="miter"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
 
             {/* Inner Flap (backside) */}
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 backface-hidden"
               style={{
+                background: t.envelope.flapInner,
                 clipPath: "polygon(0 0, 100% 0, 50% 100%)",
                 transform: "rotateX(180deg)",
-                backfaceVisibility: "hidden",
-                background: "#f5f2ea",
               }}
             >
               <div
                 className="absolute inset-0 bg-gradient-to-b from-black/5 to-transparent"
                 style={{ clipPath: "polygon(0 0, 100% 0, 50% 100%)" }}
-              />
+              ></div>
             </div>
+
+            {/* Inner flap gold edge — mirrored for the flipped backside */}
+            <svg
+              className="absolute inset-0 w-full h-full pointer-events-none backface-hidden"
+              style={{ transform: "rotateX(180deg)" }}
+              preserveAspectRatio="none"
+              viewBox="0 0 100 100"
+            >
+              <polyline
+                points="0,0 50,100 100,0"
+                fill="none"
+                stroke={t.envelope.wingStroke}
+                strokeWidth="1.5"
+                strokeOpacity={t.envelope.wingStrokeOpacity}
+                strokeLinejoin="miter"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
           </div>
         </div>
       </div>

@@ -2008,7 +2008,7 @@ export default function QuestionnaireForm({
         fetch("/api/premium-pozivnica/whiten-bg", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageUrl: formData.ai_couple_image_url }),
+          body: JSON.stringify({ imageUrl: formData.ai_couple_image_url, bride: formData.bride, groom: formData.groom }),
         })
           .then((r) => r.json())
           .then((d) => {
@@ -2191,6 +2191,31 @@ export default function QuestionnaireForm({
           throw new Error(data.error || "Greška pri kreiranju pozivnice");
         setPremiumSlug(data.slug);
         setIsSubmitted(true);
+
+        // Cleanup: delete ALL draft blobs (the whitened version is already saved separately)
+        fetch("/api/premium-pozivnica/cleanup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bride: formData.bride,
+            groom: formData.groom,
+          }),
+        }).catch(() => {});
+
+        // Clear images from localStorage but keep counter + expiresAt
+        try {
+          const cacheKey = `premium_gen_${formData.bride.toLowerCase()}_${formData.groom.toLowerCase()}`;
+          const cached = localStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            localStorage.setItem(cacheKey, JSON.stringify({
+              count: parsed.count,
+              expiresAt: parsed.expiresAt,
+              images: [],
+            }));
+          }
+        } catch {}
+
         return;
       }
 

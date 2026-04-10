@@ -80,6 +80,7 @@ export default function PremiumInvitationClient({
     names: full_display,
     eventDate: formattedDate,
     envelopeItems: data.envelope_items,
+    theme: data.premium_theme,
   };
 
   // Shared props for theme components

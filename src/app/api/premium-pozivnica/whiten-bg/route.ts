@@ -10,10 +10,13 @@ export const maxDuration = 60;
  */
 export async function POST(request: NextRequest) {
   try {
-    const { imageUrl } = await request.json();
+    const { imageUrl, bride, groom } = await request.json();
     if (!imageUrl) {
       return NextResponse.json({ error: "imageUrl required" }, { status: 400 });
     }
+    const slug = bride && groom
+      ? `${bride.trim().toLowerCase()}-${groom.trim().toLowerCase()}`
+      : "unknown";
 
     const falKey = process.env.FAL_KEY;
     if (!falKey) {
@@ -77,7 +80,7 @@ export async function POST(request: NextRequest) {
     const imgRes = await fetch(transparentUrl);
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
     const blob = await put(
-      `premium/whitened/${Date.now()}.png`,
+      `premium/whitened/${slug}/${Date.now()}.png`,
       imgBuffer,
       { access: "public", contentType: "image/png" },
     );

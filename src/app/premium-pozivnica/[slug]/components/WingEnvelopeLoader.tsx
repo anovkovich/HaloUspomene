@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
 import type { EnvelopeItem } from "@/app/pozivnica/[slug]/types";
+import { getLoaderTheme } from "./envelopeThemes";
 
 type Stage = "sealed" | "untying" | "opening" | "extracted" | "fadeout";
 
@@ -12,6 +13,8 @@ interface WingEnvelopeLoaderProps {
   names: string;
   eventDate?: string;
   envelopeItems?: EnvelopeItem[];
+  /** Invitation theme — unknown values fall back to watercolor. */
+  theme?: string;
 }
 
 const ITEM_SRCS: Record<string, string> = {
@@ -70,11 +73,13 @@ export default function WingEnvelopeLoader({
   names,
   eventDate,
   envelopeItems = [],
+  theme = "watercolor",
 }: WingEnvelopeLoaderProps) {
   const [stage, setStage] = useState<Stage>("sealed");
   const [isMobile, setIsMobile] = useState(false);
   const initials = getInitials(names);
   const dateParts = parseDateParts(eventDate);
+  const t = getLoaderTheme(theme);
 
   useEffect(() => {
     setIsMobile(window.innerWidth < 640);
@@ -102,9 +107,6 @@ export default function WingEnvelopeLoader({
   const isOpen = stage === "opening" || stage === "extracted" || stage === "fadeout";
   const isExtracted = stage === "extracted" || stage === "fadeout";
 
-  const gold = "#d4af37";
-  const goldDark = "#b89520";
-
   return (
     <div
       className={`fixed inset-0 z-[100] flex items-center justify-center ${
@@ -113,8 +115,14 @@ export default function WingEnvelopeLoader({
           : "opacity-100"
       }`}
       style={{
-        backgroundColor: stage === "fadeout" ? "transparent" : isOpen ? "rgba(255, 253, 245, 0.5)" : "#fffdf5",
-        backdropFilter: stage === "fadeout" ? "none" : isOpen ? "blur(6px)" : "none",
+        background:
+          stage === "fadeout"
+            ? "transparent"
+            : isOpen
+              ? t.overlay.bgOpen
+              : t.overlay.bgSealed,
+        backdropFilter:
+          stage === "fadeout" ? "none" : isOpen ? t.overlay.backdropFilterOpen : "none",
         transition: "all 1.5s ease",
       }}
     >
@@ -122,26 +130,33 @@ export default function WingEnvelopeLoader({
       <div className="relative w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] mt-4 sm:mt-0">
 
         {/* Background / base */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#faf8f3] to-[#f5f0e6] shadow-xl border border-[#d4af37]/15" />
+        <div
+          className="absolute inset-0 shadow-xl"
+          style={{ background: t.envelope.back, border: `1px solid ${t.envelope.backBorder}` }}
+        />
 
         {/* THE CARD (Invitation) — centered, rises up */}
         <div
-          className={`absolute inset-6 sm:inset-10 bg-gradient-to-b from-white to-[#fdfcfa] shadow-2xl flex flex-col items-center justify-center text-center p-4 sm:p-8 border border-stone-100 will-change-transform transition-all duration-[2200ms] z-10
+          className={`absolute inset-6 sm:inset-10 flex flex-col items-center justify-center text-center p-4 sm:p-8 will-change-transform transition-all duration-[2200ms] z-10
             ${stage === "sealed" || stage === "untying" ? "opacity-0 scale-95" : ""}
             ${stage === "opening" ? "opacity-100 scale-100" : ""}
-            ${isExtracted ? "shadow-[0_60px_130px_-30px_rgba(0,0,0,0.35)]" : ""}
           `}
           style={{
+            background: t.card.bg,
+            border: `1px solid ${t.card.border}`,
+            boxShadow: isExtracted ? t.card.shadowExtracted : t.card.shadow,
+            backdropFilter: t.card.backdropFilter,
+            WebkitBackdropFilter: t.card.backdropFilter,
             transform: isExtracted
               ? "translateY(-60%) scale(1.05)"
               : "translateY(0) scale(1)",
             backfaceVisibility: "hidden",
             transitionTimingFunction: "cubic-bezier(0.19, 1, 0.22, 1)",
-          }}
+          } as React.CSSProperties}
         >
           {/* Decorative borders */}
-          <div className="absolute inset-2 sm:inset-3 pointer-events-none" style={{ border: `1px solid ${gold}33` }} />
-          <div className="absolute inset-3 sm:inset-4 pointer-events-none" style={{ border: `1px solid ${gold}1a` }} />
+          <div className="absolute inset-2 sm:inset-3 pointer-events-none" style={{ border: `1px solid ${t.card.innerBorder1}` }} />
+          <div className="absolute inset-3 sm:inset-4 pointer-events-none" style={{ border: `1px solid ${t.card.innerBorder2}` }} />
 
           {/* Corner ornaments */}
           {[
@@ -153,45 +168,45 @@ export default function WingEnvelopeLoader({
             <div
               key={i}
               className={`absolute ${pos} w-3 h-3 sm:w-5 sm:h-5`}
-              style={{ borderColor: `${gold}4d`, borderWidth: "2px" }}
+              style={{ borderColor: t.card.cornerColor, borderWidth: "2px" }}
             />
           ))}
 
-          <p className="font-elegant uppercase tracking-[0.25em] sm:tracking-[0.4em] text-[5.5px] sm:text-[8px] mb-0.5 sm:mb-1" style={{ color: "#9a8a6e" }}>
+          <p className="font-elegant uppercase tracking-[0.25em] sm:tracking-[0.4em] text-[5.5px] sm:text-[8px] mb-0.5 sm:mb-1" style={{ color: t.text.label }}>
             Pozivamo Vas
           </p>
-          <h2 className="font-serif text-lg sm:text-[28px] leading-tight px-1 sm:px-2 select-none" style={{ color: gold }}>
+          <h2 className="font-serif text-lg sm:text-[28px] leading-tight px-1 sm:px-2 select-none" style={{ color: t.text.names }}>
             {names}
           </h2>
           <div className="flex items-center gap-1 sm:gap-1.5 my-1 sm:my-2">
-            <div className="w-3 sm:w-5 h-px" style={{ background: `linear-gradient(to right, transparent, ${gold}66)` }} />
-            <Heart size={5} className="sm:hidden" style={{ color: `${gold}88` }} fill="currentColor" />
-            <Heart size={6} className="hidden sm:block" style={{ color: `${gold}88` }} fill="currentColor" />
-            <div className="w-3 sm:w-5 h-px" style={{ background: `linear-gradient(to left, transparent, ${gold}66)` }} />
+            <div className="w-3 sm:w-5 h-px" style={{ background: `linear-gradient(to right, transparent, ${t.text.dividerLine})` }} />
+            <Heart size={5} className="sm:hidden" style={{ color: t.text.heart }} fill="currentColor" />
+            <Heart size={6} className="hidden sm:block" style={{ color: t.text.heart }} fill="currentColor" />
+            <div className="w-3 sm:w-5 h-px" style={{ background: `linear-gradient(to left, transparent, ${t.text.dividerLine})` }} />
           </div>
           {dateParts ? (
             <div className="flex flex-col items-center leading-none select-none mt-0.5 sm:mt-1">
               <span
                 className="font-serif font-bold text-[56px] sm:text-[88px] leading-[0.82]"
-                style={{ color: "#dcc88c", letterSpacing: "-0.02em" }}
+                style={{ color: t.text.dateDay, letterSpacing: "-0.02em" }}
               >
                 {dateParts.day}
               </span>
               <span
                 className="font-serif font-semibold text-[18px] sm:text-[28px] leading-none -mt-0.5 sm:-mt-1"
-                style={{ color: gold, letterSpacing: "0.3em" }}
+                style={{ color: t.text.dateMonth, letterSpacing: "0.3em" }}
               >
                 {dateParts.month}
               </span>
               <span
                 className="font-elegant text-[9px] sm:text-[14px] leading-none mt-0.5 sm:mt-1"
-                style={{ color: "#8B7355", letterSpacing: "0.35em" }}
+                style={{ color: t.text.dateYear, letterSpacing: "0.35em" }}
               >
                 {dateParts.year}
               </span>
             </div>
           ) : (
-            <p className="font-serif italic text-[7px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.25em]" style={{ color: "#8B7355" }}>
+            <p className="font-serif italic text-[7px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.25em]" style={{ color: t.text.dateYear }}>
               {eventDate}
             </p>
           )}
@@ -228,28 +243,29 @@ export default function WingEnvelopeLoader({
           }}
         >
           <div
-            className="absolute inset-0 bg-gradient-to-r from-[#ece5d5] to-[#e8e0ce] shadow-md"
+            className="absolute inset-0 shadow-md"
             style={{
+              background: t.envelope.wingOuter,
               clipPath: "ellipse(100% 50% at 0% 50%)",
               backfaceVisibility: "hidden",
             }}
           />
-          {/* Gold arc on outer curved edge */}
+          {/* Stroked arc on outer curved edge */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ backfaceVisibility: "hidden" }}>
-            <ellipse cx="0" cy="50%" rx="100%" ry="50%" fill="none" stroke="#d4af37" strokeWidth="1.5" opacity="0.5" />
+            <ellipse cx="0" cy="50%" rx="100%" ry="50%" fill="none" stroke={t.envelope.wingStroke} strokeWidth="1.5" opacity={t.envelope.wingStrokeOpacity} />
           </svg>
           {/* Inner face — mirrored: curve faces outward when open */}
           <div
-            className="absolute inset-0 bg-gradient-to-l from-[#f5f0e6] to-[#efe8da]"
+            className="absolute inset-0"
             style={{
+              background: t.envelope.wingInner,
               clipPath: "ellipse(100% 50% at 100% 50%)",
               transform: "rotateY(180deg)",
               backfaceVisibility: "hidden",
             }}
           />
-          {/* Gold arc on inner curved edge */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden" }}>
-            <ellipse cx="100%" cy="50%" rx="100%" ry="50%" fill="none" stroke="#d4af37" strokeWidth="1.5" opacity="0.5" />
+            <ellipse cx="100%" cy="50%" rx="100%" ry="50%" fill="none" stroke={t.envelope.wingStroke} strokeWidth="1.5" opacity={t.envelope.wingStrokeOpacity} />
           </svg>
         </div>
 
@@ -264,38 +280,38 @@ export default function WingEnvelopeLoader({
           }}
         >
           <div
-            className="absolute inset-0 bg-gradient-to-l from-[#ece5d5] to-[#e8e0ce] shadow-md"
+            className="absolute inset-0 shadow-md"
             style={{
+              background: t.envelope.wingOuter,
               clipPath: "ellipse(100% 50% at 100% 50%)",
               backfaceVisibility: "hidden",
             }}
           />
-          {/* Gold arc on outer curved edge */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ backfaceVisibility: "hidden" }}>
-            <ellipse cx="100%" cy="50%" rx="100%" ry="50%" fill="none" stroke="#d4af37" strokeWidth="1.5" opacity="0.5" />
+            <ellipse cx="100%" cy="50%" rx="100%" ry="50%" fill="none" stroke={t.envelope.wingStroke} strokeWidth="1.5" opacity={t.envelope.wingStrokeOpacity} />
           </svg>
           {/* Inner face — mirrored: curve faces outward when open */}
           <div
-            className="absolute inset-0 bg-gradient-to-r from-[#f5f0e6] to-[#efe8da]"
+            className="absolute inset-0"
             style={{
+              background: t.envelope.wingInner,
               clipPath: "ellipse(100% 50% at 0% 50%)",
               transform: "rotateY(180deg)",
               backfaceVisibility: "hidden",
             }}
           />
-          {/* Gold arc on inner curved edge */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden" }}>
-            <ellipse cx="0" cy="50%" rx="100%" ry="50%" fill="none" stroke="#d4af37" strokeWidth="1.5" opacity="0.5" />
+            <ellipse cx="0" cy="50%" rx="100%" ry="50%" fill="none" stroke={t.envelope.wingStroke} strokeWidth="1.5" opacity={t.envelope.wingStrokeOpacity} />
           </svg>
         </div>
 
-        {/* BOW — real gold bow image */}
+        {/* CLOSURE — gold bow (watercolor) or paper-cut ink medallion (line art) */}
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60]"
           initial={{ scale: 1, opacity: 1 }}
           animate={
             isUntied
-              ? { scale: [1, 1.3, 1.35, 0], opacity: [1, 1, 1, 0] }
+              ? { scale: [1, 1.12, 1.15, 0], opacity: [1, 1, 1, 0] }
               : { scale: 1, opacity: 1 }
           }
           transition={
@@ -304,11 +320,39 @@ export default function WingEnvelopeLoader({
               : {}
           }
         >
-          <img
-            src="/images/premium/envelope-details/1f06d143-7d86-402a-81cc-688836ff367a.png"
-            alt="Bow"
-            className="w-32 h-24 sm:w-64 sm:h-48 object-contain drop-shadow-xl"
-          />
+          {t.seal.kind === "wax" ? (
+            <img
+              src="/images/premium/envelope-details/1f06d143-7d86-402a-81cc-688836ff367a.png"
+              alt="Bow"
+              className="object-contain drop-shadow-xl"
+              style={{
+                width: isMobile ? 190 : 285,
+                height: isMobile ? 143 : 214,
+                maxWidth: "none",
+                display: "block",
+              }}
+            />
+          ) : (
+            <div
+              className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-full flex items-center justify-center"
+              style={{
+                background: t.seal.bg,
+                border: `1.5px solid ${t.seal.border}`,
+                boxShadow: t.seal.shadow,
+              }}
+            >
+              <div
+                className="absolute inset-2 sm:inset-3 rounded-full"
+                style={{ border: `1px solid ${t.seal.border}`, opacity: 0.4 }}
+              />
+              <span
+                className="font-serif text-lg sm:text-3xl select-none"
+                style={{ color: t.seal.textColor, letterSpacing: "0.05em" }}
+              >
+                {initials}
+              </span>
+            </div>
+          )}
         </motion.div>
       </div>
     </div>

@@ -4,7 +4,7 @@ export const revalidate = 60;
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getWeddingData, getAllWeddingSlugs } from "@/data/pozivnice";
+import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import { loadSeatingLayout } from "@/lib/seating";
 import { getThemeCSSVariables } from "../constants";
 import type { TableData } from "../raspored-sedenja/types";
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function generateStaticParams() {
-  const slugs = await getAllWeddingSlugs(); return slugs.map((slug) => ({ slug }));
+  const slugs = await getClassicWeddingSlugs(); return slugs.map((slug) => ({ slug }));
 }
 
 export interface GuestTableEntry {

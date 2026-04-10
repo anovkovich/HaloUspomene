@@ -14,10 +14,26 @@ export async function getWeddingData(slug: string): Promise<WeddingData | null> 
   return doc as WeddingData | null;
 }
 
-export async function getAllWeddingSlugs(): Promise<string[]> {
+/** Slugs for classic invitations (excludes premium couples). */
+export async function getClassicWeddingSlugs(): Promise<string[]> {
   const c = await col();
   const docs = await c
-    .find({}, { projection: { slug: 1, _id: 0 } })
+    .find(
+      { premium: { $ne: true } },
+      { projection: { slug: 1, _id: 0 } }
+    )
+    .toArray();
+  return docs.map((d) => d.slug);
+}
+
+/** Slugs for premium invitations only. */
+export async function getPremiumWeddingSlugs(): Promise<string[]> {
+  const c = await col();
+  const docs = await c
+    .find(
+      { premium: true },
+      { projection: { slug: 1, _id: 0 } }
+    )
     .toArray();
   return docs.map((d) => d.slug);
 }

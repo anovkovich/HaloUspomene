@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { getWeddingData, getAllWeddingSlugs } from "@/data/pozivnice";
+import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import { THEME_CONFIGS } from "./constants";
 import type { ScriptFontType } from "./types";
 
@@ -10,7 +10,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export async function generateStaticParams() {
-  const slugs = await getAllWeddingSlugs();
+  const slugs = await getClassicWeddingSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
