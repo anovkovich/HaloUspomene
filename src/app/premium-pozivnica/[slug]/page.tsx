@@ -33,14 +33,9 @@ export default async function PremiumInvitationPage({ params }: Props) {
 
   if (!data?.premium) notFound();
 
-  // Check 2-minute preview window
-  if (data.premium_created_at && !data.premium_paid) {
-    const createdAt = new Date(data.premium_created_at).getTime();
-    const minutesSinceCreation = (Date.now() - createdAt) / 60000;
-
-    if (minutesSinceCreation > 2) {
-      return <PremiumLockedScreen slug={slug} data={data} />;
-    }
+  // Show locked screen if not paid — no preview window
+  if (!data.premium_paid) {
+    return <PremiumLockedScreen slug={slug} data={data} />;
   }
 
   return (

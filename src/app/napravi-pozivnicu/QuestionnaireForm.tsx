@@ -1885,6 +1885,7 @@ export default function QuestionnaireForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const formTopRef = useRef<HTMLDivElement>(null);
 
   // Notify parent about premium mode changes
   React.useEffect(() => {
@@ -2192,6 +2193,23 @@ export default function QuestionnaireForm({
         setPremiumSlug(data.slug);
         setIsSubmitted(true);
 
+        // Send admin notification from client (Web3Forms blocks server-side requests)
+        if (WEB3FORMS_ACCESS_KEY) {
+          fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              access_key: WEB3FORMS_ACCESS_KEY,
+              subject: `🌟 Nova PREMIUM Pozivnica - ${formData.bride} & ${formData.groom}`,
+              from_name: "Halo Pozivnice Premium",
+              Par: `${formData.bride} & ${formData.groom}`,
+              Slug: data.slug,
+              "AI Tema": formData.premium_theme || "(nije izabrana)",
+              "Preview URL": `https://halouspomene.rs/premium-pozivnica/${data.slug}`,
+            }),
+          }).catch(() => {});
+        }
+
         // Cleanup: delete ALL draft blobs (the whitened version is already saved separately)
         fetch("/api/premium-pozivnica/cleanup", {
           method: "POST",
@@ -2321,18 +2339,9 @@ export default function QuestionnaireForm({
             )}
           </p>
         )}
-        {formData.premium && premiumSlug && (
-          <a
-            href={`/premium-pozivnica/${premiumSlug}`}
-            className="inline-flex items-center gap-2 px-6 py-3 mb-6 rounded-2xl bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white font-medium text-sm shadow-lg shadow-[#d4af37]/25 hover:from-[#c5a028] hover:to-[#b89520] transition-all"
-          >
-            <Sparkles size={16} />
-            Pogledajte preview pozivnice
-          </a>
-        )}
         <p style={{ color: successTextMuted }} className="text-sm">
           {formData.premium
-            ? "Vaša pozivnica je vidljiva 2 minuta. Nakon toga će biti zaključana do uplate."
+            ? "Uskoro ćemo vam se javiti sa detaljima vaše premium pozivnice."
             : "Uskoro ćemo napraviti vašu pozivnicu i kontaktirati vas."}
         </p>
       </div>
@@ -2400,8 +2409,6 @@ export default function QuestionnaireForm({
   // Accent color: gold for premium, red for classic
   const accent = formData.premium ? "#d4af37" : "#AE343F";
   const accentDark = formData.premium ? "#c5a028" : "#8B2833";
-
-  const formTopRef = useRef<HTMLDivElement>(null);
 
   return (
     <div

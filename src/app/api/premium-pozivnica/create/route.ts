@@ -87,33 +87,11 @@ export async function POST(request: NextRequest) {
       premium_car: body.premium_car || undefined,
       couple_description: body.couple_description || undefined,
       premium_paid: false,
-      premium_created_at: new Date().toISOString(),
+      draft: true,
     };
 
     // Save to MongoDB
     await upsertCouple(slug, weddingData);
-
-    // Send notification to admin via Web3Forms
-    const web3Key = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
-    if (web3Key) {
-      try {
-        await fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            access_key: web3Key,
-            subject: `🌟 Nova PREMIUM Pozivnica - ${bride} & ${groom}`,
-            from_name: "Halo Pozivnice Premium",
-            Par: `${bride} & ${groom}`,
-            Slug: slug,
-            "AI Tema": premium_theme || "(nije izabrana)",
-            "Preview URL": `${process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs"}/premium-pozivnica/${slug}`,
-          }),
-        });
-      } catch {
-        // Don't fail the creation if email fails
-      }
-    }
 
     return NextResponse.json({
       slug,

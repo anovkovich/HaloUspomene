@@ -165,11 +165,11 @@ export default function PremiumStepEnvelopeLab({
                 {/* Envelope preview */}
                 <div
                   ref={envelopeRef}
-                  className="relative w-full aspect-[4/3] mb-4"
+                  className="relative w-full aspect-[4/3] mb-4 bg-[#f5ead6] rounded-xl border border-[#d4af37]/30 shadow-inner"
                 >
                   {/* Invitation card (center) */}
-                  <div className="absolute top-[20%] left-[15%] right-[15%] bottom-[10%] bg-white/90 rounded-lg border border-stone-200/50 shadow-sm flex items-center justify-center">
-                    <span className="text-xs text-stone-300 font-serif">Pozivnica</span>
+                  <div className="absolute top-[20%] left-[15%] right-[15%] bottom-[10%] bg-white rounded-lg border border-[#d4af37]/40 shadow-md flex items-center justify-center">
+                    <span className="text-sm text-[#b8941a] font-serif tracking-wider">Pozivnica</span>
                   </div>
 
                   {/* Snap zones */}
@@ -187,7 +187,7 @@ export default function PremiumStepEnvelopeLab({
                             ? "border-2 border-[#d4af37]/50 bg-[#d4af37]/10"
                             : draggingItem
                               ? "border-2 border-dashed border-[#d4af37]/60 bg-[#d4af37]/10 animate-pulse"
-                              : "border-2 border-dashed border-stone-300/50"
+                              : "border-2 border-dashed border-[#c4a060]/60 bg-[#d4af37]/5"
                         }`}
                         style={{ left: `${zone.x}%`, top: `${zone.y}%` }}
                         title={placed ? `${getItemDef(placed.type).label} — kliknite za uklanjanje` : zone.label}

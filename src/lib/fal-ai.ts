@@ -4,12 +4,36 @@
  */
 
 /**
- * Build the paper-craft couple illustration prompt from user's description.
- * Produces a layered paper cutout style illustration on pure white background
- * that can float over the invitation (like the moon/castle in paper parallax).
+ * Build the sculpted cream-and-gold couple illustration prompt.
+ *
+ * Aesthetic: a hybrid between layered paper-cut and soft painterly
+ * relief — cream and ivory tones with warm golden glow, soft sculpted
+ * depth (not harsh cut edges), romantic and luminous. The couple
+ * description is placed first with a strict "must match" instruction
+ * so the model prioritises the user's features over style modifiers.
+ *
+ * Background is anchored to pure white so the downstream whiten-bg
+ * (birefnet) step can cleanly remove it for a transparent RGBA PNG.
  */
 function buildPaperCraftPrompt(coupleDescription: string): string {
-  return `${coupleDescription}, wedding couple, bride in white dress, groom in dark suit, 3D paper cutout art, layered white paper craft with ink details and shadows, full body, centered with generous empty space around, isolated on pure solid white background (#ffffff), background must be PURE WHITE! NO dirty white color NO ivory - JUST PURE WHITE #fff, 8k`;
+  return [
+    // Subject first — strict match on the user's description
+    `European white wedding couple: ${coupleDescription}`,
+    `bride and groom MUST accurately match the description above (hair color, hairstyle, dress, suit, beard)`,
+    `fair skin, European Caucasian features`,
+    `full body, centered, gentle romantic embrace`,
+    // Style — layered cream paper sculpture / bas-relief
+    `cream paper sculpture illustration, layered cream and ivory paper bas-relief art`,
+    `couple as a cut paper foreground element placed on a simple stacked cream paper base, clean organic cut edges`,
+    `delicate pencil and fine ink surface line details on dress folds, hair strands, and features`,
+    `warm cream, ivory monochrome palette with subtle pale gold highlights`,
+    `soft drop shadows between paper layers, visible paper thickness`,
+    `stylized 2D paper art illustration, NOT photorealistic, NOT 3D render, NOT CGI, NOT photograph, NOT realistic faces`,
+    // Demographic constraint
+    `NOT Black people, NOT African, NOT dark skin tones`,
+    // Background anchor for birefnet removal
+    `isolated on pure solid white background #ffffff, no text, no extra people`,
+  ].join(", ");
 }
 
 /**

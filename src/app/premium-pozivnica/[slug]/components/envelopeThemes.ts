@@ -177,5 +177,16 @@ export const LINE_ART_LOADER: EnvelopeThemeConfig = {
 export function getLoaderTheme(
   theme?: EnvelopeTheme | string,
 ): EnvelopeThemeConfig {
-  return theme === "line_art" ? LINE_ART_LOADER : WATERCOLOR_LOADER;
+  if (theme === "line_art") {
+    // Same gold envelope, just light background
+    return {
+      ...WATERCOLOR_LOADER,
+      overlay: {
+        bgSealed: "radial-gradient(ellipse 95% 85% at 50% 50%, #FDFBF4 0%, #EFE9D8 100%)",
+        bgOpen: "radial-gradient(ellipse 95% 85% at 50% 50%, rgba(253,251,244,0.85) 0%, rgba(239,233,216,0.9) 100%)",
+        backdropFilterOpen: "blur(6px)",
+      },
+    };
+  }
+  return WATERCOLOR_LOADER;
 }

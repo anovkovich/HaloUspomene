@@ -20,23 +20,57 @@ import type { ThemeInvitationProps } from "../PremiumInvitationClient";
  */
 
 const CITY_BACKGROUNDS: Record<string, string> = {
+  // Current options
+  saint_sava_temple:
+    "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.png",
+  saint_mark_church:
+    "/images/premium/watercolor-invitation/backgrounds/Saint-Mark-Church.png",
+  novi_sad_cathedral:
+    "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.png",
+  gradska_kuca_novi_sad:
+    "/images/premium/watercolor-invitation/backgrounds/Gradska-Kuća-NoviSad.png",
+  city_hall_subotica:
+    "/images/premium/watercolor-invitation/backgrounds/City-Hall-Subotica.png",
+  monastery:
+    "/images/premium/watercolor-invitation/backgrounds/Monastery.png",
+  old_hall:
+    "/images/premium/watercolor-invitation/backgrounds/Old-Hall.png",
+  // Legacy key aliases — map old DB values to the new files
   beograd:
-    "/images/premium/watercolor-invitation/backgrounds/Temple of Saint Sava at sunset.png",
+    "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.png",
   novi_sad:
-    "/images/premium/watercolor-invitation/backgrounds/Golden hour at Novi Sad Cathedral.png",
+    "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.png",
   kragujevac:
-    "/images/premium/watercolor-invitation/backgrounds/Gradska Kuća at golden hour.png",
+    "/images/premium/watercolor-invitation/backgrounds/Old-Hall.png",
   // Fallback / default
-  default: "/images/premium/watercolor-invitation/backgrounds/Grand-palace.png",
+  default:
+    "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.png",
 };
 
 const CAR_IMAGES: Record<string, string> = {
-  oldtimer: "/images/premium/watercolor-invitation/cars/Old-Mercedes.png",
+  // Current options (webp)
+  bmw_x6: "/images/premium/watercolor-invitation/cars/BMW-X6.webp",
+  cadillac: "/images/premium/watercolor-invitation/cars/Cadillac.webp",
+  maybach: "/images/premium/watercolor-invitation/cars/Maybach.webp",
+  mercedes_190_sl:
+    "/images/premium/watercolor-invitation/cars/Mercedes-190-SL.webp",
+  new_rolls_royce:
+    "/images/premium/watercolor-invitation/cars/New-Rolls-Royce.webp",
+  old_mercedes: "/images/premium/watercolor-invitation/cars/Old-Mercedes.webp",
+  old_rolls_royce:
+    "/images/premium/watercolor-invitation/cars/Old-Rolls-Royce.webp",
+  range_rover: "/images/premium/watercolor-invitation/cars/Range-Rover.webp",
+  vw_beetle: "/images/premium/watercolor-invitation/cars/VW-Beetle.webp",
+  // Legacy key aliases — map old DB values to the new files
+  oldtimer: "/images/premium/watercolor-invitation/cars/Old-Mercedes.webp",
   mercedes_classic:
-    "/images/premium/watercolor-invitation/cars/Mercedes-190-SL.png",
-  rolls_royce: "/images/premium/watercolor-invitation/cars/Old-Rolls-Royce.png",
-  vw_buba: "/images/premium/watercolor-invitation/cars/VW-Beetle.png",
-  default: "/images/premium/watercolor-invitation/Vintage car.png",
+    "/images/premium/watercolor-invitation/cars/Mercedes-190-SL.webp",
+  rolls_royce:
+    "/images/premium/watercolor-invitation/cars/Old-Rolls-Royce.webp",
+  vw_buba: "/images/premium/watercolor-invitation/cars/VW-Beetle.webp",
+  // Fallback / default
+  default:
+    "/images/premium/watercolor-invitation/cars/New-Rolls-Royce.webp",
 };
 
 function WatercolorCountdown({ targetDate }: { targetDate: string }) {
@@ -298,6 +332,15 @@ export default function WatercolorInvitation({
     offset: ["start start", "end start"],
   });
 
+  // Track small-screen breakpoint for responsive car parallax values.
+  const [isSmall, setIsSmall] = useState(false);
+  useEffect(() => {
+    const check = () => setIsSmall(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   // Parallax layers — all freeze at 50% scroll so the hero locks in place along with the car
   const yBg = useTransform(scrollYProgress, [0, 0.5, 1], [0, -40, -40]);
   const yNames = useTransform(scrollYProgress, [0, 0.5, 1], [0, -100, -100]);
@@ -313,10 +356,21 @@ export default function WatercolorInvitation({
     [0, 0.55, 0.85],
   );
 
-  // Car parallax — moves until ~50% scroll, then locks in place (still visible, not too small).
-  const carX = useTransform(scrollYProgress, [0, 0.5, 1], [0, 150, 150]);
-  const carY = useTransform(scrollYProgress, [0, 0.5, 1], [0, -60, -60]);
-  const carScale = useTransform(scrollYProgress, [0, 0.5, 1], [1, 0.65, 0.65]);
+  // Car parallax — moves until ~50% scroll, then locks in place.
+  // Mobile: continues the entry trajectory (gentle rightward + slight upward)
+  // so scaling down + hero shift don't make the car appear to sink.
+  const carX = useTransform(
+    scrollYProgress, [0, 0.5, 1],
+    isSmall ? [0, 80, 80] : [0, 150, 150],
+  );
+  const carY = useTransform(
+    scrollYProgress, [0, 0.5, 1],
+    isSmall ? [0, -50, -50] : [0, -60, -60],
+  );
+  const carScale = useTransform(
+    scrollYProgress, [0, 0.5, 1],
+    isSmall ? [1, 0.8, 0.8] : [1, 0.65, 0.65],
+  );
   const carOpacity = useTransform(scrollYProgress, [0, 1], [1, 1]);
   const scrollIndicatorOpacity = useTransform(
     scrollYProgress,
@@ -347,10 +401,13 @@ export default function WatercolorInvitation({
       {/* ═══════════════ HERO (fixed — content scrolls over it) ═══════════════ */}
       <div ref={heroRef}>
         <section className="fixed top-0 left-0 right-0 h-screen flex flex-col overflow-hidden">
-          {/* Background — palace illustration (drifts up slowly) */}
+          {/* Background — palace illustration (drifts up slowly).
+              The container extends 80px BELOW the viewport so the parallax
+              shift (max 40px up) never reveals a gap at the bottom. */}
           <motion.div
-            className="absolute inset-0 z-0"
+            className="absolute left-0 right-0 top-0 z-0"
             style={{
+              bottom: -80,
               y: yBg,
               opacity: heroOpacity,
               willChange: "transform, opacity",
@@ -365,7 +422,9 @@ export default function WatercolorInvitation({
             />
             {/* Gradient overlays for text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1a1510] via-transparent to-transparent" />
+            {/* Bottom fade — matches the page bg (#0a0805) so the transition
+                from hero into the content sections is seamless. */}
+            <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-[#0a0805] via-[#0a0805]/80 to-transparent" />
           </motion.div>
 
           {/* Names — top area (drifts up faster) */}
@@ -442,7 +501,7 @@ export default function WatercolorInvitation({
               width: "clamp(260px, calc(28vw + 110px), 600px)",
               // Position: uses svh (stable viewport height) so mobile URL-bar show/hide
               // doesn't trigger layout recalc on every scroll frame.
-              bottom: "clamp(-12svh, calc(28svh - 17vw), 22svh)",
+              bottom: "clamp(-16svh, calc(24svh - 17vw), 22svh)",
             }}
           >
             <img src={carSrc} alt="Save the Date" className="w-full h-auto" />
@@ -745,25 +804,26 @@ export default function WatercolorInvitation({
             </p>
           )}
 
-          {/* Halo Uspomene branding link */}
-          <div className="mt-12 flex flex-col items-center gap-2">
-            <div className="flex items-center justify-center gap-2">
+          <a
+            href="https://halouspomene.rs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block mt-16 sm:mt-20 pt-6 text-center"
+          >
+            <div className="flex items-center justify-center gap-2 mb-1.5">
               <div className="w-6 h-px bg-[#d4af37]/20" />
               <p className="text-[9px] uppercase tracking-[0.3em] text-[#d4af37]/35">
                 Powered by
               </p>
               <div className="w-6 h-px bg-[#d4af37]/20" />
             </div>
-            <a
-              href="https://halouspomene.rs/website-pozivnice"
-              target="_blank"
-              rel="noopener noreferrer"
+            <p
               className="text-xs sm:text-sm uppercase tracking-[0.25em] text-[#d4af37]/70 hover:text-[#d4af37] transition-colors font-medium"
               style={{ textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
             >
               Halo Uspomene
-            </a>
-          </div>
+            </p>
+          </a>
         </div>
       </footer>
     </div>

@@ -17,7 +17,12 @@
       "WebSearch",
       "WebFetch(domain:developers.google.com)",
       "WebFetch(domain:www.weddingwonderland.rs)",
-      "Bash(grep -oP 'city: \"\"\"\"[^\"\"\"\"]*\"\"\"\"' src/app/moje-vencanje/vendors.ts)"
+      "Bash(grep -oP 'city: \"\"\"\"[^\"\"\"\"]*\"\"\"\"' src/app/moje-vencanje/vendors.ts)",
+      "WebFetch(domain:www.segmind.com)",
+      "WebFetch(domain:blog.segmind.com)",
+      "WebFetch(domain:www.missingpieceinvites.com)",
+      "Bash(curl -s http://localhost:3000/api/admin/couples?search=stefana)",
+      "Bash(node -e ':*)"
     ]
   }
 }

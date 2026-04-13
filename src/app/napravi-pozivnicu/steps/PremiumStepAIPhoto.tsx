@@ -39,7 +39,8 @@ const THEMES: {
     name: "Luxury Romance",
     subtitle: "Birane ilustracije i luksuz na najvišem nivou",
     features: ["Akvarel pozadina", "Retro automobil", "Parallax efekat"],
-    preview: "/images/premium/watercolor-invitation/backgrounds/Grand-palace.png",
+    preview:
+      "/images/premium/watercolor-invitation/backgrounds/Old-Hall.png",
   },
   {
     id: "line_art",
@@ -51,15 +52,25 @@ const THEMES: {
 ];
 
 const CITIES = [
-  { id: "grand_palace", label: "Grand Palace", img: "/images/premium/watercolor-invitation/backgrounds/Grand-palace.png" },
+  { id: "saint_sava_temple", label: "Hram Svetog Save", img: "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.png" },
+  { id: "saint_mark_church", label: "Crkva Svetog Marka", img: "/images/premium/watercolor-invitation/backgrounds/Saint-Mark-Church.png" },
+  { id: "novi_sad_cathedral", label: "Novosadska katedrala", img: "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.png" },
+  { id: "gradska_kuca_novi_sad", label: "Gradska kuća (Novi Sad)", img: "/images/premium/watercolor-invitation/backgrounds/Gradska-Kuća-NoviSad.png" },
+  { id: "city_hall_subotica", label: "Gradska kuća (Subotica)", img: "/images/premium/watercolor-invitation/backgrounds/City-Hall-Subotica.png" },
+  { id: "monastery", label: "Manastir", img: "/images/premium/watercolor-invitation/backgrounds/Monastery.png" },
+  { id: "old_hall", label: "Stara sala", img: "/images/premium/watercolor-invitation/backgrounds/Old-Hall.png" },
 ];
 
 const CARS = [
-  { id: "old_mercedes", label: "Old Mercedes", img: "/images/premium/watercolor-invitation/cars/Old-Mercedes.png" },
-  { id: "mercedes_190_sl", label: "Mercedes 190 SL", img: "/images/premium/watercolor-invitation/cars/Mercedes-190-SL.png" },
-  { id: "new_rolls_royce", label: "Rolls Royce", img: "/images/premium/watercolor-invitation/cars/New-Rolls-Royce.png" },
-  { id: "old_rolls_royce", label: "Old Rolls Royce", img: "/images/premium/watercolor-invitation/cars/Old-Rolls-Royce.png" },
-  { id: "vw_beetle", label: "VW Buba", img: "/images/premium/watercolor-invitation/cars/VW-Beetle.png" },
+  { id: "new_rolls_royce", label: "Rolls Royce", img: "/images/premium/watercolor-invitation/cars/New-Rolls-Royce.webp" },
+  { id: "old_rolls_royce", label: "Old Rolls Royce", img: "/images/premium/watercolor-invitation/cars/Old-Rolls-Royce.webp" },
+  { id: "maybach", label: "Maybach", img: "/images/premium/watercolor-invitation/cars/Maybach.webp" },
+  { id: "cadillac", label: "Cadillac", img: "/images/premium/watercolor-invitation/cars/Cadillac.webp" },
+  { id: "bmw_x6", label: "BMW X6", img: "/images/premium/watercolor-invitation/cars/BMW-X6.webp" },
+  { id: "range_rover", label: "Range Rover", img: "/images/premium/watercolor-invitation/cars/Range-Rover.webp" },
+  { id: "mercedes_190_sl", label: "Mercedes 190 SL", img: "/images/premium/watercolor-invitation/cars/Mercedes-190-SL.webp" },
+  { id: "old_mercedes", label: "Old Mercedes", img: "/images/premium/watercolor-invitation/cars/Old-Mercedes.webp" },
+  { id: "vw_beetle", label: "VW Buba", img: "/images/premium/watercolor-invitation/cars/VW-Beetle.webp" },
 ];
 
 function ScrollableCards({
