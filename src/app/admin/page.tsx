@@ -444,7 +444,7 @@ export default function AdminPage() {
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(`https://halouspomene.rs/pozivnica/${c.slug}`);
+                        navigator.clipboard.writeText(`https://halouspomene.rs/${c.premium ? 'premium-pozivnica' : 'pozivnica'}/${c.slug}`);
                         setCopiedSlug(c.slug);
                         setTimeout(() => setCopiedSlug(null), 2000);
                       }}
