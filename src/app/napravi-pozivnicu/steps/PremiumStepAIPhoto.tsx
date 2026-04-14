@@ -40,7 +40,7 @@ const THEMES: {
     subtitle: "Birane ilustracije i luksuz na najvišem nivou",
     features: ["Akvarel pozadina", "Retro automobil", "Parallax efekat"],
     preview:
-      "/images/premium/watercolor-invitation/backgrounds/Old-Hall.png",
+      "/images/premium/watercolor-invitation/backgrounds/Old-Hall.webp",
   },
   {
     id: "line_art",
@@ -52,13 +52,13 @@ const THEMES: {
 ];
 
 const CITIES = [
-  { id: "saint_sava_temple", label: "Hram Svetog Save", img: "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.png" },
-  { id: "saint_mark_church", label: "Crkva Svetog Marka", img: "/images/premium/watercolor-invitation/backgrounds/Saint-Mark-Church.png" },
-  { id: "novi_sad_cathedral", label: "Novosadska katedrala", img: "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.png" },
-  { id: "gradska_kuca_novi_sad", label: "Gradska kuća (Novi Sad)", img: "/images/premium/watercolor-invitation/backgrounds/Gradska-Kuća-NoviSad.png" },
-  { id: "city_hall_subotica", label: "Gradska kuća (Subotica)", img: "/images/premium/watercolor-invitation/backgrounds/City-Hall-Subotica.png" },
-  { id: "monastery", label: "Manastir", img: "/images/premium/watercolor-invitation/backgrounds/Monastery.png" },
-  { id: "old_hall", label: "Stara sala", img: "/images/premium/watercolor-invitation/backgrounds/Old-Hall.png" },
+  { id: "saint_sava_temple", label: "Hram Svetog Save", img: "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.webp" },
+  { id: "saint_mark_church", label: "Crkva Svetog Marka", img: "/images/premium/watercolor-invitation/backgrounds/Saint-Mark-Church.webp" },
+  { id: "novi_sad_cathedral", label: "Novosadska katedrala", img: "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.webp" },
+  { id: "gradska_kuca_novi_sad", label: "Gradska kuća (Novi Sad)", img: "/images/premium/watercolor-invitation/backgrounds/Gradska-Kuća-NoviSad.webp" },
+  { id: "city_hall_subotica", label: "Gradska kuća (Subotica)", img: "/images/premium/watercolor-invitation/backgrounds/City-Hall-Subotica.webp" },
+  { id: "monastery", label: "Manastir", img: "/images/premium/watercolor-invitation/backgrounds/Monastery.webp" },
+  { id: "old_hall", label: "Stara sala", img: "/images/premium/watercolor-invitation/backgrounds/Old-Hall.webp" },
 ];
 
 const CARS = [

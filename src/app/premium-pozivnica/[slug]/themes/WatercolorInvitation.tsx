@@ -22,29 +22,29 @@ import type { ThemeInvitationProps } from "../PremiumInvitationClient";
 const CITY_BACKGROUNDS: Record<string, string> = {
   // Current options
   saint_sava_temple:
-    "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.png",
+    "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.webp",
   saint_mark_church:
-    "/images/premium/watercolor-invitation/backgrounds/Saint-Mark-Church.png",
+    "/images/premium/watercolor-invitation/backgrounds/Saint-Mark-Church.webp",
   novi_sad_cathedral:
-    "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.png",
+    "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.webp",
   gradska_kuca_novi_sad:
-    "/images/premium/watercolor-invitation/backgrounds/Gradska-Kuća-NoviSad.png",
+    "/images/premium/watercolor-invitation/backgrounds/Gradska-Kuća-NoviSad.webp",
   city_hall_subotica:
-    "/images/premium/watercolor-invitation/backgrounds/City-Hall-Subotica.png",
+    "/images/premium/watercolor-invitation/backgrounds/City-Hall-Subotica.webp",
   monastery:
-    "/images/premium/watercolor-invitation/backgrounds/Monastery.png",
+    "/images/premium/watercolor-invitation/backgrounds/Monastery.webp",
   old_hall:
-    "/images/premium/watercolor-invitation/backgrounds/Old-Hall.png",
+    "/images/premium/watercolor-invitation/backgrounds/Old-Hall.webp",
   // Legacy key aliases — map old DB values to the new files
   beograd:
-    "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.png",
+    "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.webp",
   novi_sad:
-    "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.png",
+    "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.webp",
   kragujevac:
-    "/images/premium/watercolor-invitation/backgrounds/Old-Hall.png",
+    "/images/premium/watercolor-invitation/backgrounds/Old-Hall.webp",
   // Fallback / default
   default:
-    "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.png",
+    "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.webp",
 };
 
 const CAR_IMAGES: Record<string, string> = {
