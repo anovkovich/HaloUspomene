@@ -578,7 +578,7 @@ export default function LineArtInvitation({
         className="pointer-events-none fixed top-0 left-0 h-full w-[60px] sm:w-[100px] md:w-[130px] lg:w-[160px] z-[5]"
         style={{
           backgroundImage:
-            "url('/images/premium/line-art-invitation/side-decor.png')",
+            "url('/images/premium/line-art-invitation/side-decor.webp')",
           backgroundSize: "100% auto",
           backgroundPosition: "left top",
           backgroundRepeat: "repeat-y",
@@ -590,7 +590,7 @@ export default function LineArtInvitation({
         className="pointer-events-none fixed top-0 right-0 h-full w-[60px] sm:w-[100px] md:w-[130px] lg:w-[160px] z-[5]"
         style={{
           backgroundImage:
-            "url('/images/premium/line-art-invitation/side-decor.png')",
+            "url('/images/premium/line-art-invitation/side-decor.webp')",
           backgroundSize: "100% auto",
           backgroundPosition: "left top",
           backgroundRepeat: "repeat-y",
@@ -603,7 +603,7 @@ export default function LineArtInvitation({
         style={{ y: starryNightY }}
       >
         <img
-          src="/images/premium/line-art-invitation/Starry-night.png"
+          src="/images/premium/line-art-invitation/Starry-night.webp"
           alt=""
           className="w-full h-auto block translate-y-0 md:-translate-y-[30%] lg:-translate-y-[40%] drop-shadow-[0_15px_25px_rgba(0,0,0,0.45)] sm:drop-shadow-[0_40px_60px_rgba(0,0,0,0.6)]"
         />
@@ -631,7 +631,7 @@ export default function LineArtInvitation({
               right: "-15%",
               bottom: "-20%",
               backgroundImage:
-                "url('/images/premium/line-art-invitation/paper-wallpaper.png')",
+                "url('/images/premium/line-art-invitation/paper-wallpaper.webp')",
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
@@ -675,7 +675,7 @@ export default function LineArtInvitation({
               right: "-15%",
               bottom: "-20%",
               backgroundImage:
-                "url('/images/premium/line-art-invitation/paper-wallpaper.png')",
+                "url('/images/premium/line-art-invitation/paper-wallpaper.webp')",
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
@@ -684,7 +684,7 @@ export default function LineArtInvitation({
         </div>
         {/* Diamond waterfall — extends upward into section 2, 50% overlap */}
         <motion.img
-          src="/images/premium/line-art-invitation/diamond-waterfall.png"
+          src="/images/premium/line-art-invitation/diamond-waterfall.webp"
           alt=""
           aria-hidden
           className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[30%] w-[135%] sm:w-[125%] md:w-[100%] lg:w-[88%] xl:w-[80%] max-w-[1400px] h-auto z-[3] drop-shadow-[0_30px_50px_rgba(0,0,0,0.4)]"
@@ -700,7 +700,7 @@ export default function LineArtInvitation({
       <section className="relative min-h-screen flex flex-col items-center justify-center px-8 sm:px-16 md:px-24 py-16">
         {/* Layered yellow roses — top corners */}
         <motion.img
-          src="/images/premium/line-art-invitation/layered-yellow-roses.png"
+          src="/images/premium/line-art-invitation/layered-yellow-roses.webp"
           alt=""
           aria-hidden
           className="pointer-events-none absolute top-[2%] left-[-2%] sm:left-[4%] md:left-[6%] w-[42%] sm:w-[36%] md:w-[32%] lg:w-[30%] max-w-[440px] h-auto z-[15] drop-shadow-[0_25px_45px_rgba(0,0,0,0.5)] origin-top"
@@ -708,7 +708,7 @@ export default function LineArtInvitation({
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.img
-          src="/images/premium/line-art-invitation/layered-yellow-roses.png"
+          src="/images/premium/line-art-invitation/layered-yellow-roses.webp"
           alt=""
           aria-hidden
           className="pointer-events-none absolute top-[2%] right-[-2%] sm:right-[4%] md:right-[6%] w-[42%] sm:w-[36%] md:w-[32%] lg:w-[30%] max-w-[440px] h-auto -scale-x-100 z-[15] drop-shadow-[0_25px_45px_rgba(0,0,0,0.5)] origin-top"

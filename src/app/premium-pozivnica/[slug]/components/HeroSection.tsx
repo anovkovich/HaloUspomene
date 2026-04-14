@@ -69,7 +69,7 @@ export default function HeroSection({
         <div
           className="absolute inset-0 z-[1]"
           style={{
-            backgroundImage: "url('/images/premium/line-art-invitation/paper-wallpaper.png')",
+            backgroundImage: "url('/images/premium/line-art-invitation/paper-wallpaper.webp')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -85,7 +85,7 @@ export default function HeroSection({
             style={{ y: yRoses }}
           >
             <motion.img
-              src="/images/premium/line-art-invitation/yellow-roses.png"
+              src="/images/premium/line-art-invitation/yellow-roses.webp"
               alt=""
               aria-hidden
               className="w-full h-auto -scale-x-100 drop-shadow-[0_25px_45px_rgba(0,0,0,0.55)] origin-top"
@@ -98,7 +98,7 @@ export default function HeroSection({
             style={{ y: yRoses }}
           >
             <motion.img
-              src="/images/premium/line-art-invitation/yellow-roses.png"
+              src="/images/premium/line-art-invitation/yellow-roses.webp"
               alt=""
               aria-hidden
               className="w-full h-auto drop-shadow-[0_25px_45px_rgba(0,0,0,0.55)] origin-top"
