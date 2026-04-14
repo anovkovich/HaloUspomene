@@ -323,6 +323,8 @@ export default function WingEnvelopeLoader({
             <img
               src="/images/premium/envelope-details/tie.webp"
               alt="Bow"
+              fetchPriority="high"
+              decoding="sync"
               className="object-contain drop-shadow-xl"
               style={{
                 width: isMobile ? 190 : 285,

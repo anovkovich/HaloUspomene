@@ -753,7 +753,7 @@ export default function WatercolorInvitation({
                       <iframe
                         src={loc.map_url}
                         className="w-full h-40 block"
-                        loading="lazy"
+                        loading="eager"
                         style={{
                           filter:
                             "invert(1) hue-rotate(200deg) brightness(0.9) contrast(0.9) grayscale(0.3)",

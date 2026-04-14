@@ -35,5 +35,12 @@ export default async function PremiumInvitationLayout({
     }
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {/* Preload critical envelope assets so they show instantly on first paint */}
+      <link rel="preload" as="image" href="/images/premium/envelope-details/gold-wax.webp" fetchPriority="high" />
+      <link rel="preload" as="image" href="/images/premium/envelope-details/tie.webp" fetchPriority="high" />
+      {children}
+    </>
+  );
 }

@@ -330,6 +330,8 @@ export default function PremiumEnvelopeLoader({
                   <img
                     src="/images/premium/envelope-details/gold-wax.webp"
                     alt="Wax seal"
+                    fetchPriority="high"
+                    decoding="sync"
                     className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl pointer-events-none select-none"
                   />
                   {/* Initials overlaid on the empty center of the seal */}
