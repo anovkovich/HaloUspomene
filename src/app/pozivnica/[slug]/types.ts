@@ -20,7 +20,6 @@ export type PremiumThemeType = "watercolor" | "disney_pixar" | "line_art";
 export interface EnvelopeItem {
   type:
     | "clover"
-    | "dried_flower"
     | "champagne"
     | "boutonniere"
     | "bouquet"

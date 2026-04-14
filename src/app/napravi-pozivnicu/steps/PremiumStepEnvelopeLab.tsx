@@ -15,15 +15,14 @@ interface PremiumStepEnvelopeLabProps {
 }
 
 const ITEM_DEFS: { type: ItemType; label: string; src: string }[] = [
-  { type: "clover", label: "Detelina", src: "/images/premium/envelope-details/clover.webp" },
-  { type: "dried_flower", label: "Suvo cveće", src: "/images/premium/envelope-details/dried-white-flower.webp" },
-  { type: "champagne", label: "Šampanjac", src: "/images/premium/envelope-details/Champagne toast in vintage Polaroid.png" },
-  { type: "boutonniere", label: "Butonjerka", src: "/images/premium/envelope-details/Rustic wedding boutonniere in Polaroid.png" },
-  { type: "bouquet", label: "Buket", src: "/images/premium/envelope-details/Vintage Biedermeier-style wedding bouquet.png" },
-  { type: "rings", label: "Burme", src: "/images/premium/envelope-details/Wedding rings on textured fabric.png" },
-  { type: "tulips", label: "Lale", src: "/images/premium/envelope-details/a37bb0a0-62d9-4bfe-b52d-a69e6954687d.png" },
-  { type: "roses", label: "Ruže", src: "/images/premium/envelope-details/835f4bca-7963-46d3-8245-6a615b27c997.png" },
-  { type: "gold_bow", label: "Mašna", src: "/images/premium/envelope-details/1f06d143-7d86-402a-81cc-688836ff367a.png" },
+  { type: "clover", label: "Detelina", src: "/images/premium/envelope-details/Polaroid-clover.webp" },
+  { type: "champagne", label: "Šampanjac", src: "/images/premium/envelope-details/Polaroid-Champagne.webp" },
+  { type: "boutonniere", label: "Kićanka", src: "/images/premium/envelope-details/Polaroid-kicanka.webp" },
+  { type: "bouquet", label: "Buket", src: "/images/premium/envelope-details/Polaroid-Biedermeier.webp" },
+  { type: "rings", label: "Burme", src: "/images/premium/envelope-details/Polaroid-rings.webp" },
+  { type: "tulips", label: "Lale", src: "/images/premium/envelope-details/Polaroid-tulips.webp" },
+  { type: "roses", label: "Ruže", src: "/images/premium/envelope-details/Polaroid-roses.webp" },
+  { type: "gold_bow", label: "Mašna", src: "/images/premium/envelope-details/tie.webp" },
 ];
 
 // Predefined snap zones — 5 positions: sides + bottom arc

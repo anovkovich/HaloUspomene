@@ -18,15 +18,14 @@ interface PremiumEnvelopeLoaderProps {
 }
 
 const ITEM_SRCS: Record<string, string> = {
-  clover: "/images/premium/envelope-details/clover.webp",
-  dried_flower: "/images/premium/envelope-details/dried-white-flower.webp",
-  champagne: "/images/premium/envelope-details/Champagne toast in vintage Polaroid.png",
-  boutonniere: "/images/premium/envelope-details/Rustic wedding boutonniere in Polaroid.png",
-  bouquet: "/images/premium/envelope-details/Vintage Biedermeier-style wedding bouquet.png",
-  rings: "/images/premium/envelope-details/Wedding rings on textured fabric.png",
-  tulips: "/images/premium/envelope-details/a37bb0a0-62d9-4bfe-b52d-a69e6954687d.png",
-  roses: "/images/premium/envelope-details/835f4bca-7963-46d3-8245-6a615b27c997.png",
-  gold_bow: "/images/premium/envelope-details/1f06d143-7d86-402a-81cc-688836ff367a.png",
+  clover: "/images/premium/envelope-details/Polaroid-clover.webp",
+  champagne: "/images/premium/envelope-details/Polaroid-Champagne.webp",
+  boutonniere: "/images/premium/envelope-details/Polaroid-kicanka.webp",
+  bouquet: "/images/premium/envelope-details/Polaroid-Biedermeier.webp",
+  rings: "/images/premium/envelope-details/Polaroid-rings.webp",
+  tulips: "/images/premium/envelope-details/Polaroid-tulips.webp",
+  roses: "/images/premium/envelope-details/Polaroid-roses.webp",
+  gold_bow: "/images/premium/envelope-details/tie.webp",
 };
 
 // Mobile: 2 rows (3 top + 2 bottom), Desktop: arc layout
