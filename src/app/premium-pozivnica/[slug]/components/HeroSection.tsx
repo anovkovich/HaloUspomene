@@ -115,51 +115,6 @@ export default function HeroSection({
         {premiumTheme && <ParticleBackground theme={premiumTheme} />}
       </motion.div>
 
-      {/* ── LAYER 2 — Ornate arch frame (medium) ── */}
-      <motion.div
-        className="absolute inset-0 z-[2] pointer-events-none flex items-center justify-center"
-        style={{ y: yArch }}
-      >
-        <img
-          src="/images/premium/ornaments/ornate-arch-frame.png"
-          alt=""
-          className="w-[88%] sm:w-[70%] max-w-[520px] h-auto opacity-40"
-        />
-      </motion.div>
-
-      {/* ── LAYER 3 — Top floral garland (fast — scrolls away quickly) ── */}
-      <motion.div
-        className="absolute top-0 left-0 right-0 z-[3] pointer-events-none"
-        style={{ y: yGarlandTop }}
-      >
-        <img
-          src="/images/premium/ornaments/floral-garland-top.png"
-          alt=""
-          className="w-full h-auto opacity-80"
-        />
-      </motion.div>
-
-      {/* ── LAYER 4 — Floating flowers (fastest — strong parallax) ── */}
-      <motion.div
-        className="absolute inset-0 z-[6] pointer-events-none"
-        style={{ y: yFlowers, opacity: opacityFade }}
-      >
-        <img src="/images/premium/ornaments/floating-flower-1.png" alt="" className="absolute top-[12%] left-[3%] w-14 sm:w-20 opacity-50 rotate-[-15deg]" />
-        <img src="/images/premium/ornaments/floating-flower-2.png" alt="" className="absolute top-[8%] right-[5%] w-12 sm:w-16 opacity-40 rotate-[20deg]" />
-        <img src="/images/premium/ornaments/floating-flower-3.png" alt="" className="absolute top-[55%] left-[2%] w-12 sm:w-18 opacity-45 rotate-[30deg]" />
-        <img src="/images/premium/ornaments/floating-flower-1.png" alt="" className="absolute top-[45%] right-[3%] w-10 sm:w-16 opacity-35 rotate-[-25deg]" />
-        <img src="/images/premium/ornaments/floating-flower-2.png" alt="" className="absolute top-[75%] left-[8%] w-10 sm:w-14 opacity-30 rotate-[-40deg]" />
-        <img src="/images/premium/ornaments/floating-flower-3.png" alt="" className="absolute top-[70%] right-[6%] w-11 sm:w-15 opacity-40 rotate-[10deg]" />
-      </motion.div>
-
-      {/* ── LAYER 5 — Side floral accents (medium) ── */}
-      <motion.div
-        className="absolute inset-0 z-[4] pointer-events-none"
-        style={{ y: yArch }}
-      >
-        <img src="/images/premium/ornaments/floating-flower-2.png" alt="" className="absolute left-0 top-[30%] w-16 sm:w-24 opacity-30 rotate-[-10deg]" />
-        <img src="/images/premium/ornaments/floating-flower-2.png" alt="" className="absolute right-0 top-[35%] w-16 sm:w-24 opacity-30 rotate-[10deg] -scale-x-100" />
-      </motion.div>
 
       {/* ── LAYER 6 — Main hero content ── */}
       <motion.div
@@ -301,18 +256,6 @@ export default function HeroSection({
           />
         </motion.div>
       )}
-
-      {/* ── LAYER 7 — Bottom floral (foreground — moves up INTO view) ── */}
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 z-[12] pointer-events-none"
-        style={{ y: yGarlandBottom }}
-      >
-        <img
-          src="/images/premium/ornaments/floral-garland-bottom.png"
-          alt=""
-          className="w-full h-auto opacity-75"
-        />
-      </motion.div>
 
       {/* ── LAYER 8 — Foreground blur glow (moves opposite) ── */}
       <motion.div
