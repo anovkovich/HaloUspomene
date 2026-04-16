@@ -197,7 +197,7 @@ export default function AudioCard({ slug, coupleNames }: Props) {
   // Loading
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm">
+      <div className="bg-white rounded-2xl border border-[#232323]/25 p-6 shadow-md">
         <div className="flex justify-center py-12">
           <span className="loading loading-spinner loading-lg text-[#AE343F]" />
         </div>
@@ -208,40 +208,40 @@ export default function AudioCard({ slug, coupleNames }: Props) {
   // Not paid — demo/upsell
   if (!paidForAudio) {
     return (
-      <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm">
+      <div className="bg-white rounded-2xl border border-[#232323]/25 p-6 shadow-md">
         <h3 className="font-serif text-lg text-[#232323] mb-4">Audio knjiga</h3>
 
         <div className="text-center py-6 px-4 mb-4">
-          <Lock size={28} className="mx-auto mb-3 text-[#AE343F]/40" />
+          <Lock size={28} className="mx-auto mb-3 text-[#AE343F]/60" />
           <p className="font-serif text-base text-[#232323] mb-1">
             Audio knjiga utisaka
           </p>
-          <p className="text-sm text-[#232323]/50">
+          <p className="text-sm text-[#232323]/75">
             Vaši gosti ostavljaju glasovne poruke — vi ih slušate, čuvate i
             preuzimate. Dostupno uz aktivaciju audio paketa.
           </p>
         </div>
 
         {/* Demo messages */}
-        <div className="border border-[#232323]/8 rounded-xl overflow-hidden mb-4">
+        <div className="border border-[#232323]/15 rounded-xl overflow-hidden mb-4">
           <div className="flex items-center gap-4 px-4 py-2.5 bg-[#F5F4DC]/50">
             <div className="flex items-center gap-1.5 text-sm">
               <Mic size={14} className="text-[#AE343F]" />
-              <span className="text-[#232323]/40">1 DEMO poruka</span>
+              <span className="text-[#232323]/75">1 DEMO poruka</span>
             </div>
-            <span className="text-sm text-[#232323]/25">
+            <span className="text-sm text-[#232323]/55">
               {formatDuration(
                 DEMO_MESSAGES.reduce((s, m) => s + m.durationMs, 0),
               )}{" "}
               ukupno
             </span>
           </div>
-          <div className="divide-y divide-[#232323]/5">
+          <div className="divide-y divide-[#232323]/10">
             {DEMO_MESSAGES.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                  playing === msg.id ? "bg-[#AE343F]/5" : ""
+                  playing === msg.id ? "bg-[#AE343F]/12" : ""
                 }`}
               >
                 <button
@@ -267,7 +267,7 @@ export default function AudioCard({ slug, coupleNames }: Props) {
                   </p>
                   {playing === msg.id ? (
                     <div className="mt-1.5 flex items-center gap-2">
-                      <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-[#AE343F]/10">
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-[#AE343F]/20">
                         <div
                           className="h-full rounded-full transition-[width] duration-300 bg-[#AE343F]"
                           style={{
@@ -281,7 +281,7 @@ export default function AudioCard({ slug, coupleNames }: Props) {
                       </span>
                     </div>
                   ) : (
-                    <span className="text-xs text-[#232323]/30">
+                    <span className="text-xs text-[#232323]/60">
                       {formatDuration(msg.durationMs)}
                     </span>
                   )}
@@ -290,37 +290,37 @@ export default function AudioCard({ slug, coupleNames }: Props) {
             ))}
           </div>
           <div className="px-4 py-2 bg-[#F5F4DC]/30">
-            <p className="text-[10px] text-center text-[#232323]/25 italic">
+            <p className="text-[10px] text-center text-[#232323]/55 italic">
               Demo poruke — aktivacijom ovde ćete videti poruke vaših gostiju
             </p>
           </div>
         </div>
 
         {/* USB options */}
-        <div className="border border-[#d4af37]/20 rounded-xl overflow-hidden bg-[#F5F4DC]/40 mb-3">
+        <div className="border border-[#d4af37]/35 rounded-xl overflow-hidden bg-[#F5F4DC]/40 mb-3">
           <div className="p-4 space-y-3">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#d4af37]/10 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-[#d4af37]/20 flex items-center justify-center shrink-0">
                 <span className="text-lg">🍾</span>
               </div>
               <div>
                 <p className="text-sm font-medium text-[#232323]">
                   USB bočica sa porukom
                 </p>
-                <p className="text-xs text-[#232323]/45">
+                <p className="text-xs text-[#232323]/70">
                   Elegantni USB u obliku bočice sa svim porukama.
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#d4af37]/10 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-[#d4af37]/20 flex items-center justify-center shrink-0">
                 <span className="text-lg">📼</span>
               </div>
               <div>
                 <p className="text-sm font-medium text-[#232323]">
                   USB retro kaseta
                 </p>
-                <p className="text-xs text-[#232323]/45">
+                <p className="text-xs text-[#232323]/70">
                   Nostalgični USB u obliku audio kasete.
                 </p>
               </div>
@@ -329,7 +329,7 @@ export default function AudioCard({ slug, coupleNames }: Props) {
         </div>
 
         {/* Retro phone — separate, bigger */}
-        <div className="border border-[#AE343F]/10 rounded-xl overflow-hidden mb-4">
+        <div className="border border-[#AE343F]/25 rounded-xl overflow-hidden mb-4">
           <div className="flex items-center gap-4 p-4 bg-[#F5F4DC]/30">
             <Image
               src="/images/phone.webp"
@@ -342,7 +342,7 @@ export default function AudioCard({ slug, coupleNames }: Props) {
               <p className="text-sm font-medium text-[#232323] mb-1">
                 Retro telefon uspomena
               </p>
-              <p className="text-xs text-[#232323]/45 leading-relaxed">
+              <p className="text-xs text-[#232323]/75 leading-relaxed">
                 Pun doživljaj — gosti podižu slušalicu i ostavljaju poruku.
                 Atrakcija na venčanju i nezaboravna uspomena.
               </p>
@@ -366,27 +366,27 @@ export default function AudioCard({ slug, coupleNames }: Props) {
       <h3 className="font-serif text-lg text-[#232323] mb-4">Audio knjiga</h3>
 
       {/* Stats bar */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#232323]/5">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#232323]/15">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 text-sm">
             <Mic size={14} className="text-[#AE343F]" />
-            <span className="text-[#232323]/50">
+            <span className="text-[#232323]/75">
               {messages.length} {messages.length === 1 ? "poruka" : "poruka"}
             </span>
           </div>
-          <span className="text-sm text-[#232323]/30">
+          <span className="text-sm text-[#232323]/55">
             {formatDuration(totalDuration)} ukupno
           </span>
         </div>
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="p-2 rounded-lg transition-colors hover:bg-[#232323]/5 cursor-pointer disabled:opacity-40"
+          className="p-2 rounded-lg transition-colors hover:bg-[#232323]/10 cursor-pointer disabled:opacity-40"
           title="Osveži"
         >
           <RefreshCw
             size={14}
-            className={`text-[#232323]/40 ${refreshing ? "animate-spin" : ""}`}
+            className={`text-[#232323]/65 ${refreshing ? "animate-spin" : ""}`}
           />
         </button>
       </div>
@@ -394,8 +394,8 @@ export default function AudioCard({ slug, coupleNames }: Props) {
       {/* Empty state */}
       {messages.length === 0 && (
         <div className="text-center py-10">
-          <Mic size={32} className="mx-auto mb-3 text-[#AE343F]/20" />
-          <p className="text-sm text-[#232323]/40">Još nema audio poruka</p>
+          <Mic size={32} className="mx-auto mb-3 text-[#AE343F]/40" />
+          <p className="text-sm text-[#232323]/65">Još nema audio poruka</p>
         </div>
       )}
 
@@ -407,8 +407,8 @@ export default function AudioCard({ slug, coupleNames }: Props) {
               key={msg._id}
               className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
                 playing === msg._id
-                  ? "bg-[#AE343F]/5"
-                  : "hover:bg-[#232323]/[0.02]"
+                  ? "bg-[#AE343F]/12"
+                  : "hover:bg-[#232323]/[0.04]"
               }`}
             >
               <button
@@ -442,11 +442,11 @@ export default function AudioCard({ slug, coupleNames }: Props) {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-[#232323]/30">
+                    <span className="text-xs text-[#232323]/60">
                       {formatDuration(msg.durationMs)}
                     </span>
-                    <span className="text-xs text-[#232323]/15">&middot;</span>
-                    <span className="text-xs text-[#232323]/25">
+                    <span className="text-xs text-[#232323]/40">&middot;</span>
+                    <span className="text-xs text-[#232323]/55">
                       {formatTimestamp(msg.createdAt)}
                     </span>
                   </div>
@@ -464,7 +464,7 @@ export default function AudioCard({ slug, coupleNames }: Props) {
                   </button>
                   <button
                     onClick={() => setConfirmingDelete(null)}
-                    className="p-1.5 rounded-lg text-[#232323]/30 hover:bg-[#232323]/5 cursor-pointer transition-colors"
+                    className="p-1.5 rounded-lg text-[#232323]/60 hover:bg-[#232323]/10 cursor-pointer transition-colors"
                   >
                     <X size={13} />
                   </button>
@@ -473,7 +473,7 @@ export default function AudioCard({ slug, coupleNames }: Props) {
                 <button
                   onClick={() => setConfirmingDelete(msg._id)}
                   disabled={deleting === msg._id}
-                  className="p-1.5 rounded-lg text-[#232323]/20 hover:text-red-500 hover:bg-red-500/5 cursor-pointer transition-colors disabled:opacity-40 shrink-0"
+                  className="p-1.5 rounded-lg text-[#232323]/50 hover:text-red-500 hover:bg-red-500/10 cursor-pointer transition-colors disabled:opacity-40 shrink-0"
                 >
                   <Trash2
                     size={13}
@@ -501,11 +501,11 @@ export default function AudioCard({ slug, coupleNames }: Props) {
       )}
 
       {/* Info section */}
-      <div className="border border-[#232323]/8 rounded-xl p-4 space-y-3">
+      <div className="border border-[#232323]/15 rounded-xl p-4 space-y-3">
         <div className="flex items-start gap-3">
           <ExternalLink size={13} className="shrink-0 mt-0.5 text-[#AE343F]" />
           <div>
-            <p className="text-sm text-[#232323]/70">
+            <p className="text-sm text-[#232323]/85">
               Gosti snimaju poruke na:
             </p>
             <Link
@@ -529,15 +529,15 @@ export default function AudioCard({ slug, coupleNames }: Props) {
       </div>
 
       {/* Promo: USB options */}
-      <div className="mt-4 border border-[#d4af37]/20 rounded-xl overflow-hidden bg-[#F5F4DC]/40">
-        <div className="px-4 py-3 border-b border-[#d4af37]/10">
+      <div className="mt-4 border border-[#d4af37]/35 rounded-xl overflow-hidden bg-[#F5F4DC]/40">
+        <div className="px-4 py-3 border-b border-[#d4af37]/25">
           <p className="text-xs font-semibold tracking-wider uppercase text-[#d4af37]">
             Sačuvajte uspomene zauvek
           </p>
         </div>
         <div className="p-4 space-y-4">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#d4af37]/10 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-[#d4af37]/20 flex items-center justify-center shrink-0">
               <span className="text-lg">🍾</span>
             </div>
             <div>
@@ -551,7 +551,7 @@ export default function AudioCard({ slug, coupleNames }: Props) {
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#d4af37]/10 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-[#d4af37]/20 flex items-center justify-center shrink-0">
               <span className="text-lg">📼</span>
             </div>
             <div>
@@ -568,7 +568,7 @@ export default function AudioCard({ slug, coupleNames }: Props) {
       </div>
 
       {/* Promo: Retro phone — separate, bigger */}
-      <div className="mt-3 border border-[#AE343F]/10 rounded-xl overflow-hidden">
+      <div className="mt-3 border border-[#AE343F]/25 rounded-xl overflow-hidden">
         <div className="flex items-center gap-4 p-4 bg-[#F5F4DC]/30">
           <Image
             src="/images/phone.webp"

@@ -172,18 +172,18 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm">
+    <div className="bg-white rounded-2xl border border-[#232323]/25 p-6 shadow-md">
       <h3 className="font-serif text-lg text-[#232323] mb-3">Checklista</h3>
 
       {/* Progress bar */}
       <div className="mb-5">
-        <div className="flex justify-between text-xs text-[#232323]/50 mb-1">
+        <div className="flex justify-between text-xs text-[#232323]/70 mb-1">
           <span>
             {completedCount} od {checklist.length} završeno
           </span>
           <span>{Math.round(progressPct)}%</span>
         </div>
-        <div className="h-2.5 bg-[#232323]/10 rounded-full overflow-hidden">
+        <div className="h-2.5 bg-[#232323]/15 rounded-full overflow-hidden">
           <div
             className="h-full bg-[#AE343F] rounded-full transition-all duration-300"
             style={{ width: `${progressPct}%` }}
@@ -201,7 +201,7 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
           const groupCompleted = groupItems.filter((i) => i.completed).length;
 
           return (
-            <div key={group} className="border border-[#232323]/5 rounded-xl">
+            <div key={group} className="border border-[#232323]/12 rounded-xl">
               <button
                 onClick={() =>
                   setCollapsed((p) => ({ ...p, [group]: !isCollapsed }))
@@ -211,14 +211,14 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                 <span className="text-sm font-semibold text-[#232323]">
                   {GROUP_LABELS[group]}
                   {groupItems.length > 0 && (
-                    <span className="ml-2 text-xs font-normal text-[#232323]/40">
+                    <span className="ml-2 text-xs font-normal text-[#232323]/65">
                       {groupCompleted}/{groupItems.length}
                     </span>
                   )}
                 </span>
                 <ChevronDown
                   size={16}
-                  className={`text-[#232323]/40 transition-transform ${
+                  className={`text-[#232323]/65 transition-transform ${
                     isCollapsed ? "" : "rotate-180"
                   }`}
                 />
@@ -240,24 +240,24 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                       onDragEnd={handleDragEnd}
                       className={`flex items-center gap-2 group rounded-lg px-1 py-1.5 transition-colors ${
                         dragOverId === item.id && dragId !== item.id
-                          ? "bg-[#AE343F]/5"
+                          ? "bg-[#AE343F]/12"
                           : ""
                       } ${dragId === item.id ? "opacity-40" : ""}`}
                     >
                       <GripVertical
                         size={14}
-                        className="text-[#232323]/15 group-hover:text-[#232323]/30 cursor-grab shrink-0"
+                        className="text-[#232323]/35 group-hover:text-[#232323]/65 cursor-grab shrink-0"
                       />
                       <input
                         type="checkbox"
                         checked={item.completed}
                         onChange={() => toggleItem(item.id)}
-                        className="checkbox checkbox-sm border-[#232323]/20 [--chkbg:#AE343F] [--chkfg:#F5F4DC] cursor-pointer"
+                        className="checkbox checkbox-sm border-[#232323]/35 [--chkbg:#AE343F] [--chkfg:#F5F4DC] cursor-pointer"
                       />
                       <span
                         className={`text-sm flex-1 ${
                           item.completed
-                            ? "line-through text-[#232323]/30"
+                            ? "line-through text-[#232323]/45"
                             : "text-[#232323]"
                         }`}
                       >
@@ -267,14 +267,14 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                         <button
                           onClick={() => moveItem(group, idx, -1)}
                           disabled={idx === 0}
-                          className="text-[#232323]/30 hover:text-[#232323]/60 disabled:opacity-0 transition-colors p-0.5 cursor-pointer"
+                          className="text-[#232323]/55 hover:text-[#232323] disabled:opacity-0 transition-colors p-0.5 cursor-pointer"
                         >
                           <ChevronUp size={14} />
                         </button>
                         <button
                           onClick={() => moveItem(group, idx, 1)}
                           disabled={idx === groupItems.length - 1}
-                          className="text-[#232323]/30 hover:text-[#232323]/60 disabled:opacity-0 transition-colors p-0.5 cursor-pointer"
+                          className="text-[#232323]/55 hover:text-[#232323] disabled:opacity-0 transition-colors p-0.5 cursor-pointer"
                         >
                           <ChevronDown size={14} />
                         </button>
@@ -288,7 +288,7 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                               setTimeout(() => setConfirmDeleteId((c) => c === item.id ? null : c), 3000);
                             }
                           }}
-                          className={`transition-colors p-0.5 cursor-pointer ${confirmDeleteId === item.id ? "text-red-500 scale-110" : "text-[#232323]/30 hover:text-red-500"}`}
+                          className={`transition-colors p-0.5 cursor-pointer ${confirmDeleteId === item.id ? "text-red-500 scale-110" : "text-[#232323]/55 hover:text-red-500"}`}
                         >
                           <Trash2 size={14} />
                         </button>
@@ -317,7 +317,7 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
                         }
                       }}
                       placeholder="Dodaj stavku..."
-                      className="input input-sm input-bordered flex-1 bg-white border-[#232323]/10 text-sm focus:border-[#AE343F] focus:outline-none"
+                      className="input input-sm input-bordered flex-1 bg-white border-[#232323]/20 text-sm focus:border-[#AE343F] focus:outline-none"
                     />
                     <button
                       onClick={() => addCustomItem(group)}

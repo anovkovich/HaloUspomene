@@ -190,14 +190,14 @@ export default function OverviewCard({
   return (
     <div className="space-y-4">
       {/* Countdown */}
-      <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm text-center">
-        <p className="text-[10px] uppercase tracking-widest text-[#232323]/30 mb-2">
+      <div className="bg-white rounded-2xl border border-[#232323]/25 p-7 shadow-md text-center">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#232323]/70 mb-3">
           Do venčanja
         </p>
         {coupleInfo.eventDate && !isNaN(new Date(coupleInfo.eventDate).getTime()) ? (
           <>
-            <p className="font-serif text-5xl text-[#AE343F] mb-1">{days}</p>
-            <p className="text-sm text-[#232323]/40">
+            <p className="font-serif text-6xl font-semibold text-[#AE343F] mb-2 leading-none">{days}</p>
+            <p className="text-base text-[#232323]/85">
               {days === 1 ? "dan" : "dana"} ·{" "}
               {new Date(coupleInfo.eventDate).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
@@ -208,8 +208,8 @@ export default function OverviewCard({
           </>
         ) : (
           <>
-            <p className="font-serif text-5xl text-[#232323]/15 mb-1">XX</p>
-            <p className="text-sm text-[#232323]/25">
+            <p className="font-serif text-6xl font-semibold text-[#232323]/35 mb-2 leading-none">XX</p>
+            <p className="text-base text-[#232323]/60">
               dana · XX. XX. XXXX.
             </p>
           </>
@@ -221,21 +221,21 @@ export default function OverviewCard({
         {/* Checklist */}
         <button
           onClick={() => onNavigate("checklist")}
-          className="bg-white rounded-xl border border-[#232323]/8 p-4 text-left hover:border-[#AE343F]/20 transition-colors cursor-pointer"
+          className="bg-white rounded-xl border border-[#232323]/25 p-5 text-left shadow-sm hover:border-[#AE343F]/50 hover:shadow-md transition-all cursor-pointer"
         >
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle2 size={15} className="text-[#AE343F]" />
-            <span className="text-xs font-medium text-[#232323]/50">
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle2 size={17} className="text-[#AE343F]" />
+            <span className="text-sm font-semibold text-[#232323]/85">
               Checklista
             </span>
           </div>
-          <p className="text-lg font-bold text-[#232323] mb-1.5">
+          <p className="font-serif text-3xl font-semibold text-[#232323] mb-2 leading-none">
             {completedCount}
-            <span className="text-[#232323]/25 font-normal">
+            <span className="text-[#232323]/50 font-normal text-2xl">
               /{checklist.length}
             </span>
           </p>
-          <div className="h-1.5 rounded-full overflow-hidden bg-[#AE343F]/8">
+          <div className="h-2 rounded-full overflow-hidden bg-[#AE343F]/20">
             <div
               className="h-full rounded-full bg-[#AE343F] transition-all"
               style={{ width: `${checklistPct}%` }}
@@ -246,25 +246,25 @@ export default function OverviewCard({
         {/* Budget */}
         <button
           onClick={() => onNavigate("budget")}
-          className="bg-white rounded-xl border border-[#232323]/8 p-4 text-left hover:border-[#AE343F]/20 transition-colors cursor-pointer"
+          className="bg-white rounded-xl border border-[#232323]/25 p-5 text-left shadow-sm hover:border-[#AE343F]/50 hover:shadow-md transition-all cursor-pointer"
         >
-          <div className="flex items-center gap-2 mb-2">
-            <Wallet size={15} className="text-[#AE343F]" />
-            <span className="text-xs font-medium text-[#232323]/50">
+          <div className="flex items-center gap-2 mb-3">
+            <Wallet size={17} className="text-[#AE343F]" />
+            <span className="text-sm font-semibold text-[#232323]/85">
               Budžet
             </span>
           </div>
-          <p className="text-lg font-bold text-[#232323] mb-1.5">
+          <p className="font-serif text-3xl font-semibold text-[#232323] mb-2 leading-none">
             {totalSpent > 0 ? `${Math.round(totalSpent / 1000)}K` : "—"}
             {totalPlanned > 0 && (
-              <span className="text-[#232323]/25 font-normal">
+              <span className="text-[#232323]/50 font-normal text-2xl">
                 {" "}
                 / {Math.round(budgetBase / 1000)}K
               </span>
             )}
           </p>
           <div
-            className={`h-1.5 rounded-full overflow-hidden ${budgetOver ? "bg-red-500/15" : "bg-[#AE343F]/8"}`}
+            className={`h-2 rounded-full overflow-hidden ${budgetOver ? "bg-red-500/25" : "bg-[#AE343F]/20"}`}
           >
             <div
               className={`h-full rounded-full transition-all ${budgetOver ? "bg-red-500" : "bg-[#AE343F]"}`}
@@ -276,34 +276,34 @@ export default function OverviewCard({
         {/* Guests */}
         <button
           onClick={() => onNavigate("guests")}
-          className="bg-white rounded-xl border border-[#232323]/8 p-4 text-left hover:border-[#AE343F]/20 transition-colors cursor-pointer"
+          className="bg-white rounded-xl border border-[#232323]/25 p-5 text-left shadow-sm hover:border-[#AE343F]/50 hover:shadow-md transition-all cursor-pointer"
         >
-          <div className="flex items-center gap-2 mb-2">
-            <Users size={15} className="text-[#AE343F]" />
-            <span className="text-xs font-medium text-[#232323]/50">Gosti</span>
+          <div className="flex items-center gap-2 mb-3">
+            <Users size={17} className="text-[#AE343F]" />
+            <span className="text-sm font-semibold text-[#232323]/85">Gosti</span>
           </div>
           {loading ? (
             <span className="loading loading-spinner loading-xs text-[#AE343F]" />
           ) : guestStats ? (
             <>
-              <p className="text-lg font-bold text-[#232323]">
+              <p className="font-serif text-3xl font-semibold text-[#232323] mb-1 leading-none">
                 {guestStats.totalGuests}
               </p>
-              <p className="text-[10px] text-[#232323]/30">
+              <p className="text-xs text-[#232323]/70">
                 {guestStats.attending} potvrđenih · {guestStats.notAttending}{" "}
                 odbijanja
               </p>
             </>
           ) : (
-            <p className="text-sm text-[#232323]/25">—</p>
+            <p className="font-serif text-3xl font-semibold text-[#232323]/40">—</p>
           )}
         </button>
 
         {/* Alerts inline */}
-        <div className="bg-white rounded-xl border border-[#232323]/8 p-4 hover:border-[#d4af37]/20 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertCircle size={15} className="text-[#AE343F]" />
-            <span className="text-xs font-medium text-[#232323]/50">
+        <div className="bg-white rounded-xl border border-[#232323]/25 p-5 shadow-sm hover:border-[#d4af37]/50 transition-colors">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertCircle size={17} className="text-[#AE343F]" />
+            <span className="text-sm font-semibold text-[#232323]/85">
               {alerts.length > 0 ? "Pažnja" : "Nema upozorenja"}
             </span>
           </div>
@@ -315,7 +315,7 @@ export default function OverviewCard({
                 <button
                   key={i}
                   onClick={alert.action}
-                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-xs bg-[#d4af37]/5 border border-[#d4af37]/10 text-[#232323]/55 hover:border-[#d4af37]/25 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-xs bg-[#d4af37]/10 border border-[#d4af37]/25 text-[#232323]/85 hover:border-[#d4af37]/45 transition-colors cursor-pointer"
                 >
                   <AlertCircle size={12} className="text-[#d4af37] shrink-0" />
                   <span className="truncate">{alert.text}</span>
@@ -323,7 +323,7 @@ export default function OverviewCard({
               ))}
             </div>
           ) : (
-            <p className="text-xs text-green-600/60 flex items-center gap-1.5">
+            <p className="text-xs text-green-700 flex items-center gap-1.5">
               <Check size={12} />
               Sve izgleda u redu
             </p>
@@ -332,8 +332,8 @@ export default function OverviewCard({
       </div>
 
       {/* Quick actions */}
-      <div className="bg-white rounded-2xl border border-[#232323]/10 p-4 shadow-sm">
-        <p className="text-[10px] uppercase tracking-widest text-[#232323]/30 mb-3">
+      <div className="bg-white rounded-2xl border border-[#232323]/25 p-5 shadow-md">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#232323]/70 mb-4">
           Brze akcije
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -350,7 +350,7 @@ export default function OverviewCard({
                   onClick={() => {
                     toast("Dostupno nakon kreiranja pozivnice — naš tim će vas kontaktirati");
                   }}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/30 cursor-pointer transition-colors"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/55 cursor-pointer transition-colors"
                 >
                   {btn.icon}
                   {btn.label}
@@ -362,14 +362,14 @@ export default function OverviewCard({
               <Link
                 href={`/pozivnica/${coupleInfo.slug}`}
                 target="_blank"
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/85 hover:border-[#AE343F]/40 hover:text-[#AE343F] transition-colors"
               >
                 <ExternalLink size={12} />
                 Pozivnica
               </Link>
               <button
                 onClick={handleCopyLink}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/85 hover:border-[#AE343F]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
               >
                 {copied ? (
                   <Check size={12} className="text-green-600" />
@@ -380,7 +380,7 @@ export default function OverviewCard({
               </button>
               <button
                 onClick={handleDownloadPDF}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/85 hover:border-[#AE343F]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
               >
                 <Download size={12} />
                 PDF pozivnica
@@ -393,7 +393,7 @@ export default function OverviewCard({
                   }
                   handleDownloadFlyer();
                 }}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/60 hover:border-[#AE343F]/20 hover:text-[#AE343F] transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/85 hover:border-[#AE343F]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
               >
                 <QrCode size={12} />
                 Audio flyer
@@ -405,14 +405,14 @@ export default function OverviewCard({
 
       {/* Recent RSVP */}
       {guestStats && guestStats.recentResponses.length > 0 && (
-        <div className="bg-white rounded-2xl border border-[#232323]/10 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] uppercase tracking-widest text-[#232323]/30">
+        <div className="bg-white rounded-2xl border border-[#232323]/25 p-5 shadow-md">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#232323]/70">
               Poslednje potvrde
             </p>
             <button
               onClick={() => onNavigate("guests")}
-              className="text-[10px] text-[#AE343F] hover:underline cursor-pointer"
+              className="text-xs font-semibold text-[#AE343F] hover:underline cursor-pointer"
             >
               Sve potvrde
             </button>
@@ -424,12 +424,12 @@ export default function OverviewCard({
                 className="flex items-center gap-3 px-3 py-2 rounded-lg"
                 style={{
                   opacity:
-                    i === arr.length - 1 ? 0.3 : i === arr.length - 2 ? 0.6 : 1,
+                    i === arr.length - 1 ? 0.6 : i === arr.length - 2 ? 0.8 : 1,
                 }}
               >
                 <div
                   className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
-                    r.attending === "Da" ? "bg-[#AE343F]/10" : "bg-[#232323]/5"
+                    r.attending === "Da" ? "bg-[#AE343F]/15" : "bg-[#232323]/15"
                   }`}
                 >
                   {r.attending === "Da" ? (
@@ -439,7 +439,7 @@ export default function OverviewCard({
                       strokeWidth={3}
                     />
                   ) : (
-                    <span className="text-[7px] text-[#232323]/30 font-bold">
+                    <span className="text-[7px] text-[#232323]/60 font-bold">
                       ✕
                     </span>
                   )}
@@ -447,12 +447,12 @@ export default function OverviewCard({
                 <span className="text-sm text-[#232323] flex-1 truncate">
                   {r.name}
                 </span>
-                <span className="text-[10px] text-[#232323]/20 shrink-0">
-                  <Clock size={9} className="inline mr-0.5" />
+                <span className="text-xs text-[#232323]/65 shrink-0">
+                  <Clock size={10} className="inline mr-0.5" />
                   {formatTimestamp(r.timestamp)}
                 </span>
                 {r.attending === "Da" && (
-                  <span className="text-[10px] text-[#AE343F]/60 shrink-0">
+                  <span className="text-xs font-semibold text-[#AE343F]/90 shrink-0">
                     {parseInt(r.guestCount) || 1} os.
                   </span>
                 )}
@@ -479,7 +479,7 @@ export default function OverviewCard({
               <>
                 <button
                   onClick={() => setSeatingModal(null)}
-                  className="absolute top-4 right-4 text-[#232323]/30 hover:text-[#232323]/60 transition-colors cursor-pointer"
+                  className="absolute top-4 right-4 text-[#232323]/60 hover:text-[#232323] transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -489,8 +489,8 @@ export default function OverviewCard({
                 </h3>
 
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-[#F5F4DC]/50 border border-[#232323]/6">
-                    <span className="text-sm text-[#232323]/60 flex items-center gap-2">
+                  <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-[#F5F4DC]/50 border border-[#232323]/15">
+                    <span className="text-sm text-[#232323]/85 flex items-center gap-2">
                       <Users size={14} className="text-[#AE343F]" />
                       Ukupno dolazi
                     </span>
@@ -499,7 +499,7 @@ export default function OverviewCard({
                     </span>
                   </div>
                   <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-green-50 border border-green-200/50">
-                    <span className="text-sm text-[#232323]/60 flex items-center gap-2">
+                    <span className="text-sm text-[#232323]/85 flex items-center gap-2">
                       <Armchair size={14} className="text-green-600" />
                       Raspoređeno
                     </span>
@@ -508,7 +508,7 @@ export default function OverviewCard({
                     </span>
                   </div>
                   <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200/50">
-                    <span className="text-sm text-[#232323]/60 flex items-center gap-2">
+                    <span className="text-sm text-[#232323]/85 flex items-center gap-2">
                       <AlertCircle size={14} className="text-amber-500" />
                       Neraspoređeno
                     </span>

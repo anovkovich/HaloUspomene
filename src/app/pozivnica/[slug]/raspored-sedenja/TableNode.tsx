@@ -71,13 +71,13 @@ function Seat({
         backgroundColor: assignment
           ? "var(--theme-primary)"
           : isSelecting
-            ? "color-mix(in srgb, var(--theme-primary) 15%, transparent)"
-            : "var(--theme-background)",
+            ? "color-mix(in srgb, var(--theme-primary) 22%, transparent)"
+            : "#FFFFFF",
         border: assignment
           ? "2px solid var(--theme-primary)"
           : isSelecting
             ? "2px dashed var(--theme-primary)"
-            : "2px solid color-mix(in srgb, var(--theme-primary) 25%, transparent)",
+            : "2px solid color-mix(in srgb, var(--theme-primary) 60%, transparent)",
         color: assignment ? "white" : "var(--theme-text-light)",
         cursor: assignment || isSelecting ? "pointer" : "default",
         fontSize: 9,
@@ -115,7 +115,7 @@ function ArrowBtn({
 }) {
   const color = dir === d
     ? "var(--theme-primary)"
-    : "color-mix(in srgb, var(--theme-primary) 30%, transparent)";
+    : "color-mix(in srgb, var(--theme-primary) 55%, transparent)";
   const label = d === "up" ? "gore" : d === "down" ? "dole" : d === "left" ? "levo" : "desno";
   return (
     <button
@@ -163,7 +163,7 @@ function EntranceDecoration({
       className="flex items-center gap-2 px-3 py-2 rounded"
       style={{
         backgroundColor:
-          "color-mix(in srgb, var(--theme-primary) 2%, var(--theme-background))",
+          "color-mix(in srgb, var(--theme-primary) 10%, var(--theme-background))",
         border: "2px dashed var(--theme-primary)",
         minWidth: 140,
       }}
@@ -336,7 +336,7 @@ function ResizableZone({
             height: h + 40, // 40px header
             border: "2px dashed var(--theme-primary)",
             backgroundColor:
-              "color-mix(in srgb, var(--theme-primary) 2%, var(--theme-background))",
+              "color-mix(in srgb, var(--theme-primary) 10%, var(--theme-background))",
           }}
         >
           {/* Header row */}
@@ -470,7 +470,7 @@ export default function TableNode({
           <div
             className="flex items-center gap-2 px-3 py-2 rounded"
             style={{
-              backgroundColor: "color-mix(in srgb, var(--theme-primary) 2%, var(--theme-background))",
+              backgroundColor: "color-mix(in srgb, var(--theme-primary) 10%, var(--theme-background))",
               border: "2px dashed var(--theme-primary)",
               width: dw,
             }}
@@ -512,6 +512,8 @@ export default function TableNode({
     let next: number;
     if (table.type === "circle") {
       next = Math.max(8, Math.min(12, table.seats + delta));
+    } else if (table.type === "single-sided") {
+      next = Math.max(2, Math.min(12, table.seats + delta));
     } else {
       next = Math.max(4, Math.min(20, table.seats + delta * 2));
     }
@@ -687,7 +689,7 @@ export default function TableNode({
         }}
         onClick={readOnly && onTap ? () => onTap(table) : undefined}
         onMouseEnter={readOnly ? undefined : (e) => {
-          e.currentTarget.style.backgroundColor = "rgba(35,35,35,0.04)";
+          e.currentTarget.style.backgroundColor = "rgba(35,35,35,0.09)";
           e.currentTarget.querySelectorAll<HTMLElement>(".table-header").forEach(el => el.style.opacity = "1");
         }}
         onMouseLeave={readOnly ? undefined : (e) => {
@@ -722,8 +724,8 @@ export default function TableNode({
               className="h-15 rounded"
               style={{
                 backgroundColor:
-                  "rgba(35,35,35,0.04)",
-                border: "3px solid rgba(35,35,35,0.15)",
+                  "rgba(35,35,35,0.09)",
+                border: "3px solid rgba(35,35,35,0.45)",
               }}
             />
             <div className="flex gap-1.5 justify-center mt-2">
@@ -760,8 +762,8 @@ export default function TableNode({
                 width: 60,
                 minHeight: seatsPerRow * (SEAT_SIZE + 6) - 6,
                 backgroundColor:
-                  "rgba(35,35,35,0.04)",
-                border: "3px solid rgba(35,35,35,0.15)",
+                  "rgba(35,35,35,0.09)",
+                border: "3px solid rgba(35,35,35,0.45)",
               }}
             />
             {/* Right column */}
@@ -795,8 +797,8 @@ export default function TableNode({
               className="h-15 rounded"
               style={{
                 backgroundColor:
-                  "rgba(35,35,35,0.04)",
-                border: "3px solid rgba(35,35,35,0.15)",
+                  "rgba(35,35,35,0.09)",
+                border: "3px solid rgba(35,35,35,0.45)",
               }}
             />
           </div>
@@ -817,8 +819,8 @@ export default function TableNode({
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 backgroundColor:
-                  "rgba(35,35,35,0.04)",
-                border: "3px solid rgba(35,35,35,0.15)",
+                  "rgba(35,35,35,0.09)",
+                border: "3px solid rgba(35,35,35,0.45)",
               }}
             />
             {table.assignments.map((a, i) => {

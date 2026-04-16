@@ -24,10 +24,12 @@ export default function ParticleBackground({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const rafRef = useRef(0);
+  const scrollKickRef = useRef(0);
+  const lastScrollRef = useRef(0);
 
   const isMobile =
     typeof window !== "undefined" && window.innerWidth < 768;
-  const count = isMobile ? 30 : 60;
+  const count = isMobile ? 45 : 90;
 
   const initParticles = useCallback(() => {
     const w = typeof window !== "undefined" ? window.innerWidth : 1000;
@@ -39,12 +41,12 @@ export default function ParticleBackground({
       particles.push({
         x: Math.random() * w,
         y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.5,
+        vx: (Math.random() - 0.5) * 0.3,
         vy: isUp
           ? -(Math.random() * 0.5 + 0.2)
-          : Math.random() * 0.3 + 0.1,
-        size: Math.random() * 4 + 2,
-        opacity: Math.random() * 0.5 + 0.2,
+          : Math.random() * 0.25 + 0.05,
+        size: Math.random() * 2 + 1,
+        opacity: Math.random() * 0.4 + 0.5,
         rotation: Math.random() * Math.PI * 2,
         rotationSpeed: (Math.random() - 0.5) * 0.02,
       });
@@ -58,15 +60,17 @@ export default function ParticleBackground({
       ctx.globalAlpha = p.opacity;
 
       if (theme === "watercolor") {
-        // Rose petals — soft ellipse
+        // Warm champagne sparkles with twinkle + glow — visible on dark bg
         ctx.translate(p.x, p.y);
-        ctx.rotate(p.rotation);
+        const twinkle = 0.6 + 0.4 * Math.sin(Date.now() * 0.002 + p.x);
+        ctx.globalAlpha = p.opacity * twinkle;
         ctx.beginPath();
-        ctx.ellipse(0, 0, p.size * 0.5, p.size, 0, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(200, 130, 140, 0.6)`;
+        ctx.arc(0, 0, p.size * 0.55, 0, Math.PI * 2);
+        ctx.fillStyle = "#f5e6b8";
+        ctx.shadowColor = "#d4af37";
+        ctx.shadowBlur = p.size * 4;
         ctx.fill();
       } else if (theme === "disney_pixar") {
-        // Gold sparkles — circle with glow
         ctx.translate(p.x, p.y);
         const twinkle = 0.5 + 0.5 * Math.sin(Date.now() * 0.003 + p.x);
         ctx.globalAlpha = p.opacity * twinkle;
@@ -77,18 +81,15 @@ export default function ParticleBackground({
         ctx.shadowBlur = p.size * 3;
         ctx.fill();
       } else {
-        // Line art — geometric dots/lines
+        // Line art — warm golden dust with soft glow, visible on cream bg
         ctx.translate(p.x, p.y);
-        ctx.rotate(p.rotation);
+        const twinkle = 0.75 + 0.25 * Math.sin(Date.now() * 0.002 + p.x);
+        ctx.globalAlpha = Math.min(1, p.opacity * twinkle + 0.2);
         ctx.beginPath();
-        ctx.moveTo(-p.size, 0);
-        ctx.lineTo(p.size, 0);
-        ctx.strokeStyle = `rgba(100, 100, 100, 0.3)`;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(0, 0, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(80, 80, 80, 0.4)`;
+        ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = "#b8932a";
+        ctx.shadowColor = "#8b6914";
+        ctx.shadowBlur = p.size * 6;
         ctx.fill();
       }
 
@@ -98,13 +99,6 @@ export default function ParticleBackground({
   );
 
   useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return;
-    }
-
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -116,15 +110,29 @@ export default function ParticleBackground({
     };
     resize();
     window.addEventListener("resize", resize);
+
+    lastScrollRef.current = window.scrollY;
+    const onScroll = () => {
+      const delta = window.scrollY - lastScrollRef.current;
+      lastScrollRef.current = window.scrollY;
+      // Scrolling down = upward drift (gravity loss).
+      scrollKickRef.current -= Math.max(-30, Math.min(30, delta)) * 0.08;
+      // Cap accumulated drift so fast scrolling never jolts.
+      scrollKickRef.current = Math.max(-3, Math.min(3, scrollKickRef.current));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
     initParticles();
 
     const animate = () => {
       if (!ctx || !canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      const kick = scrollKickRef.current;
+      scrollKickRef.current *= 0.9; // decay
+
       for (const p of particlesRef.current) {
         p.x += p.vx;
-        p.y += p.vy;
+        p.y += p.vy + kick;
         p.rotation += p.rotationSpeed;
 
         // Wrap around
@@ -144,14 +152,15 @@ export default function ParticleBackground({
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", onScroll);
     };
   }, [initParticles, drawParticle]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 pointer-events-none"
-      style={{ willChange: "transform" }}
+      className="fixed inset-0 pointer-events-none"
+      style={{ willChange: "transform", zIndex: 2 }}
     />
   );
 }

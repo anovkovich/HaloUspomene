@@ -40,7 +40,7 @@ export default function TeaserVendors() {
         {CATEGORY_META.map((cat) => (
           <div
             key={cat.id}
-            className="snap-start shrink-0 w-36 bg-white rounded-xl border border-[#232323]/10 p-4 flex flex-col items-center gap-2 text-center shadow-sm"
+            className="snap-start shrink-0 w-36 bg-white rounded-xl border border-[#232323]/22 p-4 flex flex-col items-center gap-2 text-center shadow-sm"
           >
             <div className="text-[#AE343F]">{CATEGORY_ICONS[cat.id]}</div>
             <p className="text-sm font-semibold text-[#232323] leading-tight">
@@ -49,7 +49,7 @@ export default function TeaserVendors() {
           </div>
         ))}
         {/* CTA card */}
-        <div className="snap-start shrink-0 w-36 bg-[#AE343F]/5 rounded-xl border border-[#AE343F]/20 p-4 flex flex-col items-center justify-center gap-2 text-center">
+        <div className="snap-start shrink-0 w-36 bg-[#AE343F]/12 rounded-xl border border-[#AE343F]/35 p-4 flex flex-col items-center justify-center gap-2 text-center">
           <ArrowRight size={20} className="text-[#AE343F]" />
           <p className="text-xs font-semibold text-[#AE343F]">
             Prijavite se za pun pristup

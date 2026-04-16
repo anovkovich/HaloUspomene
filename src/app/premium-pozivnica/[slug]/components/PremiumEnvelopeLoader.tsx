@@ -172,15 +172,16 @@ export default function PremiumEnvelopeLoader({
 
             {/* Corner ornaments */}
             {[
-              "top-3 left-3 sm:top-4 sm:left-4 border-t border-l",
-              "top-3 right-3 sm:top-4 sm:right-4 border-t border-r",
-              "bottom-3 left-3 sm:bottom-4 sm:left-4 border-b border-l",
-              "bottom-3 right-3 sm:bottom-4 sm:right-4 border-b border-r",
+              "top-4 left-4 sm:top-6 sm:left-6",
+              "top-4 right-4 sm:top-6 sm:right-6",
+              "bottom-4 left-4 sm:bottom-6 sm:left-6",
+              "bottom-4 right-4 sm:bottom-6 sm:right-6",
             ].map((pos, i) => (
-              <div
+              <Heart
                 key={i}
-                className={`absolute ${pos} w-4 h-4 sm:w-6 sm:h-6`}
-                style={{ borderColor: t.card.cornerColor, borderWidth: "2px" }}
+                className={`absolute ${pos} w-3 h-3 sm:w-4 sm:h-4`}
+                style={{ color: t.card.cornerColor }}
+                fill="currentColor"
               />
             ))}
 
@@ -188,7 +189,7 @@ export default function PremiumEnvelopeLoader({
               className="font-elegant uppercase tracking-[0.25em] sm:tracking-[0.4em] text-[5px] sm:text-[8px] mb-0.5 sm:mb-1"
               style={{ color: t.text.label }}
             >
-              Pozivamo Vas
+              Slavimo ljubav
             </p>
             <h2
               className="font-script text-xl sm:text-4xl leading-tight px-1 sm:px-2 select-none"

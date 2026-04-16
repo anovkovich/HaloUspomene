@@ -238,7 +238,7 @@ export default function RasporedClient({
       }
     }
     const defaultSeats =
-      type === "circle" ? 12 : type === "single-sided" ? 6 : 8;
+      type === "circle" ? 12 : type === "single-sided" ? 6 : 10;
     const idx = tables.length;
     setTables((prev) => [
       ...prev,
@@ -415,16 +415,16 @@ export default function RasporedClient({
   const themeVars = {
     backgroundColor: "var(--theme-background)",
     "--theme-primary": "#d4af37",
-    "--theme-primary-light": "rgba(212,175,55,0.15)",
-    "--theme-primary-muted": "rgba(212,175,55,0.08)",
+    "--theme-primary-light": "rgba(212,175,55,0.25)",
+    "--theme-primary-muted": "rgba(212,175,55,0.15)",
     "--theme-background": "#FAFAF5",
     "--theme-surface": "#F5F4DC",
     "--theme-surface-alt": "#F0EFCF",
     "--theme-text": "#232323",
-    "--theme-text-muted": "rgba(35,35,35,0.5)",
-    "--theme-text-light": "rgba(35,35,35,0.4)",
-    "--theme-border": "rgba(35,35,35,0.12)",
-    "--theme-border-light": "rgba(35,35,35,0.06)",
+    "--theme-text-muted": "rgba(35,35,35,0.92)",
+    "--theme-text-light": "rgba(35,35,35,0.78)",
+    "--theme-border": "rgba(35,35,35,0.32)",
+    "--theme-border-light": "rgba(35,35,35,0.2)",
   } as React.CSSProperties;
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -583,21 +583,10 @@ export default function RasporedClient({
           style={{
             paddingBottom: "calc(5rem + env(safe-area-inset-bottom, 0px))",
             backgroundImage:
-              "radial-gradient(circle, color-mix(in srgb, var(--theme-border) 35%, transparent) 1px, transparent 1px)",
+              "radial-gradient(circle, rgba(35,35,35,0.26) 0.9px, transparent 0.9px)",
             backgroundSize: "24px 24px",
           }}
         >
-          {hydrated && tables.filter((t) => t.type !== "decoration").length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20">
-              <p
-                className="font-raleway text-sm text-center"
-                style={{ color: "var(--theme-text-light)" }}
-              >
-                Dodaj stolove koristeći dugme ispod
-              </p>
-            </div>
-          )}
-
           <div className="space-y-4 max-w-md mx-auto">
             {hydrated &&
               tables
@@ -689,7 +678,7 @@ export default function RasporedClient({
               <div className="px-5 space-y-2 pb-2">
                 {[
                   { type: "circle" as const, label: "Okrugli sto", desc: "12 mesta", seats: 12 },
-                  { type: "rectangular" as const, label: "Pravougaoni sto", desc: "8 mesta", seats: 8 },
+                  { type: "rectangular" as const, label: "Pravougaoni sto", desc: "10 mesta", seats: 10 },
                   { type: "single-sided" as const, label: "Mladenački sto", desc: "6 mesta", seats: 6 },
                 ].map((opt) => (
                   <button
@@ -898,7 +887,7 @@ export default function RasporedClient({
             className="absolute inset-0 overflow-auto"
             style={{
               backgroundImage:
-                "radial-gradient(circle, color-mix(in srgb, var(--theme-border) 50%, transparent) 1px, transparent 1px)",
+                "radial-gradient(circle, rgba(35,35,35,0.3) 1px, transparent 1px)",
               backgroundSize: "28px 28px",
               touchAction: isPWADesktop ? "pan-x pan-y" : undefined,
             }}
@@ -959,16 +948,6 @@ export default function RasporedClient({
                     />
                   ))}
 
-                {hydrated && tables.length === 0 && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <p
-                      className="font-raleway text-sm"
-                      style={{ color: "var(--theme-text-light)" }}
-                    >
-                      Dodaj stolove koristeći dugmad levo gore
-                    </p>
-                  </div>
-                )}
               </div>
             )}
           </div>

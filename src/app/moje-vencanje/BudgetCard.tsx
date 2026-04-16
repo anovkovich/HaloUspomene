@@ -128,34 +128,34 @@ export default function BudgetCard({ budget, setBudget }: Props) {
   const totalCurr = budget.totalBudgetCurrency ?? "RSD";
 
   return (
-    <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm">
+    <div className="bg-white rounded-2xl border border-[#232323]/25 p-6 shadow-md">
       <h3 className="font-serif text-lg text-[#232323] mb-4">Budžet</h3>
 
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         <div className="rounded-xl p-3 text-center">
-          <p className="text-[10px] uppercase tracking-wider text-[#232323]/40 mb-0.5">Planirano</p>
+          <p className="text-[10px] uppercase tracking-wider text-[#232323]/65 mb-0.5">Planirano</p>
           <p className="text-sm font-bold text-[#232323]">
-            {formatK(totalCurr === "EUR" ? totalPlanned / EUR_RATE : totalPlanned)} <span className="text-[10px] font-normal text-[#232323]/30">{totalCurr}</span>
+            {formatK(totalCurr === "EUR" ? totalPlanned / EUR_RATE : totalPlanned)} <span className="text-[10px] font-normal text-[#232323]/55">{totalCurr}</span>
           </p>
         </div>
         <div className="rounded-xl p-3 text-center">
-          <p className="text-[10px] uppercase tracking-wider text-[#232323]/40 mb-0.5">Potrošeno</p>
+          <p className="text-[10px] uppercase tracking-wider text-[#232323]/65 mb-0.5">Potrošeno</p>
           <p className="text-sm font-bold text-[#232323]">
-            {formatK(totalCurr === "EUR" ? totalSpent / EUR_RATE : totalSpent)} <span className="text-[10px] font-normal text-[#232323]/30">{totalCurr}</span>
+            {formatK(totalCurr === "EUR" ? totalSpent / EUR_RATE : totalSpent)} <span className="text-[10px] font-normal text-[#232323]/55">{totalCurr}</span>
           </p>
         </div>
         <div className="rounded-xl p-3 text-center">
-          <p className="text-[10px] uppercase tracking-wider text-[#232323]/40 mb-0.5">Preostalo</p>
+          <p className="text-[10px] uppercase tracking-wider text-[#232323]/65 mb-0.5">Preostalo</p>
           <p className={`text-sm font-bold ${remaining < 0 ? "text-red-500" : "text-green-600"}`}>
-            {formatK(totalCurr === "EUR" ? remaining / EUR_RATE : remaining)} <span className="text-[10px] font-normal text-[#232323]/30">{totalCurr}</span>
+            {formatK(totalCurr === "EUR" ? remaining / EUR_RATE : remaining)} <span className="text-[10px] font-normal text-[#232323]/55">{totalCurr}</span>
           </p>
         </div>
       </div>
 
       {/* Total budget input */}
       <div className="mb-5">
-        <label className="text-xs text-[#232323]/50 mb-1 block">
+        <label className="text-xs text-[#232323]/75 mb-1 block">
           Ukupan budžet ({totalCurr})
         </label>
         <div className="flex gap-2">
@@ -168,11 +168,11 @@ export default function BudgetCard({ budget, setBudget }: Props) {
             }}
             placeholder={totalCurr === "EUR" ? "npr. 12500" : "npr. 1500000"}
             step={totalCurr === "EUR" ? "0.1" : "1"}
-            className="input input-bordered flex-1 bg-white border-[#232323]/15 focus:border-[#AE343F] focus:outline-none"
+            className="input input-bordered flex-1 bg-white border-[#232323]/25 focus:border-[#AE343F] focus:outline-none"
           />
           <button
             onClick={toggleTotalCurrency}
-            className="shrink-0 px-3 rounded-lg border border-[#232323]/10 text-[#232323]/40 hover:text-[#AE343F] hover:border-[#AE343F]/30 transition-colors cursor-pointer"
+            className="shrink-0 px-3 rounded-lg border border-[#232323]/20 text-[#232323]/65 hover:text-[#AE343F] hover:border-[#AE343F]/40 transition-colors cursor-pointer"
             title={`Prebaci na ${totalCurr === "RSD" ? "EUR" : "RSD"}`}
           >
             {totalCurr === "RSD" ? <Banknote size={18} /> : <Euro size={18} />}
@@ -192,7 +192,7 @@ export default function BudgetCard({ budget, setBudget }: Props) {
           const curr = cat.currency ?? "RSD";
 
           return (
-            <div key={cat.id} className="border border-[#232323]/8 rounded-xl p-3.5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.04)]">
+            <div key={cat.id} className="border border-[#232323]/15 rounded-xl p-3.5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.04)]">
               <div className="flex items-center gap-2 mb-2">
                 {cat.isCustom ? (
                   <input
@@ -202,14 +202,14 @@ export default function BudgetCard({ budget, setBudget }: Props) {
                       updateCategory(cat.id, "name", e.target.value)
                     }
                     placeholder="Naziv kategorije"
-                    className="input input-sm input-bordered flex-1 bg-white border-[#232323]/10 text-sm font-medium focus:border-[#AE343F] focus:outline-none"
+                    className="input input-sm input-bordered flex-1 bg-white border-[#232323]/25 text-sm font-medium focus:border-[#AE343F] focus:outline-none"
                   />
                 ) : (
                   <span className="text-sm font-medium text-[#232323] flex-1">
                     {cat.name}
                   </span>
                 )}
-                <span className="text-[10px] text-[#232323]/30 shrink-0">{curr}</span>
+                <span className="text-[10px] text-[#232323]/55 shrink-0">{curr}</span>
                 <button
                   onClick={() => {
                     if (hasValues) return;
@@ -224,10 +224,10 @@ export default function BudgetCard({ budget, setBudget }: Props) {
                   disabled={hasValues}
                   className={`shrink-0 transition-all cursor-pointer p-0.5 ${
                     hasValues
-                      ? "text-[#232323]/10 cursor-not-allowed"
+                      ? "text-[#232323]/25 cursor-not-allowed"
                       : confirmDeleteId === cat.id
                       ? "text-red-500 scale-110"
-                      : "text-[#232323]/30 hover:text-red-500"
+                      : "text-[#232323]/55 hover:text-red-500"
                   }`}
                   title={hasValues ? "Obrišite vrednosti pre uklanjanja" : confirmDeleteId === cat.id ? "Klikni ponovo za brisanje" : "Ukloni kategoriju"}
                 >
@@ -237,7 +237,7 @@ export default function BudgetCard({ budget, setBudget }: Props) {
 
               <div className="flex gap-2 mb-1.5 items-end">
                 <div className="flex-1">
-                  <label className="text-[10px] text-[#232323]/40 mb-0.5 block">
+                  <label className="text-[10px] text-[#232323]/65 mb-0.5 block">
                     Planirano
                   </label>
                   <input
@@ -252,18 +252,18 @@ export default function BudgetCard({ budget, setBudget }: Props) {
                     }
                     placeholder="0"
                     step={curr === "EUR" ? "0.1" : "1"}
-                    className="input input-sm input-bordered w-full bg-white border-[#232323]/10 text-sm focus:border-[#AE343F] focus:outline-none"
+                    className="input input-sm input-bordered w-full bg-white border-[#232323]/25 text-sm focus:border-[#AE343F] focus:outline-none"
                   />
                 </div>
                 <button
                   onClick={() => toggleCurrency(cat.id)}
-                  className="shrink-0 mb-0.5 p-1.5 rounded-lg border border-[#232323]/10 text-[#232323]/40 hover:text-[#AE343F] hover:border-[#AE343F]/30 transition-colors cursor-pointer"
+                  className="shrink-0 mb-0.5 p-1.5 rounded-lg border border-[#232323]/20 text-[#232323]/65 hover:text-[#AE343F] hover:border-[#AE343F]/40 transition-colors cursor-pointer"
                   title={`Prebaci na ${curr === "RSD" ? "EUR" : "RSD"}`}
                 >
                   {curr === "RSD" ? <Banknote size={14} /> : <Euro size={14} />}
                 </button>
                 <div className="flex-1">
-                  <label className="text-[10px] text-[#232323]/40 mb-0.5 block">
+                  <label className="text-[10px] text-[#232323]/65 mb-0.5 block">
                     Potrošeno
                   </label>
                   <input
@@ -278,13 +278,13 @@ export default function BudgetCard({ budget, setBudget }: Props) {
                     }
                     placeholder="0"
                     step={curr === "EUR" ? "0.1" : "1"}
-                    className="input input-sm input-bordered w-full bg-white border-[#232323]/10 text-sm focus:border-[#AE343F] focus:outline-none"
+                    className="input input-sm input-bordered w-full bg-white border-[#232323]/25 text-sm focus:border-[#AE343F] focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Progress bar */}
-              <div className={`h-2 rounded-full overflow-hidden ${isOver ? "bg-red-500/15" : "bg-[#AE343F]/8"}`}>
+              <div className={`h-2 rounded-full overflow-hidden ${isOver ? "bg-red-500/20" : "bg-[#AE343F]/15"}`}>
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${
                     isOver
@@ -304,7 +304,7 @@ export default function BudgetCard({ budget, setBudget }: Props) {
       {/* Add category */}
       <button
         onClick={addCategory}
-        className="btn btn-sm text-[#AE343F] border border-[#AE343F]/20 bg-transparent hover:bg-[#AE343F]/5 mt-4 w-full cursor-pointer"
+        className="btn btn-sm text-[#AE343F] border border-[#AE343F]/40 bg-transparent hover:bg-[#AE343F]/10 mt-4 w-full cursor-pointer"
       >
         <Plus size={16} />
         Dodaj kategoriju

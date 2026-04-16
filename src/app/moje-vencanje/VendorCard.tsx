@@ -30,10 +30,10 @@ function VendorCardInner({
   return (
     <div
       onClick={() => onSelect(vendor)}
-      className={`border rounded-xl p-4 hover:shadow-sm transition-all overflow-hidden relative cursor-pointer ${
+      className={`border rounded-xl p-4 shadow-sm hover:shadow-md transition-all overflow-hidden relative cursor-pointer ${
         isHighlighted
-          ? "border-[#d4af37]/50 bg-gradient-to-br from-[#d4af37]/5 to-[#d4af37]/10 ring-1 ring-[#d4af37]/25 shadow-[0_0_12px_rgba(212,175,55,0.08)]"
-          : "border-[#232323]/8 hover:border-[#AE343F]/20"
+          ? "border-[#d4af37]/70 bg-gradient-to-br from-[#d4af37]/12 to-[#d4af37]/22 ring-1 ring-[#d4af37]/50 shadow-[0_0_14px_rgba(212,175,55,0.18)]"
+          : "border-[#232323]/22 hover:border-[#AE343F]/50"
       }`}
     >
       {/* Heart button */}
@@ -48,7 +48,7 @@ function VendorCardInner({
         className={`absolute top-3 right-3 cursor-pointer transition-colors ${
           isFav
             ? "text-[#AE343F]"
-            : "text-[#232323]/15 hover:text-[#AE343F]/50"
+            : "text-[#232323]/35 hover:text-[#AE343F]/65"
         }`}
         aria-label={isFav ? "Ukloni iz favorita" : "Dodaj u favorite"}
       >
@@ -62,22 +62,22 @@ function VendorCardInner({
           <EndorsementBadge count={vendor.endorsementCount ?? 0} />
         </p>
         <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-          <p className="text-xs text-[#232323]/40 flex items-center gap-1">
+          <p className="text-xs text-[#232323]/65 flex items-center gap-1">
             <MapPin size={10} />
             {vendor.city}
           </p>
           {vendor.capacity && (
-            <span className="text-xs text-[#232323]/40">
+            <span className="text-xs text-[#232323]/65">
               · Br. mesta: {vendor.capacity}
             </span>
           )}
           {vendor.musicType && (
-            <span className="text-xs text-[#232323]/40">
+            <span className="text-xs text-[#232323]/65">
               · {vendor.musicType}
             </span>
           )}
           {vendor.serviceType && (
-            <span className="text-xs text-[#232323]/40">
+            <span className="text-xs text-[#232323]/65">
               · {vendor.serviceType}
             </span>
           )}
@@ -85,19 +85,19 @@ function VendorCardInner({
       </div>
 
       {/* Bio (truncated to 1 line) */}
-      <p className={`text-[10px] line-clamp-1 mb-2 ${vendor.bio ? "text-[#232323]/45" : "text-[#232323]/20"}`}>
+      <p className={`text-[10px] line-clamp-1 mb-2 ${vendor.bio ? "text-[#232323]/70" : "text-[#232323]/45"}`}>
         {vendor.bio || "-"}
       </p>
 
       {/* Contact labels (display only — clickable in modal) */}
       <div className="flex flex-wrap gap-2">
-        <span className={`inline-flex items-center gap-1 text-[10px] cursor-default select-none ${vendor.phone ? "text-[#232323]/50" : "text-[#232323]/20"}`}>
+        <span className={`inline-flex items-center gap-1 text-[10px] cursor-default select-none ${vendor.phone ? "text-[#232323]/75" : "text-[#232323]/40"}`}>
           <Phone size={11} /> Pozovi
         </span>
-        <span className={`inline-flex items-center gap-1 text-[10px] cursor-default select-none ${vendor.website ? "text-[#232323]/50" : "text-[#232323]/20"}`}>
+        <span className={`inline-flex items-center gap-1 text-[10px] cursor-default select-none ${vendor.website ? "text-[#232323]/75" : "text-[#232323]/40"}`}>
           <Globe size={11} /> Sajt
         </span>
-        <span className={`inline-flex items-center gap-1 text-[10px] cursor-default select-none ${vendor.instagram ? "text-[#232323]/50" : "text-[#232323]/20"}`}>
+        <span className={`inline-flex items-center gap-1 text-[10px] cursor-default select-none ${vendor.instagram ? "text-[#232323]/75" : "text-[#232323]/40"}`}>
           <Instagram size={11} /> IG
         </span>
       </div>

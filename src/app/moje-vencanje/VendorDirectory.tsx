@@ -186,7 +186,7 @@ export default function VendorDirectory({
     : null;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#232323]/10 p-4 sm:p-6 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-[#232323]/25 p-4 sm:p-6 shadow-md overflow-hidden">
       <h3 className="font-serif text-lg text-[#232323] mb-4">
         Vendori{categoryLabel ? ` — ${categoryLabel}` : ""}
       </h3>
@@ -212,7 +212,7 @@ export default function VendorDirectory({
                     transition: { duration: 0.15 },
                   }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className="snap-start shrink-0 w-[140px] border border-[#AE343F]/20 bg-[#AE343F]/3 rounded-xl p-3 relative cursor-pointer hover:border-[#AE343F]/40 transition-colors"
+                  className="snap-start shrink-0 w-[140px] border border-[#AE343F]/35 bg-[#AE343F]/8 rounded-xl p-3 relative cursor-pointer hover:border-[#AE343F]/55 transition-colors"
                   onClick={() => setSelectedVendorId(vendor.id)}
                 >
                   <button
@@ -228,7 +228,7 @@ export default function VendorDirectory({
                   <p className="text-xs font-semibold text-[#232323] truncate">
                     {vendor.name}
                   </p>
-                  <p className="text-[10px] text-[#232323]/40">{vendor.city}</p>
+                  <p className="text-[10px] text-[#232323]/65">{vendor.city}</p>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -241,20 +241,20 @@ export default function VendorDirectory({
         <div className="relative flex-1">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#232323]/30"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#232323]/55"
           />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Pretraži vendore..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#232323]/10 rounded-lg focus:border-[#AE343F] focus:outline-none transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#232323]/20 rounded-lg focus:border-[#AE343F] focus:outline-none transition-colors"
           />
         </div>
         <select
           value={selectedCity}
           onChange={(e) => setSelectedCity(e.target.value)}
-          className="select select-sm bg-white border-[#232323]/10 text-sm focus:border-[#AE343F] focus:outline-none h-[42px] w-full sm:w-auto sm:min-w-[150px]"
+          className="select select-sm bg-white border-[#232323]/20 text-sm focus:border-[#AE343F] focus:outline-none h-[42px] w-full sm:w-auto sm:min-w-[150px]"
         >
           <option value="">Svi gradovi</option>
           {cities.map((city) => (
@@ -273,7 +273,7 @@ export default function VendorDirectory({
             className={`snap-start shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               !selectedCategory
                 ? "bg-[#AE343F] text-white"
-                : "bg-[#232323]/5 text-[#232323]/60 hover:bg-[#232323]/10"
+                : "bg-[#232323]/10 text-[#232323]/85 hover:bg-[#232323]/15"
             }`}
           >
             Svi
@@ -287,7 +287,7 @@ export default function VendorDirectory({
               className={`snap-start shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ${
                 selectedCategory === cat.id
                   ? "bg-[#AE343F] text-white"
-                  : "bg-[#232323]/5 text-[#232323]/60 hover:bg-[#232323]/10"
+                  : "bg-[#232323]/10 text-[#232323]/85 hover:bg-[#232323]/15"
               }`}
             >
               {CATEGORY_ICONS[cat.id]}
@@ -298,14 +298,14 @@ export default function VendorDirectory({
       </div>
 
       {/* Results count */}
-      <p className="text-xs text-[#232323]/40 mb-4">
+      <p className="text-xs text-[#232323]/65 mb-4">
         {filtered.length} {filtered.length === 1 ? "vendor" : "vendora"}
         {selectedCity && ` u gradu ${selectedCity}`}
       </p>
 
       {/* Vendor grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12 text-[#232323]/30">
+        <div className="text-center py-12 text-[#232323]/55">
           <p className="text-sm">Nema rezultata za ovu pretragu.</p>
         </div>
       ) : (

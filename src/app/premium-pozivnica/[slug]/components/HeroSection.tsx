@@ -8,12 +8,6 @@ import {
   getPremiumVisualTheme,
   type PremiumVisualTheme,
 } from "../premiumThemeConfig";
-import dynamic from "next/dynamic";
-
-const ParticleBackground = dynamic(() => import("./ParticleBackground"), {
-  ssr: false,
-});
-
 interface HeroSectionProps {
   bride: string;
   groom: string;
@@ -110,12 +104,6 @@ export default function HeroSection({
       )}
 
 
-      {/* ── LAYER 1 — Particles (slow) ── */}
-      <motion.div className="absolute inset-0 z-[1]" style={{ y: yBg }}>
-        {premiumTheme && <ParticleBackground theme={premiumTheme} />}
-      </motion.div>
-
-
       {/* ── LAYER 6 — Main hero content ── */}
       <motion.div
         className="relative z-[10] text-center px-4 sm:px-8 md:px-10 max-w-lg mx-auto"
@@ -129,7 +117,7 @@ export default function HeroSection({
           <div className="flex items-center justify-center gap-3 mb-6 sm:mb-8">
             <div className="w-10 sm:w-16 h-px bg-gradient-to-r from-transparent to-[#d4af37]/50" />
             <p className="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#d4af37]/70">
-              Pozivamo Vas
+              Slavimo ljubav
             </p>
             <div className="w-10 sm:w-16 h-px bg-gradient-to-l from-transparent to-[#d4af37]/50" />
           </div>

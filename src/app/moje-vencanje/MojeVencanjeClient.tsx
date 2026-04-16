@@ -332,14 +332,14 @@ export default function MojeVencanjeClient() {
     >
       {/* ── Simple Navbar ──────────────────────────────────────── */}
       <nav
-        className={`fixed top-0 z-50 bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/5 ${state === "auth" ? "left-0 md:left-60 right-0" : "left-0 w-full"}`}
+        className={`fixed top-0 z-50 bg-[#F5F4DC]/90 backdrop-blur-lg border-b border-[#232323]/15 ${state === "auth" ? "left-0 md:left-60 right-0" : "left-0 w-full"}`}
       >
         <div className="px-4 md:px-8 h-14 md:h-16 flex items-center justify-center relative">
           {/* Mobile hamburger (browser only, hidden in PWA) */}
           {state === "auth" && (
             <button
               onClick={() => setMobileSidebar(true)}
-              className="absolute right-4 md:hidden [@media(display-mode:standalone)]:hidden text-[#232323]/50 hover:text-[#232323] transition-colors cursor-pointer"
+              className="absolute right-4 md:hidden [@media(display-mode:standalone)]:hidden text-[#232323]/75 hover:text-[#232323] transition-colors cursor-pointer"
             >
               <Menu size={22} />
             </button>
@@ -348,7 +348,7 @@ export default function MojeVencanjeClient() {
           {state === "auth" && (
             <button
               onClick={handleLogout}
-              className="absolute right-4 hidden [@media(display-mode:standalone)]:flex items-center text-[#232323]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
+              className="absolute right-4 hidden [@media(display-mode:standalone)]:flex items-center text-[#232323]/65 hover:text-[#AE343F] transition-colors cursor-pointer"
               aria-label="Odjavi se"
             >
               <LogOut size={20} />
@@ -379,12 +379,12 @@ export default function MojeVencanjeClient() {
                 </h1>
                 {!(mobilePrompt && skipInstall) && (
                   <>
-                    <p className="text-[#232323]/60 max-w-md mx-auto mb-6">
+                    <p className="text-[#232323]/75 max-w-md mx-auto mb-6">
                       Besplatan planer koji vam pomaže da organizujete savršeno
                       venčanje — od izbora svečane sale do efekata za prvi ples, sve
                       na jednom mestu.
                     </p>
-                    <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-[#232323]/45">
+                    <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-[#232323]/70">
                       <span className="flex items-center gap-1.5">
                         <CheckCircle2 size={13} className="text-[#AE343F]" />
                         Checklista zadataka
@@ -422,7 +422,7 @@ export default function MojeVencanjeClient() {
                   </button>
                   <button
                     onClick={() => setSkipInstall(true)}
-                    className="text-xs text-[#232323]/30 hover:text-[#232323]/50 transition-colors"
+                    className="text-xs text-[#232323]/60 hover:text-[#232323]/85 transition-colors"
                   >
                     Nastavi u pretraživaču
                   </button>
@@ -441,7 +441,7 @@ export default function MojeVencanjeClient() {
                   placeholder="'Slug' Vaše pozivnice"
                   autoComplete="off"
                   data-1p-ignore
-                  className="w-full bg-transparent border-b border-[#d4af37]/40 px-0 py-3 text-center text-sm tracking-wide text-[#232323] placeholder:text-[#232323]/25 focus:border-[#d4af37] focus:outline-none transition-colors [&:-webkit-autofill]:[-webkit-text-fill-color:#232323] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
+                  className="w-full bg-transparent border-b border-[#d4af37]/60 px-0 py-3 text-center text-sm tracking-wide text-[#232323] placeholder:text-[#232323]/50 focus:border-[#d4af37] focus:outline-none transition-colors [&:-webkit-autofill]:[-webkit-text-fill-color:#232323] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
                   required
                 />
                 <input
@@ -451,14 +451,14 @@ export default function MojeVencanjeClient() {
                   placeholder="Lozinka"
                   autoComplete="off"
                   data-1p-ignore
-                  className="w-full bg-transparent border-b border-[#d4af37]/40 px-0 py-3 text-center text-sm tracking-wide text-[#232323] placeholder:text-[#232323]/25 focus:border-[#d4af37] focus:outline-none transition-colors [&:-webkit-autofill]:[-webkit-text-fill-color:#232323] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
+                  className="w-full bg-transparent border-b border-[#d4af37]/60 px-0 py-3 text-center text-sm tracking-wide text-[#232323] placeholder:text-[#232323]/50 focus:border-[#d4af37] focus:outline-none transition-colors [&:-webkit-autofill]:[-webkit-text-fill-color:#232323] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
                   required
                 />
                 {error && <p className="text-xs text-[#AE343F]">{error}</p>}
                 <button
                   type="submit"
                   disabled={loginLoading}
-                  className="mt-1 px-10 py-2.5 text-xs font-semibold tracking-[0.2em] uppercase text-[#d4af37] border border-[#d4af37]/40 rounded-full hover:bg-[#d4af37] hover:text-white transition-all duration-500"
+                  className="mt-1 px-10 py-2.5 text-xs font-semibold tracking-[0.2em] uppercase text-[#d4af37] border border-[#d4af37]/60 rounded-full hover:bg-[#d4af37] hover:text-white transition-all duration-500"
                 >
                   {loginLoading ? (
                     <span className="loading loading-spinner loading-xs" />
@@ -478,7 +478,7 @@ export default function MojeVencanjeClient() {
                 <div className="text-center mb-6 md:hidden">
                   <button
                     onClick={handleInstall}
-                    className="inline-flex items-center gap-2 text-xs text-[#232323]/40 hover:text-[#232323]/60 transition-colors"
+                    className="inline-flex items-center gap-2 text-xs text-[#232323]/65 hover:text-[#232323]/85 transition-colors"
                   >
                     <Download size={14} />
                     Instalirajte kao aplikaciju za brži pristup
@@ -553,7 +553,7 @@ export default function MojeVencanjeClient() {
                       className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                         pwaSubView === "checklist"
                           ? "bg-[#AE343F] text-[#F5F4DC]"
-                          : "bg-white text-[#232323]/60 border border-[#232323]/10"
+                          : "bg-white text-[#232323]/85 border border-[#232323]/20"
                       }`}
                     >
                       Checklista
@@ -567,7 +567,7 @@ export default function MojeVencanjeClient() {
                       className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                         pwaSubView === "budget"
                           ? "bg-[#AE343F] text-[#F5F4DC]"
-                          : "bg-white text-[#232323]/60 border border-[#232323]/10"
+                          : "bg-white text-[#232323]/85 border border-[#232323]/20"
                       }`}
                     >
                       Budžet
@@ -696,7 +696,7 @@ export default function MojeVencanjeClient() {
               className={`flex flex-col items-center gap-0.5 py-1 ${
                 activeView === "overview"
                   ? "text-[#AE343F]"
-                  : "text-[#232323]/35"
+                  : "text-[#232323]/60"
               }`}
             >
               <Home size={20} />
@@ -708,7 +708,7 @@ export default function MojeVencanjeClient() {
                 window.scrollTo({ top: 0 });
               }}
               className={`flex flex-col items-center gap-0.5 py-1 ${
-                activeView === "guests" ? "text-[#AE343F]" : "text-[#232323]/35"
+                activeView === "guests" ? "text-[#AE343F]" : "text-[#232323]/60"
               }`}
             >
               <Users size={20} />
@@ -722,7 +722,7 @@ export default function MojeVencanjeClient() {
               className={`flex flex-col items-center gap-0.5 py-1 ${
                 activeView === "vendors"
                   ? "text-[#AE343F]"
-                  : "text-[#232323]/35"
+                  : "text-[#232323]/60"
               }`}
             >
               <Star size={20} />
@@ -734,7 +734,7 @@ export default function MojeVencanjeClient() {
                 window.scrollTo({ top: 0 });
               }}
               className={`flex flex-col items-center gap-0.5 py-1 ${
-                activeView === "audio" ? "text-[#AE343F]" : "text-[#232323]/35"
+                activeView === "audio" ? "text-[#AE343F]" : "text-[#232323]/60"
               }`}
             >
               <Mic size={20} />
@@ -743,7 +743,7 @@ export default function MojeVencanjeClient() {
             <Link
               href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
               target="_blank"
-              className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/35"
+              className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/60"
             >
               <LayoutDashboard size={20} />
               <span className="text-[10px] font-medium">Raspored</span>
@@ -766,12 +766,12 @@ export default function MojeVencanjeClient() {
               </h2>
               <button
                 onClick={() => setMobileSidebar(false)}
-                className="text-[#232323]/40 hover:text-[#232323] transition-colors cursor-pointer p-1"
+                className="text-[#232323]/65 hover:text-[#232323] transition-colors cursor-pointer p-1"
               >
                 <X size={20} />
               </button>
             </div>
-            <p className="px-5 text-xs text-[#232323]/40 mb-4">
+            <p className="px-5 text-xs text-[#232323]/60 mb-4">
               {new Date(coupleInfo.eventDate).toLocaleDateString("sr-Latn-RS", {
                 day: "numeric",
                 month: "short",
@@ -823,8 +823,8 @@ export default function MojeVencanjeClient() {
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                       isActive
-                        ? "bg-[#AE343F]/5 text-[#AE343F]"
-                        : "text-[#232323]/50 hover:bg-white/60 hover:text-[#232323]"
+                        ? "bg-[#AE343F]/12 text-[#AE343F]"
+                        : "text-[#232323]/85 hover:bg-white/60 hover:text-[#232323]"
                     }`}
                   >
                     {item.icon}
@@ -832,24 +832,24 @@ export default function MojeVencanjeClient() {
                   </button>
                 );
               })}
-              <div className="border-t border-[#232323]/5 my-2" />
+              <div className="border-t border-[#232323]/10 my-2" />
               <Link
                 href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
                 target="_blank"
                 onClick={() => setMobileSidebar(false)}
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-[#232323]/50 hover:bg-white/60 hover:text-[#232323] transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-[#232323]/85 hover:bg-white/60 hover:text-[#232323] transition-colors"
               >
                 <LayoutDashboard size={18} />
                 Raspored
               </Link>
             </nav>
-            <div className="px-3 pb-5 pt-2 border-t border-[#232323]/5">
+            <div className="px-3 pb-5 pt-2 border-t border-[#232323]/10">
               <button
                 onClick={() => {
                   handleLogout();
                   setMobileSidebar(false);
                 }}
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-[#232323]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-[#232323]/65 hover:text-[#AE343F] transition-colors cursor-pointer"
               >
                 <LogOut size={16} />
                 Odjavite se
@@ -879,11 +879,11 @@ export default function MojeVencanjeClient() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-10 h-1 bg-[#232323]/15 rounded-full mx-auto mb-5" />
+            <div className="w-10 h-1 bg-[#232323]/25 rounded-full mx-auto mb-5" />
             <h3 className="font-serif text-lg text-[#232323] text-center mb-4">
               Instalirajte aplikaciju
             </h3>
-            <div className="space-y-4 text-sm text-[#232323]/70">
+            <div className="space-y-4 text-sm text-[#232323]/85">
               {isIOS ? (
                 <>
                   <div className="flex flex-col items-center gap-2">
@@ -894,7 +894,7 @@ export default function MojeVencanjeClient() {
                       height={264}
                       className="w-full max-w-[280px] rounded-xl"
                     />
-                    <p className="text-center text-sm text-[#232323]/70">
+                    <p className="text-center text-sm text-[#232323]/85">
                       <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-5 h-5 inline-flex items-center justify-center text-xs font-bold mr-1.5">
                         1
                       </span>
@@ -909,7 +909,7 @@ export default function MojeVencanjeClient() {
                       height={186}
                       className="w-full max-w-[280px] rounded-xl"
                     />
-                    <p className="text-center text-sm text-[#232323]/70">
+                    <p className="text-center text-sm text-[#232323]/85">
                       <span className="bg-[#AE343F]/10 text-[#AE343F] rounded-full w-5 h-5 inline-flex items-center justify-center text-xs font-bold mr-1.5">
                         2
                       </span>
@@ -949,7 +949,7 @@ export default function MojeVencanjeClient() {
             </div>
             <button
               onClick={() => setShowIOSInstall(false)}
-              className="btn btn-sm btn-ghost text-[#232323]/50 w-full mt-5"
+              className="btn btn-sm btn-ghost text-[#232323]/70 w-full mt-5"
             >
               Zatvori
             </button>
@@ -978,7 +978,7 @@ function TeaserChecklist() {
     .filter((g) => g.items.length > 0);
 
   return (
-    <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm relative overflow-hidden">
+    <div className="bg-white rounded-2xl border border-[#232323]/22 p-6 shadow-md relative overflow-hidden">
       <h3 className="font-serif text-lg text-[#232323] mb-3 flex items-center gap-2">
         <CheckCircle2 size={18} className="text-[#AE343F]" />
         Checklista DEMO
@@ -986,13 +986,13 @@ function TeaserChecklist() {
 
       {/* Progress bar */}
       <div className="mb-5">
-        <div className="flex justify-between text-xs text-[#232323]/40 mb-1">
+        <div className="flex justify-between text-xs text-[#232323]/65 mb-1">
           <span>
             {checkedCount} od {allItems.length}
           </span>
           <span>{Math.round(progressPct)}%</span>
         </div>
-        <div className="h-2 bg-[#232323]/10 rounded-full overflow-hidden">
+        <div className="h-2 bg-[#232323]/15 rounded-full overflow-hidden">
           <div
             className="h-full bg-[#AE343F] rounded-full transition-all duration-300"
             style={{ width: `${progressPct}%` }}
@@ -1004,7 +1004,7 @@ function TeaserChecklist() {
       <div className="space-y-4 max-h-[420px] overflow-hidden relative">
         {groups.map((group) => (
           <div key={group.label}>
-            <p className="text-xs font-semibold text-[#232323]/40 uppercase tracking-wider mb-2">
+            <p className="text-xs font-semibold text-[#232323]/65 uppercase tracking-wider mb-2">
               {group.label}
             </p>
             <div className="space-y-2">
@@ -1019,13 +1019,13 @@ function TeaserChecklist() {
                     onChange={() =>
                       setChecked((p) => ({ ...p, [item.id]: !p[item.id] }))
                     }
-                    className="checkbox checkbox-sm border-[#232323]/20 [--chkbg:#AE343F] [--chkfg:#F5F4DC]"
+                    className="checkbox checkbox-sm border-[#232323]/35 [--chkbg:#AE343F] [--chkfg:#F5F4DC]"
                   />
                   <span
                     className={`text-sm transition-colors ${
                       checked[item.id]
-                        ? "line-through text-[#232323]/30"
-                        : "text-[#232323]/70 group-hover/item:text-[#232323]"
+                        ? "line-through text-[#232323]/45"
+                        : "text-[#232323]/85 group-hover/item:text-[#232323]"
                     }`}
                   >
                     {item.text}
@@ -1056,26 +1056,26 @@ function TeaserBudget() {
   const totalSpent = fakeSpent.reduce((s, v) => s + v, 0);
 
   return (
-    <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm relative overflow-hidden">
+    <div className="bg-white rounded-2xl border border-[#232323]/22 p-6 shadow-md relative overflow-hidden">
       <h3 className="font-serif text-lg text-[#232323] mb-3 flex items-center gap-2">
         <Wallet size={18} className="text-[#AE343F]" />
         Budžet DEMO
       </h3>
 
       {/* Totals */}
-      <div className="flex justify-between items-baseline mb-5 pb-3 border-b border-[#232323]/5">
+      <div className="flex justify-between items-baseline mb-5 pb-3 border-b border-[#232323]/15">
         <div>
-          <p className="text-xs text-[#232323]/40">Ukupan budžet</p>
+          <p className="text-xs text-[#232323]/65">Ukupan budžet</p>
           <p className="text-xl font-bold text-[#232323]">
             1.465.000{" "}
-            <span className="text-xs font-normal text-[#232323]/40">RSD</span>
+            <span className="text-xs font-normal text-[#232323]/65">RSD</span>
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-[#232323]/40">Potrošeno</p>
+          <p className="text-xs text-[#232323]/65">Potrošeno</p>
           <p className="text-xl font-bold text-[#AE343F]">
             {totalSpent.toLocaleString("sr-RS")}{" "}
-            <span className="text-xs font-normal text-[#232323]/40">RSD</span>
+            <span className="text-xs font-normal text-[#232323]/65">RSD</span>
           </p>
         </div>
       </div>
@@ -1091,13 +1091,13 @@ function TeaserBudget() {
           return (
             <div key={cat.id}>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-[#232323]/70">{cat.name}</span>
-                <span className="text-[#232323]/40 text-xs">
+                <span className="text-[#232323]/85">{cat.name}</span>
+                <span className="text-[#232323]/65 text-xs">
                   {spent.toLocaleString("sr-RS")} /{" "}
                   {planned.toLocaleString("sr-RS")}
                 </span>
               </div>
-              <div className="h-2 bg-[#232323]/10 rounded-full overflow-hidden">
+              <div className="h-2 bg-[#232323]/15 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full ${isOver ? "bg-red-500" : "bg-[#AE343F]"}`}
                   style={{ width: `${pct}%` }}

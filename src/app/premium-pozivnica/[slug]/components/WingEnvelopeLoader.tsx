@@ -159,20 +159,21 @@ export default function WingEnvelopeLoader({
 
           {/* Corner ornaments */}
           {[
-            "top-2 left-2 sm:top-3 sm:left-3 border-t border-l",
-            "top-2 right-2 sm:top-3 sm:right-3 border-t border-r",
-            "bottom-2 left-2 sm:bottom-3 sm:left-3 border-b border-l",
-            "bottom-2 right-2 sm:bottom-3 sm:right-3 border-b border-r",
+            "top-4 left-4 sm:top-6 sm:left-6",
+            "top-4 right-4 sm:top-6 sm:right-6",
+            "bottom-4 left-4 sm:bottom-6 sm:left-6",
+            "bottom-4 right-4 sm:bottom-6 sm:right-6",
           ].map((pos, i) => (
-            <div
+            <Heart
               key={i}
-              className={`absolute ${pos} w-3 h-3 sm:w-5 sm:h-5`}
-              style={{ borderColor: t.card.cornerColor, borderWidth: "2px" }}
+              className={`absolute ${pos} w-3 h-3 sm:w-4 sm:h-4`}
+              style={{ color: t.card.cornerColor }}
+              fill="currentColor"
             />
           ))}
 
           <p className="font-elegant uppercase tracking-[0.25em] sm:tracking-[0.4em] text-[5.5px] sm:text-[8px] mb-0.5 sm:mb-1" style={{ color: t.text.label }}>
-            Pozivamo Vas
+            Slavimo ljubav
           </p>
           <h2 className="font-serif text-lg sm:text-[28px] leading-tight px-1 sm:px-2 select-none" style={{ color: t.text.names }}>
             {names}

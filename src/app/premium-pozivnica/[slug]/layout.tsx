@@ -1,5 +1,19 @@
 import { getWeddingData } from "@/lib/couples";
 import { notFound } from "next/navigation";
+import type { Viewport } from "next";
+
+export async function generateViewport({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Viewport> {
+  const { slug } = await params;
+  const data = await getWeddingData(slug).catch(() => null);
+  const isLineArt = data?.premium_theme === "line_art";
+  return {
+    themeColor: isLineArt ? "#fffdf5" : "#0a0805",
+  };
+}
 
 export default async function PremiumInvitationLayout({
   children,

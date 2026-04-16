@@ -65,9 +65,9 @@ export default function Sidebar({
     : null;
 
   return (
-    <aside className="fixed left-0 top-0 w-60 h-screen bg-[#F5F4DC] border-r border-[#232323]/8 flex flex-col z-40 overflow-y-auto">
+    <aside className="fixed left-0 top-0 w-60 h-screen bg-[#F5F4DC] border-r border-[#232323]/15 flex flex-col z-40 overflow-y-auto">
       {/* Couple info */}
-      <div className="px-5 pt-6 pb-4 border-b border-[#232323]/5">
+      <div className="px-5 pt-6 pb-4 border-b border-[#232323]/10">
         <h2
           className="font-serif text-lg text-[#232323] leading-tight whitespace-nowrap truncate"
           style={
@@ -78,7 +78,7 @@ export default function Sidebar({
         >
           {coupleInfo.bride} & {coupleInfo.groom}
         </h2>
-        <p className="text-xs text-[#232323]/40 mt-1">
+        <p className="text-xs text-[#232323]/60 mt-1">
           {hasDate ? `${eventDateFormatted} · još ${days}d` : "Datum nije unet"}
         </p>
       </div>
@@ -93,8 +93,8 @@ export default function Sidebar({
               onClick={() => onViewChange(item.view)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 ${
                 isActive
-                  ? "bg-[#AE343F]/5 text-[#AE343F] border-l-2 border-[#AE343F] pl-[10px]"
-                  : "text-[#232323]/50 hover:bg-white/70 hover:text-[#232323] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+                  ? "bg-[#AE343F]/12 text-[#AE343F] border-l-2 border-[#AE343F] pl-[10px]"
+                  : "text-[#232323]/85 hover:bg-white/70 hover:text-[#232323] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
               }`}
             >
               {item.icon}
@@ -104,13 +104,13 @@ export default function Sidebar({
         })}
 
         {/* Separator */}
-        <div className="border-t border-[#232323]/5 my-3" />
+        <div className="border-t border-[#232323]/10 my-3" />
 
         {/* External links */}
         {coupleInfo.draft ? (
           <button
             onClick={onDraftAction}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/30 cursor-pointer transition-all duration-200 hover:bg-white/70 hover:text-[#232323]/50"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/50 cursor-pointer transition-all duration-200 hover:bg-white/70 hover:text-[#232323]/75"
           >
             <LayoutDashboard size={18} />
             <span className="flex-1 text-left">Raspored</span>
@@ -119,20 +119,20 @@ export default function Sidebar({
           <Link
             href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
             target="_blank"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/50 cursor-pointer transition-all duration-200 hover:bg-white/70 hover:text-[#232323] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/85 cursor-pointer transition-all duration-200 hover:bg-white/70 hover:text-[#232323] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
           >
             <LayoutDashboard size={18} />
             <span className="flex-1">Raspored</span>
-            <ExternalLink size={12} className="text-[#232323]/20" />
+            <ExternalLink size={12} className="text-[#232323]/50" />
           </Link>
         )}
       </nav>
 
       {/* Logout */}
-      <div className="px-3 pb-5 pt-2 border-t border-[#232323]/5">
+      <div className="px-3 pb-5 pt-2 border-t border-[#232323]/10">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/40 hover:text-[#AE343F] transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/65 hover:text-[#AE343F] transition-colors"
         >
           <LogOut size={16} />
           Odjavite se

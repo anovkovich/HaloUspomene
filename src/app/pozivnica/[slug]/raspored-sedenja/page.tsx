@@ -47,8 +47,16 @@ export default async function RasporedSedenja({ params }: PageProps) {
   const attending = responses.filter((r) => r.attending === "Da");
   const cssVars = getThemeCSSVariables(weddingData.theme, weddingData.scriptFont);
 
+  const editorVars: React.CSSProperties = {
+    ...(cssVars as React.CSSProperties),
+    "--theme-text-light": "rgba(35, 35, 35, 0.78)",
+    "--theme-text-muted": "rgba(35, 35, 35, 0.92)",
+    "--theme-border-light": "rgba(35, 35, 35, 0.2)",
+    "--theme-border": "rgba(35, 35, 35, 0.32)",
+  } as React.CSSProperties;
+
   return (
-    <div style={cssVars as React.CSSProperties}>
+    <div style={editorVars}>
       <RasporedClient
         attending={attending}
         slug={slug}

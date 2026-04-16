@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, useScroll, useTransform, useMotionValue, animate, type PanInfo } from "framer-motion";
-import { Heart, Send, MapPin, Clock } from "lucide-react";
+import { motion, useScroll, useTransform, useMotionValue, animate } from "framer-motion";
+import { Heart, Send, MapPin, Clock, Church, Home, Sparkles } from "lucide-react";
 import type { ThemeInvitationProps } from "../PremiumInvitationClient";
 import dynamic from "next/dynamic";
 
@@ -10,13 +10,20 @@ const HeroSection = dynamic(() => import("../components/HeroSection"), {
   ssr: false,
 });
 
+const ParticleBackground = dynamic(
+  () => import("../components/ParticleBackground"),
+  { ssr: false },
+);
+
 // Glassmorphism card
 function GlassCard({
   children,
   className = "",
+  cornerOrnaments = true,
 }: {
   children: React.ReactNode;
   className?: string;
+  cornerOrnaments?: boolean;
 }) {
   return (
     <motion.div
@@ -29,17 +36,18 @@ function GlassCard({
       <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent" />
       <div className="absolute bottom-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-[#d4af37]/15 to-transparent" />
       <div className="absolute inset-3 sm:inset-4 border border-[#d4af37]/8 rounded-2xl pointer-events-none" />
-      {[
-        "top-4 left-4 sm:top-5 sm:left-5",
-        "top-4 right-4 sm:top-5 sm:right-5 rotate-90",
-        "bottom-4 right-4 sm:bottom-5 sm:right-5 rotate-180",
-        "bottom-4 left-4 sm:bottom-5 sm:left-5 -rotate-90",
-      ].map((pos, i) => (
-        <div
-          key={i}
-          className={`absolute ${pos} w-3 h-3 sm:w-4 sm:h-4 border-t border-l border-[#d4af37]/20 pointer-events-none`}
-        />
-      ))}
+      {cornerOrnaments &&
+        [
+          "top-4 left-4 sm:top-5 sm:left-5",
+          "top-4 right-4 sm:top-5 sm:right-5 rotate-90",
+          "bottom-4 right-4 sm:bottom-5 sm:right-5 rotate-180",
+          "bottom-4 left-4 sm:bottom-5 sm:left-5 -rotate-90",
+        ].map((pos, i) => (
+          <div
+            key={i}
+            className={`absolute ${pos} w-3 h-3 sm:w-4 sm:h-4 border-t border-l border-[#d4af37]/20 pointer-events-none`}
+          />
+        ))}
       {children}
     </motion.div>
   );
@@ -124,13 +132,37 @@ function LineArtCountdown({ targetDate }: { targetDate: string }) {
   );
 }
 
-function LocationsCard({ locations }: { locations: { name: string; address: string; map_url?: string; time?: string }[] }) {
+const TAB_LABELS: Record<string, string> = {
+  hall: "Sala",
+  church: "Crkva",
+  home: "Kuća",
+  ceremony: "Ceremonija",
+};
+
+const TAB_ICONS: Record<string, typeof MapPin> = {
+  hall: Heart,
+  church: Church,
+  home: Home,
+  ceremony: Sparkles,
+};
+
+function LocationsCard({
+  locations,
+}: {
+  locations: {
+    name: string;
+    address: string;
+    map_url?: string;
+    time?: string;
+    type?: string;
+  }[];
+}) {
   const [activeTab, setActiveTab] = useState(0);
   const hasMultiple = locations.length > 1;
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-12 sm:mt-16 px-8 sm:px-4 md:px-0">
-      <GlassCard>
+    <div className="relative z-10 w-full max-w-2xl mx-auto mt-12 sm:mt-16 px-8 sm:px-4 md:px-0">
+      <GlassCard cornerOrnaments={false}>
         <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#d4af37]/80 mb-4 text-center font-medium">
           {hasMultiple ? "Lokacije" : "Lokacija"}
         </p>
@@ -154,12 +186,22 @@ function LocationsCard({ locations }: { locations: { name: string; address: stri
                 }}
               >
                 <div className="absolute top-0 left-0 right-0 h-[50%] bg-gradient-to-b from-white/35 to-transparent rounded-t-xl pointer-events-none" />
-                <MapPin size={13} className={`relative z-10 ${activeTab === i ? "text-white/80" : "text-[#d4af37]/60"}`} />
+                {(() => {
+                  const Icon = (loc.type && TAB_ICONS[loc.type]) || MapPin;
+                  const isHeart = loc.type === "hall";
+                  return (
+                    <Icon
+                      size={13}
+                      className={`relative z-10 ${activeTab === i ? "text-white/90" : "text-[#d4af37]"}`}
+                      fill={isHeart ? "currentColor" : "none"}
+                    />
+                  );
+                })()}
                 <span
                   className={`relative z-10 ${activeTab === i ? "text-white" : "text-[#8b6914]"}`}
                   style={activeTab === i ? { textShadow: "0 1px 2px rgba(0,0,0,0.3)" } : undefined}
                 >
-                  {loc.name}
+                  {(loc.type && TAB_LABELS[loc.type]) || loc.name}
                 </span>
               </button>
             ))}
@@ -197,6 +239,7 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
   locations?: { name: string; address: string; map_url?: string; time?: string }[];
   mapEnabled?: boolean;
 }) {
+  "use no memo";
   const count = timeline.length;
   const basePath = "/images/premium/line-art-invitation/spinning/";
   let wheelImg: string, maskImg: string, degPer: number;
@@ -225,7 +268,9 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
   const rotation = useMotionValue(0);
   const isDraggingRef = useRef(false);
   const cancelRef = useRef(false);
+  const lastInteractionRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
+  const AUTO_RESUME_DELAY = 6000;
 
   // Track which section is at top
   useEffect(() => {
@@ -251,7 +296,8 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
     const autoRotate = async () => {
       await wait(2500);
       while (!cancelRef.current) {
-        if (!isDraggingRef.current) {
+        const sinceInteraction = Date.now() - lastInteractionRef.current;
+        if (!isDraggingRef.current && sinceInteraction >= AUTO_RESUME_DELAY) {
           const current = rotation.get();
           const next = current - degPer; // negative = clockwise visual
           await new Promise<void>((resolve) => {
@@ -267,34 +313,23 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
     return () => { cancelRef.current = true; };
   }, [degPer, rotation]);
 
-  const handlePan = (_: unknown, info: PanInfo) => {
-    rotation.set(rotation.get() + info.delta.x * 0.6 + info.delta.y * -0.3);
-  };
-
-  const handlePanEnd = () => {
-    const current = rotation.get();
-    const nearest = Math.round(current / degPer) * degPer;
-    animate(rotation, nearest, { type: "spring", stiffness: 120, damping: 18 });
-    setTimeout(() => { isDraggingRef.current = false; }, 3000);
-  };
-
   // Navigate to a specific section
   const goToSection = useCallback((sectionIndex: number) => {
     isDraggingRef.current = true;
+    lastInteractionRef.current = Date.now();
     const current = rotation.get();
     const targetMod = ((360 - (sectionIndex * degPer) % 360) % 360) || 0;
     const currentMod = (((current % 360) + 360) % 360);
     let delta = targetMod - currentMod;
-    // Find shortest path
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
     animate(rotation, current + delta, { duration: 1.8, ease: [0.4, 0, 0.2, 1] });
-    setTimeout(() => { isDraggingRef.current = false; }, 5000);
+    setTimeout(() => { isDraggingRef.current = false; }, 1800);
   }, [rotation, degPer]);
 
   return (
-    <section className="relative flex flex-col items-center justify-center px-1 sm:px-16 md:px-24 py-16 sm:py-20 md:py-24 bg-gradient-to-b from-[#f8f3e6] via-[#f5eed8] to-[#f8f3e6] border-y-2 border-[#d4af37]/40">
-      <div className="relative w-full sm:w-[80%] md:w-[66%] lg:w-[60%] max-w-[720px]">
+    <section className="relative flex flex-col items-center justify-center px-1 sm:px-16 md:px-24 py-16 sm:py-20 md:py-24 bg-gradient-to-b from-[#f8f3e6] via-[#f5eed8] to-[#f8f3e6] border-y-4 border-[#d8c070]">
+      <div className="relative z-10 w-full sm:w-[80%] md:w-[66%] lg:w-[60%] max-w-[720px]">
         {/* Spinning wheel with timeline text */}
         <motion.div
           className="relative w-full"
@@ -336,9 +371,6 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
                   <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#8b6914]" />
                   <div className="w-3 sm:w-4 h-px bg-gradient-to-l from-transparent to-[#8b6914]" />
                 </div>
-                <p className="text-[14px] sm:text-[19px] md:text-[23px] font-serif font-bold text-[#8b6914] tracking-[0.08em]">
-                  {item.time}
-                </p>
               </div>
             </div>
           ))}
@@ -363,14 +395,6 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
           <div className="absolute top-[10%] left-[15%] right-[15%] h-[40%] rounded-full bg-gradient-to-b from-white/40 to-transparent" />
         </div>
 
-        {/* Drag zone — only the upper petal area */}
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-[40%] z-20 cursor-grab active:cursor-grabbing touch-none"
-          onPanStart={() => { isDraggingRef.current = true; }}
-          onPan={handlePan}
-          onPanEnd={handlePanEnd}
-        />
-
         {/* Navigation buttons — follow the circle curve */}
         <div className="absolute inset-0 z-10 pointer-events-none">
           {uniqueItems.map((item, i) => {
@@ -386,7 +410,7 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
                 key={i}
                 type="button"
                 onClick={() => goToSection(i)}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all duration-500 overflow-hidden`}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 overflow-hidden`}
                 style={{
                   left: `${left}%`,
                   top: `${top}%`,
@@ -400,10 +424,14 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
               >
                 <div className="absolute top-0 left-[10%] right-[10%] h-[45%] bg-gradient-to-b from-white/40 to-transparent rounded-full pointer-events-none" />
                 <span
-                  className={`font-serif font-bold text-[10px] sm:text-[11px] md:text-[13px] relative z-10 ${
-                    activeIndex === i ? "text-white" : "text-[#d4af37]"
+                  className={`font-elegant font-semibold tracking-[0.12em] text-[12px] sm:text-[14px] md:text-[16px] tabular-nums relative z-10 ${
+                    activeIndex === i ? "text-white" : "text-[#8b6914]"
                   }`}
-                  style={activeIndex === i ? { textShadow: "0 1px 2px rgba(0,0,0,0.3)" } : undefined}
+                  style={
+                    activeIndex === i
+                      ? { textShadow: "0 1px 3px rgba(0,0,0,0.4)" }
+                      : { textShadow: "0 1px 2px rgba(255,253,245,0.6)" }
+                  }
                 >
                   {item.time}
                 </span>
@@ -568,34 +596,48 @@ export default function LineArtInvitation({
   const { scrollY } = useScroll();
   // Starry night: slow parallax — moves down at 40% of scroll speed (lingers at top)
   const starryNightY = useTransform(scrollY, [0, 1200], [0, 480]);
+  // Slow parallax for the fixed side decor — pattern drifts upward as user scrolls down.
+  const sideDecorY = useTransform(scrollY, (v) => -v * 0.25);
 
   return (
     <div className="bg-[#fffdf5] relative overflow-x-hidden">
       <style>{`html, body { background-color: #fffdf5; overscroll-behavior-y: none; }`}</style>
-      {/* ── SIDE DECOR — fixed on scroll, both edges ── */}
+      {/* ── Floating gold particles — visible across entire invitation ── */}
+      <ParticleBackground theme="line_art" />
+      {/* ── SIDE DECOR — fixed on scroll with slow parallax, both edges ── */}
       <div
         aria-hidden
-        className="pointer-events-none fixed top-0 left-0 h-full w-[60px] sm:w-[100px] md:w-[130px] lg:w-[160px] z-[5]"
-        style={{
-          backgroundImage:
-            "url('/images/premium/line-art-invitation/side-decor.webp')",
-          backgroundSize: "100% auto",
-          backgroundPosition: "left top",
-          backgroundRepeat: "repeat-y",
-          transform: "scaleX(-1)",
-        }}
-      />
+        className="pointer-events-none fixed top-0 left-0 h-screen w-[60px] sm:w-[100px] md:w-[130px] lg:w-[160px] z-[5] overflow-hidden"
+      >
+        <motion.div
+          className="absolute top-0 left-0 right-0 h-[600vh]"
+          style={{
+            y: sideDecorY,
+            scaleX: -1,
+            backgroundImage:
+              "url('/images/premium/line-art-invitation/side-decor.webp')",
+            backgroundSize: "100% auto",
+            backgroundRepeat: "repeat-y",
+            willChange: "transform",
+          }}
+        />
+      </div>
       <div
         aria-hidden
-        className="pointer-events-none fixed top-0 right-0 h-full w-[60px] sm:w-[100px] md:w-[130px] lg:w-[160px] z-[5]"
-        style={{
-          backgroundImage:
-            "url('/images/premium/line-art-invitation/side-decor.webp')",
-          backgroundSize: "100% auto",
-          backgroundPosition: "left top",
-          backgroundRepeat: "repeat-y",
-        }}
-      />
+        className="pointer-events-none fixed top-0 right-0 h-screen w-[60px] sm:w-[100px] md:w-[130px] lg:w-[160px] z-[5] overflow-hidden"
+      >
+        <motion.div
+          className="absolute top-0 left-0 right-0 h-[600vh]"
+          style={{
+            y: sideDecorY,
+            backgroundImage:
+              "url('/images/premium/line-art-invitation/side-decor.webp')",
+            backgroundSize: "100% auto",
+            backgroundRepeat: "repeat-y",
+            willChange: "transform",
+          }}
+        />
+      </div>
 
       {/* ── STARRY NIGHT — top edge, above side decors (slow parallax) ── */}
       <motion.div
@@ -639,7 +681,7 @@ export default function LineArtInvitation({
           />
         </div>
         <div className="relative z-10 w-full max-w-2xl mx-auto">
-          <GlassCard className="text-center">
+          <GlassCard className="text-center" cornerOrnaments={false}>
             {data.countdown_enabled && data.event_date && (
               <>
                 <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#8b6914] mb-6 text-center font-semibold">
@@ -654,7 +696,7 @@ export default function LineArtInvitation({
             </p>
             {data.tagline && (
               <p className="text-[#5a4a2e] mt-4 sm:mt-6 italic font-serif text-lg sm:text-xl md:text-2xl leading-relaxed max-w-lg mx-auto">
-                &ldquo;{data.tagline}&rdquo;
+                {data.tagline}
               </p>
             )}
           </GlassCard>
@@ -716,7 +758,7 @@ export default function LineArtInvitation({
           transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
         />
         <div className="relative z-10 w-full max-w-xl mx-auto">
-          <GlassCard>
+          <GlassCard cornerOrnaments={false}>
             <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#d4af37]/80 mb-6 text-center font-medium">
               Potvrda dolaska
             </p>
@@ -739,12 +781,12 @@ export default function LineArtInvitation({
           <p className="font-serif text-3xl sm:text-4xl text-[#232323] mb-3 break-words">
             {full_display}
           </p>
-          <p className="font-serif tracking-[0.15em] text-sm text-[#d4af37]/70 mb-6">
+          <p className="font-serif tracking-[0.15em] text-lg sm:text-xl text-[#d4af37]/90 mb-6">
             {formattedDateShort}
           </p>
 
           {data.thankYouFooter && (
-            <p className="font-serif italic text-sm sm:text-base text-[#8B7355]/80 leading-relaxed mb-6">
+            <p className="font-serif italic text-lg sm:text-xl text-[#8B7355]/90 leading-relaxed mb-6">
               {data.thankYouFooter}
             </p>
           )}

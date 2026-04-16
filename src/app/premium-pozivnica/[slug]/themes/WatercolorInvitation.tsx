@@ -220,7 +220,10 @@ function WatercolorRSVPForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <p className="text-base sm:text-lg text-white/55 text-center font-serif mb-6">
+      <p
+        className="text-base sm:text-lg text-white/90 text-center font-serif mb-6"
+        style={{ textShadow: "0 2px 10px rgba(0,0,0,0.75)" }}
+      >
         Sa zadovoljstvom Vas očekujemo
       </p>
       <input
@@ -228,7 +231,7 @@ function WatercolorRSVPForm({
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Vaše ime i prezime"
-        className="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#d4af37]/50 focus:ring-1 focus:ring-[#d4af37]/20 transition-all"
+        className="w-full bg-white/10 border border-white/25 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/60 focus:outline-none focus:border-[#d4af37]/60 focus:ring-1 focus:ring-[#d4af37]/25 transition-all"
       />
       <div className="flex gap-3">
         {(["Da", "Ne"] as const).map((val) => (
@@ -239,7 +242,7 @@ function WatercolorRSVPForm({
             className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
               attending === val
                 ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white shadow-md shadow-[#d4af37]/20 border border-[#d4af37]"
-                : "bg-white/5 text-white/50 border border-white/15 hover:border-white/30"
+                : "bg-white/10 text-white/90 border border-white/25 hover:border-white/40"
             }`}
           >
             {val === "Da" ? "Dolazim" : "Ne dolazim"}
@@ -256,23 +259,31 @@ function WatercolorRSVPForm({
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="overflow-hidden space-y-5"
           >
-            <div className="flex items-center justify-between bg-white/5 border border-white/12 rounded-xl px-4 py-2.5">
-              <span className="text-sm text-white/50">Broj osoba</span>
+            <div className="flex items-center justify-between bg-white/10 border border-white/25 rounded-xl px-4 py-2.5">
+              <span
+                className="text-sm text-white/90"
+                style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}
+              >
+                Broj osoba
+              </span>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                  className="w-8 h-8 rounded-full bg-white/10 text-[#d4af37] hover:bg-white/20 text-lg transition-colors"
+                  className="w-9 h-9 rounded-full bg-white/20 border border-white/40 text-white hover:bg-white/30 text-xl font-bold leading-none transition-colors inline-flex items-center justify-center pb-0.5"
                 >
                   −
                 </button>
-                <span className="text-white font-medium w-6 text-center">
+                <span
+                  className="text-white font-semibold text-base w-6 text-center"
+                  style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}
+                >
                   {guestCount}
                 </span>
                 <button
                   type="button"
                   onClick={() => setGuestCount(guestCount + 1)}
-                  className="w-8 h-8 rounded-full bg-white/10 text-[#d4af37] hover:bg-white/20 text-lg transition-colors"
+                  className="w-9 h-9 rounded-full bg-white/20 border border-white/40 text-white hover:bg-white/30 text-xl font-bold leading-none transition-colors inline-flex items-center justify-center pb-0.5"
                 >
                   +
                 </button>
@@ -283,7 +294,7 @@ function WatercolorRSVPForm({
               onChange={(e) => setDetails(e.target.value)}
               placeholder="Napomena (opciono)"
               rows={2}
-              className="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#d4af37]/50 focus:ring-1 focus:ring-[#d4af37]/20 resize-none transition-all"
+              className="w-full bg-white/10 border border-white/25 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/60 focus:outline-none focus:border-[#d4af37]/60 focus:ring-1 focus:ring-[#d4af37]/25 resize-none transition-all"
             />
           </motion.div>
         )}
@@ -307,7 +318,10 @@ function WatercolorRSVPForm({
         )}
       </button>
       {submitUntil && (
-        <p className="text-xs sm:text-sm text-white/65 text-center font-medium tracking-wide">
+        <p
+          className="text-xs sm:text-sm text-white/90 text-center font-medium tracking-wide"
+          style={{ textShadow: "0 1px 6px rgba(0,0,0,0.7)" }}
+        >
           Rok za potvrdu:{" "}
           <span className="text-[#d4af37]">{formattedDeadline}</span>
         </p>
@@ -353,7 +367,7 @@ export default function WatercolorInvitation({
   const overlayOpacity = useTransform(
     scrollYProgress,
     [0, 0.4, 1],
-    [0, 0.55, 0.85],
+    [0, 0.5, 0.7],
   );
 
   // Car parallax — moves until ~50% scroll, then locks in place.
@@ -391,9 +405,9 @@ export default function WatercolorInvitation({
         className="fixed inset-0 z-[5] pointer-events-none"
         style={{
           opacity: overlayOpacity,
-          backgroundColor: "rgba(20, 14, 8, 0.55)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          backgroundColor: "rgba(20, 14, 8, 0.32)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
           willChange: "opacity",
         }}
       />
@@ -545,15 +559,24 @@ export default function WatercolorInvitation({
               <WatercolorCountdown targetDate={data.event_date} />
             </div>
           )}
-          <p className="font-serif tracking-[0.3em] text-3xl sm:text-4xl text-[#d4af37] mb-6">
+          <p
+            className="font-serif font-bold tracking-[0.3em] text-3xl sm:text-4xl text-[#d4af37] mb-6"
+            style={{
+              textShadow:
+                "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
+            }}
+          >
             {formattedDateShort}
           </p>
           {data.tagline && (
             <p
-              className="text-white/85 italic font-serif text-2xl sm:text-3xl leading-relaxed"
-              style={{ textShadow: "0 2px 12px rgba(0,0,0,0.7)" }}
+              className="text-white italic font-serif text-2xl sm:text-3xl leading-relaxed"
+              style={{
+                textShadow:
+                  "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
+              }}
             >
-              &ldquo;{data.tagline}&rdquo;
+              {data.tagline}
             </p>
           )}
         </motion.div>
@@ -573,37 +596,65 @@ export default function WatercolorInvitation({
                   transition={{ delay: i * 0.15, duration: 0.6 }}
                   className="flex flex-col items-center text-center relative"
                 >
-                  <span
-                    className="text-3xl sm:text-4xl font-serif font-medium text-[#d4af37] leading-none mb-3"
-                    style={{ textShadow: "0 2px 10px rgba(0,0,0,0.7)" }}
+                  <div
+                    className="relative rounded-2xl py-3 sm:py-4 px-5 sm:px-6 mb-3 overflow-hidden"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 50%, rgba(212,175,55,0.08) 100%)",
+                      backdropFilter: "blur(16px) saturate(140%)",
+                      WebkitBackdropFilter: "blur(16px) saturate(140%)",
+                      border: "1px solid rgba(255,255,255,0.18)",
+                      boxShadow:
+                        "0 12px 32px -12px rgba(0,0,0,0.45), 0 0 0 1px rgba(212,175,55,0.08), inset 0 1px 0 rgba(255,255,255,0.15)",
+                    }}
                   >
-                    {item.time}
-                  </span>
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#d4af37]/50 border border-[#d4af37] mb-3" />
+                    <div
+                      className="pointer-events-none absolute inset-x-0 top-0 h-px"
+                      style={{
+                        background:
+                          "linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent)",
+                      }}
+                    />
+                    <span
+                      className="relative text-3xl sm:text-4xl font-serif font-medium text-[#d4af37] leading-none tabular-nums"
+                      style={{ textShadow: "0 2px 10px rgba(0,0,0,0.7)" }}
+                    >
+                      {item.time}
+                    </span>
+                  </div>
                   {item.what && (
                     <p
                       className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-white/65 mb-1"
-                      style={{ textShadow: "0 2px 8px rgba(0,0,0,0.7)" }}
+                      style={{
+                        textShadow:
+                          "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
+                      }}
                     >
                       {item.what}
                     </p>
                   )}
                   <p
                     className="text-lg sm:text-xl font-semibold text-white"
-                    style={{ textShadow: "0 2px 10px rgba(0,0,0,0.75)" }}
+                    style={{
+                      textShadow:
+                        "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
+                    }}
                   >
                     {item.title}
                   </p>
                   {item.description && (
                     <p
                       className="text-sm text-white/70 mt-1"
-                      style={{ textShadow: "0 1px 6px rgba(0,0,0,0.7)" }}
+                      style={{
+                        textShadow:
+                          "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
+                      }}
                     >
                       {item.description}
                     </p>
                   )}
                   {i < data.timeline.length - 1 && (
-                    <div className="absolute -bottom-9 sm:-bottom-10 left-1/2 -translate-x-1/2 w-px h-7 bg-gradient-to-b from-[#d4af37]/40 to-transparent" />
+                    <div className="absolute -bottom-11 sm:-bottom-12 left-1/2 -translate-x-1/2 w-[2px] h-11 sm:h-12 bg-gradient-to-b from-[#d4af37] via-[#d4af37]/80 to-[#d4af37]/30" />
                   )}
                 </motion.div>
               ))}
@@ -650,10 +701,10 @@ export default function WatercolorInvitation({
             }}
           />
           <p
-            className="relative font-serif uppercase tracking-[0.4em] text-[#d4af37] text-sm sm:text-base mb-8 text-center"
+            className="relative font-serif uppercase tracking-[0.4em] text-white text-lg sm:text-2xl mb-8 text-center"
             style={{
               textShadow:
-                "0 0 20px rgba(212,175,55,0.3), 0 2px 8px rgba(0,0,0,0.5)",
+                "0 2px 12px rgba(0,0,0,0.85), 0 1px 4px rgba(0,0,0,0.75)",
             }}
           >
             Potvrda dolaska
@@ -678,16 +729,19 @@ export default function WatercolorInvitation({
           <div className="max-w-md mx-auto">
             {/* Section title with decorative ornament */}
             <div className="flex items-center justify-center gap-3 mb-10">
-              <div className="w-12 h-px bg-gradient-to-r from-transparent to-[#d4af37]/40" />
+              <div className="w-12 h-px bg-gradient-to-r from-transparent to-white/70" />
               <p
-                className="font-serif uppercase tracking-[0.4em] text-[#d4af37] text-sm sm:text-base"
-                style={{ textShadow: "0 0 20px rgba(212,175,55,0.3), 0 2px 8px rgba(0,0,0,0.5)" }}
+                className="font-serif uppercase tracking-[0.4em] text-white text-lg sm:text-2xl"
+                style={{
+                  textShadow:
+                    "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
+                }}
               >
                 {data.locations.filter((l) => l.map_url).length > 1
                   ? "Lokacije"
                   : "Lokacija"}
               </p>
-              <div className="w-12 h-px bg-gradient-to-l from-transparent to-[#d4af37]/40" />
+              <div className="w-12 h-px bg-gradient-to-l from-transparent to-white/70" />
             </div>
 
             <div className="space-y-6">
@@ -779,26 +833,42 @@ export default function WatercolorInvitation({
       <footer className="relative z-10 py-16 sm:py-20 text-center px-6 overflow-hidden">
         <div className="max-w-md mx-auto">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 sm:w-20 h-px bg-gradient-to-r from-transparent to-[#d4af37]/30" />
+            <div className="w-14 sm:w-24 h-px bg-gradient-to-r from-transparent to-[#d4af37]" />
             <Heart
-              size={10}
-              className="text-[#d4af37]/50"
+              size={14}
+              className="text-[#d4af37]"
               fill="currentColor"
+              style={{ filter: "drop-shadow(0 0 6px rgba(212,175,55,0.5))" }}
             />
-            <div className="w-12 sm:w-20 h-px bg-gradient-to-l from-transparent to-[#d4af37]/30" />
+            <div className="w-14 sm:w-24 h-px bg-gradient-to-l from-transparent to-[#d4af37]" />
           </div>
-          <p className="font-serif text-3xl sm:text-4xl text-white/70 mb-3">
+          <p
+            className="font-serif text-3xl sm:text-4xl text-white/90 mb-3"
+            style={{
+              textShadow:
+                "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
+            }}
+          >
             {full_display}
           </p>
-          <p className="font-serif tracking-[0.15em] text-sm text-[#d4af37]/60 mb-6">
+          <p
+            className="font-serif tracking-[0.15em] text-lg sm:text-xl text-[#d4af37] mb-6"
+            style={{
+              textShadow:
+                "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
+            }}
+          >
             {formattedDateShort}
           </p>
 
           {/* Thank-you message */}
           {data.thankYouFooter && (
             <p
-              className="font-serif italic text-sm sm:text-base text-white/55 leading-relaxed"
-              style={{ textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
+              className="font-serif italic text-base sm:text-lg text-white/90 leading-relaxed"
+              style={{
+                textShadow:
+                  "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
+              }}
             >
               {data.thankYouFooter}
             </p>

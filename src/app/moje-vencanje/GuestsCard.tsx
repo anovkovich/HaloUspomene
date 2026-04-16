@@ -102,21 +102,21 @@ function ResponseCard({
   const longPress = useLongPress(() => onEdit?.(entry));
 
   return (
-    <div className="relative p-4 bg-white rounded-xl border border-[#232323]/8 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.03)]">
+    <div className="relative p-4 bg-white rounded-xl border border-[#232323]/22 shadow-sm">
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <div
               className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center border-[1.5px] ${
                 isAttending
-                  ? "bg-[#AE343F]/10 border-[#AE343F]"
-                  : "bg-[#232323]/5 border-[#232323]/15"
+                  ? "bg-[#AE343F]/15 border-[#AE343F]"
+                  : "bg-[#232323]/10 border-[#232323]/30"
               }`}
             >
               {isAttending ? (
                 <Check size={10} className="text-[#AE343F]" strokeWidth={2.5} />
               ) : (
-                <X size={10} className="text-[#232323]/30" strokeWidth={2.5} />
+                <X size={10} className="text-[#232323]/60" strokeWidth={2.5} />
               )}
             </div>
             <p className="text-sm font-medium text-[#232323] leading-tight">
@@ -125,14 +125,14 @@ function ResponseCard({
           </div>
           {isAttending ? (
             <span
-              className="flex items-center gap-1.5 text-xs font-medium rounded-full bg-[#AE343F]/8 text-[#AE343F] px-2.5 py-1 shrink-0 select-none touch-none cursor-pointer active:scale-95 transition-transform"
+              className="flex items-center gap-1.5 text-xs font-medium rounded-full bg-[#AE343F]/15 text-[#AE343F] px-2.5 py-1 shrink-0 select-none touch-none cursor-pointer active:scale-95 transition-transform"
               {...longPress}
             >
               <Users size={11} />
               {guestCount} {getPersonLabel(guestCount)}
             </span>
           ) : (
-            <span className="flex items-center text-xs font-medium rounded-full bg-[#232323]/5 text-[#232323]/40 px-2.5 py-1 shrink-0">
+            <span className="flex items-center text-xs font-medium rounded-full bg-[#232323]/10 text-[#232323]/70 px-2.5 py-1 shrink-0">
               Neće doći
             </span>
           )}
@@ -151,7 +151,7 @@ function ResponseCard({
                   className={`text-xs font-medium px-2 py-1 rounded transition-all cursor-pointer ${
                     active
                       ? "bg-[#AE343F] text-white border border-[#AE343F]"
-                      : "bg-[#F5F4DC]/50 text-[#232323]/40 border border-[#232323]/8 hover:border-[#232323]/15"
+                      : "bg-[#F5F4DC]/50 text-[#232323]/75 border border-[#232323]/15 hover:border-[#232323]/30"
                   }`}
                 >
                   {cat.label}
@@ -162,14 +162,14 @@ function ResponseCard({
         )}
 
         {entry.details && entry.details !== "-" && (
-          <p className="text-sm text-[#232323]/50 flex items-start gap-1.5 leading-relaxed">
-            <MessageSquare size={13} className="flex-shrink-0 mt-0.5 text-[#232323]/25" />
+          <p className="text-sm text-[#232323]/75 flex items-start gap-1.5 leading-relaxed">
+            <MessageSquare size={13} className="flex-shrink-0 mt-0.5 text-[#232323]/50" />
             {entry.details}
           </p>
         )}
 
         {entry.timestamp && (
-          <p className="text-xs text-[#232323]/25">
+          <p className="text-xs text-[#232323]/55">
             {formatTimestamp(entry.timestamp)}
           </p>
         )}
@@ -224,7 +224,7 @@ function EditGuestModal({
           <h3 className="font-serif text-lg text-[#232323]">Izmeni gosta</h3>
           <button
             onClick={onClose}
-            className="text-[#232323]/30 hover:text-[#232323]/60 transition-colors cursor-pointer"
+            className="text-[#232323]/60 hover:text-[#232323] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -236,7 +236,7 @@ function EditGuestModal({
         <div className="flex items-center justify-center gap-4 mb-6">
           <button
             onClick={() => setCount((c) => Math.max(0, c - 1))}
-            className="w-11 h-11 flex items-center justify-center text-lg bg-[#F5F4DC] rounded-xl border border-[#232323]/10 text-[#232323]/60 hover:text-[#232323] cursor-pointer transition-colors"
+            className="w-11 h-11 flex items-center justify-center text-lg bg-[#F5F4DC] rounded-xl border border-[#232323]/20 text-[#232323]/85 hover:text-[#232323] cursor-pointer transition-colors"
           >
             −
           </button>
@@ -248,13 +248,13 @@ function EditGuestModal({
               setCount((c) => c + 1);
               setConfirmDelete(false);
             }}
-            className="w-11 h-11 flex items-center justify-center text-lg bg-[#F5F4DC] rounded-xl border border-[#232323]/10 text-[#232323]/60 hover:text-[#232323] cursor-pointer transition-colors"
+            className="w-11 h-11 flex items-center justify-center text-lg bg-[#F5F4DC] rounded-xl border border-[#232323]/20 text-[#232323]/85 hover:text-[#232323] cursor-pointer transition-colors"
           >
             +
           </button>
         </div>
 
-        <p className="text-center text-xs text-[#232323]/30 mb-5">
+        <p className="text-center text-xs text-[#232323]/55 mb-5">
           {count === 0
             ? "Gost će biti obrisan"
             : `${count} ${getPersonLabel(count)}`}
@@ -486,7 +486,7 @@ export default function GuestsCard({ slug, draft }: Props) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm">
+      <div className="bg-white rounded-2xl border border-[#232323]/25 p-6 shadow-md">
         <div className="flex justify-center py-12">
           <span className="loading loading-spinner loading-lg text-[#AE343F]" />
         </div>
@@ -502,11 +502,11 @@ export default function GuestsCard({ slug, draft }: Props) {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="p-2 rounded-lg transition-colors hover:bg-[#232323]/5 cursor-pointer disabled:opacity-40"
+            className="p-2 rounded-lg transition-colors hover:bg-[#232323]/10 cursor-pointer disabled:opacity-40"
           >
             <RefreshCw
               size={14}
-              className={`text-[#232323]/40 ${isRefreshing ? "animate-spin" : ""}`}
+              className={`text-[#232323]/65 ${isRefreshing ? "animate-spin" : ""}`}
             />
           </button>
         </div>
@@ -517,8 +517,8 @@ export default function GuestsCard({ slug, draft }: Props) {
         <div
           className={`flex items-start gap-3 px-4 py-3 rounded-xl mb-4 text-sm ${
             expiryBanner.urgent
-              ? "bg-[#AE343F]/8 border border-[#AE343F]/20"
-              : "bg-[#d4af37]/8 border border-[#d4af37]/20"
+              ? "bg-[#AE343F]/12 border border-[#AE343F]/35"
+              : "bg-[#d4af37]/15 border border-[#d4af37]/35"
           }`}
         >
           <AlertTriangle
@@ -527,12 +527,12 @@ export default function GuestsCard({ slug, draft }: Props) {
               expiryBanner.urgent ? "text-[#AE343F]" : "text-[#d4af37]"
             }`}
           />
-          <p className="flex-1 text-[#232323]/60 leading-relaxed">
+          <p className="flex-1 text-[#232323]/85 leading-relaxed">
             {expiryBanner.text}
           </p>
           <button
             onClick={() => setBannerDismissed(true)}
-            className="flex-shrink-0 text-[#232323]/20 hover:text-[#232323]/40 transition-opacity cursor-pointer"
+            className="flex-shrink-0 text-[#232323]/55 hover:text-[#232323] transition-opacity cursor-pointer"
           >
             <X size={14} />
           </button>
@@ -541,9 +541,9 @@ export default function GuestsCard({ slug, draft }: Props) {
 
       {/* Empty state */}
       {attending.length === 0 && notAttending.length === 0 && (
-        <div className="text-center py-12 mb-4 bg-[#F5F4DC]/30 rounded-xl border border-[#232323]/5">
-          <Users size={32} className="mx-auto mb-3 text-[#AE343F]/20" />
-          <p className="text-sm text-[#232323]/40">Još uvek nema potvrda</p>
+        <div className="text-center py-12 mb-4 bg-[#F5F4DC]/30 rounded-xl border border-[#232323]/15">
+          <Users size={32} className="mx-auto mb-3 text-[#AE343F]/40" />
+          <p className="text-sm text-[#232323]/65">Još uvek nema potvrda</p>
         </div>
       )}
 
@@ -555,12 +555,12 @@ export default function GuestsCard({ slug, draft }: Props) {
             <button
               onClick={() => setCategoryFilter("")}
               className={`text-sm font-medium transition-colors cursor-pointer ${
-                categoryFilter === "" ? "text-[#AE343F]" : "text-[#232323]/50 hover:text-[#232323]"
+                categoryFilter === "" ? "text-[#AE343F]" : "text-[#232323]/85 hover:text-[#232323]"
               }`}
             >
               {totalGuests} gostiju
             </button>
-            <div className="flex items-center gap-3 text-xs text-[#232323]/35">
+            <div className="flex items-center gap-3 text-xs text-[#232323]/65">
               <span>{attending.length} potvrđenih</span>
               <span>·</span>
               <span>{notAttending.length} odbijanja</span>
@@ -592,8 +592,8 @@ export default function GuestsCard({ slug, draft }: Props) {
                       }
                       className={`text-center py-2.5 px-1 rounded-xl transition-all cursor-pointer ${
                         active
-                          ? "bg-[#AE343F]/5 border border-[#AE343F]/20"
-                          : "bg-white border border-[#232323]/8"
+                          ? "bg-[#AE343F]/12 border border-[#AE343F]/35"
+                          : "bg-white border border-[#232323]/15"
                       }`}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -606,7 +606,7 @@ export default function GuestsCard({ slug, draft }: Props) {
                       >
                         {item.value}
                       </p>
-                      <p className="text-[10px] text-[#232323]/35 leading-tight">
+                      <p className="text-[10px] text-[#232323]/65 leading-tight">
                         {item.label}
                       </p>
                     </motion.button>
@@ -622,19 +622,19 @@ export default function GuestsCard({ slug, draft }: Props) {
       <div className="relative mb-4">
         <Search
           size={15}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-[#232323]/25"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-[#232323]/55"
         />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Pretraži..."
-          className="w-full bg-white pl-10 pr-10 py-2.5 text-sm rounded-lg border border-[#232323]/10 placeholder:text-[#232323]/25 outline-none focus:border-[#AE343F] transition-colors"
+          className="w-full bg-white pl-10 pr-10 py-2.5 text-sm rounded-lg border border-[#232323]/20 placeholder:text-[#232323]/50 outline-none focus:border-[#AE343F] transition-colors"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#232323]/25 hover:text-[#232323]/50 cursor-pointer transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#232323]/55 hover:text-[#232323] cursor-pointer transition-colors"
           >
             <X size={15} />
           </button>
@@ -642,10 +642,10 @@ export default function GuestsCard({ slug, draft }: Props) {
       </div>
 
       {/* Add guest — accordion */}
-      <div className="mb-4 rounded-xl border border-[#232323]/5 overflow-hidden">
+      <div className="mb-4 rounded-xl border border-[#232323]/15 overflow-hidden">
         <button
           onClick={() => setShowAddForm((v) => !v)}
-          className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-[#232323]/40 hover:text-[#232323]/60 transition-colors cursor-pointer"
+          className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-[#232323]/75 hover:text-[#232323] transition-colors cursor-pointer"
         >
           <span className="flex items-center gap-1.5">
             <UserPlus size={12} />
@@ -672,12 +672,12 @@ export default function GuestsCard({ slug, draft }: Props) {
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
                     placeholder="Ime i prezime"
-                    className="flex-1 bg-white px-3 py-2.5 text-sm rounded-lg border border-[#232323]/10 placeholder:text-[#232323]/25 outline-none focus:border-[#AE343F] transition-colors min-w-0"
+                    className="flex-1 bg-white px-3 py-2.5 text-sm rounded-lg border border-[#232323]/20 placeholder:text-[#232323]/50 outline-none focus:border-[#AE343F] transition-colors min-w-0"
                   />
                   <button
                     type="button"
                     onClick={() => setGuestCount((c) => Math.max(1, c - 1))}
-                    className="w-9 h-9 flex-shrink-0 flex items-center justify-center text-base bg-white rounded-lg border border-[#232323]/10 text-[#232323]/40 hover:text-[#232323]/60 cursor-pointer transition-colors"
+                    className="w-9 h-9 flex-shrink-0 flex items-center justify-center text-base bg-white rounded-lg border border-[#232323]/20 text-[#232323]/75 hover:text-[#232323] cursor-pointer transition-colors"
                   >
                     −
                   </button>
@@ -687,7 +687,7 @@ export default function GuestsCard({ slug, draft }: Props) {
                   <button
                     type="button"
                     onClick={() => setGuestCount((c) => c + 1)}
-                    className="w-9 h-9 flex-shrink-0 flex items-center justify-center text-base bg-white rounded-lg border border-[#232323]/10 text-[#232323]/40 hover:text-[#232323]/60 cursor-pointer transition-colors"
+                    className="w-9 h-9 flex-shrink-0 flex items-center justify-center text-base bg-white rounded-lg border border-[#232323]/20 text-[#232323]/75 hover:text-[#232323] cursor-pointer transition-colors"
                   >
                     +
                   </button>
@@ -749,14 +749,14 @@ export default function GuestsCard({ slug, draft }: Props) {
               onClick={() => setViewFilter(active && f.key !== "all" ? "all" : f.key)}
               className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg cursor-pointer transition-all ${
                 active
-                  ? "bg-[#AE343F]/8 border border-[#AE343F]/20 text-[#AE343F]"
-                  : "bg-[#F5F4DC]/50 border border-[#232323]/8 text-[#232323]/35 hover:text-[#232323]/50"
+                  ? "bg-[#AE343F]/12 border border-[#AE343F]/35 text-[#AE343F]"
+                  : "bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/75 hover:text-[#232323]"
               }`}
             >
               {f.key === "notes" && <MessageSquare size={10} />}
               {f.label}
               {f.count !== null && (
-                <span className={`text-[10px] ${active ? "text-[#AE343F]/60" : "text-[#232323]/20"}`}>
+                <span className={`text-[10px] ${active ? "text-[#AE343F]/85" : "text-[#232323]/55"}`}>
                   {f.count}
                 </span>
               )}
@@ -779,8 +779,8 @@ export default function GuestsCard({ slug, draft }: Props) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-10 bg-[#F5F4DC]/30 rounded-xl border border-[#232323]/5">
-          <p className="text-sm text-[#232323]/35">
+        <div className="text-center py-10 bg-[#F5F4DC]/30 rounded-xl border border-[#232323]/15">
+          <p className="text-sm text-[#232323]/65">
             {q ? `Nema rezultata za „${query}"` : "Nema gostiju za ovaj filter"}
           </p>
         </div>

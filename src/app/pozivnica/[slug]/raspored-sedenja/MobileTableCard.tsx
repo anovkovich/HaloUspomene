@@ -38,10 +38,10 @@ function Seat({
         flexShrink: 0,
         backgroundColor: assignment
           ? "var(--theme-primary)"
-          : "var(--theme-background)",
+          : "#FFFFFF",
         border: assignment
           ? "2px solid var(--theme-primary)"
-          : "2px dashed color-mix(in srgb, var(--theme-primary) 30%, transparent)",
+          : "2px dashed color-mix(in srgb, var(--theme-primary) 60%, transparent)",
         color: assignment ? "white" : "var(--theme-text-light)",
         fontSize: assignment ? 10 : 11,
         fontFamily: "var(--font-raleway, sans-serif)",
@@ -88,6 +88,8 @@ export default function MobileTableCard({
     let next: number;
     if (table.type === "circle") {
       next = Math.max(8, Math.min(12, table.seats + delta));
+    } else if (table.type === "single-sided") {
+      next = Math.max(2, Math.min(12, table.seats + delta));
     } else {
       next = Math.max(4, Math.min(20, table.seats + delta * 2));
     }
@@ -189,8 +191,8 @@ export default function MobileTableCard({
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            backgroundColor: "rgba(35,35,35,0.04)",
-            border: "3px solid rgba(35,35,35,0.15)",
+            backgroundColor: "rgba(35,35,35,0.09)",
+            border: "3px solid rgba(35,35,35,0.45)",
           }}
         />
         {/* Seats in orbit */}
@@ -238,8 +240,8 @@ export default function MobileTableCard({
           style={{
             width: Math.max(140, seatsPerRow * (SEAT_SIZE + 6) - 6),
             height: 48,
-            backgroundColor: "rgba(35,35,35,0.04)",
-            border: "3px solid rgba(35,35,35,0.15)",
+            backgroundColor: "rgba(35,35,35,0.09)",
+            border: "3px solid rgba(35,35,35,0.45)",
           }}
         />
         <div className="flex gap-1.5 justify-center mt-2">
@@ -277,7 +279,7 @@ export default function MobileTableCard({
           width: 56,
           minHeight: seatsPerRow * (SEAT_SIZE + 6) - 6,
           backgroundColor: "rgba(35,35,35,0.04)",
-          border: "3px solid rgba(35,35,35,0.15)",
+          border: "3px solid rgba(35,35,35,0.28)",
         }}
       />
       {/* Right column */}
@@ -313,8 +315,8 @@ export default function MobileTableCard({
           style={{
             width: Math.max(140, table.seats * (SEAT_SIZE + 6) - 6),
             height: 48,
-            backgroundColor: "rgba(35,35,35,0.04)",
-            border: "3px solid rgba(35,35,35,0.15)",
+            backgroundColor: "rgba(35,35,35,0.09)",
+            border: "3px solid rgba(35,35,35,0.45)",
           }}
         />
       </div>

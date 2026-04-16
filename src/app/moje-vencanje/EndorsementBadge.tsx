@@ -7,8 +7,8 @@ interface Props {
 }
 
 const LEVELS = [
-  { icon: "◇", label: "Novi", color: "text-[#232323]/30" },
-  { icon: "◈", label: "Verifikovan", color: "text-[#232323]/50" },
+  { icon: "◇", label: "Novi", color: "text-[#232323]/55" },
+  { icon: "◈", label: "Verifikovan", color: "text-[#232323]/75" },
   { icon: "💎", label: "Preporučen", color: "text-blue-500" },
   { icon: "👑", label: "Top preporuka", color: "text-[#d4af37]" },
 ];
@@ -27,7 +27,7 @@ export default function EndorsementBadge({ count, size = "sm" }: Props) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${color} bg-[#232323]/5`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${color} bg-[#232323]/10`}
     >
       {icon} {label}
     </span>

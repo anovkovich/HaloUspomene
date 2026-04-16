@@ -126,7 +126,7 @@ export default function VendorDetailModal({
             )}
 
             {/* Header */}
-            <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#232323]/5 px-5 py-4 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#232323]/15 px-5 py-4 flex items-center justify-between z-10">
               <div className="flex items-center gap-2.5 min-w-0">
                 {showFavicon ? (
                   <img
@@ -146,16 +146,16 @@ export default function VendorDetailModal({
                     {vendor.name}
                   </h3>
                   <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                    <span className="inline-flex items-center px-2 py-0.5 bg-[#232323]/5 rounded-full text-[10px] text-[#232323]/50">
+                    <span className="inline-flex items-center px-2 py-0.5 bg-[#232323]/10 rounded-full text-[10px] text-[#232323]/75">
                       {CATEGORY_LABELS[vendor.category]}
                     </span>
                     {vendor.musicType && (
-                      <span className="inline-flex items-center px-2 py-0.5 bg-[#232323]/5 rounded-full text-[10px] text-[#232323]/50">
+                      <span className="inline-flex items-center px-2 py-0.5 bg-[#232323]/10 rounded-full text-[10px] text-[#232323]/75">
                         {vendor.musicType}
                       </span>
                     )}
                     {vendor.serviceType && (
-                      <span className="inline-flex items-center px-2 py-0.5 bg-[#232323]/5 rounded-full text-[10px] text-[#232323]/50">
+                      <span className="inline-flex items-center px-2 py-0.5 bg-[#232323]/10 rounded-full text-[10px] text-[#232323]/75">
                         {vendor.serviceType}
                       </span>
                     )}
@@ -168,7 +168,7 @@ export default function VendorDetailModal({
                   className={`p-1.5 rounded-full transition-colors cursor-pointer ${
                     isFav
                       ? "text-[#AE343F]"
-                      : "text-[#232323]/20 hover:text-[#AE343F]/50"
+                      : "text-[#232323]/40 hover:text-[#AE343F]/65"
                   }`}
                   aria-label={
                     isFav ? "Ukloni iz favorita" : "Dodaj u favorite"
@@ -178,7 +178,7 @@ export default function VendorDetailModal({
                 </button>
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-full text-[#232323]/30 hover:text-[#232323]/60 hover:bg-[#232323]/5 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-full text-[#232323]/60 hover:text-[#232323] hover:bg-[#232323]/10 transition-colors cursor-pointer"
                   aria-label="Zatvori"
                 >
                   <X size={18} />
@@ -189,27 +189,27 @@ export default function VendorDetailModal({
             {/* Body */}
             <div className="px-5 py-4 space-y-4">
               {/* City */}
-              <div className="flex items-center gap-1.5 text-sm text-[#232323]/60">
+              <div className="flex items-center gap-1.5 text-sm text-[#232323]/85">
                 <MapPin size={14} />
                 {vendor.city}
               </div>
 
               {/* Bio */}
-              <p className="text-sm leading-relaxed" style={{ color: vendor.bio ? "rgba(35,35,35,0.7)" : "rgba(35,35,35,0.35)" }}>
+              <p className="text-sm leading-relaxed" style={{ color: vendor.bio ? "rgba(35,35,35,0.85)" : "rgba(35,35,35,0.55)" }}>
                 {vendor.bio || "Ovaj vendor trenutno nema opis — slobodno ih kontaktirajte putem kontakata ispod."}
               </p>
 
               {/* Capacity (venues only — musicType/serviceType moved to header chips) */}
               {vendor.capacity && (
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#232323]/5 rounded-full text-xs text-[#232323]/60">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#232323]/10 rounded-full text-xs text-[#232323]/85">
                     Br. mesta: {vendor.capacity}
                   </span>
                 </div>
               )}
 
               {/* Endorsement */}
-              <div className="flex items-center justify-between py-2 border-t border-b border-[#232323]/5">
+              <div className="flex items-center justify-between py-2 border-t border-b border-[#232323]/15">
                 <EndorsementBadge
                   count={vendor.endorsementCount ?? 0}
                   size="md"
@@ -253,7 +253,7 @@ export default function VendorDetailModal({
                   className={`text-xs px-3 py-1.5 rounded-full transition-colors cursor-pointer ${
                     isEndorsed
                       ? "bg-blue-50 text-blue-600 border border-blue-200"
-                      : "bg-[#232323]/5 text-[#232323]/50 hover:bg-[#232323]/10"
+                      : "bg-[#232323]/10 text-[#232323]/85 hover:bg-[#232323]/20"
                   }`}
                 >
                   {isEndorsed ? "✓ Vaša preporuka" : "◈ Preporuči"}
@@ -273,7 +273,7 @@ export default function VendorDetailModal({
                       Pozovi
                     </a>
                   ) : (
-                    <span className="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-[#232323]/8 text-[#232323]/25 text-sm font-medium cursor-default select-none">
+                    <span className="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-[#232323]/12 text-[#232323]/45 text-sm font-medium cursor-default select-none">
                       <Phone size={15} />
                       Pozovi
                     </span>
@@ -289,7 +289,7 @@ export default function VendorDetailModal({
                       Sajt
                     </a>
                   ) : (
-                    <span className="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-[#232323]/8 text-[#232323]/25 text-sm font-medium cursor-default select-none">
+                    <span className="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-[#232323]/12 text-[#232323]/45 text-sm font-medium cursor-default select-none">
                       <Globe size={15} />
                       Sajt
                     </span>
@@ -308,7 +308,7 @@ export default function VendorDetailModal({
                     {vendor.instagram}
                   </a>
                 ) : (
-                  <span className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#232323]/8 text-[#232323]/25 text-sm font-medium cursor-default select-none">
+                  <span className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#232323]/12 text-[#232323]/45 text-sm font-medium cursor-default select-none">
                     <Instagram size={15} />
                     Instagram
                   </span>
