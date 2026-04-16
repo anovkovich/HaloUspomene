@@ -328,7 +328,25 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
   }, [rotation, degPer]);
 
   return (
-    <section className="relative flex flex-col items-center justify-center px-1 sm:px-16 md:px-24 py-16 sm:py-20 md:py-24 bg-gradient-to-b from-[#f8f3e6] via-[#f5eed8] to-[#f8f3e6] border-y-4 border-[#d8c070]">
+    <section className="relative flex flex-col items-center justify-center px-1 sm:px-16 md:px-24 py-16 sm:py-20 md:py-24">
+      {/* Paper wallpaper background — matches the section above */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          aria-hidden
+          className="absolute"
+          style={{
+            top: "-20%",
+            left: "-15%",
+            right: "-15%",
+            bottom: "-20%",
+            backgroundImage:
+              "url('/images/premium/line-art-invitation/paper-wallpaper.webp')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+      </div>
       <div className="relative z-10 w-full sm:w-[80%] md:w-[66%] lg:w-[60%] max-w-[720px]">
         {/* Spinning wheel with timeline text */}
         <motion.div
@@ -740,6 +758,24 @@ export default function LineArtInvitation({
 
       {/* ═══════════════ SECTION 5 — RSVP ═══════════════ */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-8 sm:px-16 md:px-24 py-16">
+        {/* Paper wallpaper background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            aria-hidden
+            className="absolute"
+            style={{
+              top: "-20%",
+              left: "-15%",
+              right: "-15%",
+              bottom: "-20%",
+              backgroundImage:
+                "url('/images/premium/line-art-invitation/paper-wallpaper.webp')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
+        </div>
         {/* Layered yellow roses — top corners */}
         <motion.img
           src="/images/premium/line-art-invitation/layered-yellow-roses.webp"
@@ -775,6 +811,24 @@ export default function LineArtInvitation({
 
       {/* ═══════════════ SECTION 6 — Footer ═══════════════ */}
       <footer className="relative py-14 sm:py-16 md:py-20 text-center overflow-hidden px-16 sm:px-20 md:px-24">
+        {/* Paper wallpaper background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            aria-hidden
+            className="absolute"
+            style={{
+              top: "-20%",
+              left: "-15%",
+              right: "-15%",
+              bottom: "-20%",
+              backgroundImage:
+                "url('/images/premium/line-art-invitation/paper-wallpaper.webp')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-[#d4af37]/[0.03] to-transparent" />
         <div className="relative z-10 max-w-md mx-auto">
           <GoldDivider className="mb-6 sm:mb-8" />

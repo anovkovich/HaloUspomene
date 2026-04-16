@@ -49,11 +49,23 @@ export default async function PremiumInvitationLayout({
     }
   }
 
+  const isLineArt = data.premium_theme === "line_art";
+  const bgColor = isLineArt ? "#fffdf5" : "#0a0805";
+
   return (
     <>
       {/* Preload critical envelope assets so they show instantly on first paint */}
       <link rel="preload" as="image" href="/images/premium/envelope-details/gold-wax.webp" fetchPriority="high" />
       <link rel="preload" as="image" href="/images/premium/envelope-details/tie.webp" fetchPriority="high" />
+      {/* Force theme/status-bar color inline in the head so iOS Chrome/Safari pick it up on first paint */}
+      <meta name="theme-color" content={bgColor} />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content={isLineArt ? "default" : "black-translucent"}
+      />
+      {/* Overscroll bounce area color — iOS Safari shows html bg when bouncing past top */}
+      <style>{`html, body { background-color: ${bgColor}; }`}</style>
       {children}
     </>
   );
