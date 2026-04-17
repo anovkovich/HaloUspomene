@@ -672,6 +672,7 @@ function Step1({
           <>
             <div className="flex items-baseline gap-3">
               <p className={`text-2xl font-bold ${tc.priceText}`}>
+                {isPremiumPromoActive() && "PROMO "}
                 {formatPrice(getPremiumPrice())}
               </p>
               {isPremiumPromoActive() && (
@@ -699,32 +700,30 @@ function Step1({
         )}
       </div>
 
-      {/* Live preview section */}
-      <a
-        href="/pozivnica/ana-dejan"
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`mb-6 flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg transition-colors text-xs sm:text-sm font-medium text-center ${
-          formData.premium
-            ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white hover:from-[#c5a028] hover:to-[#b89520]"
-            : "bg-[var(--accent,#AE343F)] text-white hover:bg-[var(--accent-dark,#932d35)]"
-        }`}
-      >
-        <span>Pogledajte live primer pozivnice</span>
-        <svg
-          className="w-3.5 h-3.5 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+      {/* Live preview section — classic only */}
+      {!formData.premium && (
+        <a
+          href="/pozivnica/ana-dejan"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-6 flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg transition-colors text-xs sm:text-sm font-medium text-center bg-[var(--accent,#AE343F)] text-white hover:bg-[var(--accent-dark,#932d35)]"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-          />
-        </svg>
-      </a>
+          <span>Pogledajte live primer pozivnice</span>
+          <svg
+            className="w-3.5 h-3.5 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            />
+          </svg>
+        </a>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
         <Field label="Ime mlade">

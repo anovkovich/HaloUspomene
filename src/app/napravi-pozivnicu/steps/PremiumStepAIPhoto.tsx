@@ -47,7 +47,7 @@ const THEMES: {
     name: "Modern Parallax",
     subtitle: "Vaša AI ilustracija i parallax papirni svet",
     features: ["AI portret para", "Line art stil", "Paper parallax"],
-    preview: "/images/premium/themes/line-art-preview.webp",
+    preview: "/images/premium/line-art-invitation/Starry-night.webp",
   },
 ];
 
