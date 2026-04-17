@@ -361,37 +361,48 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
             draggable={false}
           />
           {/* Timeline text in each section */}
-          {items.map((item, i) => (
-            <div
-              key={i}
-              className="absolute inset-0 pointer-events-none"
-              style={{ transform: `rotate(${i * degPer}deg)`, transformOrigin: "50% 50%" }}
-            >
+          {items.map((item, i) => {
+            const is5 = items.length >= 5;
+            return (
               <div
-                className="absolute top-[17%] sm:top-[18%] left-1/2 -translate-x-1/2 w-[38%] sm:w-[34%] text-center flex flex-col items-center gap-0.5 sm:gap-1"
-                style={{ filter: "drop-shadow(0 1px 2px rgba(255,255,255,0.6))" }}
+                key={i}
+                className="absolute inset-0 pointer-events-none"
+                style={{ transform: `rotate(${i * degPer}deg)`, transformOrigin: "50% 50%" }}
               >
-                {item.what && (
-                  <p className="text-[5.5px] sm:text-[7px] md:text-[8px] uppercase tracking-[0.25em] text-[#5a4a2e]/60 leading-tight font-medium">
-                    {item.what}
+                <div
+                  className={`absolute top-[17%] sm:top-[18%] left-1/2 -translate-x-1/2 text-center flex flex-col items-center gap-0.5 sm:gap-1 ${
+                    is5 ? "w-[28%] sm:w-[26%]" : "w-[38%] sm:w-[34%]"
+                  }`}
+                  style={{ filter: "drop-shadow(0 1px 2px rgba(255,255,255,0.6))" }}
+                >
+                  {item.what && (
+                    <p className="text-[5.5px] sm:text-[7px] md:text-[8px] uppercase tracking-[0.25em] text-[#5a4a2e]/60 leading-tight font-medium">
+                      {item.what}
+                    </p>
+                  )}
+                  <p
+                    className="text-[13px] sm:text-[17px] md:text-[20px] font-serif font-bold text-[#1a1208] tracking-wide"
+                    style={is5 ? { lineHeight: 1 } : { lineHeight: 1.4 }}
+                  >
+                    {item.title}
                   </p>
-                )}
-                <p className="text-[13px] sm:text-[17px] md:text-[20px] font-serif font-bold text-[#1a1208] leading-snug tracking-wide">
-                  {item.title}
-                </p>
-                {item.description && (
-                  <p className="text-[10px] sm:text-[13px] md:text-[15px] font-serif italic text-[#5a4a2e] leading-tight">
-                    {item.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-1 sm:gap-1.5 my-0.5 sm:my-1">
-                  <div className="w-3 sm:w-4 h-px bg-gradient-to-r from-transparent to-[#8b6914]" />
-                  <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#8b6914]" />
-                  <div className="w-3 sm:w-4 h-px bg-gradient-to-l from-transparent to-[#8b6914]" />
+                  {item.description && (
+                    <p
+                      className="text-[10px] sm:text-[13px] md:text-[15px] font-serif italic text-[#5a4a2e]"
+                      style={is5 ? { lineHeight: 1 } : { lineHeight: 1.3 }}
+                    >
+                      {item.description}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-1 sm:gap-1.5 my-0.5 sm:my-1">
+                    <div className="w-3 sm:w-4 h-px bg-gradient-to-r from-transparent to-[#8b6914]" />
+                    <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#8b6914]" />
+                    <div className="w-3 sm:w-4 h-px bg-gradient-to-l from-transparent to-[#8b6914]" />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </motion.div>
 
         {/* Fixed mask — full size, centered on top, no rotation */}

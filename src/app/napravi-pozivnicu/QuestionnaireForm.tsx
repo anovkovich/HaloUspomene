@@ -2320,7 +2320,7 @@ export default function QuestionnaireForm({
         </h2>
         <p className="text-lg mb-3" style={{ color: successTextMuted }}>
           {formData.premium
-            ? "Uspešno smo primili sve podatke za vašu Premium AI pozivnicu."
+            ? "Uspešno smo primili sve podatke za vašu Premium pozivnicu."
             : "Uspešno smo primili sve podatke za vašu pozivnicu."}
         </p>
         {formData.event_date_only && (

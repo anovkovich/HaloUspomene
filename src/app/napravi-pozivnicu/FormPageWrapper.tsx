@@ -29,7 +29,7 @@ export default function FormPageWrapper() {
               className="text-center mb-12"
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#d4af37] mb-5">
-                Premium AI Studio
+                Premium Studio
               </h1>
             </motion.div>
           ) : (
