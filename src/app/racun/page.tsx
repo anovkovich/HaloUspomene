@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
-import { pricing, formatPrice, getAudioPrice } from "@/data/pricing";
+import { pricing, formatPrice, getAudioPrice, getPremiumPrice, isPremiumPromoActive } from "@/data/pricing";
 import { decodeFromBase64 } from "@/lib/encoding";
 
 const CYR_TO_LAT: Record<string, string> = {
@@ -225,6 +225,7 @@ interface ReceiptPayload {
   pd?: number; // personalizovana dobrodoslica
   cc?: number; // custom colors
   ig?: number; // images
+  p?: number; // premium invitation
   d: number; // custom discount
   ba?: number; // bank account index (0, 1, 2)
   t: number; // timestamp
@@ -298,10 +299,17 @@ function ReceiptContent() {
   // Only add website items for invitations, not phone rentals
   const isPhoneRental = payload.s.startsWith("tel-");
   if (!isPhoneRental) {
-    items.push(
-      { label: "Website pozivnica", amount: pricing.pozivnica.website.price },
-      { label: "PDF pozivnica za štampu", amount: 0, free: true },
-    );
+    if (payload.p) {
+      items.push({
+        label: isPremiumPromoActive() ? "Premium pozivnica — PROMO" : "Premium pozivnica",
+        amount: getPremiumPrice(),
+      });
+    } else {
+      items.push(
+        { label: "Website pozivnica", amount: pricing.pozivnica.website.price },
+        { label: "PDF pozivnica za štampu", amount: 0, free: true },
+      );
+    }
   }
 
   if (payload.r)
