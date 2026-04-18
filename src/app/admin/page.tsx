@@ -160,27 +160,6 @@ export default function AdminPage() {
     }
   }
 
-  async function handleTogglePremiumPaid(slug: string, current: boolean) {
-    const newVal = !current;
-    setCouples((prev) =>
-      prev.map((c) =>
-        c.slug === slug ? { ...c, premium_paid: newVal } : c
-      )
-    );
-    const res = await fetch(`/api/admin/couples/${slug}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ premium_paid: newVal }),
-    });
-    if (!res.ok) {
-      setCouples((prev) =>
-        prev.map((c) =>
-          c.slug === slug ? { ...c, premium_paid: current } : c
-        )
-      );
-    }
-  }
-
   function buildReceiptUrl(c: Couple, extras?: { retro_phone?: boolean; dobrodoslica?: boolean }) {
     const data = {
       s: c.slug,
@@ -409,6 +388,8 @@ export default function AdminPage() {
                   ? "bg-white/5 opacity-50 border border-white/10"
                   : isToday
                   ? "bg-white/5 border-2 border-[#AE343F]"
+                  : c.premium
+                  ? "bg-white/5 border-2 border-[#d4af37]/60"
                   : "bg-white/5 border border-white/10"
               }`}
             >
@@ -601,25 +582,6 @@ export default function AdminPage() {
                       />
                     </button>
                   </div>
-                  {c.premium && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-[#d4af37]">Premium</span>
-                      <button
-                        onClick={() =>
-                          handleTogglePremiumPaid(c.slug, !!c.premium_paid)
-                        }
-                        className={`relative w-9 h-5 rounded-full transition-colors ${
-                          c.premium_paid ? "bg-[#d4af37]" : "bg-white/10"
-                        }`}
-                      >
-                        <span
-                          className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                            c.premium_paid ? "translate-x-4" : ""
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  )}
                 </div>
 
                 {/* Receipt dropdown */}

@@ -7,8 +7,8 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // ── Admin routes ──────────────────────────────────────────────────────────
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
-    // Admin API routes handle their own auth via cookies
+  if (pathname.startsWith("/admin")) {
+    // API routes handle their own auth
     if (pathname.startsWith("/api/admin")) return NextResponse.next();
 
     const cookie = request.cookies.get("admin_token");
@@ -17,10 +17,14 @@ export async function middleware(request: NextRequest) {
         await jwtVerify(cookie.value, secret);
         return NextResponse.next();
       } catch {
-        // Expired — fall through
+        // Expired — fall through to redirect
       }
     }
-    // No valid token — the page itself shows the login form (inline)
+
+    // No valid token — /admin shows the inline login form, sub-routes redirect there
+    if (pathname !== "/admin" && pathname !== "/admin/") {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
     return NextResponse.next();
   }
 

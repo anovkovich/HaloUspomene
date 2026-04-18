@@ -357,28 +357,30 @@ export default function PricingClient() {
             })}
           </div>
 
-          {/* Bundle nudge */}
+          {/* Bundle nudge + premium upsell */}
           {!isBundle && (
-            <button
-              onClick={selectAll}
-              className="w-full flex items-center justify-center gap-2 my-5 px-5 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer hover:opacity-80"
+            <div
+              className="w-full my-5 px-5 py-4 rounded-xl space-y-3"
               style={{
                 backgroundColor: "rgba(212,175,55,0.1)",
                 border: "1px dashed rgba(212,175,55,0.4)",
                 color: "#8B7424",
               }}
             >
-              <BadgePercent size={16} />
-              Izaberite sve i uštedite {formatPrice(
-                FULL_PRICE - BUNDLE_PRICE,
-              )}{" "}
-              — kompletni paket za samo {formatPrice(BUNDLE_PRICE)}
-            </button>
+              <p className="flex items-center justify-center gap-2 text-sm font-medium">
+                <BadgePercent size={16} />
+                Izaberite sve i uštedite {formatPrice(FULL_PRICE - BUNDLE_PRICE)}{" "}
+                — kompletni paket za samo {formatPrice(BUNDLE_PRICE)}
+              </p>
+              <p className="text-center text-sm font-medium" style={{ marginTop: "4px" }}>
+                Ili kreirajte <em>Premium pozivnicu</em> koja uključuje sve i ostavlja bez daha
+              </p>
+            </div>
           )}
 
           {/* Total */}
           <div
-            className="mt-8 rounded-2xl px-6 py-6 sm:px-8"
+            className="mt-6 rounded-2xl px-6 py-6 sm:px-8"
             style={{
               backgroundColor: "white",
               border: "2px solid rgba(174,52,63,0.15)",
@@ -461,7 +463,13 @@ export default function PricingClient() {
               Napravi svoju pozivnicu
               <Heart size={14} fill="currentColor" />
             </Link>
+
           </div>
+
+          <p className="mt-4 text-center text-xs text-[#232323]/45 leading-relaxed">
+            Želite galeriju fotografija? Iskomunicirajte sa našim timom{" "}
+            <span className="text-[#232323]/60 font-medium">(+{formatPrice(pricing.addons.find((a) => a.id === "images")!.price)})</span>
+          </p>
 
           {/* Example links */}
           <div className="mt-10 space-y-3">

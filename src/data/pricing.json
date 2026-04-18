@@ -51,6 +51,12 @@
       "label": "Prilagođena boja teme",
       "price": 600,
       "note": "Prilagodite primarnu boju pozivnice po vašem ukusu."
+    },
+    {
+      "id": "images",
+      "label": "Galerija fotografija",
+      "price": 600,
+      "note": "Do 3 fotografije u polaroid stilu na vašoj pozivnici."
     }
   ],
   "premium": {

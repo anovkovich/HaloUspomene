@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, Trash2, MapPin } from "lucide-react";
+import { ArrowLeft, Save, Trash2, MapPin, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import DeleteModal from "../DeleteModal";
 import PlannerStatsSection from "@/app/pozivnica/[slug]/PlannerStatsSection";
@@ -22,6 +22,7 @@ export default function EditCouplePage() {
   const [imageLayout, setImageLayout] = useState<"line" | "triangle">("line");
   const [uploading, setUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [jsonOpen, setJsonOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/couples")
@@ -42,6 +43,14 @@ export default function EditCouplePage() {
         setLoading(false);
       });
   }, [slug]);
+
+  async function autoPatch(fields: Record<string, unknown>) {
+    await fetch(`/api/admin/couples/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(fields),
+    });
+  }
 
   async function handleSave() {
     let parsed;
@@ -68,6 +77,7 @@ export default function EditCouplePage() {
 
     setSaving(false);
     setSaveSuccess(true);
+    setJsonOpen(false);
     setTimeout(() => setSaveSuccess(false), 3000);
   }
 
@@ -201,13 +211,27 @@ export default function EditCouplePage() {
       </div>
 
       <div className="space-y-4">
-        <textarea
-          value={json}
-          onChange={(e) => setJson(e.target.value)}
-          rows={25}
-          className="w-full px-3 sm:px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white font-mono text-[11px] sm:text-xs leading-relaxed focus:outline-none focus:border-[#AE343F] resize-y"
-          spellCheck={false}
-        />
+        <div className="border border-white/10 rounded-lg overflow-hidden">
+          <button
+            onClick={() => setJsonOpen((o) => !o)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-white/5 text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer"
+          >
+            <span>JSON</span>
+            <ChevronDown
+              size={15}
+              className={`transition-transform duration-200 ${jsonOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {jsonOpen && (
+            <textarea
+              value={json}
+              onChange={(e) => setJson(e.target.value)}
+              rows={25}
+              className="w-full px-3 sm:px-4 py-3 bg-white/5 border-t border-white/10 text-white font-mono text-[11px] sm:text-xs leading-relaxed focus:outline-none resize-y"
+              spellCheck={false}
+            />
+          )}
+        </div>
 
         {/* Images toggle */}
         <div className="flex items-center justify-between px-4 py-3 bg-white/5 border border-white/10 rounded-lg">
@@ -216,9 +240,11 @@ export default function EditCouplePage() {
             onClick={() => {
               try {
                 const parsed = JSON.parse(json);
-                parsed.paid_for_images = !paidForImages;
+                const newVal = !paidForImages;
+                parsed.paid_for_images = newVal;
                 setJson(JSON.stringify(parsed, null, 2));
-                setPaidForImages(!paidForImages);
+                setPaidForImages(newVal);
+                autoPatch({ paid_for_images: newVal });
               } catch {
                 toast.error("Neispravan JSON");
               }
@@ -277,6 +303,7 @@ export default function EditCouplePage() {
                       parsed.image_layout = opt;
                       setJson(JSON.stringify(parsed, null, 2));
                       setImageLayout(opt);
+                      autoPatch({ image_layout: opt });
                     } catch {
                       toast.error("Neispravan JSON");
                     }

@@ -1793,84 +1793,6 @@ function Step6({
   );
 }
 
-// ─── Raw JSON generator ───────────────────────────────────────────────────────
-
-function generateRawJson(formData: FormData): string {
-  const eventDate = new Date(formData.event_date);
-  const dd = String(eventDate.getDate()).padStart(2, "0");
-  const mm = String(eventDate.getMonth() + 1).padStart(2, "0");
-  const autoPassword = `${formData.groom}${dd}${mm}`;
-
-  const json = {
-    theme: formData.theme,
-    scriptFont: formData.scriptFont,
-    useCyrillic: formData.useCyrillic,
-    potvrde_password: autoPassword,
-    couple_names: {
-      bride: formData.bride,
-      groom: formData.groom,
-      full_display: formData.full_display,
-    },
-    event_date: formData.event_date,
-    submit_until: formData.submit_until_date,
-    tagline: formData.tagline,
-    thankYouFooter: formData.thankYouFooter,
-    locations: formData.locations
-      .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
-      .map((l) => {
-        const query = [l.name, l.address].filter(Boolean).join(", ");
-        return {
-          name: l.name,
-          address: l.address,
-          map_url: query ? `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed` : "",
-          type: l.type,
-        };
-      }),
-    timeline: [...formData.locations]
-      .filter((l) => l.enabled)
-      .sort((a, b) => a.time.localeCompare(b.time))
-      .map((l) => {
-        const typeToIcon: Record<string, string> = {
-          home: "Home",
-          church: "Church",
-          ceremony: "Heart",
-          hall: "Utensils",
-        };
-        const typeToWhat: Record<string, string> = {
-          home: "Polazak od kuće",
-          church: "Crkveno venčanje",
-          ceremony: "Građansko venčanje",
-          hall: "Skup u svečanoj sali",
-        };
-        return {
-          title: l.name,
-          time: l.time,
-          description: l.address,
-          what: typeToWhat[l.type] || "",
-          icon: typeToIcon[l.type] || "MapPin",
-        };
-      }),
-    countdown_enabled: formData.countdown_enabled,
-    map_enabled: formData.map_enabled,
-    paid_for_raspored: formData.extra_raspored,
-    paid_for_audio: formData.extra_audio,
-    paid_for_audio_USB: formData.extra_usb_kaseta
-      ? "kaseta"
-      : formData.extra_usb_bocica
-        ? "bocica"
-        : "",
-    paid_for_pdf: false,
-    draft: true,
-    ...(formData.custom_primary_color
-      ? { custom_primary_color: formData.custom_primary_color }
-      : {}),
-    ...(formData.custom_background_color
-      ? { custom_background_color: formData.custom_background_color }
-      : {}),
-  };
-  return JSON.stringify(json, null, 2);
-}
-
 // ─── Main form ────────────────────────────────────────────────────────────────
 
 export default function QuestionnaireForm({
@@ -2115,7 +2037,6 @@ export default function QuestionnaireForm({
       return { ...prev, locations };
     });
 
-  const [premiumSlug, setPremiumSlug] = useState("");
 
   const handleSubmit = async () => {
     setError(null);
@@ -2189,7 +2110,6 @@ export default function QuestionnaireForm({
         const data = await res.json();
         if (!res.ok)
           throw new Error(data.error || "Greška pri kreiranju pozivnice");
-        setPremiumSlug(data.slug);
         setIsSubmitted(true);
 
         // Send admin notification from client (Web3Forms blocks server-side requests)
@@ -2236,55 +2156,85 @@ export default function QuestionnaireForm({
         return;
       }
 
-      // Classic flow: send via Web3Forms
-      const formattedDate = formData.event_date
-        ? new Date(formData.event_date).toLocaleDateString(
-            formData.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
-            {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            },
-          )
-        : "";
-
-      const payload: Record<string, string> = {
-        access_key: WEB3FORMS_ACCESS_KEY || "",
-        subject: `Nova Pozivnica - ${formData.full_display} - ${formattedDate}`,
-        from_name: "Halo Pozivnice",
-
-        // ── Human-readable essentials ──
-        Par: formData.full_display,
-        "Datum venčanja": `${formattedDate}, ${formData.event_time}h`,
-        "Rok za prijavu": formData.submit_until,
-        "Kontakt telefon": `+381${formData.contact_phone}`,
-        "Raspored sedenja": formData.extra_raspored ? "✅ DA" : "❌ Ne",
-        "Audio knjiga": formData.extra_audio ? "✅ DA" : "❌ Ne",
-        "USB suvenir": formData.extra_usb_kaseta
-          ? "USB retro kaseta"
-          : formData.extra_usb_bocica
-            ? "USB u bočici"
-            : "❌ Ne",
-        "Prilagođena boja": formData.custom_primary_color
-          ? `${formData.custom_primary_color} / bg: ${formData.custom_background_color || "auto"}`
-          : "❌ Ne",
-        "⚠️⚠️⚠️ NAPOMENA ⚠️⚠️⚠️": formData.wishes || "(nema)",
-
-        // ── JSON for admin panel (copy-paste) ──
-        "📋 JSON": generateRawJson(formData),
+      // Classic flow: save to MongoDB, notify admin via Web3Forms
+      const typeToIcon: Record<string, string> = {
+        home: "Home", church: "Church", ceremony: "Heart", hall: "Utensils",
+      };
+      const typeToWhat: Record<string, string> = {
+        home: "Polazak od kuće", church: "Crkveno venčanje",
+        ceremony: "Građansko venčanje", hall: "Skup u svečanoj sali",
       };
 
-      const response = await fetch("https://api.web3forms.com/submit", {
+      const res = await fetch("/api/pozivnica/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          bride: formData.bride,
+          groom: formData.groom,
+          full_display: formData.full_display,
+          useCyrillic: formData.useCyrillic,
+          event_date: formData.event_date,
+          submit_until_date: formData.submit_until_date,
+          theme: formData.theme,
+          scriptFont: formData.scriptFont,
+          tagline: formData.tagline,
+          thankYouFooter: formData.thankYouFooter,
+          countdown_enabled: formData.countdown_enabled,
+          map_enabled: formData.map_enabled,
+          paid_for_raspored: formData.extra_raspored,
+          paid_for_audio: formData.extra_audio,
+          paid_for_audio_USB: formData.extra_usb_kaseta
+            ? "kaseta"
+            : formData.extra_usb_bocica
+            ? "bocica"
+            : "",
+          custom_primary_color: formData.custom_primary_color || undefined,
+          custom_background_color: formData.custom_background_color || undefined,
+          locations: formData.locations
+            .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
+            .map((l) => ({ name: l.name, address: l.address, type: l.type })),
+          timeline: [...formData.locations]
+            .filter((l) => l.enabled)
+            .sort((a, b) => a.time.localeCompare(b.time))
+            .map((l) => ({
+              title: l.name,
+              time: l.time,
+              description: l.address,
+              what: typeToWhat[l.type] || "",
+              icon: typeToIcon[l.type] || "MapPin",
+            })),
+        }),
       });
 
-      const data = await response.json();
-      if (!data.success) throw new Error(data.message || "Došlo je do greške");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Greška pri kreiranju pozivnice");
 
       setIsSubmitted(true);
+
+      // Notify admin (fire-and-forget from client — Web3Forms blocks server requests)
+      if (WEB3FORMS_ACCESS_KEY) {
+        fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_ACCESS_KEY,
+            subject: `📬 Nova Pozivnica - ${formData.full_display}`,
+            from_name: "Halo Pozivnice",
+            Par: formData.full_display,
+            Slug: data.slug,
+            "Kontakt telefon": `+381${formData.contact_phone}`,
+            "Raspored sedenja": formData.extra_raspored ? "✅ DA" : "❌ Ne",
+            "Audio knjiga": formData.extra_audio ? "✅ DA" : "❌ Ne",
+            "USB suvenir": formData.extra_usb_kaseta
+              ? "USB retro kaseta"
+              : formData.extra_usb_bocica
+              ? "USB u bočici"
+              : "❌ Ne",
+            "Napomena": formData.wishes || "(nema)",
+            "Admin link": `https://halouspomene.rs/admin/${data.slug}`,
+          }),
+        }).catch(() => {});
+      }
     } catch (err) {
       setError(
         err instanceof Error
