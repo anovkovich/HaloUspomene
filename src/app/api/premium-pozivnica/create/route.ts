@@ -81,7 +81,6 @@ export async function POST(request: NextRequest) {
       premium_city: body.premium_city || undefined,
       premium_car: body.premium_car || undefined,
       couple_description: body.couple_description || undefined,
-      premium_paid: false,
       draft: true,
     };
 

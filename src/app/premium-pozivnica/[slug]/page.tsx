@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { getWeddingData, getPremiumWeddingSlugs } from "@/lib/couples";
 import type { Metadata } from "next";
 import PremiumInvitationClient from "./PremiumInvitationClient";
-import PremiumLockedScreen from "./PremiumLockedScreen";
 
 export const revalidate = 10;
 export const dynamicParams = true;
@@ -32,11 +31,6 @@ export default async function PremiumInvitationPage({ params }: Props) {
   const data = await getWeddingData(slug);
 
   if (!data?.premium) notFound();
-
-  // Show locked screen if not paid — no preview window
-  if (!data.premium_paid) {
-    return <PremiumLockedScreen slug={slug} data={data} />;
-  }
 
   return (
     <>
