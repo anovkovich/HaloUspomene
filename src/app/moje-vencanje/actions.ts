@@ -329,6 +329,7 @@ export async function loadOverviewAction(): Promise<{
     recentResponses: { name: string; attending: string; guestCount: string; timestamp: string }[];
   };
   audioStats: { count: number; totalDurationMs: number; paidForAudio: boolean };
+  paidForRaspored: boolean;
 } | null> {
   const slug = await getAuthSlug();
   if (!slug) return null;
@@ -363,7 +364,7 @@ export async function loadOverviewAction(): Promise<{
     } catch { /* ignore */ }
   }
 
-  return { slug, guestStats, audioStats };
+  return { slug, guestStats, audioStats, paidForRaspored: data.paid_for_raspored ?? false };
 }
 
 /* ── Guest Edit ────────────────────────────────────────────── */

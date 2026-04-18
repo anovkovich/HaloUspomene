@@ -451,7 +451,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ slug }) => {
               borderRadius: "var(--theme-radius)",
               backgroundColor: loading
                 ? "var(--theme-text-light)"
-                : "var(--theme-text)",
+                : "var(--theme-primary)",
               boxShadow: loading ? "none" : "var(--theme-shadow)",
             }}
           >

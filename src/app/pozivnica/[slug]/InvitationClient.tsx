@@ -524,6 +524,7 @@ export default function InvitationClient({
           <PolaroidGallery
             images={data.images}
             useCyrillic={data.useCyrillic}
+            imageLayout={data.image_layout}
           />
         )}
 

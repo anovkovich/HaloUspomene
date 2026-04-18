@@ -72,6 +72,7 @@ export interface WeddingData {
   paid_for_audio_USB?: "" | "kaseta" | "bocica"; // USB suvenir choice
   paid_for_images?: boolean; // Unlocks photo gallery add-on
   images?: Array<{ url: string; pathname: string }>; // Up to 3 uploaded photos
+  image_layout?: "line" | "triangle"; // Gallery layout: "line" (default) or "triangle"
   custom_primary_color?: string; // Custom primary color in hex (e.g. "#A23B8C"), overrides theme
   custom_background_color?: string; // Custom background color in hex, overrides theme background
   stamp_color?: string; // Custom wax seal color in hex (e.g. "#8B2252"), overrides theme waxSeal

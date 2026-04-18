@@ -8,7 +8,6 @@ import {
   Wallet,
   Users,
   Mic,
-  ExternalLink,
   Download,
   Copy,
   Check,
@@ -89,6 +88,7 @@ export default function OverviewCard({
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [paidForRaspored, setPaidForRaspored] = useState(false);
   const [seatingModal, setSeatingModal] = useState<{
     totalGuests: number;
     seated: number;
@@ -102,6 +102,7 @@ export default function OverviewCard({
       if (result) {
         setGuestStats(result.guestStats);
         setAudioStats(result.audioStats);
+        setPaidForRaspored(result.paidForRaspored);
       }
       setLoading(false);
     });
@@ -138,6 +139,16 @@ export default function OverviewCard({
       false,
     );
   }, [coupleInfo]);
+
+  const handleDownloadSeatQR = useCallback(async () => {
+    const QRCode = await import("qrcode");
+    const url = `https://halouspomene.rs/pozivnica/${coupleInfo.slug}/gde-sedim`;
+    const dataUrl = await QRCode.toDataURL(url, { width: 512, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `gde-sedim-${coupleInfo.slug}.png`;
+    a.click();
+  }, [coupleInfo.slug]);
 
   const handleOpenSeatingModal = useCallback(async () => {
     setSeatingLoading(true);
@@ -340,9 +351,9 @@ export default function OverviewCard({
           {coupleInfo.draft ? (
             <>
               {[
-                { icon: <ExternalLink size={12} />, label: "Pozivnica" },
-                { icon: <Copy size={12} />, label: "Kopiraj link" },
+                { icon: <Copy size={12} />, label: "Pozivnica" },
                 { icon: <Download size={12} />, label: "PDF pozivnica" },
+                { icon: <QrCode size={12} />, label: "QR Gde sedim" },
                 { icon: <QrCode size={12} />, label: "Audio flyer" },
               ].map((btn) => (
                 <button
@@ -359,14 +370,6 @@ export default function OverviewCard({
             </>
           ) : (
             <>
-              <Link
-                href={`/pozivnica/${coupleInfo.slug}`}
-                target="_blank"
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/85 hover:border-[#AE343F]/40 hover:text-[#AE343F] transition-colors"
-              >
-                <ExternalLink size={12} />
-                Pozivnica
-              </Link>
               <button
                 onClick={handleCopyLink}
                 className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/85 hover:border-[#AE343F]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
@@ -376,7 +379,7 @@ export default function OverviewCard({
                 ) : (
                   <Copy size={12} />
                 )}
-                {copied ? "Kopirano!" : "Kopiraj link"}
+                {copied ? "Kopirano!" : "Pozivnica"}
               </button>
               <button
                 onClick={handleDownloadPDF}
@@ -384,6 +387,19 @@ export default function OverviewCard({
               >
                 <Download size={12} />
                 PDF pozivnica
+              </button>
+              <button
+                onClick={() => {
+                  if (!paidForRaspored) {
+                    toast("Raspored sedenja nije aktiviran");
+                    return;
+                  }
+                  handleDownloadSeatQR();
+                }}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/85 hover:border-[#AE343F]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
+              >
+                <QrCode size={12} />
+                QR Gde sedim
               </button>
               <button
                 onClick={() => {

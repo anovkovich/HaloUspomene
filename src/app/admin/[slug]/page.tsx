@@ -19,6 +19,7 @@ export default function EditCouplePage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [images, setImages] = useState<Array<{ url: string; pathname: string }>>([]);
   const [paidForImages, setPaidForImages] = useState(false);
+  const [imageLayout, setImageLayout] = useState<"line" | "triangle">("line");
   const [uploading, setUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
 
@@ -34,6 +35,7 @@ export default function EditCouplePage() {
           setJson(JSON.stringify(data, null, 2));
           setPaidForImages(data.paid_for_images ?? false);
           setImages(data.images ?? []);
+          setImageLayout(data.image_layout ?? "line");
         } else {
           toast.error("Pozivnica nije pronađena");
         }
@@ -262,6 +264,33 @@ export default function EditCouplePage() {
             {imageError && (
               <p className="text-red-400 text-xs">{imageError}</p>
             )}
+
+            {/* Layout switcher */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50">Raspored:</span>
+              {(["line", "triangle"] as const).map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => {
+                    try {
+                      const parsed = JSON.parse(json);
+                      parsed.image_layout = opt;
+                      setJson(JSON.stringify(parsed, null, 2));
+                      setImageLayout(opt);
+                    } catch {
+                      toast.error("Neispravan JSON");
+                    }
+                  }}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                    imageLayout === opt
+                      ? "bg-[#AE343F] text-white"
+                      : "bg-white/10 text-white/50 hover:bg-white/20"
+                  }`}
+                >
+                  {opt === "line" ? "Linija" : "Trougao"}
+                </button>
+              ))}
+            </div>
 
             {images.length === 0 ? (
               <p className="text-white/30 text-xs italic">
