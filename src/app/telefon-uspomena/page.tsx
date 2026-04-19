@@ -429,6 +429,27 @@ export default function TelefonUspomenaPage() {
                 </div>
               ))}
             </div>
+
+            {/* USB suveniri showcase */}
+            <div className="mt-12 text-center">
+              <div className="bg-[#F5F4DC]/50 rounded-2xl border border-[#232323]/5 p-2 max-w-md mx-auto">
+                <Image
+                  src="/images/usb-suveniri.png"
+                  alt="USB suveniri HALO Uspomene — kaseta, bočica i drugi unikatni USB izbori za vaše audio uspomene"
+                  width={900}
+                  height={600}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+              <h3 className="mt-8 text-2xl sm:text-3xl md:text-4xl font-serif text-[#232323] leading-tight max-w-3xl mx-auto">
+                Jedini u Srbiji čuvamo vaše uspomene na{" "}
+                <span className="text-[#AE343F]">USB suveniru</span> po vašem izboru
+              </h3>
+              <p className="mt-4 text-base sm:text-lg text-[#232323]/60 max-w-2xl mx-auto">
+                Birajte između naših unikatnih USB suvenira — vaši audio snimci postaju
+                opipljiva uspomena koja traje generacijama.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -569,7 +590,7 @@ export default function TelefonUspomenaPage() {
                 Dodaci
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {pricing.addons.filter(a => a.id !== 'custom_color').map((addon) => (
+                {pricing.addons.filter((a: any) => a.for_retro_phone).map((addon) => (
                   <div
                     key={addon.id}
                     className="bg-white rounded-xl p-5 border border-[#d4af37]/20 text-center"
