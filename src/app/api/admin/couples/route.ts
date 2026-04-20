@@ -18,8 +18,13 @@ async function isAdmin(req: NextRequest) {
 export async function GET(req: NextRequest) {
   if (!(await isAdmin(req)))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const couples = await getAllCouples();
-  return NextResponse.json(couples);
+  try {
+    const couples = await getAllCouples();
+    return NextResponse.json(couples);
+  } catch (e) {
+    console.error("getAllCouples failed:", e);
+    return NextResponse.json({ error: "DB error" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -36,6 +41,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await upsertCouple(slug, data);
-  return NextResponse.json({ ok: true, slug });
+  try {
+    await upsertCouple(slug, data);
+    return NextResponse.json({ ok: true, slug });
+  } catch (e) {
+    console.error("upsertCouple failed:", e);
+    return NextResponse.json({ error: "DB error" }, { status: 500 });
+  }
 }

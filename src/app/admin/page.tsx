@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, CalendarPlus, Phone } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, CalendarPlus, Phone, X } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
 import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
@@ -52,6 +52,8 @@ export default function AdminPage() {
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [bankAccountIdx, setBankAccountIdx] = useState(0);
   const [showPhoneRental, setShowPhoneRental] = useState(false);
+  const [showCustomReceipt, setShowCustomReceipt] = useState(false);
+  const [customReceipts, setCustomReceipts] = useState<Array<{ id: string; par: string; datum?: string; items: Array<{l: string; p: number}>; ba: number; created_at: string }>>([]);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
@@ -61,15 +63,21 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetch("/api/admin/couples")
-      .then((r) => {
+      .then(async (r) => {
         if (r.status === 401) {
           setNeedsLogin(true);
           setLoading(false);
-          return [];
+          return null;
+        }
+        if (!r.ok) {
+          console.error("Admin couples fetch failed:", r.status);
+          setLoading(false);
+          return null;
         }
         return r.json();
       })
       .then((data) => {
+        if (!data) return;
         if (Array.isArray(data)) {
           setCouples(data);
           // Load stats async
@@ -77,9 +85,15 @@ export default function AdminPage() {
             .then((r) => r.json())
             .then((s) => setStats(s))
             .catch(() => {});
+          // Load custom receipts
+          fetch("/api/admin/custom-receipts")
+            .then((r) => r.json())
+            .then((d) => { if (Array.isArray(d)) setCustomReceipts(d); })
+            .catch(() => {});
         }
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   if (needsLogin)
@@ -160,8 +174,8 @@ export default function AdminPage() {
     }
   }
 
-  function buildReceiptUrl(c: Couple, extras?: { retro_phone?: boolean; dobrodoslica?: boolean }) {
-    const data = {
+  function buildReceiptUrl(c: Couple, extras?: { retro_phone?: boolean; dobrodoslica?: boolean; customItems?: Array<{l: string; p: number}> }) {
+    const data: Record<string, unknown> = {
       s: c.slug,
       par: c.couple_names?.full_display || c.slug,
       datum: c.event_date,
@@ -178,6 +192,7 @@ export default function AdminPage() {
       ba: bankAccountIdx,
       t: Date.now(),
     };
+    if (extras?.customItems?.length) data.ci = extras.customItems;
     return `https://halouspomene.rs/racun?d=${encodeToBase64(data)}`;
   }
 
@@ -271,8 +286,8 @@ export default function AdminPage() {
       {/* Admin Calendar */}
       <AdminCalendar couples={couples} />
 
-      {/* Bank account selector */}
-      <div className="flex items-center gap-3 mb-6">
+      {/* Bank account selector + custom receipt */}
+      <div className="flex items-center gap-3 mb-6 flex-wrap">
         <span className="text-xs text-white/30">Žiro račun:</span>
         <div className="flex items-center gap-1 bg-white/5 rounded-lg p-0.5">
           {BANK_ACCOUNTS.map((acc, i) => (
@@ -290,7 +305,55 @@ export default function AdminPage() {
             </button>
           ))}
         </div>
+        <button
+          onClick={() => setShowCustomReceipt(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors cursor-pointer"
+        >
+          <Receipt size={12} /> Prilagođeni račun
+        </button>
       </div>
+
+      {/* Custom receipts list */}
+      {customReceipts.length > 0 && (
+        <div className="mb-6 space-y-2">
+          <span className="text-[10px] text-white/30 uppercase tracking-wider">Prilagođeni računi</span>
+          {customReceipts.map((r) => {
+            const total = r.items.reduce((s, i) => s + i.p, 0);
+            const url = `https://halouspomene.rs/racun?d=${encodeToBase64({ custom: 1, id: r.id, par: r.par, datum: r.datum, ba: r.ba, t: new Date(r.created_at).getTime(), d: 0, ci: r.items })}`;
+            return (
+              <div key={r.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10">
+                <Receipt size={13} className="text-yellow-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-white/80 font-medium">{r.par}</span>
+                  <span className="text-xs text-white/30 ml-2">{total.toLocaleString("sr-RS")} din</span>
+                </div>
+                <span className="text-[10px] text-white/25 shrink-0">
+                  {new Date(r.created_at).toLocaleDateString("sr-RS")}
+                </span>
+                <button
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(url);
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-white/30 hover:text-white transition-colors cursor-pointer"
+                  title="Kopiraj link"
+                >
+                  <Copy size={12} />
+                </button>
+                <button
+                  onClick={async () => {
+                    await fetch(`/api/admin/custom-receipts/${r.id}`, { method: "DELETE" });
+                    setCustomReceipts((prev) => prev.filter((x) => x.id !== r.id));
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-green-500/20 text-white/30 hover:text-green-400 transition-colors cursor-pointer"
+                  title="Označi kao plaćeno (briše)"
+                >
+                  <Check size={12} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Tab bar */}
       <div className="flex items-center gap-1 mb-8 bg-white/5 rounded-xl p-1 w-fit">
@@ -591,10 +654,8 @@ export default function AdminPage() {
                   onGenerate={async (extras) => {
                     await handleGenerateReceipt(c.slug);
 
-                    // If retro phone is enabled, create a phone rental record
                     if (extras.retro_phone && c.event_date) {
                       const eventDate = new Date(c.event_date);
-
                       await fetch("/api/admin/phone-rentals", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -608,13 +669,13 @@ export default function AdminPage() {
                       });
                     }
 
-                    const url = buildReceiptUrl(c, extras);
+                    const url = buildReceiptUrl(c, { ...extras, customItems: extras.customItems });
                     await navigator.clipboard.writeText(url);
                     setCopiedSlug(c.slug);
                     setTimeout(() => setCopiedSlug(null), 2500);
                   }}
                   onCopy={async (extras) => {
-                    const url = buildReceiptUrl(c, extras);
+                    const url = buildReceiptUrl(c, { ...extras, customItems: extras.customItems });
                     await navigator.clipboard.writeText(url);
                     setCopiedSlug(c.slug);
                     setTimeout(() => setCopiedSlug(null), 2500);
@@ -632,6 +693,14 @@ export default function AdminPage() {
         <PhoneRentalModal
           onClose={() => setShowPhoneRental(false)}
           bankAccountIdx={bankAccountIdx}
+        />
+      )}
+
+      {mounted && showCustomReceipt && (
+        <CustomReceiptModal
+          bankAccountIdx={bankAccountIdx}
+          onClose={() => setShowCustomReceipt(false)}
+          onCreated={(receipt) => setCustomReceipts((prev) => [receipt, ...prev])}
         />
       )}
 
@@ -661,14 +730,17 @@ function ReceiptDropdown({
 }: {
   couple: Couple;
   copiedSlug: string | null;
-  onGenerate: (extras: { retro_phone: boolean; dobrodoslica: boolean }) => void;
-  onCopy: (extras: { retro_phone: boolean; dobrodoslica: boolean }) => void;
+  onGenerate: (extras: { retro_phone: boolean; dobrodoslica: boolean; customItems: Array<{l: string; p: number}> }) => void;
+  onCopy: (extras: { retro_phone: boolean; dobrodoslica: boolean; customItems: Array<{l: string; p: number}> }) => void;
   onPaid: () => void;
   onDiscount: (amount: number) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [retroPhone, setRetroPhone] = useState(false);
   const [dobrodoslica, setDobrodoslica] = useState(false);
+  const [customItems, setCustomItems] = useState<Array<{l: string; p: number}>>([]);
+  const [customLabel, setCustomLabel] = useState("");
+  const [customPrice, setCustomPrice] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -734,9 +806,50 @@ function ReceiptDropdown({
             </button>
           </div>
 
+          {/* Custom items */}
+          <div className="px-4 py-2.5 border-t border-white/5 space-y-1.5">
+            <span className="text-[10px] text-white/30 uppercase tracking-wider">Stavke po dogovoru</span>
+            {customItems.map((item, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <span className="flex-1 text-[11px] text-white/60 truncate">{item.l}</span>
+                <span className="text-[11px] text-white/40 shrink-0">{item.p.toLocaleString("sr-RS")} din</span>
+                <button
+                  onClick={() => setCustomItems((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-red-400/60 hover:text-red-400 text-xs leading-none cursor-pointer"
+                >×</button>
+              </div>
+            ))}
+            <div className="flex gap-1">
+              <input
+                type="text"
+                placeholder="Naziv stavke"
+                value={customLabel}
+                onChange={(e) => setCustomLabel(e.target.value)}
+                className="flex-1 text-[11px] text-white/70 bg-white/5 border border-white/10 rounded px-2 py-1 outline-none focus:border-white/20 min-w-0"
+              />
+              <input
+                type="number"
+                placeholder="Cena"
+                value={customPrice}
+                onChange={(e) => setCustomPrice(e.target.value)}
+                className="w-16 text-[11px] text-white/70 bg-white/5 border border-white/10 rounded px-2 py-1 outline-none focus:border-white/20 text-right"
+              />
+              <button
+                onClick={() => {
+                  const p = parseInt(customPrice);
+                  if (!customLabel.trim() || !p) return;
+                  setCustomItems((prev) => [...prev, { l: customLabel.trim(), p }]);
+                  setCustomLabel("");
+                  setCustomPrice("");
+                }}
+                className="px-2 py-1 text-[11px] bg-white/10 hover:bg-white/20 text-white/60 rounded cursor-pointer transition-colors"
+              >+</button>
+            </div>
+          </div>
+
           {/* Generate / Regenerate */}
           <button
-            onClick={() => { onGenerate({ retro_phone: retroPhone, dobrodoslica }); setOpen(false); }}
+            onClick={() => { onGenerate({ retro_phone: retroPhone, dobrodoslica, customItems }); setOpen(false); }}
             className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-white/70 hover:bg-white/5 cursor-pointer transition-colors"
           >
             <Receipt size={12} className="text-yellow-400" />
@@ -746,7 +859,7 @@ function ReceiptDropdown({
           {/* Copy link */}
           {isActive && (
             <button
-              onClick={() => { onCopy({ retro_phone: retroPhone, dobrodoslica }); setOpen(false); }}
+              onClick={() => { onCopy({ retro_phone: retroPhone, dobrodoslica, customItems }); setOpen(false); }}
               className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-white/70 hover:bg-white/5 cursor-pointer transition-colors"
             >
               <Copy size={12} className="text-green-400" />
@@ -782,6 +895,153 @@ function ReceiptDropdown({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function CustomReceiptModal({
+  bankAccountIdx,
+  onClose,
+  onCreated,
+}: {
+  bankAccountIdx: number;
+  onClose: () => void;
+  onCreated: (receipt: { id: string; par: string; datum?: string; items: Array<{l: string; p: number}>; ba: number; created_at: string }) => void;
+}) {
+  const [par, setPar] = useState("");
+  const [datum, setDatum] = useState("");
+  const [items, setItems] = useState<Array<{l: string; p: number}>>([]);
+  const [label, setLabel] = useState("");
+  const [price, setPrice] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  function addItem() {
+    const p = parseInt(price);
+    if (!label.trim() || !p) return;
+    setItems((prev) => [...prev, { l: label.trim(), p }]);
+    setLabel("");
+    setPrice("");
+  }
+
+  async function handleGenerate() {
+    if (!par.trim() || !items.length) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/custom-receipts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ par: par.trim(), datum: datum || null, items, ba: bankAccountIdx }),
+      });
+      const { id } = await res.json();
+      const created_at = new Date().toISOString();
+      const data = { custom: 1, id, par: par.trim(), datum: datum || undefined, ba: bankAccountIdx, t: Date.now(), d: 0, ci: items };
+      const url = `https://halouspomene.rs/racun?d=${encodeToBase64(data)}`;
+      await navigator.clipboard.writeText(url);
+      onCreated({ id, par: par.trim(), datum: datum || undefined, items, ba: bankAccountIdx, created_at });
+      setCopied(true);
+      setTimeout(() => { setCopied(false); onClose(); }, 2000);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const total = items.reduce((s, i) => s + i.p, 0);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-5"
+        style={{ backgroundColor: "#1e1e1e", border: "1px solid rgba(255,255,255,0.1)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-white font-semibold flex items-center gap-2">
+            <Receipt size={16} className="text-yellow-400" /> Prilagođeni račun
+          </h3>
+          <button onClick={onClose} className="text-white/40 hover:text-white cursor-pointer">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Recipient */}
+        <div className="space-y-1.5">
+          <label className="text-[11px] text-white/40 uppercase tracking-wider">Primalac / naziv</label>
+          <input
+            type="text"
+            placeholder="npr. Marija i Petar"
+            value={par}
+            onChange={(e) => setPar(e.target.value)}
+            className="w-full text-sm text-white/80 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/25"
+          />
+        </div>
+
+        {/* Date (optional) */}
+        <div className="space-y-1.5">
+          <label className="text-[11px] text-white/40 uppercase tracking-wider">Datum (opciono)</label>
+          <input
+            type="date"
+            value={datum}
+            onChange={(e) => setDatum(e.target.value)}
+            className="w-full text-sm text-white/60 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/25"
+          />
+        </div>
+
+        {/* Items */}
+        <div className="space-y-2">
+          <label className="text-[11px] text-white/40 uppercase tracking-wider">Stavke</label>
+          {items.map((item, i) => (
+            <div key={i} className="flex items-center gap-2 text-sm">
+              <span className="flex-1 text-white/70 truncate">{item.l}</span>
+              <span className="text-white/50 shrink-0">{item.p.toLocaleString("sr-RS")} din</span>
+              <button onClick={() => setItems((prev) => prev.filter((_, j) => j !== i))} className="text-red-400/60 hover:text-red-400 cursor-pointer">
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+          <div className="space-y-2">
+            <input
+              type="text"
+              placeholder="Naziv stavke (npr. Muzika, Cveće...)"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addItem()}
+              className="w-full text-sm text-white/70 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/25"
+            />
+            <div className="flex gap-2">
+              <input
+                type="number"
+                placeholder="Cena u din"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addItem()}
+                className="flex-1 text-sm text-white/70 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/25"
+              />
+              <button
+                onClick={addItem}
+                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 text-sm cursor-pointer transition-colors"
+              >+ Dodaj</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Total preview */}
+        {items.length > 0 && (
+          <div className="flex justify-between text-sm border-t border-white/10 pt-3">
+            <span className="text-white/40">Ukupno</span>
+            <span className="text-white font-semibold">{total.toLocaleString("sr-RS")} din</span>
+          </div>
+        )}
+
+        {/* Generate */}
+        <button
+          onClick={handleGenerate}
+          disabled={!par.trim() || items.length === 0 || saving}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300"
+        >
+          {copied ? <><Check size={14} /> Link kopiran!</> : saving ? "Čuvanje..." : <><Receipt size={14} /> Generiši i kopiraj link</>}
+        </button>
+      </div>
     </div>
   );
 }

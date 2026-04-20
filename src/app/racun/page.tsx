@@ -214,11 +214,13 @@ const BANK_ACCOUNTS = [
 ];
 
 interface ReceiptPayload {
-  s: string; // slug
-  par: string; // couple display name
-  datum: string; // event_date ISO
-  r: number; // raspored
-  a: number; // audio
+  s?: string; // slug (optional for standalone)
+  custom?: 1; // standalone receipt — validate against custom_receipts collection
+  id?: string; // custom receipt DB id
+  par: string; // couple/recipient display name
+  datum?: string; // event_date ISO (optional for standalone)
+  r?: number; // raspored
+  a?: number; // audio
   uk?: number; // usb kaseta
   ub?: number; // usb bocica
   rp?: number; // retro phone
@@ -226,9 +228,10 @@ interface ReceiptPayload {
   cc?: number; // custom colors
   ig?: number; // images
   p?: number; // premium invitation
-  d: number; // custom discount
+  d?: number; // custom discount
   ba?: number; // bank account index (0, 1, 2)
   t: number; // timestamp
+  ci?: Array<{l: string; p: number}>; // custom line items
 }
 
 function ReceiptContent() {
@@ -250,11 +253,29 @@ function ReceiptContent() {
     let data: ReceiptPayload;
     try {
       data = decodeFromBase64<ReceiptPayload>(encoded);
-      if (!data.s) {
+      if (!data.par) {
         router.replace("/");
         return;
       }
     } catch {
+      router.replace("/");
+      return;
+    }
+
+    // Standalone custom receipt — validate against DB
+    if (data.custom) {
+      if (!data.id) { router.replace("/"); return; }
+      fetch(`/api/racun/custom/${data.id}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (!d.valid) router.replace("/");
+          else setState({ payload: data, ready: true });
+        })
+        .catch(() => router.replace("/"));
+      return;
+    }
+
+    if (!data.s) {
       router.replace("/");
       return;
     }
@@ -296,9 +317,9 @@ function ReceiptContent() {
       )!.price,
     });
 
-  // Only add website items for invitations, not phone rentals
-  const isPhoneRental = payload.s.startsWith("tel-");
-  if (!isPhoneRental) {
+  // Only add website items for invitations, not phone rentals or standalone custom receipts
+  const isPhoneRental = payload.s?.startsWith("tel-") ?? false;
+  if (!isPhoneRental && !payload.custom) {
     if (payload.p) {
       items.push({
         label: isPremiumPromoActive() ? "Premium pozivnica — PROMO" : "Premium pozivnica",
@@ -342,6 +363,13 @@ function ReceiptContent() {
       label: "Polaroid galerija slika",
       amount: pricing.addons.find((a) => a.id === "custom_color")!.price,
     });
+
+  // Custom line items added manually by admin
+  if (payload.ci?.length) {
+    for (const ci of payload.ci) {
+      items.push({ label: ci.l, amount: ci.p });
+    }
+  }
 
   const subtotal = items.reduce((s, i) => s + i.amount, 0);
   const isBundle = !!payload.r && !!payload.a;
