@@ -328,7 +328,7 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
   }, [rotation, degPer]);
 
   return (
-    <section className="relative flex flex-col items-center justify-center px-1 sm:px-16 md:px-24 py-16 sm:py-20 md:py-24">
+    <section className="relative flex flex-col items-center justify-center px-1 sm:px-16 md:px-24 py-16 sm:py-20 md:py-24 overflow-x-clip">
       {/* Paper wallpaper background — matches the section above */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
@@ -347,7 +347,7 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
           }}
         />
       </div>
-      <div className="relative z-10 w-full sm:w-[80%] md:w-[66%] lg:w-[60%] max-w-[720px]">
+      <div className="relative z-[3] w-[150%] -mx-[25%] sm:w-[80%] sm:mx-0 sm:z-10 md:w-[66%] lg:w-[60%] max-w-[720px]">
         {/* Spinning wheel with timeline text */}
         <motion.div
           className="relative w-full"
@@ -376,19 +376,19 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
                   style={{ filter: "drop-shadow(0 1px 2px rgba(255,255,255,0.6))" }}
                 >
                   {item.what && (
-                    <p className="text-[5.5px] sm:text-[7px] md:text-[8px] uppercase tracking-[0.25em] text-[#5a4a2e]/60 leading-tight font-medium">
+                    <p className="text-[8px] sm:text-[7px] md:text-[8px] uppercase tracking-[0.25em] text-[#5a4a2e]/60 leading-tight font-medium">
                       {item.what}
                     </p>
                   )}
                   <p
-                    className="text-[13px] sm:text-[17px] md:text-[20px] font-serif font-bold text-[#1a1208] tracking-wide"
+                    className="text-[17px] sm:text-[17px] md:text-[20px] font-serif font-bold text-[#1a1208] tracking-wide"
                     style={is5 ? { lineHeight: 1 } : { lineHeight: 1.4 }}
                   >
                     {item.title}
                   </p>
                   {item.description && (
                     <p
-                      className="text-[10px] sm:text-[13px] md:text-[15px] font-serif italic text-[#5a4a2e]"
+                      className="text-[13px] sm:text-[13px] md:text-[15px] font-serif italic text-[#5a4a2e]"
                       style={is5 ? { lineHeight: 1 } : { lineHeight: 1.3 }}
                     >
                       {item.description}
@@ -424,8 +424,12 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
           <div className="absolute top-[10%] left-[15%] right-[15%] h-[40%] rounded-full bg-gradient-to-b from-white/40 to-transparent" />
         </div>
 
-        {/* Navigation buttons — follow the circle curve */}
-        <div className="absolute inset-0 z-10 pointer-events-none">
+        {/* Navigation buttons — follow the circle curve.
+            On mobile the wheel itself is scaled to 150%, but we keep the
+            buttons in a centered inner square sized to the original (pre-scale)
+            wheel so they don't drift outward beyond the circle's visual curve. */}
+        <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+          <div className="relative w-[66.67%] sm:w-full aspect-square">
           {uniqueItems.map((item, i) => {
             const spread = uniqueItems.length <= 2 ? 38 : uniqueItems.length <= 3 ? 32 : 25;
             const angle = 90 - (i - (uniqueItems.length - 1) / 2) * spread;
@@ -467,6 +471,7 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
               </button>
             );
           })}
+          </div>
         </div>
       </div>
 
@@ -625,48 +630,34 @@ export default function LineArtInvitation({
   const { scrollY } = useScroll();
   // Starry night: slow parallax — moves down at 40% of scroll speed (lingers at top)
   const starryNightY = useTransform(scrollY, [0, 1200], [0, 480]);
-  // Slow parallax for the fixed side decor — pattern drifts upward as user scrolls down.
-  const sideDecorY = useTransform(scrollY, (v) => -v * 0.25);
 
   return (
     <div className="bg-[#fffdf5] relative overflow-x-hidden">
       <style>{`html, body { background-color: #fffdf5; overscroll-behavior-y: none; }`}</style>
       {/* ── Floating gold particles — visible across entire invitation ── */}
       <ParticleBackground theme="line_art" />
-      {/* ── SIDE DECOR — fixed on scroll with slow parallax, both edges ── */}
+      {/* ── SIDE DECOR — fixed to viewport, both edges ── */}
       <div
         aria-hidden
-        className="pointer-events-none fixed top-0 left-0 h-screen w-[60px] sm:w-[100px] md:w-[130px] lg:w-[160px] z-[5] overflow-hidden"
-      >
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-[600vh]"
-          style={{
-            y: sideDecorY,
-            scaleX: -1,
-            backgroundImage:
-              "url('/images/premium/line-art-invitation/side-decor.webp')",
-            backgroundSize: "100% auto",
-            backgroundRepeat: "repeat-y",
-            willChange: "transform",
-          }}
-        />
-      </div>
+        className="pointer-events-none fixed top-0 left-0 h-screen w-[60px] sm:w-[100px] md:w-[130px] lg:w-[160px] z-[5]"
+        style={{
+          transform: "scaleX(-1)",
+          backgroundImage:
+            "url('/images/premium/line-art-invitation/side-decor.webp')",
+          backgroundSize: "100% auto",
+          backgroundRepeat: "repeat-y",
+        }}
+      />
       <div
         aria-hidden
-        className="pointer-events-none fixed top-0 right-0 h-screen w-[60px] sm:w-[100px] md:w-[130px] lg:w-[160px] z-[5] overflow-hidden"
-      >
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-[600vh]"
-          style={{
-            y: sideDecorY,
-            backgroundImage:
-              "url('/images/premium/line-art-invitation/side-decor.webp')",
-            backgroundSize: "100% auto",
-            backgroundRepeat: "repeat-y",
-            willChange: "transform",
-          }}
-        />
-      </div>
+        className="pointer-events-none fixed top-0 right-0 h-screen w-[60px] sm:w-[100px] md:w-[130px] lg:w-[160px] z-[5]"
+        style={{
+          backgroundImage:
+            "url('/images/premium/line-art-invitation/side-decor.webp')",
+          backgroundSize: "100% auto",
+          backgroundRepeat: "repeat-y",
+        }}
+      />
 
       {/* ── STARRY NIGHT — top edge, above side decors (slow parallax) ── */}
       <motion.div
@@ -676,7 +667,7 @@ export default function LineArtInvitation({
         <img
           src="/images/premium/line-art-invitation/Starry-night.webp"
           alt=""
-          className="w-full h-auto block translate-y-0 md:-translate-y-[30%] lg:-translate-y-[40%] drop-shadow-[0_15px_25px_rgba(0,0,0,0.45)] sm:drop-shadow-[0_40px_60px_rgba(0,0,0,0.6)]"
+          className="w-full h-auto block translate-y-0 md:-translate-y-[30%] lg:-translate-y-[40%] drop-shadow-[0_14px_18px_rgba(0,0,0,0.9)] sm:drop-shadow-[0_30px_35px_rgba(0,0,0,0.9)]"
         />
       </motion.div>
 
@@ -734,7 +725,7 @@ export default function LineArtInvitation({
       </section>
 
       {/* ═══════════════ SECTION 3 — Diamond waterfall (empty content) ═══════════════ */}
-      <section className="relative h-[50vh] sm:h-[60vh] md:min-h-screen">
+      <section className="relative h-[28vh] sm:h-[40vh] md:h-[55vh] lg:h-[60vh]">
         {/* Paper wallpaper background — wrapped in its own overflow-hidden so only the bg is clipped */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
@@ -753,14 +744,27 @@ export default function LineArtInvitation({
             }}
           />
         </div>
-        {/* Diamond waterfall — extends upward into section 2, 50% overlap */}
+        {/* Diamond waterfall — extends upward into section 2, 50% overlap.
+            Multi-axis float: gentle up/down bob + slow horizontal sway + micro-rotation
+            + breathing scale — layered together for an organic "floating" feel. */}
         <motion.img
           src="/images/premium/line-art-invitation/diamond-waterfall.webp"
           alt=""
           aria-hidden
           className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[30%] w-[135%] sm:w-[125%] md:w-[100%] lg:w-[88%] xl:w-[80%] max-w-[1400px] h-auto z-[3] drop-shadow-[0_30px_50px_rgba(0,0,0,0.4)]"
-          animate={{ y: [0, -16, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          style={{ willChange: "transform", transformOrigin: "50% 0%" }}
+          animate={{
+            y: [0, -28, -14, -22, 0],
+            x: [0, 10, -6, 8, 0],
+            rotate: [-1.2, 1.2, -0.6, 1, -1.2],
+            scale: [1, 1.02, 0.995, 1.015, 1],
+          }}
+          transition={{
+            duration: 9,
+            repeat: Infinity,
+            ease: "easeInOut",
+            times: [0, 0.25, 0.5, 0.75, 1],
+          }}
         />
       </section>
 
@@ -792,7 +796,7 @@ export default function LineArtInvitation({
           src="/images/premium/line-art-invitation/layered-yellow-roses.webp"
           alt=""
           aria-hidden
-          className="pointer-events-none absolute top-[2%] left-[-2%] sm:left-[4%] md:left-[6%] w-[42%] sm:w-[36%] md:w-[32%] lg:w-[30%] max-w-[440px] h-auto z-[15] drop-shadow-[0_25px_45px_rgba(0,0,0,0.5)] origin-top"
+          className="pointer-events-none absolute top-[2%] left-[-2%] sm:left-[4%] md:left-[6%] w-[42%] sm:w-[36%] md:w-[32%] lg:w-[30%] max-w-[440px] h-auto z-[15] drop-shadow-[0_18px_28px_rgba(0,0,0,0.9)] origin-top"
           animate={{ y: [0, -8, 0], rotate: [-1.5, 1.5, -1.5] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -800,7 +804,7 @@ export default function LineArtInvitation({
           src="/images/premium/line-art-invitation/layered-yellow-roses.webp"
           alt=""
           aria-hidden
-          className="pointer-events-none absolute top-[2%] right-[-2%] sm:right-[4%] md:right-[6%] w-[42%] sm:w-[36%] md:w-[32%] lg:w-[30%] max-w-[440px] h-auto -scale-x-100 z-[15] drop-shadow-[0_25px_45px_rgba(0,0,0,0.5)] origin-top"
+          className="pointer-events-none absolute top-[2%] right-[-2%] sm:right-[4%] md:right-[6%] w-[42%] sm:w-[36%] md:w-[32%] lg:w-[30%] max-w-[440px] h-auto -scale-x-100 z-[15] drop-shadow-[0_18px_28px_rgba(0,0,0,0.9)] origin-top"
           animate={{ y: [0, -6, 0], rotate: [1.5, -1.5, 1.5] }}
           transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
         />

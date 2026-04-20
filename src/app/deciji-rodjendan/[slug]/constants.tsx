@@ -203,6 +203,51 @@ export const BIRTHDAY_THEME_CONFIGS: Record<BirthdayThemeType, BirthdayThemeConf
     illustration: "circus",
   },
 
+  // Punoletstvo (18th birthday) palettes — rendered by the dedicated
+  // classic-wedding-styled invitation route. confetti stays in the shape
+  // for type compatibility but is unused outside the child flows.
+  white_gold_burgundy: {
+    name: "White · Gold · Burgundy",
+    gender: "girl",
+    colors: {
+      primary: "#800020",
+      primaryLight: "#A8324A",
+      primaryMuted: "rgba(128, 0, 32, 0.12)",
+      secondary: "#d4af37",
+      background: "#fffdf5",
+      surface: "#ffffff",
+      surfaceAlt: "#fff8e1",
+      text: "#2A0A12",
+      textMuted: "#6A2A38",
+      textLight: "#B08090",
+      border: "rgba(128, 0, 32, 0.2)",
+      borderLight: "rgba(128, 0, 32, 0.08)",
+      confetti: ["#800020", "#d4af37", "#ffffff", "#f5e6c8", "#A8324A"],
+    },
+    illustration: "classic",
+  },
+
+  white_gold_navy: {
+    name: "White · Gold · Navy",
+    gender: "boy",
+    colors: {
+      primary: "#0A1F44",
+      primaryLight: "#1E3A6E",
+      primaryMuted: "rgba(10, 31, 68, 0.12)",
+      secondary: "#d4af37",
+      background: "#fffdf5",
+      surface: "#ffffff",
+      surfaceAlt: "#fff8e1",
+      text: "#081530",
+      textMuted: "#3A4E7A",
+      textLight: "#8090B0",
+      border: "rgba(10, 31, 68, 0.2)",
+      borderLight: "rgba(10, 31, 68, 0.08)",
+      confetti: ["#0A1F44", "#d4af37", "#ffffff", "#f5e6c8", "#1E3A6E"],
+    },
+    illustration: "classic",
+  },
+
 };
 
 export function getBirthdayThemeCSSVariables(

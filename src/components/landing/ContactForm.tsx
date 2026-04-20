@@ -383,7 +383,7 @@ const ContactForm: React.FC = () => {
               </>
             ) : (
               <>
-                Pošalji upit za termin
+                Rezerviši termin
                 <Send
                   size={20}
                   className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"

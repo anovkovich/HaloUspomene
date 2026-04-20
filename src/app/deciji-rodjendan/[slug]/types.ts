@@ -1,5 +1,7 @@
 export type BirthdayGender = "boy" | "girl" | "neutral";
 
+export type BirthdayType = "child" | "eighteenth";
+
 export type BirthdayThemeType =
   | "boy_adventure"
   | "boy_animals"
@@ -8,7 +10,9 @@ export type BirthdayThemeType =
   | "girl_princess"
   | "girl_rainbow"
   | "neutral_safari"
-  | "neutral_circus";
+  | "neutral_circus"
+  | "white_gold_burgundy"
+  | "white_gold_navy";
 
 export type BirthdayFontType =
   | "fredoka"
@@ -27,6 +31,16 @@ export interface BirthdayData {
   theme: BirthdayThemeType;
   gender: BirthdayGender;
   displayFont?: BirthdayFontType;
+  /**
+   * Discriminates between children's birthday (existing flow) and 18th
+   * birthday / punoletstvo (classic-wedding-styled invitation). Defaults
+   * to "child" when omitted so existing records keep their behavior.
+   */
+  type?: BirthdayType;
+  /** Punoletstvo: honoree given name (required when type === "eighteenth"). */
+  honoree_name?: string;
+  /** Punoletstvo: honoree surname. */
+  honoree_surname?: string;
   child_name: string;
   parent_names: string;
   age: number;

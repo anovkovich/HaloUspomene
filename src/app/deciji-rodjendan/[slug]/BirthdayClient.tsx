@@ -289,7 +289,11 @@ export default function BirthdayClient({ data, slug }: Props) {
                 Potvrdite svoje prisustvo
               </p>
             </div>
-            <BirthdayRSVPForm slug={slug} submitUntil={data.submit_until} />
+            <BirthdayRSVPForm
+              slug={slug}
+              submitUntil={data.submit_until}
+              gender={data.gender}
+            />
           </div>
         </section>
 

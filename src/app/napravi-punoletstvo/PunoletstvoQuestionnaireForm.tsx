@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -9,17 +9,16 @@ import {
   CheckCircle2,
   Loader2,
   AlertCircle,
+  Sparkles,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
-import type { BirthdayThemeType, BirthdayGender, BirthdayFontType } from "@/app/deciji-rodjendan/[slug]/types";
-import {
-  BIRTHDAY_THEME_CONFIGS,
-  BIRTHDAY_FONT_CONFIGS,
-  getBirthdayThemeCSSVariables,
-} from "@/app/deciji-rodjendan/[slug]/constants";
-import { SceneDecorations } from "@/app/deciji-rodjendan/[slug]/components/Illustrations";
 import { validateStep } from "@/lib/wizard-validation";
-import { decijiValidators, STEP_KEYS } from "./validators";
+import {
+  punoletstvoValidators,
+  STEP_KEYS,
+  type PunoletstvoGender,
+  type PunoletstvoTheme,
+} from "./validators";
 
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 
@@ -38,11 +37,20 @@ function toSerbianDeadline(dateStr: string): string {
 
 // ─── Form data ──────────────────────────────────────────────────────────────
 
+type ScriptFont =
+  | "great-vibes"
+  | "dancing-script"
+  | "alex-brush"
+  | "parisienne"
+  | "allura"
+  | "marck-script"
+  | "caveat"
+  | "bad-script";
+
 interface FormData {
-  child_name: string;
-  parent_names: string;
-  age: number;
-  gender: BirthdayGender;
+  honoree_name: string;
+  honoree_surname: string;
+  gender: PunoletstvoGender;
   event_date_only: string;
   event_time: string;
   submit_until_date: string;
@@ -50,8 +58,8 @@ interface FormData {
   contact_phone: string;
   location_name: string;
   location_address: string;
-  theme: BirthdayThemeType;
-  displayFont: BirthdayFontType;
+  theme: PunoletstvoTheme;
+  scriptFont: ScriptFont;
   tagline: string;
   countdown_enabled: boolean;
   map_enabled: boolean;
@@ -61,36 +69,74 @@ interface FormData {
 const TOTAL_STEPS = 4;
 
 const STEP_TITLES = [
-  "Informacije o detetu",
+  "Slavljenik",
   "Datum i lokacija",
   "Dizajn",
   "Poslednji korak",
 ];
 
+const SCRIPT_FONTS: { key: ScriptFont; name: string; cssVar: string; description: string }[] = [
+  { key: "great-vibes", name: "Great Vibes", cssVar: "var(--font-great-vibes)", description: "Elegantni ukošeni script" },
+  { key: "dancing-script", name: "Dancing Script", cssVar: "var(--font-dancing-script)", description: "Opušten i prijateljski" },
+  { key: "alex-brush", name: "Alex Brush", cssVar: "var(--font-alex-brush)", description: "Kaligrafska kičica" },
+  { key: "parisienne", name: "Parisienne", cssVar: "var(--font-parisienne)", description: "Romantičan francuski stil" },
+  { key: "allura", name: "Allura", cssVar: "var(--font-allura)", description: "Klasičan svečani script" },
+  { key: "marck-script", name: "Marck Script", cssVar: "var(--font-marck-script)", description: "Elegantna ćirilica" },
+  { key: "caveat", name: "Caveat", cssVar: "var(--font-caveat)", description: "Tečna ćirilica rukopisa" },
+  { key: "bad-script", name: "Bad Script", cssVar: "var(--font-bad-script)", description: "Opuštena ćirilica" },
+];
+
+const THEME_CARDS: {
+  key: PunoletstvoTheme;
+  name: string;
+  gender: PunoletstvoGender;
+  primary: string;
+  accent: string;
+  bg: string;
+}[] = [
+  {
+    key: "white_gold_burgundy",
+    name: "White · Gold · Burgundy",
+    gender: "female",
+    primary: "#800020",
+    accent: "#d4af37",
+    bg: "#fffdf5",
+  },
+  {
+    key: "white_gold_navy",
+    name: "White · Gold · Navy",
+    gender: "male",
+    primary: "#0A1F44",
+    accent: "#d4af37",
+    bg: "#fffdf5",
+  },
+];
+
 const defaultFormData: FormData = {
-  child_name: "",
-  parent_names: "",
-  age: 1,
-  gender: "boy",
+  honoree_name: "",
+  honoree_surname: "",
+  gender: "female",
   event_date_only: "",
-  event_time: "16:00",
+  event_time: "20:00",
   submit_until_date: "",
   submit_until: "",
   contact_phone: "",
   location_name: "",
   location_address: "",
-  theme: "boy_adventure",
-  displayFont: "fredoka",
-  tagline: "",
+  theme: "white_gold_burgundy",
+  scriptFont: "great-vibes",
+  tagline: "Imam čast pozvati Vas na moj osamnaesti rođendan",
   countdown_enabled: true,
   map_enabled: true,
   wishes: "",
 };
 
-// ─── Shared UI helpers ──────────────────────────────────────────────────────
+// ─── Shared UI ──────────────────────────────────────────────────────────────
+
+const GOLD = "#d4af37";
 
 const inputCls =
-  "w-full border-b border-stone-200 focus:border-[#FF6B6B] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300";
+  "w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300";
 
 const labelCls =
   "block text-xs font-bold uppercase tracking-[0.18em] text-stone-400 mb-1.5";
@@ -146,15 +192,13 @@ function Toggle({
     <label className="flex items-start gap-2 sm:gap-3 cursor-pointer">
       <div
         onClick={() => onChange(!checked)}
-        className={`relative w-10 h-6 sm:w-11 sm:h-6 rounded-full transition-colors duration-200 flex-shrink-0 mt-0.5 flex items-center ${checked ? "bg-[#FF6B6B]" : "bg-stone-200"}`}
+        className={`relative w-10 h-6 sm:w-11 sm:h-6 rounded-full transition-colors duration-200 flex-shrink-0 mt-0.5 flex items-center ${checked ? "bg-[#AE343F]" : "bg-stone-200"}`}
       >
         <div
           className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? "sm:translate-x-6 translate-x-5" : "translate-x-1"}`}
         />
       </div>
-      <span className="text-stone-600 text-xs sm:text-sm leading-tight">
-        {label}
-      </span>
+      <span className="text-stone-600 text-xs sm:text-sm leading-tight">{label}</span>
     </label>
   );
 }
@@ -168,92 +212,63 @@ function StepHeading({ title, desc }: { title: string; desc?: string }) {
   );
 }
 
-// ─── Birthday preview ───────────────────────────────────────────────────────
+// ─── Preview card ───────────────────────────────────────────────────────────
 
-function BirthdayPreview({
+function PunoletstvoPreview({
   theme,
-  displayFont,
-  childName,
-  age,
-  gender,
+  scriptFont,
+  honoreeName,
+  honoreeSurname,
 }: {
-  theme: BirthdayThemeType;
-  displayFont: BirthdayFontType;
-  childName: string;
-  age: number;
-  gender: BirthdayGender;
+  theme: PunoletstvoTheme;
+  scriptFont: ScriptFont;
+  honoreeName: string;
+  honoreeSurname: string;
 }) {
-  const cssVars = getBirthdayThemeCSSVariables(theme, displayFont);
-  const config = BIRTHDAY_THEME_CONFIGS[theme];
+  const cfg = THEME_CARDS.find((c) => c.key === theme)!;
+  const fontCfg = SCRIPT_FONTS.find((f) => f.key === scriptFont)!;
+  const displayName =
+    [honoreeName, honoreeSurname].filter(Boolean).join(" ") || "Ime Slavljenika";
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl"
-      style={{
-        ...(cssVars as React.CSSProperties),
-        backgroundColor: "var(--theme-surface)",
-        minHeight: "280px",
-      }}
+      className="relative overflow-hidden rounded-2xl border border-stone-200"
+      style={{ backgroundColor: cfg.bg, minHeight: 280 }}
     >
-      {/* Preview label */}
       <div className="absolute top-3 right-3 z-10">
         <span
           className="text-[9px] uppercase tracking-widest font-bold px-2 py-1 rounded-full"
-          style={{
-            backgroundColor: "var(--theme-primary-muted)",
-            color: "var(--theme-primary)",
-          }}
+          style={{ backgroundColor: cfg.accent + "22", color: cfg.primary }}
         >
           Preview
         </span>
       </div>
 
-      <div className="relative flex flex-col items-center justify-center min-h-[280px] py-8 px-6 text-center">
-        {/* Age badge */}
-        <div
-          className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-          style={{
-            background: `linear-gradient(135deg, var(--theme-primary), var(--theme-secondary))`,
-          }}
-        >
-          <span
-            className="text-3xl font-bold text-white"
-            style={{ fontFamily: "var(--theme-display-font)" }}
-          >
-            {age}
-          </span>
-        </div>
-
-        {/* Birthday label */}
+      <div className="relative flex flex-col items-center justify-center min-h-[280px] py-10 px-6 text-center">
         <p
-          className="text-xs uppercase tracking-[0.3em] mb-3"
-          style={{ color: "var(--theme-text-light)" }}
+          className="text-[10px] uppercase tracking-[0.35em] mb-3"
+          style={{ color: cfg.primary, opacity: 0.7 }}
         >
-          {age === 1 ? "prvi rođendan" : `${age}. rođendan`}
+          18. rođendan
         </p>
 
-        {/* Child name */}
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-px w-8" style={{ backgroundColor: cfg.accent }} />
+          <Sparkles size={14} style={{ color: cfg.accent }} />
+          <div className="h-px w-8" style={{ backgroundColor: cfg.accent }} />
+        </div>
+
         <h2
-          className="text-4xl sm:text-5xl font-bold leading-tight"
-          style={{
-            color: "var(--theme-text)",
-            fontFamily: "var(--theme-display-font)",
-          }}
+          className="text-5xl sm:text-6xl leading-tight"
+          style={{ color: cfg.primary, fontFamily: fontCfg.cssVar }}
         >
-          {childName || "Ime Deteta"}
+          {displayName}
         </h2>
 
-        {/* Decorative line */}
         <div className="flex items-center gap-3 mt-4">
-          <div
-            className="h-px w-12"
-            style={{ backgroundColor: "var(--theme-primary)", opacity: 0.3 }}
-          />
-          <span style={{ color: "var(--theme-secondary)", fontSize: 16 }}>&#9733;</span>
-          <div
-            className="h-px w-12"
-            style={{ backgroundColor: "var(--theme-primary)", opacity: 0.3 }}
-          />
+          <div className="h-px w-12" style={{ backgroundColor: cfg.primary, opacity: 0.3 }} />
+          <span style={{ color: cfg.accent, fontSize: 14 }}>✦</span>
+          <div className="h-px w-12" style={{ backgroundColor: cfg.primary, opacity: 0.3 }} />
         </div>
       </div>
     </div>
@@ -262,7 +277,7 @@ function BirthdayPreview({
 
 // ─── Time picker ────────────────────────────────────────────────────────────
 
-const HOURS = Array.from({ length: 13 }, (_, i) => i + 9);
+const HOURS = Array.from({ length: 18 }, (_, i) => i + 7); // 07..24
 const MINUTES = ["00", "15", "30", "45"];
 
 function TimePicker({
@@ -272,10 +287,10 @@ function TimePicker({
   value: string;
   onChange: (t: string) => void;
 }) {
-  const [h, m] = value.split(":") ?? ["16", "00"];
+  const [h, m] = value.split(":") ?? ["20", "00"];
 
   const selectCls =
-    "bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-stone-800 text-base outline-none focus:border-[#FF6B6B] transition-colors cursor-pointer appearance-none text-center font-medium";
+    "bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-stone-800 text-base outline-none focus:border-[#AE343F] transition-colors cursor-pointer appearance-none text-center font-medium";
 
   return (
     <div className="flex items-center gap-2">
@@ -319,67 +334,43 @@ function Step1({
   return (
     <div>
       <StepHeading
-        title="Informacije o detetu"
+        title="Slavljenik"
         desc="Unesite osnovne podatke o slavljeniku."
       />
-
       <div className="space-y-6">
-        <Field label="Ime deteta">
+        <Field label="Ime">
           <TextInput
-            value={formData.child_name}
-            onChange={(v) => updateField("child_name", v)}
-            placeholder="npr. Marko"
+            value={formData.honoree_name}
+            onChange={(v) => updateField("honoree_name", v)}
+            placeholder="npr. Marija"
           />
         </Field>
 
-        <Field label="Roditelji">
+        <Field label="Prezime">
           <TextInput
-            value={formData.parent_names}
-            onChange={(v) => updateField("parent_names", v)}
-            placeholder="npr. Mama Ana i tata Petar"
+            value={formData.honoree_surname}
+            onChange={(v) => updateField("honoree_surname", v)}
+            placeholder="npr. Petrović"
           />
         </Field>
 
         <div>
-          <p className={labelCls}>Koji rođendan?</p>
-          <div className="flex gap-2 mt-1">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => updateField("age", n)}
-                className={`w-12 h-12 rounded-xl border text-lg font-bold transition-all cursor-pointer ${
-                  formData.age === n
-                    ? "bg-[#FF6B6B] border-[#FF6B6B] text-white"
-                    : "border-stone-200 text-stone-500 hover:border-stone-300"
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className={labelCls}>Pol deteta</p>
+          <p className={labelCls}>Pol slavljenika</p>
           <div className="flex gap-3 mt-1">
             {[
-              { val: "boy" as const, label: "Dečak 👦", color: "#4ECDC4" },
-              { val: "girl" as const, label: "Devojčica 👧", color: "#FF6B9D" },
+              { val: "female" as const, label: "Devojka 👑", color: "#800020" },
+              { val: "male" as const, label: "Momak 🎩", color: "#0A1F44" },
             ].map(({ val, label, color }) => (
               <button
                 key={val}
                 type="button"
                 onClick={() => {
                   updateField("gender", val);
-                  // Auto-switch theme when gender changes
-                  const currentThemeGender = BIRTHDAY_THEME_CONFIGS[formData.theme].gender;
-                  if (val !== currentThemeGender && currentThemeGender !== "neutral") {
-                    const firstTheme = Object.entries(BIRTHDAY_THEME_CONFIGS).find(
-                      ([, cfg]) => cfg.gender === val || cfg.gender === "neutral",
-                    );
-                    if (firstTheme) updateField("theme", firstTheme[0] as BirthdayThemeType);
-                  }
+                  // Auto-switch theme to matching palette
+                  updateField(
+                    "theme",
+                    val === "female" ? "white_gold_burgundy" : "white_gold_navy",
+                  );
                 }}
                 className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
                   formData.gender === val
@@ -396,6 +387,9 @@ function Step1({
               </button>
             ))}
           </div>
+          <p className="text-xs text-stone-400 mt-2">
+            Boje pozivnice će biti predložene po polu — možete ih menjati u koraku Dizajn.
+          </p>
         </div>
       </div>
     </div>
@@ -411,10 +405,7 @@ function Step2({
 }) {
   return (
     <div>
-      <StepHeading
-        title="Datum i lokacija"
-        desc="Kada i gde je proslava?"
-      />
+      <StepHeading title="Datum i lokacija" desc="Kada i gde je proslava?" />
       <div className="space-y-8">
         <div>
           <p className={labelCls}>Datum proslave</p>
@@ -449,12 +440,8 @@ function Step2({
           />
           {formData.submit_until && (
             <div className="mt-3 flex items-center gap-2">
-              <span className="text-xs text-stone-400 uppercase tracking-widest font-bold">
-                Prikaz:
-              </span>
-              <span className="text-sm text-stone-600 font-medium">
-                {formData.submit_until}
-              </span>
+              <span className="text-xs text-stone-400 uppercase tracking-widest font-bold">Prikaz:</span>
+              <span className="text-sm text-stone-600 font-medium">{formData.submit_until}</span>
             </div>
           )}
         </div>
@@ -463,7 +450,7 @@ function Step2({
           <TextInput
             value={formData.location_name}
             onChange={(v) => updateField("location_name", v)}
-            placeholder="npr. Igraonica Jungle / Restoran Zvezdica"
+            placeholder="npr. Restoran Bela Reka"
           />
         </Field>
 
@@ -476,20 +463,15 @@ function Step2({
         </Field>
 
         <Field label="Vaš kontakt telefon (za naš tim, nije na pozivnici)">
-          <div className="flex items-center border-b border-stone-200 focus-within:border-[#FF6B6B] transition-colors">
-            <span className="py-2.5 pl-1 pr-2 text-stone-400 text-base select-none">
-              +381
-            </span>
+          <div className="flex items-center border-b border-stone-200 focus-within:border-[#AE343F] transition-colors">
+            <span className="py-2.5 pl-1 pr-2 text-stone-400 text-base select-none">+381</span>
             <input
               type="tel"
               className="flex-1 bg-transparent py-2.5 pr-1 text-stone-800 text-base outline-none placeholder:text-stone-300"
               placeholder="6X XXX XXXX"
               value={formData.contact_phone}
               onChange={(e) =>
-                updateField(
-                  "contact_phone",
-                  e.target.value.replace(/^\+?381/, ""),
-                )
+                updateField("contact_phone", e.target.value.replace(/^\+?381/, ""))
               }
             />
           </div>
@@ -506,102 +488,75 @@ function Step3({
   formData: FormData;
   updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
 }) {
-  const themes = Object.entries(BIRTHDAY_THEME_CONFIGS) as [
-    BirthdayThemeType,
-    (typeof BIRTHDAY_THEME_CONFIGS)[BirthdayThemeType],
-  ][];
-
-  // Filter themes by gender (show matching + neutral)
-  const filteredThemes = themes.filter(
-    ([, cfg]) =>
-      cfg.gender === formData.gender || cfg.gender === "neutral",
-  );
-
-  const fonts = Object.entries(BIRTHDAY_FONT_CONFIGS) as [
-    BirthdayFontType,
-    (typeof BIRTHDAY_FONT_CONFIGS)[BirthdayFontType],
-  ][];
-
   return (
     <div>
-      <StepHeading
-        title="Dizajn"
-        desc="Izaberite temu i font — pregled se ažurira uživo."
-      />
+      <StepHeading title="Dizajn" desc="Boje i script font — pregled se ažurira uživo." />
 
-      {/* Live preview */}
       <div className="mb-6">
         <p className={labelCls + " mb-3"}>Pregled pozivnice</p>
-        <BirthdayPreview
+        <PunoletstvoPreview
           theme={formData.theme}
-          displayFont={formData.displayFont}
-          childName={formData.child_name}
-          age={formData.age}
-          gender={formData.gender}
+          scriptFont={formData.scriptFont}
+          honoreeName={formData.honoree_name}
+          honoreeSurname={formData.honoree_surname}
         />
       </div>
 
-      {/* Font dropdown */}
       <div className="mb-8">
         <p className={labelCls + " mb-2"}>Font za ime</p>
         <div className="relative">
           <select
-            value={formData.displayFont}
-            onChange={(e) =>
-              updateField("displayFont", e.target.value as BirthdayFontType)
-            }
-            className="w-full appearance-none bg-white border border-stone-200 rounded-xl px-4 py-3 pr-10 text-stone-800 text-sm font-medium outline-none focus:border-[#FF6B6B] focus:ring-2 focus:ring-[#FF6B6B]/10 transition-all cursor-pointer"
+            value={formData.scriptFont}
+            onChange={(e) => updateField("scriptFont", e.target.value as ScriptFont)}
+            className="w-full appearance-none bg-white border border-stone-200 rounded-xl px-4 py-3 pr-10 text-stone-800 text-sm font-medium outline-none focus:border-[#AE343F] focus:ring-2 focus:ring-[#AE343F]/10 transition-all cursor-pointer"
           >
-            {fonts.map(([key, cfg]) => (
-              <option key={key} value={key}>
-                {cfg.name} — {cfg.description}
+            {SCRIPT_FONTS.map((f) => (
+              <option key={f.key} value={f.key}>
+                {f.name} — {f.description}
               </option>
             ))}
           </select>
           <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-stone-400">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M4 6l4 4 4-4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
         </div>
       </div>
 
-      {/* Theme selector */}
-      <p className={labelCls + " mb-3"}>Tema pozivnice</p>
+      <p className={labelCls + " mb-3"}>Boje pozivnice</p>
       <div className="grid grid-cols-2 gap-3">
-        {filteredThemes.map(([key, cfg]) => (
+        {THEME_CARDS.map((cfg) => (
           <button
-            key={key}
+            key={cfg.key}
             type="button"
-            onClick={() => updateField("theme", key)}
+            onClick={() => updateField("theme", cfg.key)}
             className={`relative p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-              formData.theme === key
-                ? "border-[#FF6B6B] shadow-md"
+              formData.theme === cfg.key
+                ? "border-[#AE343F] shadow-md"
                 : "border-stone-100 hover:border-stone-200"
             }`}
           >
             <div className="flex items-center gap-2 mb-2">
               <div
                 className="w-6 h-6 rounded-full border border-black/5"
-                style={{ backgroundColor: cfg.colors.primary }}
+                style={{ backgroundColor: cfg.primary }}
               />
               <div
                 className="w-6 h-6 rounded-full border border-black/5"
-                style={{ backgroundColor: cfg.colors.secondary }}
+                style={{ backgroundColor: cfg.accent }}
+              />
+              <div
+                className="w-6 h-6 rounded-full border border-black/10"
+                style={{ backgroundColor: "#ffffff" }}
               />
             </div>
             <p className="text-sm font-semibold text-stone-700">{cfg.name}</p>
             <p className="text-xs text-stone-400">
-              {cfg.gender === "boy" ? "Dečak" : cfg.gender === "girl" ? "Devojčica" : "Neutralno"}
+              {cfg.gender === "female" ? "Devojka" : "Momak"} (predlog)
             </p>
-            {formData.theme === key && (
-              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#FF6B6B] flex items-center justify-center">
+            {formData.theme === cfg.key && (
+              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#AE343F] flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-white" />
               </div>
             )}
@@ -621,26 +576,23 @@ function Step4({
 }) {
   return (
     <div>
-      <StepHeading
-        title="Poslednji korak!"
-        desc="Dodajte lični pečat i pošaljite zahtev."
-      />
+      <StepHeading title="Poslednji korak!" desc="Dodajte lični pečat i pošaljite zahtev." />
       <div className="space-y-6">
-        <div className="bg-[#FF6B6B]/5 border border-[#FF6B6B]/15 rounded-2xl px-5 py-4 text-sm text-[#E55A5A] leading-relaxed">
-          <p className="font-semibold mb-1">🎉 Skoro sve je spremno!</p>
+        <div className="bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl px-5 py-4 text-sm text-[#7A242C] leading-relaxed">
+          <p className="font-semibold mb-1">🥂 Skoro sve je spremno!</p>
           <p>
-            Mapu, RSVP formu i odbrojavanje ćemo podesiti mi — vi samo
+            Klasičan omot, RSVP formu i odbrojavanje ćemo podesiti mi — vi samo
             kliknite <em>Pošalji zahtev</em> i mi ćemo se pobrinuti za sve.
           </p>
         </div>
 
         <Field label="Tagline (poruka na pozivnici)">
           <textarea
-            className="w-full border-b border-stone-200 focus:border-[#FF6B6B] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
+            className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={2}
             value={formData.tagline}
             onChange={(e) => updateField("tagline", e.target.value)}
-            placeholder="npr. Naša mala zvezda slavi prvi rođendan!"
+            placeholder="npr. Imam čast pozvati Vas na moj osamnaesti rođendan"
           />
         </Field>
 
@@ -660,7 +612,7 @@ function Step4({
 
         <Field label="Posebne napomene ili zahtevi (opciono)">
           <textarea
-            className="w-full border-b border-stone-200 focus:border-[#FF6B6B] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
+            className="w-full border-b border-stone-200 focus:border-[#AE343F] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
             rows={3}
             value={formData.wishes}
             onChange={(e) => updateField("wishes", e.target.value)}
@@ -674,7 +626,7 @@ function Step4({
 
 // ─── Main form ──────────────────────────────────────────────────────────────
 
-export default function BirthdayQuestionnaireForm() {
+export default function PunoletstvoQuestionnaireForm() {
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState<FormData>(defaultFormData);
@@ -683,17 +635,14 @@ export default function BirthdayQuestionnaireForm() {
   const [error, setError] = useState<string | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
 
-  const updateField = <K extends keyof FormData>(
-    key: K,
-    value: FormData[K],
-  ) => {
+  const updateField = <K extends keyof FormData>(key: K, value: FormData[K]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
     if (stepError) setStepError(null);
   };
 
   const goNext = () => {
     const key = STEP_KEYS[step - 1];
-    const err = validateStep(decijiValidators, key, formData);
+    const err = validateStep(punoletstvoValidators, key, formData);
     if (err) {
       setStepError(err);
       return;
@@ -702,6 +651,7 @@ export default function BirthdayQuestionnaireForm() {
     setDirection(1);
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
   };
+
   const goPrev = () => {
     setStepError(null);
     setDirection(-1);
@@ -709,9 +659,8 @@ export default function BirthdayQuestionnaireForm() {
   };
 
   const handleSubmit = async () => {
-    // Re-run all validators before sending — defense in depth.
     for (const k of STEP_KEYS) {
-      const msg = validateStep(decijiValidators, k, formData);
+      const msg = validateStep(punoletstvoValidators, k, formData);
       if (msg) {
         const badStep = STEP_KEYS.indexOf(k) + 1;
         setStep(badStep);
@@ -724,16 +673,15 @@ export default function BirthdayQuestionnaireForm() {
     setIsSubmitting(true);
     try {
       // 1) Persist as draft in MongoDB (mirrors wedding classic flow).
-      const res = await fetch("/api/deciji-rodjendan/create", {
+      const res = await fetch("/api/punoletstvo/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           theme: formData.theme,
+          scriptFont: formData.scriptFont,
           gender: formData.gender,
-          displayFont: formData.displayFont,
-          child_name: formData.child_name,
-          parent_names: formData.parent_names,
-          age: formData.age,
+          honoree_name: formData.honoree_name,
+          honoree_surname: formData.honoree_surname,
           event_date: formData.event_date_only
             ? `${formData.event_date_only}T${formData.event_time}:00`
             : "",
@@ -760,29 +708,30 @@ export default function BirthdayQuestionnaireForm() {
               { weekday: "long", year: "numeric", month: "long", day: "numeric" },
             )
           : "";
-        const genderLabel =
-          formData.gender === "boy"
-            ? "Dečak"
-            : formData.gender === "girl"
-            ? "Devojčica"
-            : "Neutralno";
+        const genderLabel = formData.gender === "female" ? "Devojka" : "Momak";
+        const themeLabel =
+          formData.theme === "white_gold_burgundy"
+            ? "White · Gold · Burgundy"
+            : "White · Gold · Navy";
+        const displayName = [formData.honoree_name, formData.honoree_surname]
+          .filter(Boolean)
+          .join(" ");
 
         fetch("https://api.web3forms.com/submit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             access_key: WEB3FORMS_ACCESS_KEY,
-            subject: `🎈 Novi Rođendan — ${formData.child_name} (${formData.age}. rođendan)`,
-            from_name: "Halo Rođendani",
-            "Ime deteta": formData.child_name,
+            subject: `🥂 Nova punoletstvo pozivnica — ${displayName}`,
+            from_name: "Halo Punoletstvo",
+            "Ime i prezime": displayName,
             Slug: created.slug,
-            Roditelji: formData.parent_names,
-            Uzrast: `${formData.age}. rođendan`,
             Pol: genderLabel,
             "Datum proslave": `${formattedDate}, ${formData.event_time}h`,
             "Rok za prijavu": formData.submit_until,
             Lokacija: `${formData.location_name}, ${formData.location_address}`,
             "Kontakt telefon": `+381${formData.contact_phone}`,
+            Boje: themeLabel,
             Napomena: formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/rodjendan/${created.slug}`,
           }),
@@ -799,46 +748,31 @@ export default function BirthdayQuestionnaireForm() {
     }
   };
 
-  const currentThemeConfig = BIRTHDAY_THEME_CONFIGS[formData.theme];
-
-  // Sync page background with selected theme
-  useEffect(() => {
-    const main = document.querySelector(".birthday-form-page") as HTMLElement;
-    if (main) {
-      main.style.backgroundColor = currentThemeConfig.colors.background;
-    }
-    return () => {
-      if (main) main.style.backgroundColor = "";
-    };
-  }, [currentThemeConfig.colors.background]);
-
   // Success screen
   if (isSubmitted) {
+    const displayName = [formData.honoree_name, formData.honoree_surname]
+      .filter(Boolean)
+      .join(" ");
     return (
       <div className="bg-white rounded-3xl shadow-sm border border-stone-100 p-12 text-center max-w-2xl mx-auto">
-        <div className="w-20 h-20 bg-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-[#FF6B6B]/25">
+        <div className="w-20 h-20 bg-[#AE343F] rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-[#AE343F]/25">
           <CheckCircle2 size={40} className="text-white" />
         </div>
-        <h2 className="text-3xl font-serif text-[#FF6B6B] mb-4">
-          Hvala!
-        </h2>
-        <p className="text-[#E55A5A] text-lg mb-3">
-          Uspešno smo primili podatke za pozivnicu za {formData.child_name}.
+        <h2 className="text-3xl font-serif text-[#AE343F] mb-4">Hvala!</h2>
+        <p className="text-[#7A242C] text-lg mb-3">
+          Uspešno smo primili podatke za punoletstvo pozivnicu za {displayName}.
         </p>
         {formData.event_date_only && (
-          <p className="text-[#FF6B6B]/70 mb-8">
+          <p className="text-[#AE343F]/70 mb-8">
             Proslava:{" "}
-            {new Date(
-              formData.event_date_only + "T12:00:00",
-            ).toLocaleDateString("sr-Latn-RS", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
+            {new Date(formData.event_date_only + "T12:00:00").toLocaleDateString(
+              "sr-Latn-RS",
+              { day: "numeric", month: "long", year: "numeric" },
+            )}
           </p>
         )}
-        <p className="text-[#E55A5A] text-sm">
-          Uskoro ćemo napraviti pozivnicu i kontaktirati vas. 🎉
+        <p className="text-[#7A242C] text-sm">
+          Uskoro ćemo napraviti pozivnicu i kontaktirati vas. 🥂
         </p>
       </div>
     );
@@ -848,24 +782,19 @@ export default function BirthdayQuestionnaireForm() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Floating illustrations — updates with selected theme */}
-      <SceneDecorations
-        illustration={currentThemeConfig.illustration}
-        confetti={currentThemeConfig.colors.confetti}
-      />
-      {/* Progress indicator */}
+      {/* Progress */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-3">
-          <span className="text-sm font-medium text-[#E55A5A]">
+          <span className="text-sm font-medium text-[#7A242C]">
             {STEP_TITLES[step - 1]}
           </span>
-          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#FF6B6B]">
+          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#AE343F]">
             Korak {step} od {TOTAL_STEPS}
           </span>
         </div>
-        <div className="w-full h-1.5 bg-[#FF6B6B]/15 rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-[#AE343F]/15 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-[#FF6B6B] rounded-full"
+            className="h-full bg-[#AE343F] rounded-full"
             initial={false}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.4 }}
@@ -876,7 +805,7 @@ export default function BirthdayQuestionnaireForm() {
             <div
               key={i}
               className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${
-                i + 1 <= step ? "bg-[#FF6B6B]" : "bg-[#FF6B6B]/25"
+                i + 1 <= step ? "bg-[#AE343F]" : "bg-[#AE343F]/25"
               }`}
             />
           ))}
@@ -894,18 +823,10 @@ export default function BirthdayQuestionnaireForm() {
             transition={{ duration: 0.28, ease: "easeInOut" }}
             className="p-8"
           >
-            {step === 1 && (
-              <Step1 formData={formData} updateField={updateField} />
-            )}
-            {step === 2 && (
-              <Step2 formData={formData} updateField={updateField} />
-            )}
-            {step === 3 && (
-              <Step3 formData={formData} updateField={updateField} />
-            )}
-            {step === 4 && (
-              <Step4 formData={formData} updateField={updateField} />
-            )}
+            {step === 1 && <Step1 formData={formData} updateField={updateField} />}
+            {step === 2 && <Step2 formData={formData} updateField={updateField} />}
+            {step === 3 && <Step3 formData={formData} updateField={updateField} />}
+            {step === 4 && <Step4 formData={formData} updateField={updateField} />}
           </motion.div>
         </AnimatePresence>
 
@@ -939,7 +860,7 @@ export default function BirthdayQuestionnaireForm() {
             <button
               type="button"
               onClick={goNext}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#FF6B6B] text-white hover:bg-[#E55A5A] transition-all font-medium text-sm shadow-md shadow-[#FF6B6B]/20 cursor-pointer"
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#952c35] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20 cursor-pointer"
             >
               Dalje
               <ChevronRight size={16} />
@@ -949,7 +870,7 @@ export default function BirthdayQuestionnaireForm() {
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#FF6B6B] text-white hover:bg-[#E55A5A] transition-all font-medium text-sm shadow-md shadow-[#FF6B6B]/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#952c35] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSubmitting ? (
                 <>
@@ -965,6 +886,13 @@ export default function BirthdayQuestionnaireForm() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Decorative flourish */}
+      <div className="flex items-center justify-center gap-3 mt-10 text-stone-300">
+        <div className="h-px w-10 bg-current" />
+        <Sparkles size={14} style={{ color: GOLD }} />
+        <div className="h-px w-10 bg-current" />
       </div>
     </div>
   );

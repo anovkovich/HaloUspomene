@@ -3,7 +3,9 @@ export type ThemeType =
   | "modern_mono"
   | "minimal_sage"
   | "luxury_gold"
-  | "warm_terracotta";
+  | "warm_terracotta"
+  | "white_gold_burgundy"
+  | "white_gold_navy";
 export type ScriptFontType =
   | "great-vibes"
   | "dancing-script"

@@ -7,9 +7,13 @@ import { Loader2, CheckCircle2, Minus, Plus } from "lucide-react";
 interface BirthdayRSVPFormProps {
   slug: string;
   submitUntil: string;
+  /** Drives gender-aware placeholder wording (slavljenika / slavljenicu). */
+  gender?: "boy" | "girl" | "neutral";
 }
 
-export function BirthdayRSVPForm({ slug, submitUntil }: BirthdayRSVPFormProps) {
+export function BirthdayRSVPForm({ slug, submitUntil, gender = "neutral" }: BirthdayRSVPFormProps) {
+  const honoreeNoun =
+    gender === "girl" ? "slavljenicu" : "slavljenika";
   const [name, setName] = useState("");
   const [attending, setAttending] = useState<"Da" | "Ne" | null>(null);
   const [guestCount, setGuestCount] = useState(1);
@@ -248,7 +252,7 @@ export function BirthdayRSVPForm({ slug, submitUntil }: BirthdayRSVPFormProps) {
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Čestitka ili poruka za slavljenika..."
+          placeholder={`Čestitka ili poruka za ${honoreeNoun}...`}
           rows={2}
           className="w-full px-4 py-3 rounded-xl text-base outline-none transition-colors resize-none"
           style={{

@@ -29,7 +29,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: "GPTBot",
-        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/"],
+        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/napravi-punoletstvo", "/"],
         disallow: [
           "/api/",
           "/_next/",
@@ -45,7 +45,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: "ChatGPT-User",
-        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/"],
+        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/napravi-punoletstvo", "/"],
         disallow: [
           "/api/",
           "/_next/",
@@ -61,7 +61,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: "Google-Extended",
-        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/"],
+        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/napravi-punoletstvo", "/"],
         disallow: [
           "/api/",
           "/_next/",
@@ -77,7 +77,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: "anthropic-ai",
-        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/"],
+        allow: ["/blog/", "/lokacije/", "/napravi-pozivnicu", "/napravi-deciju-pozivnicu", "/napravi-punoletstvo", "/"],
         disallow: [
           "/api/",
           "/_next/",

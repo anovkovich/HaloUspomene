@@ -155,6 +155,48 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       waxSealDark: "#7E3810",
     },
   },
+
+  // Punoletstvo — burgundy/gold/ivory (classic, regal, feminine-leaning)
+  white_gold_burgundy: {
+    name: "White · Gold · Burgundy",
+    symbolism: "Svečanost, bogatstvo i klasičan duh starih vremena",
+    colors: {
+      primary: "#800020", // Deep burgundy
+      primaryLight: "#A8324A",
+      primaryMuted: "rgba(128, 0, 32, 0.12)",
+      background: "#fffdf5", // Warm ivory
+      surface: "#ffffff",
+      surfaceAlt: "#fff8e1",
+      text: "#2A0A12",
+      textMuted: "#6A2A38",
+      textLight: "#B08090",
+      border: "rgba(128, 0, 32, 0.2)",
+      borderLight: "rgba(128, 0, 32, 0.08)",
+      waxSeal: "#d4af37", // Gold wax seal
+      waxSealDark: "#A6851C",
+    },
+  },
+
+  // Punoletstvo — navy/gold/ivory (classic, regal, masculine-leaning)
+  white_gold_navy: {
+    name: "White · Gold · Navy",
+    symbolism: "Ponos, otmenost i bezvremenska svečanost",
+    colors: {
+      primary: "#0A1F44", // Deep navy
+      primaryLight: "#1E3A6E",
+      primaryMuted: "rgba(10, 31, 68, 0.12)",
+      background: "#fffdf5",
+      surface: "#ffffff",
+      surfaceAlt: "#fff8e1",
+      text: "#081530",
+      textMuted: "#3A4E7A",
+      textLight: "#8090B0",
+      border: "rgba(10, 31, 68, 0.2)",
+      borderLight: "rgba(10, 31, 68, 0.08)",
+      waxSeal: "#d4af37",
+      waxSealDark: "#A6851C",
+    },
+  },
 };
 
 // Helper to generate CSS variables from theme config

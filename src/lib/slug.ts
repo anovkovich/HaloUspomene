@@ -1,4 +1,5 @@
 import { getWeddingData } from "./couples";
+import { getBirthdayData } from "./birthday";
 
 function normalize(s: string): string {
   return s
@@ -22,6 +23,29 @@ export async function generateUniqueSlug(
 
   while (true) {
     const existing = await getWeddingData(slug);
+    if (!existing) return slug;
+    slug = `${base}-${suffix}`;
+    suffix++;
+    if (suffix > 100) throw new Error("Too many slug collisions");
+  }
+}
+
+/**
+ * Birthday-side equivalent. Accepts 1–2 name parts (child name, or
+ * honoree name + surname for punoletstvo) and checks the birthday_events
+ * collection for collisions.
+ */
+export async function generateUniqueBirthdaySlug(
+  first: string,
+  second?: string,
+): Promise<string> {
+  const parts = [normalize(first), second ? normalize(second) : ""].filter(Boolean);
+  const base = parts.join("-") || "rodjendan";
+  let slug = base;
+  let suffix = 2;
+
+  while (true) {
+    const existing = await getBirthdayData(slug);
     if (!existing) return slug;
     slug = `${base}-${suffix}`;
     suffix++;

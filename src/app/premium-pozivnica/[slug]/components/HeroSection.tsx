@@ -82,7 +82,7 @@ export default function HeroSection({
               src="/images/premium/line-art-invitation/yellow-roses.webp"
               alt=""
               aria-hidden
-              className="w-full h-auto -scale-x-100 drop-shadow-[0_25px_45px_rgba(0,0,0,0.55)] origin-top"
+              className="w-full h-auto -scale-x-100 drop-shadow-[0_18px_28px_rgba(0,0,0,0.9)] origin-top"
               animate={{ y: [0, -16, 0], rotate: [-2, 3, -2] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
             />
@@ -95,7 +95,7 @@ export default function HeroSection({
               src="/images/premium/line-art-invitation/yellow-roses.webp"
               alt=""
               aria-hidden
-              className="w-full h-auto drop-shadow-[0_25px_45px_rgba(0,0,0,0.55)] origin-top"
+              className="w-full h-auto drop-shadow-[0_18px_28px_rgba(0,0,0,0.9)] origin-top"
               animate={{ y: [0, -14, 0], rotate: [-2, 3, -2] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
             />

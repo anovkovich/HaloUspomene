@@ -32,9 +32,17 @@ export async function upsertBirthday(
   data: BirthdayData,
 ): Promise<void> {
   const c = await col();
+  // Exclude created_at from $set so it doesn't conflict with $setOnInsert.
+  // (Mongo rejects updates where the same field appears in both operators.)
+  const { created_at: _created_at, ...dataWithoutTimestamp } =
+    data as BirthdayData & { created_at?: unknown };
+  void _created_at;
   await c.updateOne(
     { slug },
-    { $set: { slug, ...data }, $setOnInsert: { created_at: new Date() } },
+    {
+      $set: { slug, ...dataWithoutTimestamp },
+      $setOnInsert: { created_at: new Date() },
+    },
     { upsert: true }
   );
 }

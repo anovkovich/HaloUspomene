@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import QuestionnaireForm from "./QuestionnaireForm";
+import BirthdayTypeButton from "@/components/landing/BirthdayTypeButton";
 
 export default function FormPageWrapper() {
   const [isPremium, setIsPremium] = useState(false);
@@ -106,11 +107,14 @@ export default function FormPageWrapper() {
         </p>
       </div>
 
-      {/* Link to birthday invitation */}
+      {/* Link to birthday invitation (dečiji rođendan + punoletstvo via modal) */}
       <div className="max-w-3xl mx-auto mt-12 px-4 text-center">
-        <a href="/napravi-deciju-pozivnicu" className="birthday-link-btn">
-          Tražite pozivnicu za dečiji rođendan? →
-        </a>
+        <BirthdayTypeButton
+          entryLabel="napravi-pozivnicu-footer"
+          className="birthday-link-btn"
+        >
+          Tražite pozivnicu za rođendan? →
+        </BirthdayTypeButton>
       </div>
     </main>
   );

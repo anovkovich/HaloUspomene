@@ -364,10 +364,13 @@ export default function WatercolorInvitation({
 
   // ONE shared blur+darken overlay over the fixed hero — opacity ramps with scroll.
   // Sections below are fully transparent so there are no visible seams between them.
+  // Mobile skips backdrop-blur (it's the single biggest scroll-jank source there —
+  // compositor re-blurs the entire viewport every frame); compensates with a darker
+  // overlay so the hero still recedes behind content.
   const overlayOpacity = useTransform(
     scrollYProgress,
     [0, 0.4, 1],
-    [0, 0.5, 0.7],
+    isSmall ? [0, 0.62, 0.82] : [0, 0.5, 0.7],
   );
 
   // Car parallax — moves until ~50% scroll, then locks in place.
@@ -405,16 +408,26 @@ export default function WatercolorInvitation({
         className="fixed inset-0 z-[5] pointer-events-none"
         style={{
           opacity: overlayOpacity,
-          backgroundColor: "rgba(20, 14, 8, 0.32)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
+          backgroundColor: isSmall
+            ? "rgba(20, 14, 8, 0.55)"
+            : "rgba(20, 14, 8, 0.32)",
+          ...(isSmall
+            ? {}
+            : {
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+              }),
           willChange: "opacity",
+          contain: "paint",
         }}
       />
 
       {/* ═══════════════ HERO (fixed — content scrolls over it) ═══════════════ */}
       <div ref={heroRef}>
-        <section className="fixed top-0 left-0 right-0 h-screen flex flex-col overflow-hidden">
+        <section
+          className="fixed top-0 left-0 right-0 h-screen flex flex-col overflow-hidden"
+          style={{ contain: "paint" }}
+        >
           {/* Background — palace illustration (drifts up slowly).
               The container extends 80px BELOW the viewport so the parallax
               shift (max 40px up) never reveals a gap at the bottom. */}

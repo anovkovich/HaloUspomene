@@ -10,6 +10,22 @@ interface EnvelopeLoaderProps {
   names: string;
   eventDate?: string;
   stampColor?: string; // Custom wax seal color, overrides theme
+  /** Override auto-derived initials (e.g. "MP" for single-honoree invitations). */
+  initials?: string;
+  /** Override the pre-name label (e.g. translations.inviteYou). */
+  inviteLabel?: string;
+  /**
+   * Path to a 3D wax seal image. When provided, renders that PNG/WebP
+   * instead of the flat gradient circle — matches the premium hero
+   * medallion aesthetic.
+   */
+  waxImageSrc?: string;
+  /**
+   * CSS font-family for the seal initials. Defaults to serif; pass a
+   * script font variable (e.g. `var(--theme-script-font)`) for a more
+   * elegant, hand-lettered feel.
+   */
+  initialsFontFamily?: string;
 }
 
 function darkenHex(hex: string, factor = 0.72): string {
@@ -33,13 +49,18 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
   names,
   eventDate = "Jun 06, 2026",
   stampColor,
+  initials: initialsOverride,
+  inviteLabel,
+  waxImageSrc,
+  initialsFontFamily,
 }) => {
   const { config, t } = useTheme();
   const [stage, setStage] = useState<
     "sealed" | "opening" | "extracted" | "fadeout"
   >("sealed");
 
-  const initials = getInitials(names);
+  const initials = initialsOverride ?? getInitials(names);
+  const labelText = inviteLabel ?? t.inviteYou;
 
   useEffect(() => {
     const sequence = async () => {
@@ -133,7 +154,7 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
               className="font-elegant uppercase tracking-[0.2em] sm:tracking-[0.5em] text-[6px] sm:text-[10px] mb-2 sm:mb-4"
               style={{ color: config.colors.textLight }}
             >
-              {t.inviteYou}
+              {labelText}
             </p>
             <h2
               className="font-script text-2xl sm:text-6xl leading-tight px-2 sm:px-4 select-none drop-shadow-sm"
@@ -189,29 +210,62 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
 
           {/* 4. WAX SEAL - Positioned at the bottom tip of the flap (56% height) */}
           <div
-            className={`absolute top-[56%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 sm:w-[70px] sm:h-[70px] z-[60] transition-all duration-1000 cubic-bezier(0.175, 0.885, 0.32, 1.275)
+            className={`absolute top-[56%] left-1/2 -translate-x-1/2 -translate-y-1/2 ${
+              waxImageSrc
+                ? "w-[110px] h-[110px] sm:w-[150px] sm:h-[150px]"
+                : "w-12 h-12 sm:w-[70px] sm:h-[70px]"
+            } z-[60] transition-all duration-1000 cubic-bezier(0.175, 0.885, 0.32, 1.275)
                  ${stage !== "sealed" ? "scale-0 opacity-0 blur-md" : "scale-100 opacity-100"}`}
           >
-            <div
-              className="relative w-full h-full rounded-full shadow-[0_8px_25px_rgba(0,0,0,0.4),inset_0_2px_4px_rgba(255,255,255,0.2),inset_0_-2px_4px_rgba(0,0,0,0.2)] flex items-center justify-center"
-              style={{
-                background: `linear-gradient(to bottom right, ${waxSealColor}, ${waxSealDark})`,
-                border: `1px solid ${waxSealDark}`,
-              }}
-            >
-              {/* Wax seal texture */}
+            {waxImageSrc ? (
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={waxImageSrc}
+                  alt=""
+                  fetchPriority="high"
+                  decoding="sync"
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+                  style={{ filter: "drop-shadow(0 8px 22px rgba(0,0,0,0.4))" }}
+                />
+                <span
+                  className={`relative select-none text-3xl sm:text-4xl font-semibold leading-none ${initialsFontFamily ? "" : "font-serif"}`}
+                  style={{
+                    color: "#7a5318",
+                    fontFamily: initialsFontFamily ?? undefined,
+                    textShadow:
+                      "0 1px 1px rgba(255,232,150,0.85), 0 0 6px rgba(90,55,10,0.35)",
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {initials}
+                </span>
+              </div>
+            ) : (
               <div
-                className="absolute inset-0.5 sm:inset-1 rounded-full"
-                style={{ border: `1px solid ${primaryColor}4d` }}
-              ></div>
-              <span
-                className="font-serif text-base sm:text-2xl select-none drop-shadow-md"
-                style={{ color: stampTextColor }}
+                className="relative w-full h-full rounded-full shadow-[0_8px_25px_rgba(0,0,0,0.4),inset_0_2px_4px_rgba(255,255,255,0.2),inset_0_-2px_4px_rgba(0,0,0,0.2)] flex items-center justify-center"
+                style={{
+                  background: `linear-gradient(to bottom right, ${waxSealColor}, ${waxSealDark})`,
+                  border: `1px solid ${waxSealDark}`,
+                }}
               >
-                {initials}
-              </span>
-              <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.15),_transparent_50%)]"></div>
-            </div>
+                {/* Wax seal texture */}
+                <div
+                  className="absolute inset-0.5 sm:inset-1 rounded-full"
+                  style={{ border: `1px solid ${primaryColor}4d` }}
+                ></div>
+                <span
+                  className={`text-base sm:text-2xl select-none drop-shadow-md ${initialsFontFamily ? "" : "font-serif"}`}
+                  style={{
+                    color: stampTextColor,
+                    fontFamily: initialsFontFamily ?? undefined,
+                  }}
+                >
+                  {initials}
+                </span>
+                <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.15),_transparent_50%)]"></div>
+              </div>
+            )}
           </div>
 
           {/* 5. FLAP */}

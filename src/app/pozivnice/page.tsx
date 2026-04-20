@@ -27,6 +27,7 @@ import {
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
+import BirthdayTypeButton from "@/components/landing/BirthdayTypeButton";
 import { pricing, formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
 import { THEME_CONFIGS } from "@/app/pozivnica/[slug]/constants";
 import type { ThemeType, ThemeConfig } from "@/app/pozivnica/[slug]/types";
@@ -991,20 +992,19 @@ export default function PozivnicePage() {
             <div className="bg-[#F5F4DC]/50 border border-[#d4af37]/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div className="flex-1">
                 <p className="font-serif text-lg text-[#232323] mb-1">
-                  Tražite pozivnicu za dečiji rođendan?
+                  Tražite pozivnicu za rođendan?
                 </p>
                 <p className="text-sm text-[#232323]/50">
-                  Pravimo i dečije pozivnice sa istim funkcijama — RSVP, mapa,
-                  odbrojavanje.
+                  Pravimo i rođendanske pozivnice — dečiji rođendan ili punoletstvo — sa istim funkcijama: RSVP, mapa, odbrojavanje.
                 </p>
               </div>
-              <Link
-                href="/napravi-deciju-pozivnicu"
-                className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#d4af37] hover:bg-[#c4a030] text-white text-sm font-semibold rounded-full transition-colors"
+              <BirthdayTypeButton
+                entryLabel="pozivnice-showcase"
+                className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#d4af37] hover:bg-[#c4a030] text-white text-sm font-semibold rounded-full transition-colors cursor-pointer"
               >
-                Dečije pozivnice
+                Rođendanske pozivnice
                 <ArrowRight size={14} />
-              </Link>
+              </BirthdayTypeButton>
             </div>
           </div>
         </section>
