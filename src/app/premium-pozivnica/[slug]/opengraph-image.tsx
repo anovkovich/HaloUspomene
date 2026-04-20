@@ -101,19 +101,22 @@ export default async function PremiumOGImage({
     (bride && groom ? `${bride} & ${groom}` : bride || groom || "Naše Venčanje");
   const isLineArt = data.premium_theme === "line_art";
 
-  // ─────────────────── LINE ART (paper-cut / ink on cream) ───────────────────
+  // ─────────────────── LINE ART (gold-on-ivory, matches live invitation) ──────
   if (isLineArt) {
-    const INK = "#1a1a1a";
-    // Shadows used throughout to sell the paper-cut effect.
+    // Palette pulled from the Line Art invitation itself (hero names use
+    // text-[#d4af37] on #fffdf5 ivory; deep brown accent #5a4a2e).
+    const GOLD = "#d4af37";
+    const GOLD_DEEP = "#b89520";
+    const BROWN = "#5a4a2e";
     const PANEL_SHADOW =
-      "0 10px 28px rgba(60,40,20,0.14), 0 3px 8px rgba(60,40,20,0.10)";
-    const CUT_SHADOW_SM = "0 1px 2px rgba(40,25,10,0.35)";
-    const CUT_SHADOW_MD = "0 2px 4px rgba(40,25,10,0.4)";
+      "0 10px 28px rgba(90,65,30,0.18), 0 3px 8px rgba(90,65,30,0.12)";
+    const CUT_SHADOW_SM = "0 1px 2px rgba(90,65,30,0.35)";
+    const CUT_SHADOW_MD = "0 2px 4px rgba(90,65,30,0.4)";
 
     // Corner bracket: L-shaped line detail, inset inside the triple frame.
     const CORNER_INSET = 98;
     const CORNER_SIZE = 36;
-    const CORNER_OP = 0.75;
+    const CORNER_OP = 0.85;
 
     return new ImageResponse(
       (
@@ -126,12 +129,12 @@ export default async function PremiumOGImage({
             alignItems: "center",
             justifyContent: "center",
             background:
-              "radial-gradient(ellipse 95% 85% at 50% 50%, #E8E1C8 0%, #D9D2B6 100%)",
+              "radial-gradient(ellipse 95% 85% at 50% 50%, #fffdf5 0%, #f3ead1 100%)",
             position: "relative",
           }}
         >
-          {/* Elevated paper panel — a brighter "card" sitting on the darker
-              base, with a real drop shadow. This is the core paper-cut effect. */}
+          {/* Elevated paper panel — a brighter "card" sitting on the warmer
+              base, with a real drop shadow. Paper-cut effect. */}
           <div
             style={{
               display: "flex",
@@ -140,31 +143,31 @@ export default async function PremiumOGImage({
               left: 60,
               right: 60,
               bottom: 60,
-              background: "#FDFBF4",
+              background: "#fffdf5",
               boxShadow: PANEL_SHADOW,
             }}
           />
 
-          {/* Triple hairline frame drawn ON the paper panel */}
-          <div style={{ display: "flex", position: "absolute", top: 68, left: 68, right: 68, bottom: 68, border: `1px solid ${INK}`, opacity: 0.9 }} />
-          <div style={{ display: "flex", position: "absolute", top: 76, left: 76, right: 76, bottom: 76, border: `1px solid ${INK}`, opacity: 0.4 }} />
-          <div style={{ display: "flex", position: "absolute", top: 82, left: 82, right: 82, bottom: 82, border: `1px solid ${INK}`, opacity: 0.15 }} />
+          {/* Triple gold hairline frame drawn ON the paper panel */}
+          <div style={{ display: "flex", position: "absolute", top: 68, left: 68, right: 68, bottom: 68, border: `1px solid ${GOLD}`, opacity: 0.9 }} />
+          <div style={{ display: "flex", position: "absolute", top: 76, left: 76, right: 76, bottom: 76, border: `1px solid ${GOLD}`, opacity: 0.5 }} />
+          <div style={{ display: "flex", position: "absolute", top: 82, left: 82, right: 82, bottom: 82, border: `1px solid ${GOLD}`, opacity: 0.2 }} />
 
           {/* Corner brackets — L-shape at each corner (2 lines per corner) */}
           {/* top-left */}
-          <div style={{ display: "flex", position: "absolute", top: CORNER_INSET, left: CORNER_INSET, width: CORNER_SIZE, height: 1, background: INK, opacity: CORNER_OP }} />
-          <div style={{ display: "flex", position: "absolute", top: CORNER_INSET, left: CORNER_INSET, width: 1, height: CORNER_SIZE, background: INK, opacity: CORNER_OP }} />
+          <div style={{ display: "flex", position: "absolute", top: CORNER_INSET, left: CORNER_INSET, width: CORNER_SIZE, height: 1, background: GOLD_DEEP, opacity: CORNER_OP }} />
+          <div style={{ display: "flex", position: "absolute", top: CORNER_INSET, left: CORNER_INSET, width: 1, height: CORNER_SIZE, background: GOLD_DEEP, opacity: CORNER_OP }} />
           {/* top-right */}
-          <div style={{ display: "flex", position: "absolute", top: CORNER_INSET, right: CORNER_INSET, width: CORNER_SIZE, height: 1, background: INK, opacity: CORNER_OP }} />
-          <div style={{ display: "flex", position: "absolute", top: CORNER_INSET, right: CORNER_INSET, width: 1, height: CORNER_SIZE, background: INK, opacity: CORNER_OP }} />
+          <div style={{ display: "flex", position: "absolute", top: CORNER_INSET, right: CORNER_INSET, width: CORNER_SIZE, height: 1, background: GOLD_DEEP, opacity: CORNER_OP }} />
+          <div style={{ display: "flex", position: "absolute", top: CORNER_INSET, right: CORNER_INSET, width: 1, height: CORNER_SIZE, background: GOLD_DEEP, opacity: CORNER_OP }} />
           {/* bottom-left */}
-          <div style={{ display: "flex", position: "absolute", bottom: CORNER_INSET, left: CORNER_INSET, width: CORNER_SIZE, height: 1, background: INK, opacity: CORNER_OP }} />
-          <div style={{ display: "flex", position: "absolute", bottom: CORNER_INSET, left: CORNER_INSET, width: 1, height: CORNER_SIZE, background: INK, opacity: CORNER_OP }} />
+          <div style={{ display: "flex", position: "absolute", bottom: CORNER_INSET, left: CORNER_INSET, width: CORNER_SIZE, height: 1, background: GOLD_DEEP, opacity: CORNER_OP }} />
+          <div style={{ display: "flex", position: "absolute", bottom: CORNER_INSET, left: CORNER_INSET, width: 1, height: CORNER_SIZE, background: GOLD_DEEP, opacity: CORNER_OP }} />
           {/* bottom-right */}
-          <div style={{ display: "flex", position: "absolute", bottom: CORNER_INSET, right: CORNER_INSET, width: CORNER_SIZE, height: 1, background: INK, opacity: CORNER_OP }} />
-          <div style={{ display: "flex", position: "absolute", bottom: CORNER_INSET, right: CORNER_INSET, width: 1, height: CORNER_SIZE, background: INK, opacity: CORNER_OP }} />
+          <div style={{ display: "flex", position: "absolute", bottom: CORNER_INSET, right: CORNER_INSET, width: CORNER_SIZE, height: 1, background: GOLD_DEEP, opacity: CORNER_OP }} />
+          <div style={{ display: "flex", position: "absolute", bottom: CORNER_INSET, right: CORNER_INSET, width: 1, height: CORNER_SIZE, background: GOLD_DEEP, opacity: CORNER_OP }} />
 
-          {/* Top wordmark with diamond end-caps (subtle paper-cut shadow) */}
+          {/* Top wordmark with diamond end-caps (gold) */}
           <div
             style={{
               display: "flex",
@@ -175,58 +178,57 @@ export default async function PremiumOGImage({
               fontFamily: "Josefin Sans",
               fontSize: 14,
               letterSpacing: "0.4em",
-              color: INK,
+              color: BROWN,
             }}
           >
-            <div style={{ display: "flex", width: 5, height: 5, background: INK, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
-            <div style={{ display: "flex", width: 60, height: 1, background: INK }} />
+            <div style={{ display: "flex", width: 5, height: 5, background: GOLD_DEEP, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
+            <div style={{ display: "flex", width: 60, height: 1, background: GOLD_DEEP, opacity: 0.8 }} />
             <span>PREMIUM POZIVNICA</span>
-            <div style={{ display: "flex", width: 60, height: 1, background: INK }} />
-            <div style={{ display: "flex", width: 5, height: 5, background: INK, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
+            <div style={{ display: "flex", width: 60, height: 1, background: GOLD_DEEP, opacity: 0.8 }} />
+            <div style={{ display: "flex", width: 5, height: 5, background: GOLD_DEEP, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
           </div>
 
-          {/* Triple-diamond ornament cluster above names — with paper-cut shadows */}
+          {/* Triple-diamond ornament cluster above names — gold */}
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
-            <div style={{ display: "flex", width: 6,  height: 6,  background: INK, opacity: 0.55, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
-            <div style={{ display: "flex", width: 14, height: 14, background: INK, opacity: 0.9,  transform: "rotate(45deg)", boxShadow: CUT_SHADOW_MD }} />
-            <div style={{ display: "flex", width: 6,  height: 6,  background: INK, opacity: 0.55, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
+            <div style={{ display: "flex", width: 6,  height: 6,  background: GOLD, opacity: 0.7, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
+            <div style={{ display: "flex", width: 14, height: 14, background: GOLD_DEEP, opacity: 0.95, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_MD }} />
+            <div style={{ display: "flex", width: 6,  height: 6,  background: GOLD, opacity: 0.7, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
           </div>
 
-          {/* Couple names */}
+          {/* Couple names — gold script, matches live hero */}
           <span
             style={{
               fontFamily: "Script",
               fontSize: 118,
-              color: INK,
+              color: GOLD_DEEP,
               lineHeight: 1,
               textAlign: "center",
               maxWidth: 1000,
               padding: "0 80px",
+              textShadow: "0 2px 6px rgba(90,65,30,0.25)",
             }}
           >
             {fullName}
           </span>
 
-          {/* Ornate multi-segment divider:
-              short-line · small-diamond · long-line · big-diamond · long-line · small-diamond · short-line
-              — diamond elements carry drop shadows so they look cut from paper */}
+          {/* Ornate multi-segment gold divider */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 32 }}>
-            <div style={{ display: "flex", width: 40,  height: 1, background: INK, opacity: 0.35 }} />
-            <div style={{ display: "flex", width: 5,   height: 5, background: INK, opacity: 0.7,  transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
-            <div style={{ display: "flex", width: 130, height: 1, background: INK, opacity: 0.6 }} />
-            <div style={{ display: "flex", width: 12,  height: 12, background: INK, opacity: 0.95, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_MD }} />
-            <div style={{ display: "flex", width: 130, height: 1, background: INK, opacity: 0.6 }} />
-            <div style={{ display: "flex", width: 5,   height: 5, background: INK, opacity: 0.7,  transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
-            <div style={{ display: "flex", width: 40,  height: 1, background: INK, opacity: 0.35 }} />
+            <div style={{ display: "flex", width: 40,  height: 1, background: GOLD_DEEP, opacity: 0.45 }} />
+            <div style={{ display: "flex", width: 5,   height: 5, background: GOLD_DEEP, opacity: 0.8, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
+            <div style={{ display: "flex", width: 130, height: 1, background: GOLD_DEEP, opacity: 0.7 }} />
+            <div style={{ display: "flex", width: 12,  height: 12, background: GOLD_DEEP, opacity: 0.95, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_MD }} />
+            <div style={{ display: "flex", width: 130, height: 1, background: GOLD_DEEP, opacity: 0.7 }} />
+            <div style={{ display: "flex", width: 5,   height: 5, background: GOLD_DEEP, opacity: 0.8, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
+            <div style={{ display: "flex", width: 40,  height: 1, background: GOLD_DEEP, opacity: 0.45 }} />
           </div>
 
-          {/* Date */}
+          {/* Date — warm brown italic serif */}
           <span
             style={{
               fontFamily: "Cormorant Garamond",
               fontStyle: "italic",
               fontSize: 62,
-              color: INK,
+              color: BROWN,
               marginTop: 18,
               letterSpacing: "0.04em",
             }}
@@ -234,11 +236,11 @@ export default async function PremiumOGImage({
             {dateStr}
           </span>
 
-          {/* Under-date accent: line with diamond endpoints (shadowed) */}
+          {/* Under-date accent: line with gold diamond endpoints */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 24 }}>
-            <div style={{ display: "flex", width: 5,   height: 5, background: INK, opacity: 0.6, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
-            <div style={{ display: "flex", width: 320, height: 1, background: INK, opacity: 0.35 }} />
-            <div style={{ display: "flex", width: 5,   height: 5, background: INK, opacity: 0.6, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
+            <div style={{ display: "flex", width: 5,   height: 5, background: GOLD_DEEP, opacity: 0.7, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
+            <div style={{ display: "flex", width: 320, height: 1, background: GOLD_DEEP, opacity: 0.45 }} />
+            <div style={{ display: "flex", width: 5,   height: 5, background: GOLD_DEEP, opacity: 0.7, transform: "rotate(45deg)", boxShadow: CUT_SHADOW_SM }} />
           </div>
 
           {/* Bottom wordmark — subtle maker's mark */}
@@ -248,8 +250,8 @@ export default async function PremiumOGImage({
               bottom: 108,
               fontFamily: "Josefin Sans",
               fontSize: 12,
-              color: INK,
-              opacity: 0.4,
+              color: GOLD_DEEP,
+              opacity: 0.55,
               letterSpacing: "0.4em",
             }}
           >
