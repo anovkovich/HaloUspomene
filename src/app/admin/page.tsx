@@ -915,6 +915,7 @@ function CustomReceiptModal({
   const [price, setPrice] = useState("");
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
 
   function addItem() {
     const p = parseInt(price);
@@ -925,7 +926,7 @@ function CustomReceiptModal({
   }
 
   async function handleGenerate() {
-    if (!par.trim() || !items.length) return;
+    if (!par.trim() || !items.length || saving) return;
     setSaving(true);
     try {
       const res = await fetch("/api/admin/custom-receipts", {
@@ -937,13 +938,28 @@ function CustomReceiptModal({
       const created_at = new Date().toISOString();
       const data = { custom: 1, id, par: par.trim(), datum: datum || undefined, ba: bankAccountIdx, t: Date.now(), d: 0, ci: items };
       const url = `https://halouspomene.rs/racun?d=${encodeToBase64(data)}`;
-      await navigator.clipboard.writeText(url);
       onCreated({ id, par: par.trim(), datum: datum || undefined, items, ba: bankAccountIdx, created_at });
-      setCopied(true);
-      setTimeout(() => { setCopied(false); onClose(); }, 2000);
+      setGeneratedUrl(url);
+      // Try clipboard — fall back gracefully on mobile PWA
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => onClose(), 2000);
+      } catch {
+        // Clipboard unavailable — show URL for manual copy
+      }
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleManualCopy() {
+    if (!generatedUrl) return;
+    try {
+      await navigator.clipboard.writeText(generatedUrl);
+      setCopied(true);
+      setTimeout(() => onClose(), 1500);
+    } catch { /* ignore */ }
   }
 
   const total = items.reduce((s, i) => s + i.p, 0);
@@ -1034,13 +1050,33 @@ function CustomReceiptModal({
         )}
 
         {/* Generate */}
-        <button
-          onClick={handleGenerate}
-          disabled={!par.trim() || items.length === 0 || saving}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300"
-        >
-          {copied ? <><Check size={14} /> Link kopiran!</> : saving ? "Čuvanje..." : <><Receipt size={14} /> Generiši i kopiraj link</>}
-        </button>
+        {/* Fallback URL for mobile where clipboard may fail */}
+        {generatedUrl && (
+          <div className="space-y-2">
+            <input
+              readOnly
+              value={generatedUrl}
+              onFocus={(e) => e.target.select()}
+              className="w-full text-[10px] text-white/50 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none"
+            />
+            <button
+              onClick={handleManualCopy}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium bg-green-500/20 hover:bg-green-500/30 text-green-300 cursor-pointer transition-colors"
+            >
+              {copied ? <><Check size={14} /> Kopirano! Zatvaranje...</> : <><Copy size={14} /> Kopiraj link</>}
+            </button>
+          </div>
+        )}
+
+        {!generatedUrl && (
+          <button
+            onClick={handleGenerate}
+            disabled={!par.trim() || items.length === 0 || saving}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300"
+          >
+            {saving ? "Čuvanje..." : <><Receipt size={14} /> Generiši i kopiraj link</>}
+          </button>
+        )}
       </div>
     </div>
   );
