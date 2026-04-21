@@ -3,7 +3,7 @@ import PricingClient from "./PricingClient";
 
 export const metadata: Metadata = {
   title:
-    "BESPLATNA Pozivnica za Venčanje — Digitalna Pozivnica + PDF za Štampu | Halo Uspomene",
+    "Cenovnik standardne i premium pozivnice sa dodatnim opcijama | Halo Uspomene",
   description:
     "Besplatna pozivnica za venčanje spremna za štampu uz našu digitalnu website pozivnicu. QR kod za potvrdu dolaska — bez poziva, nikad lakše! Raspored sedenja, audio knjiga utisaka. Od 5.000 din.",
   keywords: [
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     "pozivnica za vencanje beograd",
   ],
   openGraph: {
-    title: "BESPLATNA Pozivnica za Venčanje | Halo Uspomene",
+    title: "Cenovnik standardne i premium pozivnice sa dodatnim opcijama",
     description:
       "Digitalna pozivnica + besplatna PDF za štampu sa QR kodom za potvrdu dolaska. Raspored sedenja, audio knjiga utisaka — sve na jednom mestu.",
     type: "website",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "BESPLATNA Pozivnica za Venčanje | Halo Uspomene",
+    title: "Cenovnik standardne i premium pozivnice sa dodatnim opcijama",
     description:
       "Digitalna pozivnica + besplatna PDF za štampu sa QR kodom za potvrdu dolaska. Od 5.000 din.",
   },

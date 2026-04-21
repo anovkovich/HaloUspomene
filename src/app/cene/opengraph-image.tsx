@@ -68,82 +68,17 @@ export default async function OGImage() {
           justifyContent: "center",
         }}
       >
-        <div
+        <span
           style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 24,
+            fontFamily: "Cormorant Garamond",
+            fontSize: 180,
+            color: "#232323",
+            letterSpacing: "0.08em",
+            textAlign: "center",
           }}
         >
-          {/* Decorative line */}
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <div
-              style={{
-                width: 60,
-                height: 1,
-                background: "#AE343F",
-                opacity: 0.3,
-              }}
-            />
-            <span style={{ fontSize: 18, color: "#AE343F", opacity: 0.5 }}>
-              &#9829;
-            </span>
-            <div
-              style={{
-                width: 60,
-                height: 1,
-                background: "#AE343F",
-                opacity: 0.3,
-              }}
-            />
-          </div>
-
-          {/* Title */}
-          <span
-            style={{
-              fontFamily: "Cormorant Garamond",
-              fontSize: 56,
-              color: "#232323",
-              lineHeight: 1.2,
-              textAlign: "center",
-            }}
-          >
-            Website Pozivnice & Retro Telefon
-          </span>
-
-          {/* Subtitle */}
-          <span
-            style={{
-              fontFamily: "Josefin Sans",
-              fontSize: 20,
-              color: "#78716c",
-              textAlign: "center",
-            }}
-          >
-            Paketi, dodaci i cene za vaše venčanje
-          </span>
-
-          {/* Decorative line */}
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <div
-              style={{
-                width: 60,
-                height: 1,
-                background: "#AE343F",
-                opacity: 0.3,
-              }}
-            />
-            <div
-              style={{
-                width: 60,
-                height: 1,
-                background: "#AE343F",
-                opacity: 0.3,
-              }}
-            />
-          </div>
-        </div>
+          CENOVNIK
+        </span>
       </div>
 
       {/* Bottom accent line */}
