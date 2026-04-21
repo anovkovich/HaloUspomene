@@ -579,9 +579,9 @@ export default function PricingClient() {
                 boxShadow: "0 4px 20px rgba(var(--cene-accent-rgb),0.25)",
               }}
             >
-              <Heart size={14} fill="currentColor" />
-              Napravi svoju pozivnicu
-              <Heart size={14} fill="currentColor" />
+              <Heart size={14} fill="currentColor" className="shrink-0" />
+              <span className="text-center">Napravi svoju pozivnicu</span>
+              <Heart size={14} fill="currentColor" className="shrink-0" />
             </Link>
 
           </div>

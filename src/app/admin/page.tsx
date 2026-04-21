@@ -669,13 +669,13 @@ export default function AdminPage() {
                       });
                     }
 
-                    const url = buildReceiptUrl(c, { ...extras, customItems: extras.customItems });
+                    const url = buildReceiptUrl(c, extras);
                     await navigator.clipboard.writeText(url);
                     setCopiedSlug(c.slug);
                     setTimeout(() => setCopiedSlug(null), 2500);
                   }}
                   onCopy={async (extras) => {
-                    const url = buildReceiptUrl(c, { ...extras, customItems: extras.customItems });
+                    const url = buildReceiptUrl(c, extras);
                     await navigator.clipboard.writeText(url);
                     setCopiedSlug(c.slug);
                     setTimeout(() => setCopiedSlug(null), 2500);
@@ -730,17 +730,14 @@ function ReceiptDropdown({
 }: {
   couple: Couple;
   copiedSlug: string | null;
-  onGenerate: (extras: { retro_phone: boolean; dobrodoslica: boolean; customItems: Array<{l: string; p: number}> }) => void;
-  onCopy: (extras: { retro_phone: boolean; dobrodoslica: boolean; customItems: Array<{l: string; p: number}> }) => void;
+  onGenerate: (extras: { retro_phone: boolean; dobrodoslica: boolean }) => void;
+  onCopy: (extras: { retro_phone: boolean; dobrodoslica: boolean }) => void;
   onPaid: () => void;
   onDiscount: (amount: number) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [retroPhone, setRetroPhone] = useState(false);
   const [dobrodoslica, setDobrodoslica] = useState(false);
-  const [customItems, setCustomItems] = useState<Array<{l: string; p: number}>>([]);
-  const [customLabel, setCustomLabel] = useState("");
-  const [customPrice, setCustomPrice] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -806,50 +803,9 @@ function ReceiptDropdown({
             </button>
           </div>
 
-          {/* Custom items */}
-          <div className="px-4 py-2.5 border-t border-white/5 space-y-1.5">
-            <span className="text-[10px] text-white/30 uppercase tracking-wider">Stavke po dogovoru</span>
-            {customItems.map((item, i) => (
-              <div key={i} className="flex items-center gap-1.5">
-                <span className="flex-1 text-[11px] text-white/60 truncate">{item.l}</span>
-                <span className="text-[11px] text-white/40 shrink-0">{item.p.toLocaleString("sr-RS")} din</span>
-                <button
-                  onClick={() => setCustomItems((prev) => prev.filter((_, j) => j !== i))}
-                  className="text-red-400/60 hover:text-red-400 text-xs leading-none cursor-pointer"
-                >×</button>
-              </div>
-            ))}
-            <div className="flex gap-1">
-              <input
-                type="text"
-                placeholder="Naziv stavke"
-                value={customLabel}
-                onChange={(e) => setCustomLabel(e.target.value)}
-                className="flex-1 text-[11px] text-white/70 bg-white/5 border border-white/10 rounded px-2 py-1 outline-none focus:border-white/20 min-w-0"
-              />
-              <input
-                type="number"
-                placeholder="Cena"
-                value={customPrice}
-                onChange={(e) => setCustomPrice(e.target.value)}
-                className="w-16 text-[11px] text-white/70 bg-white/5 border border-white/10 rounded px-2 py-1 outline-none focus:border-white/20 text-right"
-              />
-              <button
-                onClick={() => {
-                  const p = parseInt(customPrice);
-                  if (!customLabel.trim() || !p) return;
-                  setCustomItems((prev) => [...prev, { l: customLabel.trim(), p }]);
-                  setCustomLabel("");
-                  setCustomPrice("");
-                }}
-                className="px-2 py-1 text-[11px] bg-white/10 hover:bg-white/20 text-white/60 rounded cursor-pointer transition-colors"
-              >+</button>
-            </div>
-          </div>
-
           {/* Generate / Regenerate */}
           <button
-            onClick={() => { onGenerate({ retro_phone: retroPhone, dobrodoslica, customItems }); setOpen(false); }}
+            onClick={() => { onGenerate({ retro_phone: retroPhone, dobrodoslica }); setOpen(false); }}
             className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-white/70 hover:bg-white/5 cursor-pointer transition-colors"
           >
             <Receipt size={12} className="text-yellow-400" />
@@ -859,7 +815,7 @@ function ReceiptDropdown({
           {/* Copy link */}
           {isActive && (
             <button
-              onClick={() => { onCopy({ retro_phone: retroPhone, dobrodoslica, customItems }); setOpen(false); }}
+              onClick={() => { onCopy({ retro_phone: retroPhone, dobrodoslica }); setOpen(false); }}
               className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-white/70 hover:bg-white/5 cursor-pointer transition-colors"
             >
               <Copy size={12} className="text-green-400" />
