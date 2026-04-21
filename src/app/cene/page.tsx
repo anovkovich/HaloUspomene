@@ -212,10 +212,12 @@ export default function CenePage() {
         </ul>
         <h3>Dodatne usluge i cene</h3>
         <p>
-          Raspored sedenja za venčanje: 2.000 dinara — drag-and-drop editor za stolove,
+          Raspored sedenja za venčanje: 2.500 dinara — drag-and-drop editor za stolove,
           gosti pronalaze svoje mesto putem linka. Digitalna audio knjiga utisaka: 3.000 dinara
           — gosti skeniraju QR kod i snimaju audio poruke za mladence direktno sa telefona.
-          Kompletni paket (pozivnica + raspored + audio knjiga): 8.000 dinara umesto 10.000 dinara.
+          Kompletni paket (pozivnica + raspored + audio knjiga): 8.500 dinara umesto 10.500 dinara.
+          Premium AI pozivnica sa animiranim kovertom, parallax scenama i AI ilustracijama mladenaca:
+          12.000 dinara (PROMO 10.000 dinara) — uključuje raspored sedenja i audio knjigu po sniženoj ceni od 1.000 dinara svako.
         </p>
         <h3>Pozivnice za venčanje — gradovi u Srbiji</h3>
         <p>

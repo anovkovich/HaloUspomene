@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { ArrowRight, Award } from "lucide-react";
+import { Award } from "lucide-react";
 import Link from "next/link";
 import HeroInfoBadge from "./HeroInfoBadge";
 
@@ -67,7 +67,7 @@ const Hero: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-5">
               <Link
                 href="/#kontakt"
-                className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] btn-lg rounded-full px-12 shadow-2xl shadow-[#AE343F]/30 group border-none"
+                className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] hover:border-[#232323] btn-lg rounded-full px-12"
                 data-track="cta_click"
                 data-track-cta-name="zakazite_konsultacije"
                 data-track-cta-location="hero"
@@ -76,16 +76,12 @@ const Hero: React.FC = () => {
               </Link>
               <Link
                 href="/napravi-pozivnicu"
-                className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] hover:border-[#232323] btn-lg rounded-full px-12"
+                className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] btn-lg rounded-full px-12 shadow-2xl shadow-[#AE343F]/30 group border-none"
                 data-track="cta_click"
                 data-track-cta-name="napravi_pozivnicu"
                 data-track-cta-location="hero"
               >
                 Napravite pozivnicu
-                <ArrowRight
-                  size={20}
-                  className="group-hover:translate-x-1.5 transition-transform"
-                />
               </Link>
             </div>
 

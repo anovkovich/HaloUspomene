@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Check,
@@ -18,13 +18,22 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
-import { pricing, formatPrice } from "@/data/pricing";
+import {
+  pricing,
+  formatPrice,
+  getPremiumPrice,
+  getPremiumRegularPrice,
+  getPremiumRasporedPrice,
+  getPremiumAudioPrice,
+  isPremiumPromoActive,
+} from "@/data/pricing";
 
 interface Feature {
   id: string;
   label: string;
   description: string;
   price: number;
+  originalPrice?: number;
   included?: boolean;
   icon: React.ReactNode;
   locked?: boolean;
@@ -84,13 +93,13 @@ const FEATURES: Feature[] = [
       <div
         className="mt-3 flex items-start gap-3 px-4 py-3 rounded-xl text-sm"
         style={{
-          backgroundColor: "rgba(174,52,63,0.06)",
-          border: "1px solid rgba(174,52,63,0.12)",
+          backgroundColor: "rgba(var(--cene-accent-rgb),0.06)",
+          border: "1px solid rgba(var(--cene-accent-rgb),0.12)",
         }}
       >
-        <Phone size={16} className="text-[#AE343F] flex-shrink-0 mt-0.5" />
+        <Phone size={16} className="text-[var(--cene-accent)] flex-shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-[#AE343F]">
+          <span className="font-semibold text-[var(--cene-accent)]">
             Želite pravi retro telefon?
           </span>{" "}
           <span className="text-[#232323]/60">
@@ -99,7 +108,7 @@ const FEATURES: Feature[] = [
           </span>
           <Link
             href="/#paketi"
-            className="inline-flex items-center gap-1 ml-1 text-[#AE343F] font-medium hover:underline"
+            className="inline-flex items-center gap-1 ml-1 text-[var(--cene-accent)] font-medium hover:underline"
           >
             Pogledajte pakete <ArrowRight size={12} />
           </Link>
@@ -113,6 +122,7 @@ const FULL_PRICE = pricing.pozivnica.bundleFullPrice;
 const BUNDLE_PRICE = pricing.pozivnica.bundlePrice;
 
 export default function PricingClient() {
+  const [mode, setMode] = useState<"classic" | "premium">("classic");
   const [selected, setSelected] = useState<Record<string, boolean>>({
     website: true,
     pdf: true,
@@ -151,15 +161,73 @@ export default function PricingClient() {
     });
   };
 
+  // Premium preselects both add-ons with bundled discounts.
+  // Classic resets to the base selection.
+  useEffect(() => {
+    if (mode === "premium") {
+      setSelected({
+        website: true,
+        pdf: true,
+        raspored: true,
+        audio: true,
+      });
+    } else {
+      setSelected({
+        website: true,
+        pdf: true,
+        raspored: false,
+        audio: false,
+      });
+      setSelectedSubs({ usb_kaseta: false, usb_bocica: false });
+    }
+  }, [mode]);
+
+  // Mode-reactive feature list: Premium swaps the Website row into a
+  // "Premium pozivnica" row with promo + strikethrough price, and rewrites
+  // raspored/audio prices to their premium-bundled discounts.
+  const features = useMemo<Feature[]>(() => {
+    if (mode !== "premium") return FEATURES;
+
+    return FEATURES.map((f) => {
+      if (f.id === "website") {
+        return {
+          ...f,
+          label: "Premium pozivnica",
+          description:
+            "Pozivnica koja ostavlja bez daha — AI ilustracija mladenaca na osnovu opisa, luksuzna animirana koverta i filmske scene koje vaši gosti neće zaboraviti.",
+          price: getPremiumPrice(),
+          originalPrice: isPremiumPromoActive()
+            ? getPremiumRegularPrice()
+            : undefined,
+        };
+      }
+      if (f.id === "raspored") {
+        return {
+          ...f,
+          price: getPremiumRasporedPrice(),
+          originalPrice: pricing.pozivnica.raspored.price,
+        };
+      }
+      if (f.id === "audio") {
+        return {
+          ...f,
+          price: getPremiumAudioPrice(),
+          originalPrice: pricing.pozivnica.audio.price,
+        };
+      }
+      return f;
+    });
+  }, [mode]);
+
   const { subtotal, total, isBundle, subitemsTotal } = useMemo(() => {
     let subtotal = 0;
-    for (const f of FEATURES) {
+    for (const f of features) {
       if (selected[f.id] && !f.included) subtotal += f.price;
     }
 
     let subitemsTotal = 0;
     if (selected.audio) {
-      for (const f of FEATURES) {
+      for (const f of features) {
         if (f.subitems) {
           for (const sub of f.subitems) {
             if (selectedSubs[sub.id]) subitemsTotal += sub.price;
@@ -170,16 +238,19 @@ export default function PricingClient() {
 
     const allMainSelected =
       selected.website && selected.raspored && selected.audio;
-    const bundleDiscount = allMainSelected ? FULL_PRICE - BUNDLE_PRICE : 0;
+    // Bundle discount applies only in Classic mode — Premium prices already
+    // encode the bundle discount, so there's no extra saving to apply.
+    const bundleDiscount =
+      mode === "classic" && allMainSelected ? FULL_PRICE - BUNDLE_PRICE : 0;
     const total = subtotal - bundleDiscount + subitemsTotal;
 
     return {
       subtotal: subtotal + subitemsTotal,
       total,
-      isBundle: allMainSelected,
+      isBundle: mode === "classic" && allMainSelected,
       subitemsTotal,
     };
-  }, [selected, selectedSubs]);
+  }, [features, selected, selectedSubs, mode]);
 
   const uncheckedCount = [selected.raspored, selected.audio].filter(
     (v) => !v,
@@ -188,12 +259,21 @@ export default function PricingClient() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6]">
+      <div
+        className="min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6] transition-colors duration-500"
+        style={
+          {
+            "--cene-accent": mode === "premium" ? "#d4af37" : "#AE343F",
+            "--cene-accent-rgb":
+              mode === "premium" ? "212,175,55" : "174,52,63",
+          } as React.CSSProperties
+        }
+      >
         {/* Pulsing checkbox animation */}
         <style>{`
         @keyframes checkbox-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(174,52,63,0.3); }
-          50% { box-shadow: 0 0 0 6px rgba(174,52,63,0); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(var(--cene-accent-rgb),0.3); }
+          50% { box-shadow: 0 0 0 6px rgba(var(--cene-accent-rgb),0); }
         }
         .checkbox-pulse {
           animation: checkbox-pulse 2s ease-in-out infinite;
@@ -203,31 +283,53 @@ export default function PricingClient() {
         <div className="max-w-3xl mx-auto px-4 pt-32 pb-20">
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#AE343F] mb-3 leading-tight">
-              Besplatna pozivnica za venčanje
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[var(--cene-accent)] mb-3 leading-tight">
+              Premium pozivnica za venčanje
             </h1>
             <h2 className="text-base sm:text-lg font-serif text-[#232323]/60 max-w-2xl mx-auto mb-6 leading-relaxed">
               Uz našu digitalnu pozivnicu dobijate{" "}
               <strong className="text-[#232323]/80">
-                besplatnu pozivnicu za štampu
+                besplatnu PDF pozivnicu za štampu
               </strong>
               , sa QR kodom za potvrdu dolaska — bez poziva, nikad lakše!
             </h2>
-            <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex items-center justify-center gap-4 mb-6">
               <div className="h-px w-10 bg-[#d4af37]/50" />
               <Heart size={14} className="text-[#d4af37]" fill="currentColor" />
               <div className="h-px w-10 bg-[#d4af37]/50" />
             </div>
-            <p className="text-[#232323]/40 text-sm max-w-xl mx-auto">
-              Sve što vam je potrebno za organizaciju savršenog venčanja — na
-              jednom mestu. Odaberite pojedinačno ili uštedite sa kompletnim
-              paketom.
-            </p>
+
+            {/* Classic / Premium tab switcher */}
+            <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white/70 border border-[#232323]/10 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setMode("classic")}
+                className={`px-5 sm:px-7 py-2 rounded-full text-sm font-medium transition-all ${
+                  mode === "classic"
+                    ? "bg-[var(--cene-accent)] text-white shadow-md shadow-[rgba(var(--cene-accent-rgb),0.25)]"
+                    : "text-[#232323]/60 hover:text-[#232323]"
+                }`}
+              >
+                Classic
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("premium")}
+                className={`inline-flex items-center gap-1.5 px-5 sm:px-7 py-2 rounded-full text-sm font-medium transition-all ${
+                  mode === "premium"
+                    ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white shadow-md shadow-[#d4af37]/25"
+                    : "text-[#d4af37] hover:text-[#c5a028]"
+                }`}
+              >
+                <Sparkles size={14} />
+                Premium
+              </button>
+            </div>
           </div>
 
           {/* Features list */}
           <div className="space-y-3">
-            {FEATURES.map((feature) => {
+            {features.map((feature) => {
               const isOn = selected[feature.id];
               const isLocked = feature.locked || feature.included;
               const isCheckable = !isLocked && !isOn;
@@ -242,8 +344,8 @@ export default function PricingClient() {
                     style={{
                       backgroundColor: isOn ? "white" : "rgba(255,255,255,0.5)",
                       border: isOn
-                        ? "2px solid rgba(174,52,63,0.2)"
-                        : "2px solid rgba(174,52,63,0.08)",
+                        ? "2px solid rgba(var(--cene-accent-rgb),0.2)"
+                        : "2px solid rgba(var(--cene-accent-rgb),0.08)",
                       opacity: isOn ? 1 : 0.75,
                     }}
                   >
@@ -254,10 +356,10 @@ export default function PricingClient() {
                           isCheckable ? "checkbox-pulse" : ""
                         }`}
                         style={{
-                          backgroundColor: isOn ? "#AE343F" : "transparent",
+                          backgroundColor: isOn ? "var(--cene-accent)" : "transparent",
                           border: isOn
                             ? "none"
-                            : "2px solid rgba(174,52,63,0.3)",
+                            : "2px solid rgba(var(--cene-accent-rgb),0.3)",
                         }}
                       >
                         {isOn && <Check size={14} className="text-white" />}
@@ -266,15 +368,23 @@ export default function PricingClient() {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="text-[#AE343F]">{feature.icon}</span>
+                          <span className="text-[var(--cene-accent)]">{feature.icon}</span>
                           <span className="font-semibold text-[#232323] text-base">
                             {feature.label}
                           </span>
                           {isCheckable && (
-                            <span className="text-[10px] font-medium uppercase tracking-wide text-[#AE343F]/50 bg-[#AE343F]/5 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] font-medium uppercase tracking-wide text-[rgba(var(--cene-accent-rgb),0.5)] bg-[rgba(var(--cene-accent-rgb),0.05)] px-2 py-0.5 rounded-full">
                               Dodaj
                             </span>
                           )}
+                          {mode === "premium" &&
+                            feature.id === "website" &&
+                            isPremiumPromoActive() && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-white bg-gradient-to-r from-[#d4af37] to-[#c5a028] px-2 py-0.5 rounded-full shadow-sm shadow-[#d4af37]/30">
+                                <Sparkles size={10} />
+                                Promo
+                              </span>
+                            )}
                         </div>
                         <p className="text-sm text-[#232323]/50 leading-relaxed">
                           {feature.description}
@@ -288,11 +398,19 @@ export default function PricingClient() {
                             Besplatno
                           </span>
                         ) : (
-                          <span
-                            className={`font-semibold ${isOn ? "text-[#232323]" : "text-[#232323]/50"}`}
-                          >
-                            {formatPrice(feature.price)}
-                          </span>
+                          <div className="flex flex-col items-end leading-tight">
+                            {feature.originalPrice != null &&
+                              feature.originalPrice > feature.price && (
+                                <span className="text-xs text-[#232323]/40 line-through">
+                                  {formatPrice(feature.originalPrice)}
+                                </span>
+                              )}
+                            <span
+                              className={`font-semibold ${isOn ? "text-[#232323]" : "text-[#232323]/50"}`}
+                            >
+                              {formatPrice(feature.price)}
+                            </span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -311,7 +429,7 @@ export default function PricingClient() {
                               ? "rgba(255,255,255,0.9)"
                               : "rgba(255,255,255,0.4)",
                             border: selectedSubs[sub.id]
-                              ? "1px solid rgba(174,52,63,0.15)"
+                              ? "1px solid rgba(var(--cene-accent-rgb),0.15)"
                               : "1px solid transparent",
                           }}
                         >
@@ -321,11 +439,11 @@ export default function PricingClient() {
                             }`}
                             style={{
                               backgroundColor: selectedSubs[sub.id]
-                                ? "#AE343F"
+                                ? "var(--cene-accent)"
                                 : "transparent",
                               border: selectedSubs[sub.id]
                                 ? "none"
-                                : "2px solid rgba(174,52,63,0.25)",
+                                : "2px solid rgba(var(--cene-accent-rgb),0.25)",
                             }}
                           >
                             {selectedSubs[sub.id] && (
@@ -357,23 +475,23 @@ export default function PricingClient() {
             })}
           </div>
 
-          {/* Bundle nudge + premium upsell */}
-          {!isBundle && (
+          {/* Bundle nudge — classic-only */}
+          {mode === "classic" && !isBundle && (
             <div
-              className="w-full my-5 px-5 py-4 rounded-xl space-y-3"
+              className="w-full my-5 px-5 py-4 rounded-xl"
               style={{
                 backgroundColor: "rgba(212,175,55,0.1)",
                 border: "1px dashed rgba(212,175,55,0.4)",
                 color: "#8B7424",
               }}
             >
-              <p className="flex items-center justify-center gap-2 text-sm font-medium">
-                <BadgePercent size={16} />
+              <p className="text-center text-sm font-medium">
+                <BadgePercent
+                  size={16}
+                  className="inline-block mr-2 -mt-0.5 align-middle"
+                />
                 Izaberite sve i uštedite {formatPrice(FULL_PRICE - BUNDLE_PRICE)}{" "}
                 — kompletni paket za samo {formatPrice(BUNDLE_PRICE)}
-              </p>
-              <p className="text-center text-sm font-medium" style={{ marginTop: "4px" }}>
-                Ili kreirajte <em>Premium pozivnicu</em> koja uključuje sve i ostavlja bez daha
               </p>
             </div>
           )}
@@ -383,13 +501,13 @@ export default function PricingClient() {
             className="mt-6 rounded-2xl px-6 py-6 sm:px-8"
             style={{
               backgroundColor: "white",
-              border: "2px solid rgba(174,52,63,0.15)",
+              border: "2px solid rgba(var(--cene-accent-rgb),0.15)",
             }}
           >
             {isBundle && (
               <div className="flex items-center gap-2 mb-4 text-sm">
                 <Sparkles size={16} className="text-[#d4af37]" />
-                <span className="font-semibold text-[#AE343F]">
+                <span className="font-semibold text-[var(--cene-accent)]">
                   Kompletni paket — ušteda{" "}
                   {formatPrice(FULL_PRICE - BUNDLE_PRICE)}!
                 </span>
@@ -397,8 +515,9 @@ export default function PricingClient() {
             )}
 
             <div className="space-y-2">
-              {FEATURES.filter((f) => selected[f.id] && !f.included).map(
-                (f) => (
+              {features
+                .filter((f) => selected[f.id] && !f.included)
+                .map((f) => (
                   <div
                     key={f.id}
                     className="flex justify-between text-sm text-[#232323]/60"
@@ -406,10 +525,10 @@ export default function PricingClient() {
                     <span>{f.label}</span>
                     <span>{formatPrice(f.price)}</span>
                   </div>
-                ),
-              )}
+                ))}
               {selected.audio &&
-                FEATURES.find((f) => f.id === "audio")
+                features
+                  .find((f) => f.id === "audio")
                   ?.subitems?.filter((s) => selectedSubs[s.id])
                   .map((s) => (
                     <div
@@ -439,7 +558,7 @@ export default function PricingClient() {
                     {formatPrice(subtotal)}
                   </span>
                 )}
-                <span className="text-2xl font-serif font-bold text-[#AE343F]">
+                <span className="text-2xl font-serif font-bold text-[var(--cene-accent)]">
                   {formatPrice(total)}
                 </span>
               </div>
@@ -447,6 +566,7 @@ export default function PricingClient() {
 
             <Link
               href={`/napravi-pozivnicu?${new URLSearchParams({
+                ...(mode === "premium" ? { premium: "1" } : {}),
                 ...(selected.raspored ? { raspored: "1" } : {}),
                 ...(selected.audio ? { audio: "1" } : {}),
                 ...(selectedSubs.usb_kaseta ? { usb_kaseta: "1" } : {}),
@@ -454,9 +574,9 @@ export default function PricingClient() {
               }).toString()}`}
               className="mt-6 w-full flex items-center justify-center gap-3 px-8 py-4 rounded-full text-sm uppercase tracking-[0.15em] font-medium transition-all hover:opacity-80"
               style={{
-                backgroundColor: "#AE343F",
+                backgroundColor: "var(--cene-accent)",
                 color: "#fff",
-                boxShadow: "0 4px 20px rgba(174,52,63,0.25)",
+                boxShadow: "0 4px 20px rgba(var(--cene-accent-rgb),0.25)",
               }}
             >
               <Heart size={14} fill="currentColor" />
@@ -499,14 +619,14 @@ export default function PricingClient() {
               ].map((link) => (
                 <div
                   key={link.href}
-                  className="group relative rounded-xl px-4 py-3 text-center transition-all border border-[#AE343F]/10 sm:border-transparent sm:hover:border-[#AE343F]/10 sm:hover:bg-white/80"
+                  className="group relative rounded-xl px-4 py-3 text-center transition-all border border-[rgba(var(--cene-accent-rgb),0.1)] sm:border-transparent sm:hover:border-[rgba(var(--cene-accent-rgb),0.1)] sm:hover:bg-white/80"
                 >
                   <div className="peer flex items-center justify-center gap-1.5 mb-1">
-                    <Info size={14} className="text-[#AE343F]/40 cursor-help" />
+                    <Info size={14} className="text-[rgba(var(--cene-accent-rgb),0.4)] cursor-help" />
                     <Link
                       href={link.href}
                       target="_blank"
-                      className="inline-flex items-center gap-1.5 text-sm text-[#AE343F] font-medium hover:underline"
+                      className="inline-flex items-center gap-1.5 text-sm text-[var(--cene-accent)] font-medium hover:underline"
                     >
                       {link.label} <ExternalLink size={12} />
                     </Link>
@@ -514,7 +634,7 @@ export default function PricingClient() {
                   <p className="text-[11px] text-[#232323]/40 leading-relaxed block sm:hidden">
                     {link.tooltip}
                   </p>
-                  <div className="hidden sm:group-hover:block absolute left-0 right-0 top-full mt-1 z-10 px-4 py-2.5 rounded-xl bg-white shadow-lg border border-[#AE343F]/10">
+                  <div className="hidden sm:group-hover:block absolute left-0 right-0 top-full mt-1 z-10 px-4 py-2.5 rounded-xl bg-white shadow-lg border border-[rgba(var(--cene-accent-rgb),0.1)]">
                     <p className="text-[11px] text-[#232323]/60 leading-relaxed">
                       {link.tooltip}
                     </p>

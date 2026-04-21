@@ -30,3 +30,20 @@ export function isPremiumPromoActive(): boolean {
   const { promoPrice, promoActive } = pricing.premium as any;
   return !!(promoActive && promoPrice);
 }
+
+/** Regular (non-promo) premium price */
+export function getPremiumRegularPrice(): number {
+  return (pricing.premium as any).price;
+}
+
+/** Premium-bundled raspored price (discounted when purchased with Premium) */
+export function getPremiumRasporedPrice(): number {
+  return (
+    (pricing.premium as any).rasporedPrice ?? pricing.pozivnica.raspored.price
+  );
+}
+
+/** Premium-bundled audio price (discounted when purchased with Premium) */
+export function getPremiumAudioPrice(): number {
+  return (pricing.premium as any).audioPrice ?? pricing.pozivnica.audio.price;
+}

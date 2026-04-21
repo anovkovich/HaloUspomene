@@ -64,8 +64,10 @@
   ],
   "premium": {
     "label": "Premium AI Pozivnica",
-    "price": 15000,
-    "promoPrice": 12000,
-    "promoActive": true
+    "price": 12000,
+    "promoPrice": 10000,
+    "promoActive": true,
+    "rasporedPrice": 1000,
+    "audioPrice": 1000
   }
 }

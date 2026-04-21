@@ -2,7 +2,15 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
-import { pricing, formatPrice, getAudioPrice, getPremiumPrice, isPremiumPromoActive } from "@/data/pricing";
+import {
+  pricing,
+  formatPrice,
+  getAudioPrice,
+  getPremiumPrice,
+  getPremiumRasporedPrice,
+  getPremiumAudioPrice,
+  isPremiumPromoActive,
+} from "@/data/pricing";
 import { decodeFromBase64 } from "@/lib/encoding";
 
 const CYR_TO_LAT: Record<string, string> = {
@@ -337,12 +345,16 @@ function ReceiptContent() {
   if (payload.r)
     items.push({
       label: "Raspored sedenja",
-      amount: pricing.pozivnica.raspored.price,
+      amount: payload.p
+        ? getPremiumRasporedPrice()
+        : pricing.pozivnica.raspored.price,
     });
   if (payload.a)
     items.push({
       label: "Audio knjiga utisaka",
-      amount: pricing.pozivnica.audio.price,
+      amount: payload.p
+        ? getPremiumAudioPrice()
+        : pricing.pozivnica.audio.price,
     });
   if (payload.uk)
     items.push({
@@ -373,7 +385,10 @@ function ReceiptContent() {
   }
 
   const subtotal = items.reduce((s, i) => s + i.amount, 0);
-  const isBundle = !!payload.r && !!payload.a;
+  // Classic bundle discount only applies to non-premium receipts; Premium
+  // already encodes its own bundled discount via getPremiumRasporedPrice /
+  // getPremiumAudioPrice, so don't stack another discount on top.
+  const isBundle = !payload.p && !!payload.r && !!payload.a;
   const bundleDiscount = isBundle
     ? pricing.pozivnica.bundleFullPrice - pricing.pozivnica.bundlePrice
     : 0;

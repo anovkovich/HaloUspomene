@@ -21,7 +21,8 @@ import {
   pricing,
   formatPrice,
   getPremiumPrice,
-  isPremiumPromoActive,
+  getPremiumRasporedPrice,
+  getPremiumAudioPrice,
 } from "@/data/pricing";
 import {
   THEME_CONFIGS,
@@ -326,29 +327,6 @@ function Toggle({
   );
 }
 
-const EXTRAS = [
-  {
-    key: "extra_raspored" as const,
-    label: "Raspored sedenja",
-    price: `+${formatPrice(pricing.pozivnica.raspored.price)}`,
-  },
-  {
-    key: "extra_audio" as const,
-    label: "Audio knjiga utisaka",
-    price: `+${formatPrice(pricing.pozivnica.audio.price)}`,
-  },
-  {
-    key: "extra_usb_kaseta" as const,
-    label: "USB retro kaseta",
-    price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}`,
-  },
-  {
-    key: "extra_usb_bocica" as const,
-    label: "USB u bočici",
-    price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}`,
-  },
-];
-
 function ExtrasAccordion({
   formData,
   updateField,
@@ -356,11 +334,57 @@ function ExtrasAccordion({
   formData: FormData;
   updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
 }) {
-  const count = EXTRAS.filter(({ key }) => formData[key]).length;
+  const isPremium = formData.premium;
+
+  const rasporedPrice = isPremium
+    ? getPremiumRasporedPrice()
+    : pricing.pozivnica.raspored.price;
+  const audioPrice = isPremium
+    ? getPremiumAudioPrice()
+    : pricing.pozivnica.audio.price;
+
+  // In premium mode, raspored/audio show the premium-bundled price with the
+  // original classic price struck through; USBs keep their regular pricing.
+  const extras = [
+    {
+      key: "extra_raspored" as const,
+      label: "Raspored sedenja",
+      price: `+${formatPrice(rasporedPrice)}`,
+      originalPrice:
+        isPremium && pricing.pozivnica.raspored.price > rasporedPrice
+          ? pricing.pozivnica.raspored.price
+          : undefined,
+    },
+    {
+      key: "extra_audio" as const,
+      label: "Audio knjiga utisaka",
+      price: `+${formatPrice(audioPrice)}`,
+      originalPrice:
+        isPremium && pricing.pozivnica.audio.price > audioPrice
+          ? pricing.pozivnica.audio.price
+          : undefined,
+    },
+    {
+      key: "extra_usb_kaseta" as const,
+      label: "USB retro kaseta",
+      price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}`,
+      originalPrice: undefined,
+    },
+    {
+      key: "extra_usb_bocica" as const,
+      label: "USB u bočici",
+      price: `+${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}`,
+      originalPrice: undefined,
+    },
+  ];
+
+  const count = extras.filter(({ key }) => formData[key]).length;
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="mt-8 pt-5 border-t border-stone-100">
+    <div
+      className={`mt-8 pt-5 border-t ${isPremium ? "border-[#d4af37]/15" : "border-stone-100"}`}
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -368,7 +392,7 @@ function ExtrasAccordion({
       >
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-stone-300 group-hover:text-stone-400 transition-colors">
-            Dodatne usluge (opciono)
+            {isPremium ? "Premium dodaci" : "Dodatne usluge (opciono)"}
           </span>
           {count > 0 && (
             <span className="w-4 h-4 rounded-full bg-[var(--accent,#AE343F)] text-white text-[9px] font-bold flex items-center justify-center">
@@ -395,28 +419,35 @@ function ExtrasAccordion({
 
       {open && (
         <div className="mt-3 space-y-2">
-          {EXTRAS.filter(
-            ({ key }) =>
-              key !== "extra_usb_kaseta" && key !== "extra_usb_bocica",
-          ).map(({ key, label, price }) => (
-            <label
-              key={key}
-              className="flex items-center gap-2.5 py-0.5 cursor-pointer group"
-            >
-              <input
-                type="checkbox"
-                checked={formData[key]}
-                onChange={(e) => updateField(key, e.target.checked)}
-                className="w-3.5 h-3.5 accent-[var(--accent,#AE343F)] cursor-pointer shrink-0 opacity-60"
-              />
-              <span className="text-xs text-stone-400 group-hover:text-stone-500 transition-colors">
-                {label}
-              </span>
-              <span className="text-[10px] text-stone-300 ml-auto shrink-0">
-                {price}
-              </span>
-            </label>
-          ))}
+          {extras
+            .filter(
+              ({ key }) =>
+                key !== "extra_usb_kaseta" && key !== "extra_usb_bocica",
+            )
+            .map(({ key, label, price, originalPrice }) => (
+              <label
+                key={key}
+                className="flex items-center gap-2.5 py-0.5 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={formData[key]}
+                  onChange={(e) => updateField(key, e.target.checked)}
+                  className="w-3.5 h-3.5 accent-[var(--accent,#AE343F)] cursor-pointer shrink-0 opacity-60"
+                />
+                <span className="text-xs text-stone-400 group-hover:text-stone-500 transition-colors">
+                  {label}
+                </span>
+                <span className="ml-auto flex items-baseline gap-1.5 shrink-0">
+                  {originalPrice != null && (
+                    <span className="text-[10px] text-stone-300 line-through">
+                      {formatPrice(originalPrice)}
+                    </span>
+                  )}
+                  <span className="text-[10px] text-stone-300">{price}</span>
+                </span>
+              </label>
+            ))}
           {/* USB options — nested under audio, mutually exclusive */}
           <div
             className={`ml-5 space-y-2 ${!formData.extra_audio ? "opacity-50 pointer-events-none" : ""}`}
@@ -461,16 +492,20 @@ function ExtrasAccordion({
           </div>
           {/* Sum + discount */}
           {(() => {
-            let sum = pricing.pozivnica.website.price;
-            if (formData.extra_raspored)
-              sum += pricing.pozivnica.raspored.price;
-            if (formData.extra_audio) sum += pricing.pozivnica.audio.price;
+            let sum = isPremium
+              ? getPremiumPrice()
+              : pricing.pozivnica.website.price;
+            if (formData.extra_raspored) sum += rasporedPrice;
+            if (formData.extra_audio) sum += audioPrice;
             if (formData.extra_usb_kaseta)
               sum += pricing.addons.find((a) => a.id === "usb_kaseta")!.price;
             if (formData.extra_usb_bocica)
               sum += pricing.addons.find((a) => a.id === "usb_bocica")!.price;
+            // Classic bundle discount only — Premium prices already encode it.
             const isFullBundle =
-              formData.extra_raspored && formData.extra_audio;
+              !isPremium &&
+              formData.extra_raspored &&
+              formData.extra_audio;
             const discount = isFullBundle
               ? pricing.pozivnica.bundleFullPrice -
                 pricing.pozivnica.bundlePrice
@@ -668,36 +703,15 @@ function Step1({
     <div>
       {/* Pricing section */}
       <div className={`mb-3 p-5 ${tc.pricingBox}`}>
-        {formData.premium ? (
-          <>
-            <div className="flex items-baseline gap-3">
-              <p className={`text-2xl font-bold ${tc.priceText}`}>
-                {isPremiumPromoActive() && "PROMO "}
-                {formatPrice(getPremiumPrice())}
-              </p>
-              {isPremiumPromoActive() && (
-                <span className={`text-sm line-through opacity-50 ${tc.priceText}`}>
-                  {formatPrice((pricing.premium as any).price)}
-                </span>
-              )}
-            </div>
-            <p className={`text-xs mt-1.5 ${tc.priceSubtext}`}>
-              Luksuzne pozivnice sa animacijama, jedinstvene i personalizovane, sa AI generisanim ilustracijama na osnovu Vašeg opisa mladenaca i modernim kovertama na ekranu dobrodošlice.
-            </p>
-          </>
-        ) : (
-          <>
-            <p className={`text-2xl font-bold ${tc.priceText}`}>
-              Cena pozivnice je od {formatPrice(pricing.pozivnica.website.price)}
-            </p>
-            <p className={`font-semibold text-sm mt-2 ${tc.priceSubtext}`}>
-              <small>
-                Kompletni paket sa rasporedom sedenja i audio knjigom:{" "}
-                {formatPrice(pricing.pozivnica.bundlePrice)}
-              </small>
-            </p>
-          </>
-        )}
+        <a
+          href="/cene"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`flex items-center justify-between gap-3 text-sm font-semibold ${tc.priceText} hover:opacity-80 transition-opacity`}
+        >
+          <span>Pogledajte cenovnik i pakete</span>
+          <ChevronRight size={18} className="flex-shrink-0" />
+        </a>
       </div>
 
       {/* Live preview section — classic only */}
@@ -782,31 +796,8 @@ function Step1({
         )}
       </div>
 
-      {/* Extras accordion or premium included note */}
-      {formData.premium ? (
-        <div className="mt-8 pt-5 border-t border-[#d4af37]/15">
-          <button
-            type="button"
-            className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#d4af37] cursor-help inline-flex items-center gap-1.5 relative"
-            onClick={(e) => {
-              const tip = e.currentTarget.querySelector("[data-tip]");
-              if (tip) tip.classList.toggle("hidden");
-            }}
-          >
-            Sve dodatne usluge su uključene uz Premium pozivnicu!
-            <HelpCircle size={12} className="opacity-60" />
-            <span
-              data-tip
-              className="hidden absolute bottom-full left-0 mb-2 p-3 bg-white rounded-xl border border-[#d4af37]/20 shadow-lg text-xs text-[#8B7355] text-left normal-case tracking-normal whitespace-normal w-[250px] z-50 pointer-events-none"
-            >
-              Raspored sedenja, audio knjiga utisaka, prilagođena boja teme i
-              svi dodaci su uključeni u Premium AI paket.
-            </span>
-          </button>
-        </div>
-      ) : (
-        <ExtrasAccordion formData={formData} updateField={updateField} />
-      )}
+      {/* Extras accordion — also rendered in premium, with gold accent + discounted prices */}
+      <ExtrasAccordion formData={formData} updateField={updateField} />
     </div>
   );
 }
@@ -1817,8 +1808,12 @@ export default function QuestionnaireForm({
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.toString()) {
+      const wantsPremium = params.get("premium") === "1";
       setFormData((prev) => ({
         ...prev,
+        premium: wantsPremium || prev.premium,
+        // Premium flow doesn't support Cyrillic; mirror handlePremiumToggle.
+        useCyrillic: wantsPremium ? false : prev.useCyrillic,
         extra_raspored: params.get("raspored") === "1" || prev.extra_raspored,
         extra_audio: params.get("audio") === "1" || prev.extra_audio,
         extra_usb_kaseta:

@@ -102,7 +102,7 @@ const HowItWorks: React.FC = () => {
                 od 5.000 din
               </p>
               <p className="text-[#F5F4DC]/40 text-xs mb-4">
-                ili kompletni paket 8.000 din
+                ili kompletni paket 8.500 din
               </p>
               <div className="space-y-1.5">
                 {[
@@ -163,7 +163,7 @@ const HowItWorks: React.FC = () => {
                       Raspored sedenja
                     </p>
                     <span className="text-[#F5F4DC]/70 text-sm font-bold tabular-nums">
-                      2.000 din
+                      2.500 din
                     </span>
                   </div>
                   <p className="text-[#F5F4DC]/40 text-xs mt-0.5">
