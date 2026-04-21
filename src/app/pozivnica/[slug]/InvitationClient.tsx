@@ -77,10 +77,12 @@ function LocationMapSection({
   locations,
   singleLabel,
   pluralLabel,
+  useCyrillic,
 }: {
   locations: import("./types").Location[];
   singleLabel: string;
   pluralLabel: string;
+  useCyrillic?: boolean;
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const active = locations[activeIdx];
@@ -118,7 +120,7 @@ function LocationMapSection({
                   }}
                 >
                   {meta?.icon}
-                  {meta?.latin || loc.name || loc.type}
+                  {(useCyrillic ? meta?.cyrillic : meta?.latin) || loc.name || loc.type}
                 </button>
               );
             })}
@@ -677,6 +679,7 @@ export default function InvitationClient({
             locations={mapLocations}
             singleLabel={t.location}
             pluralLabel={t.locations}
+            useCyrillic={useCyrillic}
           />
         )}
 
