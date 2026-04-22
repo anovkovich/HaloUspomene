@@ -70,7 +70,7 @@ export default function VendorAdminTab() {
       result = result.filter((v) => v.name.toLowerCase().includes(q));
     }
     return result;
-  }, [selectedCategory, selectedCity, search]);
+  }, [vendors, selectedCategory, selectedCity, search]);
 
   function toggleHighlight(id: string) {
     setHighlighted((prev) => {
