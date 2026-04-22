@@ -20,6 +20,9 @@ import {
   Palette,
   CircleDot,
   Gift,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import type { VendorCategory } from "@/app/moje-vencanje/types";
 
@@ -75,6 +78,22 @@ export default function AdminVendorsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("");
+  const [sortKey, setSortKey] = useState<
+    "name" | "views" | "endorse" | "phone" | "website" | "instagram"
+  >("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleSort = (
+    key: "name" | "views" | "endorse" | "phone" | "website" | "instagram",
+  ) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      // Metric columns default to descending (biggest first); name defaults to asc.
+      setSortDir(key === "name" ? "asc" : "desc");
+    }
+  };
   const [dumping, setDumping] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [importJson, setImportJson] = useState("");
@@ -105,8 +124,37 @@ export default function AdminVendorsPage() {
           v.id.toLowerCase().includes(q),
       );
     }
-    return result.sort((a, b) => a.name.localeCompare(b.name));
-  }, [vendors, filterCategory, search]);
+
+    const metric = (v: Vendor): number => {
+      switch (sortKey) {
+        case "views":
+          return v.stats?.views ?? 0;
+        case "endorse":
+          return v.endorsementCount ?? 0;
+        case "phone":
+          return v.stats?.clicks_phone ?? 0;
+        case "website":
+          return v.stats?.clicks_website ?? 0;
+        case "instagram":
+          return v.stats?.clicks_instagram ?? 0;
+        default:
+          return 0;
+      }
+    };
+
+    const sorted = [...result].sort((a, b) => {
+      if (sortKey === "name") return a.name.localeCompare(b.name);
+      const diff = metric(b) - metric(a);
+      // Stable name-based tiebreaker so equal counts stay predictable.
+      return diff !== 0 ? diff : a.name.localeCompare(b.name);
+    });
+
+    return sortDir === "asc" && sortKey !== "name"
+      ? sorted.reverse()
+      : sortKey === "name" && sortDir === "desc"
+        ? sorted.reverse()
+        : sorted;
+  }, [vendors, filterCategory, search, sortKey, sortDir]);
 
   const parseVendors = (): unknown[] | null => {
     try {
@@ -425,7 +473,14 @@ export default function AdminVendorsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5 text-left text-xs text-white/50">
-                  <th className="px-4 py-3 font-medium">Vendor</th>
+                  <th className="px-4 py-3 font-medium">
+                    <SortHeader
+                      label="Vendor"
+                      active={sortKey === "name"}
+                      dir={sortDir}
+                      onClick={() => toggleSort("name")}
+                    />
+                  </th>
                   <th className="px-4 py-3 font-medium hidden sm:table-cell">
                     Grad
                   </th>
@@ -433,10 +488,44 @@ export default function AdminVendorsPage() {
                     Kategorija
                   </th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">
-                    Endorse
+                    <SortHeader
+                      label="Endorse"
+                      active={sortKey === "endorse"}
+                      dir={sortDir}
+                      onClick={() => toggleSort("endorse")}
+                    />
                   </th>
                   <th className="px-4 py-3 font-medium hidden lg:table-cell">
-                    Statistika
+                    <div className="flex items-center gap-2">
+                      <SortHeader
+                        label="👁"
+                        active={sortKey === "views"}
+                        dir={sortDir}
+                        onClick={() => toggleSort("views")}
+                        title="Otvaranja vendora"
+                      />
+                      <SortHeader
+                        label="📞"
+                        active={sortKey === "phone"}
+                        dir={sortDir}
+                        onClick={() => toggleSort("phone")}
+                        title="Klikovi telefon"
+                      />
+                      <SortHeader
+                        label="🌐"
+                        active={sortKey === "website"}
+                        dir={sortDir}
+                        onClick={() => toggleSort("website")}
+                        title="Klikovi sajt"
+                      />
+                      <SortHeader
+                        label="📸"
+                        active={sortKey === "instagram"}
+                        dir={sortDir}
+                        onClick={() => toggleSort("instagram")}
+                        title="Klikovi Instagram"
+                      />
+                    </div>
                   </th>
                   <th className="px-4 py-3 font-medium text-right">Akcije</th>
                 </tr>
@@ -523,5 +612,34 @@ export default function AdminVendorsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function SortHeader({
+  label,
+  active,
+  dir,
+  onClick,
+  title,
+}: {
+  label: string;
+  active: boolean;
+  dir: "asc" | "desc";
+  onClick: () => void;
+  title?: string;
+}) {
+  const Icon = !active ? ArrowUpDown : dir === "asc" ? ArrowUp : ArrowDown;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className={`inline-flex items-center gap-1 transition-colors cursor-pointer ${
+        active ? "text-[#AE343F]" : "hover:text-white/80"
+      }`}
+    >
+      {label}
+      <Icon size={11} className="opacity-70" />
+    </button>
   );
 }
