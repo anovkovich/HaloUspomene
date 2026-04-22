@@ -67,7 +67,8 @@ export interface Vendor {
   capacity?: string;       // venues: max guest count (e.g. "300" or "300+")
   musicType?: string;      // music: "DJ" | "Bend" | "DJ + Bend" etc.
   serviceType?: string;    // photo-video: "Foto" | "Video" | "Foto + Video" etc.
-  bio?: string;            // max 250 chars, short vendor description
+  bio?: string;            // max 500 chars, short vendor description
+  logoUrl?: string;        // Vercel Blob URL for vendor logo (uploaded or IG-imported)
   endorsementCount?: number;
 }
 

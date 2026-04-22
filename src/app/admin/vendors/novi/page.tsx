@@ -256,11 +256,11 @@ export default function AddVendorPage() {
         {/* Bio */}
         <div>
           <label className="block text-xs font-medium text-white/60 mb-1">
-            Bio ({bio.length}/250)
+            Bio ({bio.length}/500)
           </label>
           <textarea
             value={bio}
-            onChange={(e) => setBio(e.target.value.slice(0, 250))}
+            onChange={(e) => setBio(e.target.value.slice(0, 500))}
             placeholder="Kratki opis vendora..."
             rows={3}
             className="w-full px-3 py-2.5 text-sm bg-white/5 border border-white/10 rounded-lg focus:border-[#AE343F] focus:outline-none resize-none"

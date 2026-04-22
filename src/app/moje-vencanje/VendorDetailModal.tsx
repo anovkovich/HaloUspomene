@@ -93,7 +93,9 @@ export default function VendorDetailModal({
     };
   }, [vendor, onClose]);
 
-  const showFavicon = vendor?.website && faviconLoaded && !faviconError;
+  const showLogo = !!vendor?.logoUrl;
+  const showFavicon =
+    !showLogo && vendor?.website && faviconLoaded && !faviconError;
 
   return (
     <AnimatePresence>
@@ -128,7 +130,16 @@ export default function VendorDetailModal({
             {/* Header */}
             <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#232323]/15 px-5 py-4 flex items-center justify-between z-10">
               <div className="flex items-center gap-2.5 min-w-0">
-                {showFavicon ? (
+                {showLogo ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={vendor.logoUrl}
+                    alt=""
+                    width={28}
+                    height={28}
+                    className="rounded-full shrink-0 object-cover w-7 h-7"
+                  />
+                ) : showFavicon ? (
                   <img
                     src={`https://www.google.com/s2/favicons?domain=${vendor.website}&sz=64`}
                     alt=""
