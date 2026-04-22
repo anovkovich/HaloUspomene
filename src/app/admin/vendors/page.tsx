@@ -32,7 +32,14 @@ interface VendorRow {
   website?: string;
   instagram?: string;
   bio?: string;
+  logoUrl?: string;
   endorsementCount: number;
+  stats?: {
+    views?: number;
+    clicks_phone?: number;
+    clicks_website?: number;
+    clicks_instagram?: number;
+  };
 }
 
 const CATEGORY_LABELS: Record<VendorCategory, string> = {
@@ -428,6 +435,9 @@ export default function AdminVendorsPage() {
                   <th className="px-4 py-3 font-medium hidden md:table-cell">
                     Endorse
                   </th>
+                  <th className="px-4 py-3 font-medium hidden lg:table-cell">
+                    Statistika
+                  </th>
                   <th className="px-4 py-3 font-medium text-right">Akcije</th>
                 </tr>
               </thead>
@@ -460,6 +470,34 @@ export default function AdminVendorsPage() {
                     </td>
                     <td className="px-4 py-3 text-white/50 hidden md:table-cell">
                       {v.endorsementCount || 0}
+                    </td>
+                    <td className="px-4 py-3 text-white/50 hidden lg:table-cell">
+                      <div className="flex items-center gap-2 text-[11px] tabular-nums">
+                        <span
+                          className="inline-flex items-center gap-1"
+                          title="Otvaranja vendora"
+                        >
+                          👁 {v.stats?.views ?? 0}
+                        </span>
+                        <span
+                          className="inline-flex items-center gap-1"
+                          title="Klikovi telefon"
+                        >
+                          📞 {v.stats?.clicks_phone ?? 0}
+                        </span>
+                        <span
+                          className="inline-flex items-center gap-1"
+                          title="Klikovi sajt"
+                        >
+                          🌐 {v.stats?.clicks_website ?? 0}
+                        </span>
+                        <span
+                          className="inline-flex items-center gap-1"
+                          title="Klikovi Instagram"
+                        >
+                          📸 {v.stats?.clicks_instagram ?? 0}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">

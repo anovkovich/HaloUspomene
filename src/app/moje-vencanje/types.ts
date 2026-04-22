@@ -70,7 +70,17 @@ export interface Vendor {
   bio?: string;            // max 500 chars, short vendor description
   logoUrl?: string;        // Vercel Blob URL for vendor logo (uploaded or IG-imported)
   endorsementCount?: number;
+  stats?: VendorStats;     // aggregated click counters (incremented server-side)
 }
+
+export interface VendorStats {
+  views?: number;            // modal opens
+  clicks_phone?: number;
+  clicks_website?: number;
+  clicks_instagram?: number;
+}
+
+export type VendorTrackKind = "view" | "phone" | "website" | "instagram";
 
 export function getEndorsementLevel(count: number): number {
   if (count >= 9) return 3;

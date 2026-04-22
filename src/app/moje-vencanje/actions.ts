@@ -22,12 +22,19 @@ import {
   type RSVPEntry,
 } from "@/lib/rsvp";
 import { del } from "@vercel/blob";
-import type { ChecklistItem, PortalBudget, Vendor, VendorCategoryMeta } from "./types";
+import type {
+  ChecklistItem,
+  PortalBudget,
+  Vendor,
+  VendorCategoryMeta,
+  VendorTrackKind,
+} from "./types";
 import { CATEGORY_META } from "./vendor-constants";
 import {
   getAllVendors as dbGetAllVendors,
   toggleEndorsement as dbToggleEndorsement,
   getEndorsementsByCouple as dbGetEndorsementsByCouple,
+  incrementVendorStat as dbIncrementVendorStat,
 } from "@/lib/vendors";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
@@ -429,5 +436,31 @@ export async function toggleEndorsementAction(
   if (!slug) return { error: "Niste prijavljeni" };
   const endorsed = await dbToggleEndorsement(vendorId, slug);
   return { ok: true, endorsed };
+}
+
+const ALLOWED_TRACK_KINDS: VendorTrackKind[] = [
+  "view",
+  "phone",
+  "website",
+  "instagram",
+];
+
+/**
+ * Fire-and-forget click/view tracking from the vendor directory.
+ * Unauthenticated callers are ignored silently — the planner is gated by
+ * moje_vencanje_auth, but we don't want a tracking failure to surface as a
+ * visible error.
+ */
+export async function trackVendorEventAction(
+  vendorId: string,
+  kind: VendorTrackKind,
+): Promise<{ ok: boolean }> {
+  if (!vendorId || !ALLOWED_TRACK_KINDS.includes(kind)) return { ok: false };
+  try {
+    await dbIncrementVendorStat(vendorId, kind);
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
 }
 

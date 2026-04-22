@@ -19,9 +19,14 @@ import {
   CircleDot,
   Gift,
 } from "lucide-react";
-import type { VendorCategory, Vendor } from "./types";
-import { toggleEndorsementAction } from "./actions";
+import type { VendorCategory, Vendor, VendorTrackKind } from "./types";
+import { toggleEndorsementAction, trackVendorEventAction } from "./actions";
 import EndorsementBadge from "./EndorsementBadge";
+
+// Fire-and-forget DB counter bump. Never blocks the UI, never throws.
+function track(vendorId: string, kind: VendorTrackKind) {
+  trackVendorEventAction(vendorId, kind).catch(() => {});
+}
 
 const CATEGORY_ICONS: Record<VendorCategory, React.ReactNode> = {
   venue: <Building2 size={20} />,
@@ -77,6 +82,11 @@ export default function VendorDetailModal({
   useEffect(() => {
     setFaviconLoaded(false);
     setFaviconError(false);
+  }, [vendor?.id]);
+
+  // Track a "view" each time the modal opens for a new vendor.
+  useEffect(() => {
+    if (vendor?.id) track(vendor.id, "view");
   }, [vendor?.id]);
 
   // Escape key + body scroll lock
@@ -278,6 +288,7 @@ export default function VendorDetailModal({
                   {vendor.phone ? (
                     <a
                       href={`tel:${vendor.phone.replace(/\s/g, "")}`}
+                      onClick={() => track(vendor.id, "phone")}
                       className="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-[#AE343F] text-white text-sm font-medium hover:bg-[#AE343F]/90 transition-colors"
                     >
                       <Phone size={15} />
@@ -294,6 +305,7 @@ export default function VendorDetailModal({
                       href={`https://${vendor.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => track(vendor.id, "website")}
                       className="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-[#232323] text-white text-sm font-medium hover:bg-[#232323]/85 transition-colors"
                     >
                       <Globe size={15} />
@@ -313,6 +325,7 @@ export default function VendorDetailModal({
                     href={`https://instagram.com/${vendor.instagram.replace("@", "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => track(vendor.id, "instagram")}
                     className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white text-sm font-medium hover:opacity-90 transition-opacity"
                   >
                     <Instagram size={15} />

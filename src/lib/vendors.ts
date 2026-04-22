@@ -1,5 +1,9 @@
 import clientPromise from "./mongodb";
-import type { Vendor, VendorCategory } from "@/app/moje-vencanje/types";
+import type {
+  Vendor,
+  VendorCategory,
+  VendorTrackKind,
+} from "@/app/moje-vencanje/types";
 
 export interface VendorDocument extends Vendor {
   endorsementCount: number;
@@ -135,4 +139,23 @@ export async function getEndorsementsByCouple(
     .find({ coupleSlug }, { projection: { vendorId: 1, _id: 0 } })
     .toArray();
   return docs.map((d) => d.vendorId);
+}
+
+// ── Click tracking ──
+
+const TRACK_FIELD: Record<VendorTrackKind, string> = {
+  view: "stats.views",
+  phone: "stats.clicks_phone",
+  website: "stats.clicks_website",
+  instagram: "stats.clicks_instagram",
+};
+
+export async function incrementVendorStat(
+  vendorId: string,
+  kind: VendorTrackKind,
+): Promise<void> {
+  const field = TRACK_FIELD[kind];
+  if (!field) return;
+  const c = await col();
+  await c.updateOne({ id: vendorId }, { $inc: { [field]: 1 } });
 }

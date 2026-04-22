@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { put, del } from "@vercel/blob";
+import sharp from "sharp";
 import { getVendorById, patchVendor } from "@/lib/vendors";
+
+export const runtime = "nodejs";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
@@ -109,7 +112,6 @@ export async function POST(
 
   // Download the actual image bytes before the signed URL expires.
   let buffer: ArrayBuffer;
-  let contentType = "image/jpeg";
   try {
     const imgRes = await fetch(ogImage, { cache: "no-store" });
     if (!imgRes.ok)
@@ -119,7 +121,6 @@ export async function POST(
         },
         { status: 502 },
       );
-    contentType = imgRes.headers.get("content-type") || contentType;
     buffer = await imgRes.arrayBuffer();
   } catch (err) {
     console.error("IG image download failed:", err);
@@ -144,12 +145,18 @@ export async function POST(
     }
   }
 
-  const ext = contentType.includes("png") ? "png" : "jpg";
-  const pathname = `vendors/${id}/logo-ig-${Date.now()}.${ext}`;
+  // Resize + WebP to match the upload route (400x400 is plenty for the
+  // 28-80px avatar slots where this image actually renders).
+  const optimized = await sharp(Buffer.from(buffer))
+    .resize(400, 400, { fit: "cover", position: "attention" })
+    .webp({ quality: 80 })
+    .toBuffer();
 
-  const blob = await put(pathname, buffer, {
+  const pathname = `vendors/${id}/logo-ig-${Date.now()}.webp`;
+
+  const blob = await put(pathname, optimized, {
     access: "public",
-    contentType,
+    contentType: "image/webp",
   });
 
   await patchVendor(id, { logoUrl: blob.url });

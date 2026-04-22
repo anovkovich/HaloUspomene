@@ -1,9 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { put, del } from "@vercel/blob";
+import sharp from "sharp";
 import { getVendorById, patchVendor } from "@/lib/vendors";
 
+export const runtime = "nodejs";
+
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
+
+// Resize + WebP: vendor logos are shown at ~28-80px, so 400x400 is plenty.
+// Typical 150KB JPG → 4-8KB WebP with no visible quality loss.
+async function optimize(buffer: ArrayBuffer): Promise<Buffer> {
+  return sharp(Buffer.from(buffer))
+    .resize(400, 400, { fit: "cover", position: "attention" })
+    .webp({ quality: 80 })
+    .toBuffer();
+}
 
 async function isAdmin(req: NextRequest) {
   const cookie = req.cookies.get("admin_token");
@@ -53,12 +65,12 @@ export async function POST(
     }
   }
 
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const pathname = `vendors/${id}/logo-${Date.now()}.${ext}`;
+  const optimized = await optimize(await file.arrayBuffer());
+  const pathname = `vendors/${id}/logo-${Date.now()}.webp`;
 
-  const blob = await put(pathname, file, {
+  const blob = await put(pathname, optimized, {
     access: "public",
-    contentType: file.type,
+    contentType: "image/webp",
   });
 
   await patchVendor(id, { logoUrl: blob.url });
