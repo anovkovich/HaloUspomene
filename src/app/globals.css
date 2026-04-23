@@ -173,10 +173,27 @@ html {
 
 @keyframes birthday-rock {
   0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(10deg);
+  }
+  75% {
     transform: rotate(-10deg);
   }
-  50% {
-    transform: rotate(10deg);
+}
+
+@keyframes birthday-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: var(--enter-opacity, 1);
+    transform: scale(1);
   }
 }
 
@@ -194,6 +211,10 @@ html {
 
 .animate-birthday-rock {
   animation: birthday-rock var(--anim-duration, 4s) ease-in-out infinite;
+}
+
+.animate-birthday-enter {
+  animation: birthday-enter 0.7s cubic-bezier(0.34, 1.45, 0.64, 1) both;
 }
 
 @keyframes confetti-fall {

@@ -1,49 +1,6 @@
 "use client";
 
-import React from "react";
-
-// ─── Shared positioning helper ──────────────────────────────────────────────
-
-interface FloatProps {
-  x: string;
-  y: string;
-  size?: number;
-  delay?: number;
-  duration?: number;
-  opacity?: number;
-  rotate?: number;
-  className?: string;
-}
-
-function Float({
-  x,
-  y,
-  size = 40,
-  delay = 0,
-  duration = 6,
-  opacity = 0.5,
-  rotate = 0,
-  className = "animate-float",
-  children,
-}: FloatProps & { children: React.ReactNode }) {
-  return (
-    <div
-      className={`absolute pointer-events-none ${className}`}
-      style={{
-        left: x,
-        top: y,
-        width: size,
-        height: size,
-        animationDelay: `${delay}s`,
-        animationDuration: `${duration}s`,
-        opacity,
-        transform: `rotate(${rotate}deg)`,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
+import React, { useEffect, useState } from "react";
 
 // ─── Small accent SVGs (kept for scene richness) ───────────────────────────
 
@@ -131,22 +88,12 @@ const THEME_IMAGES: Record<string, string[]> = {
   ],
 };
 
-// F = float, D = drift, S = sway, T = twinkle, R = rock (tilt left-right)
-type Anim = "F" | "D" | "S" | "T" | "R";
-const ANIM_CLASS: Record<Anim, string> = {
-  F: "animate-birthday-float",
-  D: "animate-birthday-drift",
-  S: "animate-birthday-sway",
-  T: "animate-twinkle",
-  R: "animate-birthday-rock",
-};
+// Shared animation classes. All webp illustrations rock; accents twinkle.
+const ROCK_CLASS = "animate-birthday-rock";
+const TWINKLE_CLASS = "animate-twinkle";
 
-// Themes whose webp illustrations should rock side-to-side instead of
-// floating/drifting. Keeps the motion girlish and gentle.
-const ROCK_THEMES = new Set(["fairy", "princess"]);
-
-// 14 scattered slots for the webp illustrations — cycles through the theme's
-// 4-image pool so every image repeats 3–4 times at different sizes & positions.
+// 10 scattered slots for the webp illustrations — cycles through the theme's
+// 4-image pool so every image repeats 2–3 times at different sizes & positions.
 interface ImageSlot {
   x: string;
   y: string;
@@ -154,22 +101,20 @@ interface ImageSlot {
   delay: number;
   duration: number;
   opacity: number;
-  rotate: number;
-  anim: Anim;
   img: number;
 }
 
 const IMAGE_SLOTS: ImageSlot[] = [
-  { x: "-3%", y: "2%",  size: 140, delay: 0,   duration: 11, opacity: 0.6,  rotate: -6,  anim: "D", img: 0 },
-  { x: "76%", y: "0%",  size: 120, delay: 1,   duration: 10, opacity: 0.55, rotate: 6,   anim: "F", img: 1 },
-  { x: "30%", y: "22%", size: 85,  delay: 0.5, duration: 8,  opacity: 0.55, rotate: -12, anim: "S", img: 2 },
-  { x: "82%", y: "32%", size: 110, delay: 2,   duration: 9,  opacity: 0.5,  rotate: 10,  anim: "D", img: 3 },
-  { x: "-2%", y: "40%", size: 100, delay: 1.5, duration: 12, opacity: 0.5,  rotate: 4,   anim: "F", img: 0 },
-  { x: "64%", y: "56%", size: 115, delay: 2.5, duration: 10, opacity: 0.45, rotate: -6,  anim: "D", img: 2 },
-  { x: "28%", y: "50%", size: 75,  delay: 0.8, duration: 8,  opacity: 0.4,  rotate: -18, anim: "S", img: 1 },
-  { x: "-4%", y: "72%", size: 120, delay: 3,   duration: 11, opacity: 0.45, rotate: 8,   anim: "F", img: 3 },
-  { x: "80%", y: "76%", size: 95,  delay: 1.2, duration: 10, opacity: 0.4,  rotate: 5,   anim: "F", img: 1 },
-  { x: "36%", y: "84%", size: 90,  delay: 2,   duration: 9,  opacity: 0.4,  rotate: -3,  anim: "D", img: 2 },
+  { x: "-3%", y: "2%",  size: 140, delay: 0,   duration: 5.5, opacity: 0.6,  img: 0 },
+  { x: "76%", y: "0%",  size: 120, delay: 1,   duration: 4.5, opacity: 0.55, img: 1 },
+  { x: "30%", y: "22%", size: 85,  delay: 0.5, duration: 4,   opacity: 0.55, img: 3 },
+  { x: "82%", y: "32%", size: 110, delay: 2,   duration: 5,   opacity: 0.5,  img: 2 },
+  { x: "-2%", y: "40%", size: 100, delay: 1.5, duration: 6,   opacity: 0.5,  img: 1 },
+  { x: "64%", y: "56%", size: 115, delay: 2.5, duration: 5,   opacity: 0.45, img: 3 },
+  { x: "28%", y: "50%", size: 75,  delay: 0.8, duration: 4,   opacity: 0.4,  img: 0 },
+  { x: "-4%", y: "72%", size: 120, delay: 3,   duration: 5.5, opacity: 0.45, img: 2 },
+  { x: "80%", y: "76%", size: 95,  delay: 1.2, duration: 4.5, opacity: 0.4,  img: 0 },
+  { x: "36%", y: "84%", size: 90,  delay: 2,   duration: 4.5, opacity: 0.4,  img: 3 },
 ];
 
 // Small SVG accents — one shape per theme, colored from the theme's confetti
@@ -232,56 +177,90 @@ export function SceneDecorations({
 }) {
   const images = THEME_IMAGES[illustration];
 
+  // Gate the entry animation behind a client mount. SSR ships the elements
+  // at opacity:0 with no animation class, so there's no flash even if CSS
+  // or hydration is delayed. Once mounted, the animation class is added
+  // and the fade-in + scale-up plays from the identical starting state.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // `classic` (punoletstvo) or unknown illustration — skip decorations.
   if (!images) return null;
-
-  const rock = ROCK_THEMES.has(illustration);
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden pointer-events-none z-0">
       {IMAGE_SLOTS.map((slot, i) => {
         const src = `/images/child-invitations/${images[slot.img]}.webp`;
         return (
-          <Float
+          <div
             key={`img-${i}`}
-            x={slot.x}
-            y={slot.y}
-            size={slot.size}
-            delay={slot.delay}
-            duration={slot.duration}
-            opacity={slot.opacity}
-            rotate={slot.rotate}
-            className={ANIM_CLASS[rock ? "R" : slot.anim]}
+            className={`absolute pointer-events-none ${mounted ? "animate-birthday-enter" : ""}`}
+            style={
+              {
+                left: slot.x,
+                top: slot.y,
+                width: slot.size,
+                height: slot.size,
+                opacity: 0,
+                transform: "scale(0.3)",
+                animationDelay: `${0.1 + i * 0.06}s`,
+                "--enter-opacity": slot.opacity,
+              } as React.CSSProperties
+            }
           >
-            <img
-              src={src}
-              alt=""
-              className="w-full h-full"
-              style={{ objectFit: "contain" }}
-              loading="lazy"
-              decoding="async"
-              draggable={false}
-            />
-          </Float>
+            <div
+              className={`w-full h-full ${ROCK_CLASS}`}
+              style={{
+                animationDelay: `${slot.delay}s`,
+                animationDuration: `${slot.duration}s`,
+              }}
+            >
+              <img
+                src={src}
+                alt=""
+                className="w-full h-full"
+                style={{ objectFit: "contain" }}
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+              />
+            </div>
+          </div>
         );
       })}
       {ACCENT_SLOTS.map((slot, i) => (
-        <Float
+        <div
           key={`accent-${i}`}
-          x={slot.x}
-          y={slot.y}
-          size={slot.size}
-          delay={slot.delay}
-          duration={slot.duration}
-          opacity={slot.opacity}
-          rotate={slot.rotate}
-          className={ANIM_CLASS.T}
+          className={`absolute pointer-events-none ${mounted ? "animate-birthday-enter" : ""}`}
+          style={
+            {
+              left: slot.x,
+              top: slot.y,
+              width: slot.size,
+              height: slot.size,
+              opacity: 0,
+              transform: "scale(0.3)",
+              animationDelay: `${0.3 + i * 0.05}s`,
+              "--enter-opacity": slot.opacity,
+            } as React.CSSProperties
+          }
         >
-          <AccentSvg
-            shape={THEME_ACCENT[illustration]}
-            color={confetti[slot.color % confetti.length]}
-          />
-        </Float>
+          <div
+            className={`w-full h-full ${TWINKLE_CLASS}`}
+            style={{
+              animationDelay: `${slot.delay}s`,
+              animationDuration: `${slot.duration}s`,
+              transform: `rotate(${slot.rotate}deg)`,
+            }}
+          >
+            <AccentSvg
+              shape={THEME_ACCENT[illustration]}
+              color={confetti[slot.color % confetti.length]}
+            />
+          </div>
+        </div>
       ))}
     </div>
   );

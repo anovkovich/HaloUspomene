@@ -261,7 +261,7 @@ export default function BirthdayClient({ data, slug }: Props) {
                   height="350"
                   style={{ border: 0 }}
                   allowFullScreen
-                  loading="lazy"
+                  loading="eager"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
               </div>

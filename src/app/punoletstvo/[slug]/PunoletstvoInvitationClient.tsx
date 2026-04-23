@@ -688,7 +688,7 @@ export default function PunoletstvoInvitationClient({ data, slug }: Props) {
                     <iframe
                       src={data.location.map_url}
                       className="w-full h-72 sm:h-96 border-0"
-                      loading="lazy"
+                      loading="eager"
                       referrerPolicy="no-referrer-when-downgrade"
                       title={`Mapa — ${data.location.name}`}
                     />
