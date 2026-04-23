@@ -48,7 +48,11 @@ export async function POST(request: NextRequest) {
 
     // Build WeddingData
     const weddingData: WeddingData = {
-      theme: body.theme || "luxury_gold",
+      // Premium pozivnice uvek koriste "luxury_gold" klasičnu temu — gold
+      // paleta se povlači u svaki downstream PDF/QR/raspored generator koji
+      // čita `theme` polje. Premium vizuelni stil živi odvojeno u
+      // `premium_theme` (watercolor / line_art).
+      theme: "luxury_gold",
       scriptFont: body.scriptFont || "great-vibes",
       useCyrillic: body.useCyrillic ?? false,
       potvrde_password: autoPassword,

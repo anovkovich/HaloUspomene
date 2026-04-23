@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, CalendarPlus, Phone, X } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
 import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
@@ -42,8 +42,15 @@ interface CoupleStats {
   audio: { messageCount: number } | null;
 }
 
+function resolveInitialTab(): AdminTab {
+  if (typeof window === "undefined") return "pozivnice";
+  const t = new URLSearchParams(window.location.search).get("tab");
+  if (t === "rodjendani" || t === "vendori" || t === "pozivnice") return t;
+  return "pozivnice";
+}
+
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<AdminTab>("pozivnice");
+  const [activeTab, setActiveTab] = useState<AdminTab>(resolveInitialTab);
   const [couples, setCouples] = useState<Couple[]>([]);
   const [stats, setStats] = useState<Record<string, CoupleStats>>({});
   const [loading, setLoading] = useState(true);
@@ -497,36 +504,6 @@ export default function AdminPage() {
                       title="Kopiraj link pozivnice"
                     >
                       {copiedSlug === c.slug ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-                    </button>
-                    <button
-                      disabled={!c.event_date}
-                      onClick={() => {
-                        if (!c.event_date) return;
-                        const d = new Date(c.event_date);
-                        const pad = (n: number) => String(n).padStart(2, "0");
-                        const dateStr = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
-                        const ics = [
-                          "BEGIN:VCALENDAR",
-                          "VERSION:2.0",
-                          "BEGIN:VEVENT",
-                          `DTSTART;VALUE=DATE:${dateStr}`,
-                          `DTEND;VALUE=DATE:${dateStr}`,
-                          `SUMMARY:Venčanje — ${c.couple_names?.full_display || c.slug}`,
-                          `URL:https://halouspomene.rs/pozivnica/${c.slug}`,
-                          "END:VEVENT",
-                          "END:VCALENDAR",
-                        ].join("\r\n");
-                        const blob = new Blob([ics], { type: "text/calendar" });
-                        const a = document.createElement("a");
-                        a.href = URL.createObjectURL(blob);
-                        a.download = `vencanje-${c.slug}.ics`;
-                        a.click();
-                        URL.revokeObjectURL(a.href);
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed"
-                      title={c.event_date ? "Dodaj u kalendar" : "Nema datuma"}
-                    >
-                      <CalendarPlus size={14} />
                     </button>
                     <button
                       onClick={() => router.push(`/admin/${c.slug}`)}

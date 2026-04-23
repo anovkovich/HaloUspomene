@@ -520,7 +520,7 @@ export function AgeBadge({
         className="text-5xl sm:text-7xl font-bold text-white drop-shadow-lg"
         style={{ fontFamily: "var(--theme-display-font)" }}
       >
-        {age}
+        {age}.
       </span>
       <div className="absolute inset-0 rounded-full border-4 border-white/20" />
     </div>

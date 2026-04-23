@@ -4,7 +4,11 @@ export const revalidate = 60;
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
+import {
+  getWeddingData,
+  getClassicWeddingSlugs,
+  getPremiumWeddingSlugs,
+} from "@/data/pozivnice";
 import { loadSeatingLayout } from "@/lib/seating";
 import { getThemeCSSVariables } from "../constants";
 import type { TableData } from "../raspored-sedenja/types";
@@ -29,7 +33,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function generateStaticParams() {
-  const slugs = await getClassicWeddingSlugs(); return slugs.map((slug) => ({ slug }));
+  // Premium couples use this same /pozivnica/{slug}/gde-sedim/ URL for their
+  // seating-lookup, so both sets of slugs must be pre-rendered here.
+  const [classic, premium] = await Promise.all([
+    getClassicWeddingSlugs(),
+    getPremiumWeddingSlugs(),
+  ]);
+  return [...classic, ...premium].map((slug) => ({ slug }));
 }
 
 export interface GuestTableEntry {
@@ -115,10 +125,14 @@ export default async function GdeSedimPage({ params }: PageProps) {
       >
         <div className="max-w-lg mx-auto px-4 py-10 sm:py-14">
 
-          {/* Back link */}
+          {/* Back link — premium couples live under /premium-pozivnica, classic under /pozivnica */}
           <div className="mb-8">
             <Link
-              href={`/pozivnica/${slug}`}
+              href={
+                weddingData.premium
+                  ? `/premium-pozivnica/${slug}`
+                  : `/pozivnica/${slug}`
+              }
               className="inline-flex items-center gap-1.5 text-sm font-raleway transition-opacity hover:opacity-60"
               style={{ color: "var(--theme-text-light)" }}
             >

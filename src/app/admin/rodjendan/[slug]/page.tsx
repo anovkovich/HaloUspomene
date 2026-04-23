@@ -102,7 +102,7 @@ export default function EditBirthdayPage() {
   return (
     <div>
       <Link
-        href="/admin"
+        href="/admin?tab=rodjendani"
         className="inline-flex items-center gap-1 text-white/40 hover:text-white mb-6 text-sm transition-colors"
       >
         <ArrowLeft size={14} /> Nazad

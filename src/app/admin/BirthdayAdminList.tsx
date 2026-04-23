@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ExternalLink, Pencil, Users, Cake } from "lucide-react";
+import { Plus, Trash2, Copy, Check, Pencil, Users, Cake } from "lucide-react";
 
 interface Birthday {
   slug: string;
@@ -30,6 +30,7 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -165,14 +166,23 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <a
-                      href={`/deciji-rodjendan/${b.slug}`}
-                      target="_blank"
-                      className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white"
-                      title="Otvori pozivnicu"
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `https://halouspomene.rs/deciji-rodjendan/${b.slug}`,
+                        );
+                        setCopiedSlug(b.slug);
+                        setTimeout(() => setCopiedSlug(null), 2000);
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white cursor-pointer"
+                      title="Kopiraj link pozivnice"
                     >
-                      <ExternalLink size={14} />
-                    </a>
+                      {copiedSlug === b.slug ? (
+                        <Check size={14} className="text-green-400" />
+                      ) : (
+                        <Copy size={14} />
+                      )}
+                    </button>
                     <button
                       onClick={() => router.push(`/admin/rodjendan/${b.slug}`)}
                       className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white cursor-pointer"

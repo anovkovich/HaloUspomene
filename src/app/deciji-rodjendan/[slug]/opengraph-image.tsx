@@ -162,7 +162,7 @@ export default async function OGImage({
             color: "white",
           }}
         >
-          {data.age}
+          {data.age}.
         </span>
       </div>
 

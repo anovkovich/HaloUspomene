@@ -41,33 +41,6 @@ function blendColor(
   ];
 }
 
-async function svgToDataUrl(
-  svgUrl: string,
-  tintColor: string,
-  width: number,
-  height: number,
-): Promise<string> {
-  const res = await fetch(svgUrl);
-  const svgText = await res.text();
-  const tinted = svgText.replace(/stroke="[^"]*"/, `stroke="${tintColor}"`);
-  const blob = new Blob([tinted], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  return new Promise((resolve) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = width * 2;
-    canvas.height = height * 2;
-    const ctx = canvas.getContext("2d")!;
-    ctx.scale(2, 2);
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, width, height);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/png"));
-    };
-    img.src = url;
-  });
-}
-
 async function loadFont(path: string): Promise<string> {
   const res = await fetch(path);
   const buf = await res.arrayBuffer();
@@ -227,30 +200,7 @@ export async function generateWelcomePDF(
 
   // ── Content ─────────────────────────────────────────────────────────────
 
-  let y = 140;
-
-  // Flower ornament at the top
-  try {
-    const flowerW = 260;
-    const flowerH = Math.round(flowerW * (232 / 842));
-    const flowerDataUrl = await svgToDataUrl(
-      "/flower-divider.svg",
-      themeConfig.colors.primary,
-      flowerW * 3,
-      flowerH * 3,
-    );
-    doc.addImage(
-      flowerDataUrl,
-      "PNG",
-      cx - flowerW / 2,
-      y,
-      flowerW,
-      flowerH,
-    );
-    y += flowerH + 32;
-  } catch {
-    y += 12;
-  }
+  let y = 220;
 
   // "Dobrodošli na naše venčanje!" — calligraphy
   const welcomeText = useCyrillic
@@ -265,11 +215,7 @@ export async function generateWelcomePDF(
     welcomeSize -= 4;
   }
   centerText(welcomeText, y, welcomeSize, "Script", text);
-  y += welcomeSize * 0.45 + 22;
-
-  // Heart divider — sits between the welcome line and the couple names
-  drawHeartDivider(y);
-  y += 34;
+  y += welcomeSize * 0.35 + 14;
 
   // Couple names — even bigger, script
   let nameSize = 160;
@@ -280,23 +226,50 @@ export async function generateWelcomePDF(
     nameSize -= 6;
   }
   centerText(coupleDisplay, y, nameSize, "Script", primary);
-  y += nameSize * 0.5 + 24;
+  y += nameSize * 0.32 + 26;
 
-  // Body instruction
-  const body = useCyrillic
-    ? "Молимо вас скенирајте QR код и пронађите своје место седења"
-    : "Molimo vas skenirajte QR kod i pronađite svoje mesto sedenja";
-  doc.setFont(bodyFont, "normal");
-  doc.setFontSize(36);
-  doc.setTextColor(...textMuted);
-  const bodyLines = doc.splitTextToSize(body, W - innerMargin * 2 - 80);
-  doc.text(bodyLines, cx, y, { align: "center" });
-  y += bodyLines.length * 18 + 32;
+  // Heart divider — sits below the couple names
+  drawHeartDivider(y);
+  y += 24;
 
-  // QR code — centered, anchored so footer has room.
+  // Body + QR sit a bit below their natural flow position, so the page
+  // doesn't have a big empty tail after the QR — but not all the way at
+  // the bottom either.
   const qrSize = 280;
-  const footerReserve = 90;
-  const qrY = Math.max(y, H - footerReserve - qrSize);
+  const footerReserve = 220;
+  const bodyToQrGap = 28;
+  const line1Size = 38;
+  const line2Size = 60;
+  const line1Height = line1Size * 0.55;
+  const line2Height = line2Size * 0.42;
+  const interLineGap = 8;
+  const bodyBlockHeight =
+    line1Height + interLineGap + line2Height;
+  const minBodyY =
+    H - footerReserve - qrSize - bodyToQrGap - bodyBlockHeight;
+  if (y < minBodyY) y = minBodyY;
+
+  // Body instruction — two lines, second line noticeably bigger
+  const line1 = useCyrillic
+    ? "Молимо Вас скенирајте QR код и"
+    : "Molimo Vas skenirajte QR kod i";
+  const line2 = useCyrillic
+    ? "пронађите своје место седења"
+    : "pronađite svoje mesto sedenja";
+
+  doc.setFont(bodyFont, "normal");
+  doc.setFontSize(line1Size);
+  doc.setTextColor(...textMuted);
+  doc.text(line1, cx, y, { align: "center" });
+  y += line1Height + interLineGap;
+
+  doc.setFontSize(line2Size);
+  doc.setTextColor(...text);
+  doc.text(line2, cx, y, { align: "center" });
+  y += line2Height + bodyToQrGap;
+
+  // QR code — centered near the bottom.
+  const qrY = y;
 
   try {
     const qrUrl = `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
