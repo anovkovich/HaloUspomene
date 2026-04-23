@@ -131,14 +131,19 @@ const THEME_IMAGES: Record<string, string[]> = {
   ],
 };
 
-// F = float, D = drift, S = sway, T = twinkle
-type Anim = "F" | "D" | "S" | "T";
+// F = float, D = drift, S = sway, T = twinkle, R = rock (tilt left-right)
+type Anim = "F" | "D" | "S" | "T" | "R";
 const ANIM_CLASS: Record<Anim, string> = {
   F: "animate-birthday-float",
   D: "animate-birthday-drift",
   S: "animate-birthday-sway",
   T: "animate-twinkle",
+  R: "animate-birthday-rock",
 };
+
+// Themes whose webp illustrations should rock side-to-side instead of
+// floating/drifting. Keeps the motion girlish and gentle.
+const ROCK_THEMES = new Set(["fairy", "princess"]);
 
 // 14 scattered slots for the webp illustrations — cycles through the theme's
 // 4-image pool so every image repeats 3–4 times at different sizes & positions.
@@ -230,6 +235,8 @@ export function SceneDecorations({
   // `classic` (punoletstvo) or unknown illustration — skip decorations.
   if (!images) return null;
 
+  const rock = ROCK_THEMES.has(illustration);
+
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden pointer-events-none z-0">
       {IMAGE_SLOTS.map((slot, i) => {
@@ -244,7 +251,7 @@ export function SceneDecorations({
             duration={slot.duration}
             opacity={slot.opacity}
             rotate={slot.rotate}
-            className={ANIM_CLASS[slot.anim]}
+            className={ANIM_CLASS[rock ? "R" : slot.anim]}
           >
             <img
               src={src}

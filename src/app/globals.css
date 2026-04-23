@@ -171,6 +171,15 @@ html {
   }
 }
 
+@keyframes birthday-rock {
+  0%, 100% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+
 .animate-birthday-float {
   animation: birthday-float var(--anim-duration, 6s) ease-in-out infinite;
 }
@@ -181,6 +190,10 @@ html {
 
 .animate-birthday-sway {
   animation: birthday-sway var(--anim-duration, 7s) ease-in-out infinite;
+}
+
+.animate-birthday-rock {
+  animation: birthday-rock var(--anim-duration, 4s) ease-in-out infinite;
 }
 
 @keyframes confetti-fall {
