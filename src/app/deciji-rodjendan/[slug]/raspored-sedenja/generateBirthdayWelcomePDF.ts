@@ -179,9 +179,13 @@ export async function generateBirthdayWelcomePDF(
 
   let y = 220;
 
-  // Headline: "{name} proslavlja {age}. rođendan/punoletstvo"
-  const eventWord = type === "eighteenth" ? "punoletstvo" : "rođendan";
-  const headline = `${honoreeName} proslavlja ${age}. ${eventWord}`;
+  // Headline:
+  //  - child:       "{name} proslavlja {age}. rođendan"
+  //  - eighteenth:  "{name} proslavlja punoletstvo" (age is implicit)
+  const headline =
+    type === "eighteenth"
+      ? `${honoreeName} proslavlja punoletstvo`
+      : `${honoreeName} proslavlja ${age}. rođendan`;
 
   // Auto-fit — long names/Cyrillic shouldn't overflow the inner frame.
   let headlineSize = 118;
