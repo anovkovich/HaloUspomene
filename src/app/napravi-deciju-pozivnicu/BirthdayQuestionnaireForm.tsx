@@ -79,7 +79,7 @@ const defaultFormData: FormData = {
   contact_phone: "",
   location_name: "",
   location_address: "",
-  theme: "boy_adventure",
+  theme: "boy_animals",
   displayFont: "fredoka",
   tagline: "",
   countdown_enabled: true,

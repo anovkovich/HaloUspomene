@@ -35,27 +35,6 @@ export const BIRTHDAY_FONT_CONFIGS: Record<BirthdayFontType, BirthdayFontConfig>
 };
 
 export const BIRTHDAY_THEME_CONFIGS: Record<BirthdayThemeType, BirthdayThemeConfig> = {
-  boy_adventure: {
-    name: "Avantura",
-    gender: "boy",
-    colors: {
-      primary: "#4ECDC4",
-      primaryLight: "#7EDDD6",
-      primaryMuted: "rgba(78, 205, 196, 0.15)",
-      secondary: "#FF6B35",
-      background: "#F0FFFE",
-      surface: "#E6FAF8",
-      surfaceAlt: "#D6F5F2",
-      text: "#1A3A38",
-      textMuted: "#4A7A78",
-      textLight: "#8ABAB8",
-      border: "rgba(78, 205, 196, 0.25)",
-      borderLight: "rgba(78, 205, 196, 0.12)",
-      confetti: ["#4ECDC4", "#FF6B35", "#FFE66D", "#95E1D3", "#F38181"],
-    },
-    illustration: "adventure",
-  },
-
   boy_animals: {
     name: "Safari",
     gender: "boy",
@@ -138,27 +117,6 @@ export const BIRTHDAY_THEME_CONFIGS: Record<BirthdayThemeType, BirthdayThemeConf
       confetti: ["#F472B6", "#FFD700", "#FCA5A5", "#FBBF24", "#F9A8D4"],
     },
     illustration: "princess",
-  },
-
-  girl_rainbow: {
-    name: "Sunčana",
-    gender: "girl",
-    colors: {
-      primary: "#F0ABFC",
-      primaryLight: "#F5D0FE",
-      primaryMuted: "rgba(240, 171, 252, 0.12)",
-      secondary: "#93C5FD",
-      background: "#FEFBFF",
-      surface: "#FBF3FF",
-      surfaceAlt: "#F5E8FF",
-      text: "#2A1A3A",
-      textMuted: "#7A5A8A",
-      textLight: "#B090C0",
-      border: "rgba(240, 171, 252, 0.2)",
-      borderLight: "rgba(240, 171, 252, 0.1)",
-      confetti: ["#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF"],
-    },
-    illustration: "rainbow",
   },
 
   neutral_safari: {

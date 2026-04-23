@@ -3,12 +3,10 @@ export type BirthdayGender = "boy" | "girl" | "neutral";
 export type BirthdayType = "child" | "eighteenth";
 
 export type BirthdayThemeType =
-  | "boy_adventure"
   | "boy_animals"
   | "boy_space"
   | "girl_fairy"
   | "girl_princess"
-  | "girl_rainbow"
   | "neutral_safari"
   | "neutral_circus"
   | "white_gold_burgundy"

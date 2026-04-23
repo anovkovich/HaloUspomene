@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     const data: BirthdayData = {
       type: "child",
-      theme: (body.theme || "boy_adventure") as BirthdayThemeType,
+      theme: (body.theme || "boy_animals") as BirthdayThemeType,
       gender: (body.gender || "boy") as BirthdayGender,
       displayFont: (body.displayFont || "fredoka") as BirthdayFontType,
       child_name: childName,
