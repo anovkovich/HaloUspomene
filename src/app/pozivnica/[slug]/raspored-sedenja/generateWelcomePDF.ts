@@ -247,9 +247,9 @@ export async function generateWelcomePDF(
       flowerW,
       flowerH,
     );
-    y += flowerH + 56;
+    y += flowerH + 36;
   } catch {
-    y += 20;
+    y += 16;
   }
 
   // "Dobrodošli na naše venčanje!" — calligraphy
@@ -265,7 +265,11 @@ export async function generateWelcomePDF(
     welcomeSize -= 4;
   }
   centerText(welcomeText, y, welcomeSize, "Script", text);
-  y += welcomeSize * 0.45 + 30;
+  y += welcomeSize * 0.45 + 22;
+
+  // Heart divider — sits between the welcome line and the couple names
+  drawHeartDivider(y);
+  y += 34;
 
   // Couple names — even bigger, script
   let nameSize = 160;
@@ -276,11 +280,7 @@ export async function generateWelcomePDF(
     nameSize -= 6;
   }
   centerText(coupleDisplay, y, nameSize, "Script", primary);
-  y += nameSize * 0.5 + 40;
-
-  // Heart divider
-  drawHeartDivider(y);
-  y += 44;
+  y += nameSize * 0.5 + 24;
 
   // Body instruction
   const body = useCyrillic
@@ -291,10 +291,10 @@ export async function generateWelcomePDF(
   doc.setTextColor(...textMuted);
   const bodyLines = doc.splitTextToSize(body, W - innerMargin * 2 - 80);
   doc.text(bodyLines, cx, y, { align: "center" });
-  y += bodyLines.length * 18 + 48;
+  y += bodyLines.length * 18 + 32;
 
-  // QR code — large, centered, anchored so footer has room.
-  const qrSize = 320;
+  // QR code — centered, anchored so footer has room.
+  const qrSize = 280;
   const footerReserve = 90;
   const qrY = Math.max(y, H - footerReserve - qrSize);
 
