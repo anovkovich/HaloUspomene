@@ -231,7 +231,7 @@ export async function generateWelcomePDF(
 
   // Flower ornament at the top
   try {
-    const flowerW = 380;
+    const flowerW = 260;
     const flowerH = Math.round(flowerW * (232 / 842));
     const flowerDataUrl = await svgToDataUrl(
       "/flower-divider.svg",
@@ -247,9 +247,9 @@ export async function generateWelcomePDF(
       flowerW,
       flowerH,
     );
-    y += flowerH + 36;
+    y += flowerH + 32;
   } catch {
-    y += 16;
+    y += 12;
   }
 
   // "Dobrodošli na naše venčanje!" — calligraphy
@@ -257,9 +257,9 @@ export async function generateWelcomePDF(
     ? "Добродошли на наше венчање!"
     : "Dobrodošli na naše venčanje!";
   // Auto-fit so long Cyrillic never overflows.
-  let welcomeSize = 96;
+  let welcomeSize = 128;
   doc.setFont("Script");
-  while (welcomeSize > 56) {
+  while (welcomeSize > 72) {
     doc.setFontSize(welcomeSize);
     if (doc.getTextWidth(welcomeText) <= W - innerMargin * 2 - 60) break;
     welcomeSize -= 4;
