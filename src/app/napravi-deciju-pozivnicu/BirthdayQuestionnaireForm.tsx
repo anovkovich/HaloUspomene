@@ -372,11 +372,14 @@ function Step1({
                 type="button"
                 onClick={() => {
                   updateField("gender", val);
-                  // Auto-switch theme when gender changes
+                  // Auto-switch theme when gender changes (skip punoletstvo
+                  // palettes — their illustration is "classic")
                   const currentThemeGender = BIRTHDAY_THEME_CONFIGS[formData.theme].gender;
                   if (val !== currentThemeGender && currentThemeGender !== "neutral") {
                     const firstTheme = Object.entries(BIRTHDAY_THEME_CONFIGS).find(
-                      ([, cfg]) => cfg.gender === val || cfg.gender === "neutral",
+                      ([, cfg]) =>
+                        (cfg.gender === val || cfg.gender === "neutral") &&
+                        cfg.illustration !== "classic",
                     );
                     if (firstTheme) updateField("theme", firstTheme[0] as BirthdayThemeType);
                   }
@@ -511,10 +514,13 @@ function Step3({
     (typeof BIRTHDAY_THEME_CONFIGS)[BirthdayThemeType],
   ][];
 
-  // Filter themes by gender (show matching + neutral)
+  // Filter themes by gender (show matching + neutral) and exclude the
+  // "classic" illustration palettes — those are punoletstvo-only and live
+  // in /napravi-punoletstvo, not this children's flow.
   const filteredThemes = themes.filter(
     ([, cfg]) =>
-      cfg.gender === formData.gender || cfg.gender === "neutral",
+      (cfg.gender === formData.gender || cfg.gender === "neutral") &&
+      cfg.illustration !== "classic",
   );
 
   const fonts = Object.entries(BIRTHDAY_FONT_CONFIGS) as [
