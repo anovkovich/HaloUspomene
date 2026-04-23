@@ -36,9 +36,22 @@ import UpgradeModal from "./UpgradeModal";
 import MobileTableCard from "./MobileTableCard";
 import MobileSeatSheet from "./MobileSeatSheet";
 import MobileLayoutScreen from "./MobileLayoutScreen";
-import { saveRaspored, loadRaspored, checkPaidStatus } from "./actions";
+import {
+  saveRaspored as defaultSaveRaspored,
+  loadRaspored as defaultLoadRaspored,
+  checkPaidStatus as defaultCheckPaidStatus,
+} from "./actions";
 import { generateAndDownloadPDF } from "./generatePDF";
 import { generateWelcomePDF } from "./generateWelcomePDF";
+
+type RasporedActions = {
+  save: (
+    slug: string,
+    json: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  load: (slug: string) => Promise<string | null>;
+  checkPaid: (slug: string) => Promise<boolean>;
+};
 
 interface Props {
   attending: RSVPEntry[];
@@ -48,6 +61,20 @@ interface Props {
   theme: ThemeType;
   scriptFont?: ScriptFontType;
   useCyrillic: boolean;
+  /**
+   * Override for the save/load/checkPaid server actions. Defaults to the
+   * wedding actions in ./actions. Birthday routes pass their own trio
+   * that read/write paid_for_raspored from the birthday_events collection.
+   */
+  actions?: RasporedActions;
+  /** Back-link target, forwarded to Toolbar. */
+  backHref?: string;
+  /**
+   * Override for the B1 welcome PDF generator. Defaults to the wedding
+   * generateWelcomePDF. Birthday routes pass a wrapper that calls the
+   * birthday-specific generator with age + type + birthday theme data.
+   */
+  onGenerateWelcomePDF?: () => void | Promise<void>;
 }
 
 function createTable(
@@ -75,7 +102,13 @@ export default function RasporedClient({
   theme,
   scriptFont,
   useCyrillic,
+  actions,
+  backHref,
+  onGenerateWelcomePDF,
 }: Props) {
+  const saveRaspored = actions?.save ?? defaultSaveRaspored;
+  const loadRaspored = actions?.load ?? defaultLoadRaspored;
+  const checkPaidStatus = actions?.checkPaid ?? defaultCheckPaidStatus;
   const [tables, setTables] = useState<TableData[]>([]);
   const [selectedGuest, setSelectedGuest] = useState<RSVPEntry | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -552,13 +585,17 @@ export default function RasporedClient({
                   <button
                     onClick={async () => {
                       setShowMobileMenu(false);
-                      await generateWelcomePDF({
-                        slug,
-                        coupleDisplay: coupleNames,
-                        theme,
-                        scriptFont,
-                        useCyrillic,
-                      });
+                      if (onGenerateWelcomePDF) {
+                        await onGenerateWelcomePDF();
+                      } else {
+                        await generateWelcomePDF({
+                          slug,
+                          coupleDisplay: coupleNames,
+                          theme,
+                          scriptFont,
+                          useCyrillic,
+                        });
+                      }
                     }}
                     className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium active:bg-black/5"
                     style={{ color: "var(--theme-text)" }}
@@ -894,6 +931,8 @@ export default function RasporedClient({
             theme={theme}
             scriptFont={scriptFont}
             useCyrillic={useCyrillic}
+            backHref={backHref}
+            onGenerateWelcomePDF={onGenerateWelcomePDF}
             onSave={() => handleSave()}
             onDownloadPDF={() =>
               generateAndDownloadPDF(tables, attending, coupleNames, slug)

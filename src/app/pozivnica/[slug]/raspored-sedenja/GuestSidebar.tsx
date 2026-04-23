@@ -31,6 +31,10 @@ export default function GuestSidebar({
   const [search, setSearch] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
 
+  // Birthday RSVPs don't carry wedding-side categories (Mladini/Mladoženjini/…),
+  // so the filter becomes noise — hide it entirely when no guest has one.
+  const hasCategorizedGuests = attending.some((g) => !!g.category);
+
   const categoryFiltered = attending.filter((g) => {
     if (filter === "") return true;
     if (filter === "Nekategorisani") return !g.category;
@@ -100,22 +104,24 @@ export default function GuestSidebar({
         className="px-3 py-2 border-b flex flex-col gap-1.5"
         style={{ borderColor: "var(--theme-border-light)" }}
       >
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="w-full text-xs font-raleway px-2 py-1.5 rounded outline-none"
-          style={{
-            backgroundColor: "var(--theme-background)",
-            border: "1px solid var(--theme-border-light)",
-            color: "var(--theme-text)",
-          }}
-        >
-          {FILTER_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        {hasCategorizedGuests && (
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="w-full text-xs font-raleway px-2 py-1.5 rounded outline-none"
+            style={{
+              backgroundColor: "var(--theme-background)",
+              border: "1px solid var(--theme-border-light)",
+              color: "var(--theme-text)",
+            }}
+          >
+            {FILTER_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        )}
         <div className="relative">
           <input
             type="text"

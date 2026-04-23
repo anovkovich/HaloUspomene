@@ -61,3 +61,16 @@ export async function deleteBirthdayRSVPs(slug: string): Promise<number> {
   const result = await c.deleteMany({ slug });
   return result.deletedCount;
 }
+
+export async function updateBirthdayRSVPGuestCount(
+  id: string,
+  guestCount: number,
+): Promise<void> {
+  const c = await col();
+  await c.updateOne({ _id: new ObjectId(id) }, { $set: { guestCount } });
+}
+
+export async function deleteBirthdayRSVP(id: string): Promise<void> {
+  const c = await col();
+  await c.deleteOne({ _id: new ObjectId(id) });
+}

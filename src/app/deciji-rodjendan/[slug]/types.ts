@@ -52,6 +52,12 @@ export interface BirthdayData {
   map_enabled: boolean;
   admin_password?: string;
   draft?: boolean;
+  /**
+   * Unlocks the seating editor at /deciji-rodjendan/[slug]/raspored-sedenja/.
+   * Mirrors the wedding `paid_for_raspored` gate — admin flips it after
+   * the couple settles the custom receipt for this add-on.
+   */
+  paid_for_raspored?: boolean;
 }
 
 export interface BirthdayThemeConfig {

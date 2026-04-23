@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Copy, Check, Pencil, Users, Cake } from "lucide-react";
+import { Plus, Trash2, Copy, Check, Pencil, Users, Cake, Armchair } from "lucide-react";
 
 interface Birthday {
   slug: string;
@@ -13,6 +13,7 @@ interface Birthday {
   gender: string;
   age: number;
   draft?: boolean;
+  paid_for_raspored?: boolean;
 }
 
 interface BirthdayStats {
@@ -71,6 +72,27 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
       setBirthdays((prev) =>
         prev.map((b) =>
           b.slug === slug ? { ...b, draft: current } : b
+        )
+      );
+    }
+  }
+
+  async function handleToggleRaspored(slug: string, current: boolean) {
+    const newVal = !current;
+    setBirthdays((prev) =>
+      prev.map((b) =>
+        b.slug === slug ? { ...b, paid_for_raspored: newVal } : b
+      )
+    );
+    const res = await fetch(`/api/admin/birthdays/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paid_for_raspored: newVal }),
+    });
+    if (!res.ok) {
+      setBirthdays((prev) =>
+        prev.map((b) =>
+          b.slug === slug ? { ...b, paid_for_raspored: current } : b
         )
       );
     }
@@ -215,20 +237,42 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
                     </span>
                   </div>
                 )}
-                <div className="flex items-center gap-2 sm:ml-auto">
-                  <span className="text-xs text-white/30">Draft</span>
-                  <button
-                    onClick={() => handleToggleDraft(b.slug, !!b.draft)}
-                    className={`relative w-9 h-5 rounded-full transition-colors ${
-                      b.draft ? "bg-orange-400" : "bg-white/10"
-                    }`}
+                <div className="flex items-center gap-3 sm:ml-auto">
+                  <div
+                    className="flex items-center gap-1.5"
+                    title="Raspored sedenja"
                   >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                        b.draft ? "translate-x-4" : ""
+                    <Armchair size={12} className="text-white/30" />
+                    <button
+                      onClick={() =>
+                        handleToggleRaspored(b.slug, !!b.paid_for_raspored)
+                      }
+                      className={`relative w-9 h-5 rounded-full transition-colors ${
+                        b.paid_for_raspored ? "bg-green-500" : "bg-white/10"
                       }`}
-                    />
-                  </button>
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                          b.paid_for_raspored ? "translate-x-4" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-white/30">Draft</span>
+                    <button
+                      onClick={() => handleToggleDraft(b.slug, !!b.draft)}
+                      className={`relative w-9 h-5 rounded-full transition-colors ${
+                        b.draft ? "bg-orange-400" : "bg-white/10"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                          b.draft ? "translate-x-4" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -51,9 +51,9 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  // ── Birthday auth (portal) ─────────────────────────────────────────────
+  // ── Birthday auth (portal + raspored-sedenja) ─────────────────────────
   const birthdayMatch = pathname.match(
-    /^\/deciji-rodjendan\/([^/]+)\/(portal)(\/|$)/
+    /^\/deciji-rodjendan\/([^/]+)\/(portal|raspored-sedenja)(\/|$)/
   );
   if (birthdayMatch) {
     const slug = birthdayMatch[1];
@@ -85,5 +85,7 @@ export const config = {
     "/pozivnica/:slug/raspored-sedenja/:path*",
     "/deciji-rodjendan/:slug/portal",
     "/deciji-rodjendan/:slug/portal/:path*",
+    "/deciji-rodjendan/:slug/raspored-sedenja",
+    "/deciji-rodjendan/:slug/raspored-sedenja/:path*",
   ],
 };

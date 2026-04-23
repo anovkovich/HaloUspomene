@@ -31,6 +31,14 @@ interface Props {
   useCyrillic: boolean;
   onSave: () => void;
   onDownloadPDF: () => void;
+  /** Back-link target. Defaults to the wedding planner guests tab. */
+  backHref?: string;
+  /**
+   * Welcome PDF generator. When provided, replaces the default wedding
+   * generateWelcomePDF — useful so the birthday route can hand us a
+   * birthday-themed generator.
+   */
+  onGenerateWelcomePDF?: () => void | Promise<void>;
 }
 
 async function downloadQR(slug: string) {
@@ -66,6 +74,8 @@ export default function Toolbar({
   useCyrillic,
   onSave,
   onDownloadPDF,
+  backHref = "/moje-vencanje?tab=guests",
+  onGenerateWelcomePDF,
 }: Props) {
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -93,7 +103,7 @@ export default function Toolbar({
       }}
     >
       <Link
-        href="/moje-vencanje?tab=guests"
+        href={backHref}
         className="flex items-center gap-1.5 text-xs font-raleway transition-opacity hover:opacity-60"
         style={{ color: "var(--theme-text-light)" }}
       >
@@ -169,13 +179,17 @@ export default function Toolbar({
             />
             <button
               onClick={() => {
-                generateWelcomePDF({
-                  slug,
-                  coupleDisplay: coupleNames,
-                  theme,
-                  scriptFont,
-                  useCyrillic,
-                });
+                if (onGenerateWelcomePDF) {
+                  void onGenerateWelcomePDF();
+                } else {
+                  generateWelcomePDF({
+                    slug,
+                    coupleDisplay: coupleNames,
+                    theme,
+                    scriptFont,
+                    useCyrillic,
+                  });
+                }
                 setDownloadOpen(false);
               }}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"

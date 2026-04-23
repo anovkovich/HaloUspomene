@@ -1,7 +1,9 @@
 import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Armchair } from "lucide-react";
 import { getBirthdayData, getAllBirthdaySlugs } from "@/data/rodjendani";
 import { getBirthdayRSVP } from "@/lib/birthday-rsvp";
 import { getBirthdayThemeCSSVariables } from "../constants";
@@ -143,6 +145,26 @@ export default async function BirthdayPortalPage({ params }: PageProps) {
               Greška pri učitavanju prijava. Osvežite stranicu.
             </p>
           </div>
+        )}
+
+        {/* Raspored sedenja link — surfaces when admin has activated it */}
+        {data.paid_for_raspored && (
+          <Link
+            href={`/deciji-rodjendan/${slug}/raspored-sedenja`}
+            className="flex items-center justify-between gap-3 mb-6 p-4 rounded-2xl transition-opacity hover:opacity-90"
+            style={{
+              backgroundColor: "var(--theme-primary)",
+              color: "white",
+            }}
+          >
+            <span className="flex items-center gap-2.5">
+              <Armchair size={18} />
+              <span className="font-bold text-sm sm:text-base">
+                Raspored sedenja
+              </span>
+            </span>
+            <span className="text-xs opacity-80">Otvori →</span>
+          </Link>
         )}
 
         <BirthdayPortalClient
