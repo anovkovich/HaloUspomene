@@ -364,6 +364,22 @@ export default function RasporedClient({
         return { ...t, assignments: a };
       }),
     );
+
+    // Auto-advance to the next partially-seated guest when this click
+    // just maxed out the current selection (e.g. after 3rd seat of 3/3).
+    if (!isRemoving && selectedGuest) {
+      const total = parseInt(selectedGuest.guestCount) || 1;
+      const willBeFull =
+        (assignedCounts[selectedGuest.id] || 0) + 1 >= total;
+      if (willBeFull) {
+        const next = attending.find((g) => {
+          if (g.id === selectedGuest.id) return false;
+          const gTotal = parseInt(g.guestCount) || 1;
+          return (assignedCounts[g.id] || 0) < gTotal;
+        });
+        setSelectedGuest(next ?? null);
+      }
+    }
   };
 
   const handleStartOver = () => {
