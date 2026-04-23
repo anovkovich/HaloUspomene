@@ -125,7 +125,7 @@ export default function AdminVendorsPage() {
       );
     }
 
-    const metric = (v: Vendor): number => {
+    const metric = (v: VendorRow): number => {
       switch (sortKey) {
         case "views":
           return v.stats?.views ?? 0;
