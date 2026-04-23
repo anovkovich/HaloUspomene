@@ -11,8 +11,11 @@ import {
   FileDown,
   QrCode,
   Link2,
+  Heart,
 } from "lucide-react";
 import type { TableData } from "./types";
+import type { ScriptFontType, ThemeType } from "../types";
+import { generateWelcomePDF } from "./generateWelcomePDF";
 
 interface Props {
   slug: string;
@@ -23,6 +26,9 @@ interface Props {
   saveSuccess: boolean;
   saveError: string;
   paidForRaspored: boolean;
+  theme: ThemeType;
+  scriptFont?: ScriptFontType;
+  useCyrillic: boolean;
   onSave: () => void;
   onDownloadPDF: () => void;
 }
@@ -55,6 +61,9 @@ export default function Toolbar({
   saveSuccess,
   saveError,
   paidForRaspored,
+  theme,
+  scriptFont,
+  useCyrillic,
   onSave,
   onDownloadPDF,
 }: Props) {
@@ -140,7 +149,7 @@ export default function Toolbar({
             style={{
               backgroundColor: "var(--theme-surface)",
               border: "1px solid var(--theme-border-light)",
-              minWidth: 200,
+              minWidth: 230,
             }}
           >
             <button
@@ -153,6 +162,27 @@ export default function Toolbar({
             >
               <FileDown size={14} style={{ color: "var(--theme-primary)" }} />
               Preuzmi PDF raspored
+            </button>
+            <div
+              className="h-px"
+              style={{ backgroundColor: "var(--theme-border-light)" }}
+            />
+            <button
+              onClick={() => {
+                generateWelcomePDF({
+                  slug,
+                  coupleDisplay: coupleNames,
+                  theme,
+                  scriptFont,
+                  useCyrillic,
+                });
+                setDownloadOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
+              style={{ color: "var(--theme-text)" }}
+            >
+              <Heart size={14} style={{ color: "var(--theme-primary)" }} />
+              Preuzmi Welcome PDF (B1)
             </button>
             <div
               className="h-px"

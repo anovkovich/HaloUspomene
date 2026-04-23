@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import type { RSVPEntry } from "@/lib/rsvp";
 import type { TableData, TableType, SeatAssignment } from "./types";
+import type { ScriptFontType, ThemeType } from "../types";
 import {
   Menu,
   ZoomIn,
@@ -25,6 +26,7 @@ import {
   Plus,
   RotateCw,
   Search,
+  Heart,
 } from "lucide-react";
 import GuestSidebar from "./GuestSidebar";
 import TableNode from "./TableNode";
@@ -36,12 +38,16 @@ import MobileSeatSheet from "./MobileSeatSheet";
 import MobileLayoutScreen from "./MobileLayoutScreen";
 import { saveRaspored, loadRaspored, checkPaidStatus } from "./actions";
 import { generateAndDownloadPDF } from "./generatePDF";
+import { generateWelcomePDF } from "./generateWelcomePDF";
 
 interface Props {
   attending: RSVPEntry[];
   slug: string;
   coupleNames: string;
   paidForRaspored: boolean;
+  theme: ThemeType;
+  scriptFont?: ScriptFontType;
+  useCyrillic: boolean;
 }
 
 function createTable(
@@ -66,6 +72,9 @@ export default function RasporedClient({
   slug,
   coupleNames,
   paidForRaspored: initialPaid,
+  theme,
+  scriptFont,
+  useCyrillic,
 }: Props) {
   const [tables, setTables] = useState<TableData[]>([]);
   const [selectedGuest, setSelectedGuest] = useState<RSVPEntry | null>(null);
@@ -542,6 +551,24 @@ export default function RasporedClient({
                   <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
                   <button
                     onClick={async () => {
+                      setShowMobileMenu(false);
+                      await generateWelcomePDF({
+                        slug,
+                        coupleDisplay: coupleNames,
+                        theme,
+                        scriptFont,
+                        useCyrillic,
+                      });
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium active:bg-black/5"
+                    style={{ color: "var(--theme-text)" }}
+                  >
+                    <Heart size={16} style={{ color: "var(--theme-primary)" }} />
+                    Preuzmi Welcome PDF (B1)
+                  </button>
+                  <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
+                  <button
+                    onClick={async () => {
                       if (isDirty) { showToast("Sačuvaj pre preuzimanja"); setShowMobileMenu(false); return; }
                       const QRCode = (await import("qrcode")).default;
                       const url = `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
@@ -864,6 +891,9 @@ export default function RasporedClient({
             saveSuccess={saveSuccess}
             saveError={saveError}
             paidForRaspored={paidForRaspored}
+            theme={theme}
+            scriptFont={scriptFont}
+            useCyrillic={useCyrillic}
             onSave={() => handleSave()}
             onDownloadPDF={() =>
               generateAndDownloadPDF(tables, attending, coupleNames, slug)
