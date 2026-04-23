@@ -133,5 +133,22 @@ export async function signupAction(formData: {
     maxAge: 480 * 24 * 60 * 60,
   });
 
+  // Also set the pozivnica auth cookie — required by middleware to access
+  // /pozivnica/[slug]/raspored-sedenja and similar. Mirrors the behavior of
+  // /api/moje-vencanje/auth/[slug] so a draft couple who paid for raspored
+  // doesn't have to log in twice.
+  const pozivnicaToken = await new SignJWT({ slug })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("480d")
+    .sign(secret);
+
+  jar.set(`auth_${slug}`, pozivnicaToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: `/pozivnica/${slug}`,
+    maxAge: 480 * 24 * 60 * 60,
+  });
+
   return { ok: true, slug };
 }
