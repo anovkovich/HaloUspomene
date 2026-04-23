@@ -83,29 +83,6 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
     }
   }
 
-  // Empty state — no seating data published yet
-  if (guestLookup.length === 0) {
-    return (
-      <div
-        className="text-center py-14 px-6 rounded-xl"
-        style={{
-          backgroundColor: "var(--theme-surface)",
-          border: "1px solid var(--theme-border-light)",
-        }}
-      >
-        <p
-          className="font-raleway text-base mb-2"
-          style={{ color: "var(--theme-text-muted)" }}
-        >
-          Raspored sedenja još uvek nije objavljen
-        </p>
-        <p className="text-sm" style={{ color: "var(--theme-text-light)" }}>
-          Proverite ponovo nešto bliže datumu venčanja.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Search box */}
