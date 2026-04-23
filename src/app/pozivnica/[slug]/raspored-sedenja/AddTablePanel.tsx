@@ -22,6 +22,8 @@ interface Props {
   ) => void;
   totalSeats: number;
   occupiedSeats: number;
+  /** When true, hide wedding-only items (e.g. "Mladenački sto"). */
+  hideWeddingOnlyElements?: boolean;
 }
 
 export default function AddTablePanel({
@@ -29,6 +31,7 @@ export default function AddTablePanel({
   onAddDecoration,
   totalSeats,
   occupiedSeats,
+  hideWeddingOnlyElements,
 }: Props) {
   const [specialOpen, setSpecialOpen] = useState(false);
   const specialRef = useRef<HTMLDivElement>(null);
@@ -51,15 +54,21 @@ export default function AddTablePanel({
     color: "white",
   };
 
+  const weddingOnly = hideWeddingOnlyElements
+    ? []
+    : [
+        {
+          icon: <Crown size={13} />,
+          label: "Mladenački sto",
+          action: () => {
+            onAddTable("single-sided", "Mladenački sto", 6);
+            setSpecialOpen(false);
+          },
+        },
+      ];
+
   const specialItems = [
-    {
-      icon: <Crown size={13} />,
-      label: "Mladenački sto",
-      action: () => {
-        onAddTable("single-sided", "Mladenački sto", 6);
-        setSpecialOpen(false);
-      },
-    },
+    ...weddingOnly,
     {
       icon: <Music size={13} />,
       label: "Mesto za muziku",

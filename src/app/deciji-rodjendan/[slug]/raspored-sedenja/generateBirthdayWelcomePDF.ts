@@ -78,11 +78,11 @@ export async function generateBirthdayWelcomePDF(
   });
   const cx = W / 2;
 
-  // Load fonts. Fredoka-SemiBold handles both Latin diacritics and Cyrillic
-  // (covers "č", "ć", "đ", "š", "ž" and serbian cyrillic for future use).
-  // Serif/Sans fallbacks from the invitation font set for the body text.
+  // Caveat (handwritten, playful) for the display headline — proven with
+  // jsPDF in the wedding invitation PDF and covers Serbian Latin + Cyrillic.
+  // Cormorant Garamond / Josefin Sans for body lines, same as wedding flow.
   const [displayB64, serifB64, sansB64] = await Promise.all([
-    loadFont(`/fonts/birthday/Fredoka-SemiBold.ttf`),
+    loadFont(`/fonts/invitation/Caveat-Regular.ttf`),
     loadFont(`/fonts/invitation/CormorantGaramond-Regular.ttf`),
     loadFont(`/fonts/invitation/JosefinSans-Regular.ttf`),
   ]);
@@ -93,8 +93,8 @@ export async function generateBirthdayWelcomePDF(
   doc.addFileToVFS("Sans.ttf", sansB64);
   doc.addFont("Sans.ttf", "Sans", "normal");
 
-  // Josefin Sans doesn't cover full Latin-extended — fall back to Serif for
-  // body lines if needed. Fredoka SemiBold should handle common diacritics.
+  // Josefin Sans has broad Latin coverage and renders the short instruction
+  // lines cleanly; we keep the serif loaded as a safety net.
   const bodyFont = "Sans";
 
   // ── Helpers ─────────────────────────────────────────────────────────────

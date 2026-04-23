@@ -39,12 +39,19 @@ interface Props {
    * birthday-themed generator.
    */
   onGenerateWelcomePDF?: () => void | Promise<void>;
+  /**
+   * Full URL of the seat-lookup page used for QR + copy link. Defaults to
+   * the classic /pozivnica/{slug}/gde-sedim/. Birthday routes override with
+   * /deciji-rodjendan/{slug}/gde-sedim/.
+   */
+  guestLookupUrl?: string;
+  /** When true, hide wedding-only special elements (e.g. "Mladenački sto"). */
+  hideWeddingOnlyElements?: boolean;
 }
 
-async function downloadQR(slug: string) {
+async function downloadQR(slug: string, guestLookupUrl: string) {
   const QRCode = (await import("qrcode")).default;
-  const url = `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
-  const dataUrl = await QRCode.toDataURL(url, {
+  const dataUrl = await QRCode.toDataURL(guestLookupUrl, {
     width: 1200,
     margin: 2,
     color: { dark: "#232323", light: "#ffffff" },
@@ -55,9 +62,8 @@ async function downloadQR(slug: string) {
   a.click();
 }
 
-function copyGdeSedimLink(slug: string, onCopied: () => void) {
-  const url = `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
-  navigator.clipboard.writeText(url).then(onCopied);
+function copyGdeSedimLink(guestLookupUrl: string, onCopied: () => void) {
+  navigator.clipboard.writeText(guestLookupUrl).then(onCopied);
 }
 
 export default function Toolbar({
@@ -76,7 +82,10 @@ export default function Toolbar({
   onDownloadPDF,
   backHref = "/moje-vencanje?tab=guests",
   onGenerateWelcomePDF,
+  guestLookupUrl,
 }: Props) {
+  const lookupUrl =
+    guestLookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -178,25 +187,32 @@ export default function Toolbar({
               style={{ backgroundColor: "var(--theme-border-light)" }}
             />
             <button
-              onClick={() => {
-                if (onGenerateWelcomePDF) {
-                  void onGenerateWelcomePDF();
-                } else {
-                  generateWelcomePDF({
-                    slug,
-                    coupleDisplay: coupleNames,
-                    theme,
-                    scriptFont,
-                    useCyrillic,
-                  });
-                }
+              onClick={async () => {
                 setDownloadOpen(false);
+                try {
+                  if (onGenerateWelcomePDF) {
+                    await onGenerateWelcomePDF();
+                  } else {
+                    await generateWelcomePDF({
+                      slug,
+                      coupleDisplay: coupleNames,
+                      theme,
+                      scriptFont,
+                      useCyrillic,
+                    });
+                  }
+                } catch (err) {
+                  console.error("Welcome PDF failed:", err);
+                  alert(
+                    "Greška pri generisanju Welcome PDF-a. Pokušajte ponovo.",
+                  );
+                }
               }}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
               style={{ color: "var(--theme-text)" }}
             >
               <Heart size={14} style={{ color: "var(--theme-primary)" }} />
-              Preuzmi Welcome PDF (B1)
+              Preuzmi Welcome PDF
             </button>
             <div
               className="h-px"
@@ -204,7 +220,7 @@ export default function Toolbar({
             />
             <button
               onClick={() => {
-                downloadQR(slug);
+                downloadQR(slug, lookupUrl);
                 setDownloadOpen(false);
               }}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
@@ -219,7 +235,7 @@ export default function Toolbar({
             />
             <button
               onClick={() => {
-                copyGdeSedimLink(slug, () => {
+                copyGdeSedimLink(lookupUrl, () => {
                   setLinkCopied(true);
                   setTimeout(() => setLinkCopied(false), 2000);
                 });

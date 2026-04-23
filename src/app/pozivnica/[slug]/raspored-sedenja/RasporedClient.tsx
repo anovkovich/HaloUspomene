@@ -75,6 +75,14 @@ interface Props {
    * birthday-specific generator with age + type + birthday theme data.
    */
   onGenerateWelcomePDF?: () => void | Promise<void>;
+  /**
+   * Full URL for the guest-seat-lookup page (used in QR + copy link).
+   * Defaults to /pozivnica/{slug}/gde-sedim/; birthday routes pass
+   * /deciji-rodjendan/{slug}/gde-sedim/.
+   */
+  guestLookupUrl?: string;
+  /** When true, hide wedding-only elements (Mladenački sto) from the add-table UI. */
+  hideWeddingOnlyElements?: boolean;
 }
 
 function createTable(
@@ -105,10 +113,14 @@ export default function RasporedClient({
   actions,
   backHref,
   onGenerateWelcomePDF,
+  guestLookupUrl,
+  hideWeddingOnlyElements,
 }: Props) {
   const saveRaspored = actions?.save ?? defaultSaveRaspored;
   const loadRaspored = actions?.load ?? defaultLoadRaspored;
   const checkPaidStatus = actions?.checkPaid ?? defaultCheckPaidStatus;
+  const resolvedLookupUrl =
+    guestLookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
   const [tables, setTables] = useState<TableData[]>([]);
   const [selectedGuest, setSelectedGuest] = useState<RSVPEntry | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -585,31 +597,37 @@ export default function RasporedClient({
                   <button
                     onClick={async () => {
                       setShowMobileMenu(false);
-                      if (onGenerateWelcomePDF) {
-                        await onGenerateWelcomePDF();
-                      } else {
-                        await generateWelcomePDF({
-                          slug,
-                          coupleDisplay: coupleNames,
-                          theme,
-                          scriptFont,
-                          useCyrillic,
-                        });
+                      try {
+                        if (onGenerateWelcomePDF) {
+                          await onGenerateWelcomePDF();
+                        } else {
+                          await generateWelcomePDF({
+                            slug,
+                            coupleDisplay: coupleNames,
+                            theme,
+                            scriptFont,
+                            useCyrillic,
+                          });
+                        }
+                      } catch (err) {
+                        console.error("Welcome PDF failed:", err);
+                        showToast(
+                          "Greška pri generisanju Welcome PDF-a",
+                        );
                       }
                     }}
                     className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium active:bg-black/5"
                     style={{ color: "var(--theme-text)" }}
                   >
                     <Heart size={16} style={{ color: "var(--theme-primary)" }} />
-                    Preuzmi Welcome PDF (B1)
+                    Preuzmi Welcome PDF
                   </button>
                   <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
                   <button
                     onClick={async () => {
                       if (isDirty) { showToast("Sačuvaj pre preuzimanja"); setShowMobileMenu(false); return; }
                       const QRCode = (await import("qrcode")).default;
-                      const url = `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
-                      const dataUrl = await QRCode.toDataURL(url, { width: 1200, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
+                      const dataUrl = await QRCode.toDataURL(resolvedLookupUrl, { width: 1200, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
                       const a = document.createElement("a");
                       a.href = dataUrl;
                       a.download = `gde-sedim-qr-${slug}.png`;
@@ -743,7 +761,16 @@ export default function RasporedClient({
                 {[
                   { type: "circle" as const, label: "Okrugli sto", desc: "12 mesta", seats: 12 },
                   { type: "rectangular" as const, label: "Pravougaoni sto", desc: "10 mesta", seats: 10 },
-                  { type: "single-sided" as const, label: "Mladenački sto", desc: "6 mesta", seats: 6 },
+                  ...(hideWeddingOnlyElements
+                    ? []
+                    : [
+                        {
+                          type: "single-sided" as const,
+                          label: "Mladenački sto",
+                          desc: "6 mesta",
+                          seats: 6,
+                        },
+                      ]),
                 ].map((opt) => (
                   <button
                     key={opt.type}
@@ -933,6 +960,8 @@ export default function RasporedClient({
             useCyrillic={useCyrillic}
             backHref={backHref}
             onGenerateWelcomePDF={onGenerateWelcomePDF}
+            guestLookupUrl={resolvedLookupUrl}
+            hideWeddingOnlyElements={hideWeddingOnlyElements}
             onSave={() => handleSave()}
             onDownloadPDF={() =>
               generateAndDownloadPDF(tables, attending, coupleNames, slug)
@@ -947,6 +976,7 @@ export default function RasporedClient({
               onAddDecoration={addDecoration}
               totalSeats={totalSeats}
               occupiedSeats={occupiedSeats}
+              hideWeddingOnlyElements={hideWeddingOnlyElements}
             />
           )}
 
@@ -1114,8 +1144,7 @@ export default function RasporedClient({
                 <button
                   onClick={async () => {
                     const QRCode = (await import("qrcode")).default;
-                    const url = `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
-                    const dataUrl = await QRCode.toDataURL(url, { width: 1200, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
+                    const dataUrl = await QRCode.toDataURL(resolvedLookupUrl, { width: 1200, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
                     const a = document.createElement("a");
                     a.href = dataUrl;
                     a.download = `gde-sedim-qr-${slug}.png`;
