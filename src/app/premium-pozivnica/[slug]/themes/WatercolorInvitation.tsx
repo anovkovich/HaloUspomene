@@ -35,6 +35,11 @@ const CITY_BACKGROUNDS: Record<string, string> = {
     "/images/premium/watercolor-invitation/backgrounds/Monastery.webp",
   old_hall:
     "/images/premium/watercolor-invitation/backgrounds/Old-Hall.webp",
+  // Custom backgrounds — not exposed in the stepper, set manually per couple.
+  mileseva:
+    "/images/premium/watercolor-invitation/backgrounds/custom/mileseva.webp",
+  josnicka_banja:
+    "/images/premium/watercolor-invitation/backgrounds/custom/josnicka-banja.webp",
   // Legacy key aliases — map old DB values to the new files
   beograd:
     "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.webp",
