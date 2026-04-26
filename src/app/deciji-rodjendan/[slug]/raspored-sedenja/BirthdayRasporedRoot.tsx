@@ -52,7 +52,11 @@ export default function BirthdayRasporedRoot({
         load: loadBirthdayRaspored,
         checkPaid: checkBirthdayPaidStatus,
       }}
-      backHref={`/deciji-rodjendan/${slug}/portal`}
+      backHref={
+        type === "eighteenth"
+          ? `/punoletstvo/${slug}/portal`
+          : `/deciji-rodjendan/${slug}/portal`
+      }
       guestLookupUrl={`https://halouspomene.rs/deciji-rodjendan/${slug}/gde-sedim/`}
       hideWeddingOnlyElements
       onGenerateWelcomePDF={() =>

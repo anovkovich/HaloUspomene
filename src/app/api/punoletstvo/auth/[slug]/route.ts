@@ -15,22 +15,42 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // No password required — issue token without checking
-  if (!data.admin_password) {
-    const token = await new SignJWT({ slug, scope: "punoletstvo" })
+  // Helper: build the auth response with BOTH cookies — punoletstvo session
+  // for the portal, plus the deciji-rodjendan birthday cookie so the shared
+  // /deciji-rodjendan/{slug}/raspored-sedenja editor (which the punoletstvo
+  // portal links to) doesn't trigger a second login.
+  async function buildAuthedResponse(): Promise<NextResponse> {
+    const punoletstvoToken = await new SignJWT({ slug, scope: "punoletstvo" })
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime("8h")
+      .sign(secret);
+
+    const birthdayToken = await new SignJWT({ slug, scope: "birthday" })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("8h")
       .sign(secret);
 
     const response = NextResponse.json({ ok: true });
-    response.cookies.set(`auth_punoletstvo_${slug}`, token, {
+    response.cookies.set(`auth_punoletstvo_${slug}`, punoletstvoToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: `/punoletstvo/${slug}`,
       maxAge: 8 * 60 * 60,
     });
+    response.cookies.set(`auth_birthday_${slug}`, birthdayToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: `/deciji-rodjendan/${slug}`,
+      maxAge: 8 * 60 * 60,
+    });
     return response;
+  }
+
+  // No password required — issue tokens without checking
+  if (!data.admin_password) {
+    return buildAuthedResponse();
   }
 
   const body = await request.json().catch(() => ({}));
@@ -40,18 +60,5 @@ export async function POST(
     return NextResponse.json({ error: "Pogrešna lozinka" }, { status: 401 });
   }
 
-  const token = await new SignJWT({ slug, scope: "punoletstvo" })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("8h")
-    .sign(secret);
-
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set(`auth_punoletstvo_${slug}`, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: `/punoletstvo/${slug}`,
-    maxAge: 8 * 60 * 60,
-  });
-  return response;
+  return buildAuthedResponse();
 }

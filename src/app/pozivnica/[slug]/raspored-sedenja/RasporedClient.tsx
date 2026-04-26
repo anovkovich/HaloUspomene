@@ -539,7 +539,7 @@ export default function RasporedClient({
           }}
         >
           <a
-            href="/moje-vencanje"
+            href={backHref ?? "/moje-vencanje"}
             className="w-8 h-8 flex items-center justify-center rounded-full shrink-0"
             style={{ color: "var(--theme-text)" }}
           >
