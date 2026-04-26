@@ -97,11 +97,13 @@ export default function BirthdayPortalClient({
   const [addError, setAddError] = useState("");
   const [adding, setAdding] = useState(false);
 
-  // Edit modal state
+  // Edit modal state — count of 0 morphs the primary button into a
+  // delete-with-double-confirm flow (mirrors the wedding GuestsCard pattern).
   const [editEntry, setEditEntry] = useState<BirthdayRSVPEntry | null>(null);
   const [editCount, setEditCount] = useState(1);
   const [editError, setEditError] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -147,11 +149,32 @@ export default function BirthdayPortalClient({
     setEditEntry(entry);
     setEditCount(parseInt(entry.guestCount) || 1);
     setEditError("");
+    setConfirmDelete(false);
   };
 
   const handleEditSave = async () => {
     if (!editEntry) return;
-    const n = Math.max(1, Math.floor(editCount));
+    const n = Math.max(0, Math.floor(editCount));
+
+    // Count dropped to 0 → delete flow with double-confirm
+    if (n === 0) {
+      if (!confirmDelete) {
+        setConfirmDelete(true);
+        return;
+      }
+      setEditSaving(true);
+      setEditError("");
+      const result = await deleteBirthdayGuestAction(slug, editEntry.id);
+      setEditSaving(false);
+      if (result.success) {
+        setResponses((prev) => prev.filter((e) => e.id !== editEntry.id));
+        setEditEntry(null);
+      } else {
+        setEditError(result.error ?? "Greška pri brisanju");
+      }
+      return;
+    }
+
     setEditSaving(true);
     setEditError("");
     const result = await updateBirthdayGuestCountAction(slug, editEntry.id, n);
@@ -165,21 +188,6 @@ export default function BirthdayPortalClient({
       setEditEntry(null);
     } else {
       setEditError(result.error ?? "Greška pri čuvanju");
-    }
-  };
-
-  const handleEditDelete = async () => {
-    if (!editEntry) return;
-    if (!confirm(`Obriši prijavu za ${editEntry.name}?`)) return;
-    setEditSaving(true);
-    setEditError("");
-    const result = await deleteBirthdayGuestAction(slug, editEntry.id);
-    setEditSaving(false);
-    if (result.success) {
-      setResponses((prev) => prev.filter((e) => e.id !== editEntry.id));
-      setEditEntry(null);
-    } else {
-      setEditError(result.error ?? "Greška pri brisanju");
     }
   };
 
@@ -340,7 +348,7 @@ export default function BirthdayPortalClient({
               Broj gostiju
             </label>
             <div
-              className="flex items-center rounded-lg overflow-hidden mt-1 mb-4"
+              className="flex items-center rounded-lg overflow-hidden mt-1 mb-2"
               style={{
                 backgroundColor: "var(--theme-background)",
                 border: "1px solid var(--theme-border-light)",
@@ -348,21 +356,24 @@ export default function BirthdayPortalClient({
             >
               <button
                 type="button"
-                onClick={() => setEditCount((n) => Math.max(1, n - 1))}
+                onClick={() => setEditCount((n) => Math.max(0, n - 1))}
                 className="px-4 py-2 transition-colors hover:opacity-70 cursor-pointer"
                 style={{ color: "var(--theme-text-muted)" }}
               >
                 <Minus size={16} />
               </button>
               <span
-                className="flex-1 py-2 text-center text-lg font-bold"
+                className="flex-1 py-2 text-center text-lg font-bold tabular-nums"
                 style={{ color: "var(--theme-text)" }}
               >
                 {editCount}
               </span>
               <button
                 type="button"
-                onClick={() => setEditCount((n) => n + 1)}
+                onClick={() => {
+                  setEditCount((n) => n + 1);
+                  setConfirmDelete(false);
+                }}
                 className="px-4 py-2 transition-colors hover:opacity-70 cursor-pointer"
                 style={{ color: "var(--theme-text-muted)" }}
               >
@@ -370,45 +381,60 @@ export default function BirthdayPortalClient({
               </button>
             </div>
 
+            <p
+              className="text-center text-xs mb-4"
+              style={{ color: "var(--theme-text-muted)" }}
+            >
+              {editCount === 0
+                ? "Gost će biti obrisan"
+                : `${editCount} ${editCount === 1 ? "osoba" : "osobe"}`}
+            </p>
+
             {editError && (
               <p className="text-xs text-red-500 mb-3">{editError}</p>
             )}
 
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
-                onClick={handleEditDelete}
+                onClick={() => setEditEntry(null)}
                 disabled={editSaving}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50 cursor-pointer"
+                className="px-3 py-2 text-sm transition-opacity hover:opacity-70 cursor-pointer"
+                style={{ color: "var(--theme-text-muted)" }}
               >
-                <Trash2 size={12} />
-                Obriši
+                Otkaži
               </button>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditEntry(null)}
-                  disabled={editSaving}
-                  className="px-3 py-2 text-sm transition-opacity hover:opacity-70 cursor-pointer"
-                  style={{ color: "var(--theme-text-muted)" }}
-                >
-                  Otkaži
-                </button>
-                <button
-                  type="button"
-                  onClick={handleEditSave}
-                  disabled={editSaving}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer"
-                  style={{ backgroundColor: "var(--theme-primary)" }}
-                >
-                  {editSaving ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
+              <button
+                type="button"
+                onClick={handleEditSave}
+                disabled={editSaving}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer ${
+                  editCount === 0
+                    ? confirmDelete
+                      ? "bg-red-600 hover:bg-red-700 text-white"
+                      : "bg-red-500/10 text-red-600 hover:bg-red-500/20"
+                    : "text-white hover:opacity-90"
+                }`}
+                style={
+                  editCount === 0
+                    ? undefined
+                    : { backgroundColor: "var(--theme-primary)" }
+                }
+              >
+                {editSaving ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : editCount === 0 ? (
+                  <>
+                    <Trash2 size={14} />
+                    {confirmDelete ? "Kliknite ponovo za brisanje" : "Obriši gosta"}
+                  </>
+                ) : (
+                  <>
                     <Check size={14} />
-                  )}
-                  Sačuvaj
-                </button>
-              </div>
+                    Sačuvaj
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
