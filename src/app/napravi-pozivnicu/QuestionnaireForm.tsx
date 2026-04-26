@@ -1828,6 +1828,21 @@ export default function QuestionnaireForm({
     onPremiumChange?.(formData.premium);
   }, [formData.premium, onPremiumChange]);
 
+  // Reset the AI generation attempt counter when entering an upgrade flow.
+  // Returning users coming via the "Nadogradi" link from the portal start
+  // with a fresh budget — otherwise they'd inherit any attempts spent in a
+  // previous (incomplete) session under the same couple name.
+  React.useEffect(() => {
+    if (!isUpgrade) return;
+    try {
+      const cacheKey = `premium_gen_${formData.bride.toLowerCase()}_${formData.groom.toLowerCase()}`;
+      localStorage.removeItem(cacheKey);
+    } catch {}
+    // Run once per upgrade-mode mount; bride/groom come from initialFormData
+    // and don't change during the session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUpgrade]);
+
   // Read URL params from /cene page (skip in upgrade mode — initialFormData is authoritative)
   React.useEffect(() => {
     if (isUpgrade) return;
@@ -2273,18 +2288,12 @@ export default function QuestionnaireForm({
           }),
         }).catch(() => {});
 
-        // Clear images from localStorage but keep counter + expiresAt
+        // Submission complete — drop the entire generation cache (count,
+        // images, expiresAt). Next visit starts fresh, so users don't carry
+        // over a spent attempt counter into a future upgrade or re-creation.
         try {
           const cacheKey = `premium_gen_${formData.bride.toLowerCase()}_${formData.groom.toLowerCase()}`;
-          const cached = localStorage.getItem(cacheKey);
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            localStorage.setItem(cacheKey, JSON.stringify({
-              count: parsed.count,
-              expiresAt: parsed.expiresAt,
-              images: [],
-            }));
-          }
+          localStorage.removeItem(cacheKey);
         } catch {}
 
         return;
