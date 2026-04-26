@@ -1943,6 +1943,18 @@ export default function QuestionnaireForm({
         );
         return;
       }
+      // watercolor (Luxury Romance) renders a city background + a vintage car —
+      // both are required for the theme to look complete.
+      if (formData.premium_theme === "watercolor") {
+        if (!formData.premium_city) {
+          setStepError("Izaberite pozadinu pre nego što nastavite.");
+          return;
+        }
+        if (!formData.premium_car) {
+          setStepError("Izaberite vozilo pre nego što nastavite.");
+          return;
+        }
+      }
       // Async background whitening — fire and forget when leaving this step
       if (formData.ai_couple_image_url && formData.premium_theme === "line_art") {
         fetch("/api/premium-pozivnica/whiten-bg", {
