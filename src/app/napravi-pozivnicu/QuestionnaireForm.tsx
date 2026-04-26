@@ -1807,6 +1807,11 @@ export default function QuestionnaireForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Tracks whether the line_art background-whitening fire-and-forget is still
+  // running. Submit is blocked while this is true so users can't ship a raw
+  // (white-bg) Pollinations URL into a transparent-bg theme.
+  const [isWhitening, setIsWhitening] = useState(false);
+  const whitenTokenRef = useRef(0);
   const formTopRef = useRef<HTMLDivElement>(null);
 
   // Notify parent about premium mode changes
@@ -1955,20 +1960,31 @@ export default function QuestionnaireForm({
           return;
         }
       }
-      // Async background whitening — fire and forget when leaving this step
+      // Async background whitening — fires when leaving this step. We track
+      // an isWhitening flag so the final-step submit can't fire until either
+      // the whitened blob URL replaces the raw one, or the request fails.
       if (formData.ai_couple_image_url && formData.premium_theme === "line_art") {
+        const myToken = ++whitenTokenRef.current;
+        const sourceUrl = formData.ai_couple_image_url;
+        setIsWhitening(true);
         fetch("/api/premium-pozivnica/whiten-bg", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageUrl: formData.ai_couple_image_url, bride: formData.bride, groom: formData.groom }),
+          body: JSON.stringify({ imageUrl: sourceUrl, bride: formData.bride, groom: formData.groom }),
         })
           .then((r) => r.json())
           .then((d) => {
-            if (d.resultUrl && d.resultUrl !== formData.ai_couple_image_url) {
+            // Drop stale responses (user regenerated and re-fired whitening)
+            if (whitenTokenRef.current !== myToken) return;
+            if (d.resultUrl && d.resultUrl !== sourceUrl) {
               updateField("ai_couple_image_url", d.resultUrl);
             }
+            setIsWhitening(false);
           })
-          .catch(() => {});
+          .catch(() => {
+            if (whitenTokenRef.current !== myToken) return;
+            setIsWhitening(false);
+          });
       }
     }
     // envelope_lab has no mandatory validation
@@ -2074,7 +2090,7 @@ export default function QuestionnaireForm({
     if (
       formData.premium &&
       formData.premium_theme === "line_art" &&
-      !formData.ai_couple_image_url
+      (!formData.ai_couple_image_url || isWhitening)
     ) {
       setError(
         "Sačekajte još malo dok se slika u pozadini obradi i pripremi za pozivnicu.",
@@ -2538,7 +2554,7 @@ export default function QuestionnaireForm({
               const waitingForAiImage =
                 formData.premium &&
                 formData.premium_theme === "line_art" &&
-                !formData.ai_couple_image_url;
+                (!formData.ai_couple_image_url || isWhitening);
               return (
                 <button
                   type="button"
@@ -2573,7 +2589,7 @@ export default function QuestionnaireForm({
         {step === totalSteps &&
           formData.premium &&
           formData.premium_theme === "line_art" &&
-          !formData.ai_couple_image_url && (
+          (!formData.ai_couple_image_url || isWhitening) && (
             <p className="text-xs text-center px-4 pb-4 sm:px-8 sm:pb-6 text-[#8B7355]">
               Sačekajte još malo dok se slika u pozadini obradi i pripremi za pozivnicu.
             </p>
