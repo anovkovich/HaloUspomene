@@ -2,12 +2,51 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles } from "lucide-react";
 import QuestionnaireForm from "./QuestionnaireForm";
 import BirthdayTypeButton from "@/components/landing/BirthdayTypeButton";
+import type { ThemeType, ScriptFontType } from "@/app/pozivnica/[slug]/types";
 
-export default function FormPageWrapper() {
-  const [isPremium, setIsPremium] = useState(false);
+export interface UpgradeInitialFormData {
+  bride: string;
+  groom: string;
+  full_display: string;
+  useCyrillic: boolean;
+  premium: boolean;
+  event_date: string;
+  event_date_only: string;
+  event_time: string;
+  submit_until_date: string;
+  contact_phone: string;
+  scriptFont: ScriptFontType;
+  theme: ThemeType;
+  tagline: string;
+  thankYouFooter: string;
+  countdown_enabled: boolean;
+  map_enabled: boolean;
+  extra_raspored: boolean;
+  extra_audio: boolean;
+  extra_usb_kaseta: boolean;
+  extra_usb_bocica: boolean;
+}
+
+interface Props {
+  upgradeSlug?: string;
+  forcePremium?: boolean;
+  initialFormData?: UpgradeInitialFormData;
+}
+
+export default function FormPageWrapper({
+  upgradeSlug,
+  forcePremium,
+  initialFormData,
+}: Props) {
+  // In upgrade mode the premium choice is locked to the value chosen from the
+  // portal — user picked "Premium" or "Klasik" before entering the stepper, and
+  // can't toggle mid-flow because step routing depends on it.
+  const isUpgrade = !!upgradeSlug;
+  const [isPremium, setIsPremium] = useState(
+    isUpgrade ? !!forcePremium : false,
+  );
 
   return (
     <main
@@ -30,8 +69,14 @@ export default function FormPageWrapper() {
               className="text-center mb-12"
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#d4af37] mb-5">
-                Premium Studio
+                {isUpgrade ? "Nadogradnja u Premium" : "Premium Studio"}
               </h1>
+              {isUpgrade && (
+                <p className="text-sm text-[#8B7355] max-w-md mx-auto">
+                  Dovršavate kreiranje svoje pozivnice. Vaš link i lozinka
+                  ostaju isti.
+                </p>
+              )}
             </motion.div>
           ) : (
             <motion.div
@@ -43,13 +88,26 @@ export default function FormPageWrapper() {
               className="text-center mb-12"
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#AE343F] mb-5">
-                Napravite svoju pozivnicu
+                {isUpgrade
+                  ? "Nadogradnja klasične pozivnice"
+                  : "Napravite svoju pozivnicu"}
               </h1>
+              {isUpgrade && (
+                <p className="text-sm text-[#8B2833] max-w-md mx-auto">
+                  Dovršavate kreiranje svoje pozivnice. Vaš link i lozinka
+                  ostaju isti.
+                </p>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
-        <QuestionnaireForm onPremiumChange={setIsPremium} />
+        <QuestionnaireForm
+          onPremiumChange={setIsPremium}
+          upgradeSlug={upgradeSlug}
+          lockPremiumToggle={isUpgrade}
+          initialFormData={initialFormData}
+        />
       </div>
 
       {/* Hidden SEO content — visible to crawlers, not to users */}
@@ -108,14 +166,16 @@ export default function FormPageWrapper() {
       </div>
 
       {/* Link to birthday invitation (dečiji rođendan + punoletstvo via modal) */}
-      <div className="max-w-3xl mx-auto mt-12 px-4 text-center">
-        <BirthdayTypeButton
-          entryLabel="napravi-pozivnicu-footer"
-          className="birthday-link-btn"
-        >
-          Tražite pozivnicu za rođendan? →
-        </BirthdayTypeButton>
-      </div>
+      {!isUpgrade && (
+        <div className="max-w-3xl mx-auto mt-12 px-4 text-center">
+          <BirthdayTypeButton
+            entryLabel="napravi-pozivnicu-footer"
+            className="birthday-link-btn"
+          >
+            Tražite pozivnicu za rođendan? →
+          </BirthdayTypeButton>
+        </div>
+      )}
     </main>
   );
 }

@@ -87,6 +87,9 @@ export default function MojeVencanjeClient() {
     eventDate: string;
     scriptFont: string;
     draft: boolean;
+    hasInvitationData: boolean;
+    premium: boolean;
+    premiumPaid: boolean;
   } | null>(null);
 
   // Portal data
@@ -137,6 +140,9 @@ export default function MojeVencanjeClient() {
             eventDate: result.eventDate!,
             scriptFont: result.scriptFont ?? "great-vibes",
             draft: result.draft ?? false,
+            hasInvitationData: result.hasInvitationData ?? false,
+            premium: result.premium ?? false,
+            premiumPaid: result.premium_paid ?? false,
           });
           const [data, highlighted, vendorData, endorsements] =
             await Promise.all([
@@ -235,6 +241,9 @@ export default function MojeVencanjeClient() {
           eventDate: json.couple.eventDate,
           scriptFont: json.couple.scriptFont ?? "great-vibes",
           draft: json.couple.draft ?? false,
+          hasInvitationData: json.couple.hasInvitationData ?? false,
+          premium: json.couple.premium ?? false,
+          premiumPaid: json.couple.premium_paid ?? false,
         });
 
         const [data, highlighted, vendorData2, endorsements2] =

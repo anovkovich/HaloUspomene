@@ -1788,12 +1788,22 @@ function Step6({
 
 export default function QuestionnaireForm({
   onPremiumChange,
+  upgradeSlug,
+  lockPremiumToggle,
+  initialFormData,
 }: {
   onPremiumChange?: (isPremium: boolean) => void;
+  upgradeSlug?: string;
+  lockPremiumToggle?: boolean;
+  initialFormData?: Partial<FormData>;
 }) {
+  const isUpgrade = !!upgradeSlug;
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
-  const [formData, setFormData] = useState<FormData>(defaultFormData);
+  const [formData, setFormData] = useState<FormData>(() => ({
+    ...defaultFormData,
+    ...(initialFormData ?? {}),
+  }));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1804,8 +1814,9 @@ export default function QuestionnaireForm({
     onPremiumChange?.(formData.premium);
   }, [formData.premium, onPremiumChange]);
 
-  // Read URL params from /cene page
+  // Read URL params from /cene page (skip in upgrade mode — initialFormData is authoritative)
   React.useEffect(() => {
+    if (isUpgrade) return;
     const params = new URLSearchParams(window.location.search);
     if (params.toString()) {
       const wantsPremium = params.get("premium") === "1";
@@ -1822,7 +1833,7 @@ export default function QuestionnaireForm({
           params.get("usb_bocica") === "1" || prev.extra_usb_bocica,
       }));
     }
-  }, []);
+  }, [isUpgrade]);
 
   // Prepopulate hall venue time if it's already enabled
   React.useEffect(() => {
@@ -2038,8 +2049,11 @@ export default function QuestionnaireForm({
     setIsSubmitting(true);
     try {
       if (formData.premium) {
-        // Premium flow: create couple in MongoDB directly
-        const res = await fetch("/api/premium-pozivnica/create", {
+        // Premium flow: upgrade-or-create depending on isUpgrade
+        const premiumUrl = isUpgrade
+          ? `/api/premium-pozivnica/${encodeURIComponent(upgradeSlug!)}/upgrade`
+          : "/api/premium-pozivnica/create";
+        const res = await fetch(premiumUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -2065,6 +2079,7 @@ export default function QuestionnaireForm({
             map_enabled: formData.map_enabled,
             custom_primary_color: formData.custom_primary_color,
             custom_background_color: formData.custom_background_color,
+            contact_phone: formData.contact_phone,
             locations: formData.locations
               .filter(
                 (l) =>
@@ -2109,17 +2124,24 @@ export default function QuestionnaireForm({
 
         // Send admin notification from client (Web3Forms blocks server-side requests)
         if (WEB3FORMS_ACCESS_KEY) {
+          const subject = isUpgrade
+            ? `🌟 NADOGRADNJA u PREMIUM - ${formData.bride} & ${formData.groom}`
+            : `🌟 Nova PREMIUM Pozivnica - ${formData.bride} & ${formData.groom}`;
           fetch("https://api.web3forms.com/submit", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               access_key: WEB3FORMS_ACCESS_KEY,
-              subject: `🌟 Nova PREMIUM Pozivnica - ${formData.bride} & ${formData.groom}`,
+              subject,
               from_name: "Halo Pozivnice Premium",
               Par: `${formData.bride} & ${formData.groom}`,
               Slug: data.slug,
+              Tip: isUpgrade
+                ? "Upgrade postojećeg draft-a (planiranje-vencanja)"
+                : "Novo kreiranje",
               "AI Tema": formData.premium_theme || "(nije izabrana)",
               "Preview URL": `https://halouspomene.rs/premium-pozivnica/${data.slug}`,
+              "Admin link": `https://halouspomene.rs/admin/${data.slug}`,
             }),
           }).catch(() => {});
         }
@@ -2160,7 +2182,10 @@ export default function QuestionnaireForm({
         ceremony: "Građansko venčanje", hall: "Skup u svečanoj sali",
       };
 
-      const res = await fetch("/api/pozivnica/create", {
+      const classicUrl = isUpgrade
+        ? `/api/pozivnica/${encodeURIComponent(upgradeSlug!)}/upgrade`
+        : "/api/pozivnica/create";
+      const res = await fetch(classicUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2185,6 +2210,7 @@ export default function QuestionnaireForm({
             : "",
           custom_primary_color: formData.custom_primary_color || undefined,
           custom_background_color: formData.custom_background_color || undefined,
+          contact_phone: formData.contact_phone,
           locations: formData.locations
             .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
             .map((l) => ({ name: l.name, address: l.address, type: l.type })),
@@ -2208,15 +2234,21 @@ export default function QuestionnaireForm({
 
       // Notify admin (fire-and-forget from client — Web3Forms blocks server requests)
       if (WEB3FORMS_ACCESS_KEY) {
+        const subject = isUpgrade
+          ? `📬 NADOGRADNJA Pozivnice - ${formData.full_display}`
+          : `📬 Nova Pozivnica - ${formData.full_display}`;
         fetch("https://api.web3forms.com/submit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             access_key: WEB3FORMS_ACCESS_KEY,
-            subject: `📬 Nova Pozivnica - ${formData.full_display}`,
+            subject,
             from_name: "Halo Pozivnice",
             Par: formData.full_display,
             Slug: data.slug,
+            Tip: isUpgrade
+              ? "Upgrade postojećeg draft-a (planiranje-vencanja)"
+              : "Novo kreiranje",
             "Kontakt telefon": `+381${formData.contact_phone}`,
             "Raspored sedenja": formData.extra_raspored ? "✅ DA" : "❌ Ne",
             "Audio knjiga": formData.extra_audio ? "✅ DA" : "❌ Ne",
@@ -2419,18 +2451,32 @@ export default function QuestionnaireForm({
         {/* Navigation */}
         <div className="px-4 pb-4 sm:px-8 sm:pb-8 flex justify-between items-center gap-3">
           {step === 1 ? (
-            <button
-              type="button"
-              onClick={handlePremiumToggle}
-              className={`flex items-center justify-center gap-2 flex-1 py-3 rounded-2xl border text-xs sm:text-sm font-medium transition-all ${
-                formData.premium
-                  ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] border-[#d4af37] text-white shadow-lg shadow-[#d4af37]/25"
-                  : "border-[#d4af37]/40 text-[#d4af37] hover:border-[#d4af37] hover:bg-[#d4af37]/5 animate-[premiumGlow_2s_ease-in-out_infinite]"
-              }`}
-            >
-              <Sparkles size={14} className={formData.premium ? "" : "animate-spin"} style={formData.premium ? {} : { animationDuration: "3s" }} />
-              Premium
-            </button>
+            lockPremiumToggle ? (
+              <div
+                className={`flex items-center justify-center gap-2 flex-1 py-3 rounded-2xl border text-xs sm:text-sm font-medium ${
+                  formData.premium
+                    ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] border-[#d4af37] text-white shadow-lg shadow-[#d4af37]/25"
+                    : "bg-[#AE343F]/5 border-[#AE343F]/30 text-[#AE343F]"
+                }`}
+                title="Tip pozivnice je zaključan za nadogradnju"
+              >
+                <Sparkles size={14} />
+                {formData.premium ? "Nadogradnja u Premium" : "Nadogradnja u Klasik"}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handlePremiumToggle}
+                className={`flex items-center justify-center gap-2 flex-1 py-3 rounded-2xl border text-xs sm:text-sm font-medium transition-all ${
+                  formData.premium
+                    ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] border-[#d4af37] text-white shadow-lg shadow-[#d4af37]/25"
+                    : "border-[#d4af37]/40 text-[#d4af37] hover:border-[#d4af37] hover:bg-[#d4af37]/5 animate-[premiumGlow_2s_ease-in-out_infinite]"
+                }`}
+              >
+                <Sparkles size={14} className={formData.premium ? "" : "animate-spin"} style={formData.premium ? {} : { animationDuration: "3s" }} />
+                Premium
+              </button>
+            )
           ) : (
             <button
               type="button"

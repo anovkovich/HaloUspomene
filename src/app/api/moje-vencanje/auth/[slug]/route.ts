@@ -42,6 +42,9 @@ export async function POST(
       eventDate: weddingData.event_date,
       scriptFont: weddingData.scriptFont ?? "great-vibes",
       draft: weddingData.draft ?? false,
+      hasInvitationData: (weddingData.locations ?? []).length > 0,
+      premium: weddingData.premium ?? false,
+      premium_paid: weddingData.premium_paid ?? false,
     },
   });
 

@@ -16,6 +16,9 @@ import {
   QrCode,
   X,
   Armchair,
+  Sparkles,
+  Mail,
+  Hourglass,
 } from "lucide-react";
 import {
   loadOverviewAction,
@@ -33,6 +36,9 @@ interface Props {
     eventDate: string;
     scriptFont: string;
     draft: boolean;
+    hasInvitationData: boolean;
+    premium: boolean;
+    premiumPaid: boolean;
   };
   checklist: ChecklistItem[];
   budget: PortalBudget;
@@ -341,6 +347,59 @@ export default function OverviewCard({
           )}
         </div>
       </div>
+
+      {/* Upgrade CTA — visible only for draft couples that haven't submitted invitation form yet */}
+      {coupleInfo.draft && !coupleInfo.hasInvitationData && (
+        <div className="bg-gradient-to-br from-[#fffdf5] to-[#f5f4dc] rounded-2xl border-2 border-[#d4af37]/40 p-6 shadow-md">
+          <div className="flex items-start gap-3 mb-4">
+            <Sparkles size={20} className="text-[#d4af37] shrink-0 mt-0.5" />
+            <div>
+              <p className="font-serif text-lg text-[#232323] mb-1">
+                Nadogradite u pravu pozivnicu
+              </p>
+              <p className="text-sm text-[#232323]/75 leading-relaxed">
+                Trenutno koristite samo planer. Završite kreiranje stvarne
+                pozivnice — naš tim će vas kontaktirati radi naplate i
+                aktivacije.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Link
+              href={`/napravi-pozivnicu?upgrade=${coupleInfo.slug}&premium=true`}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white border border-[#d4af37] shadow-sm hover:shadow-md hover:from-[#c5a028] hover:to-[#b8972e] transition-all"
+            >
+              <Sparkles size={15} />
+              Premium AI pozivnica
+            </Link>
+            <Link
+              href={`/napravi-pozivnicu?upgrade=${coupleInfo.slug}`}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold bg-[#AE343F] text-white border border-[#AE343F] shadow-sm hover:shadow-md hover:bg-[#962d36] transition-all"
+            >
+              <Mail size={15} />
+              Klasična pozivnica
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* In-progress banner — already submitted upgrade, waiting for admin */}
+      {coupleInfo.draft && coupleInfo.hasInvitationData && (
+        <div className="bg-[#d4af37]/10 rounded-2xl border border-[#d4af37]/35 p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <Hourglass size={18} className="text-[#d4af37] shrink-0 mt-0.5" />
+            <div>
+              <p className="font-serif text-base text-[#232323] mb-1">
+                Vaša nadogradnja je u obradi
+              </p>
+              <p className="text-sm text-[#232323]/75">
+                Primili smo sve podatke za vašu pozivnicu — uskoro ćemo vas
+                kontaktirati radi naplate i aktivacije.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick actions */}
       <div className="bg-white rounded-2xl border border-[#232323]/25 p-5 shadow-md">

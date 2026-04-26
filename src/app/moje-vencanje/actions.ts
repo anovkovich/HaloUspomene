@@ -59,6 +59,9 @@ export async function verifyAuth(): Promise<{
   eventDate?: string;
   scriptFont?: string;
   draft?: boolean;
+  hasInvitationData?: boolean;
+  premium?: boolean;
+  premium_paid?: boolean;
 } | null> {
   const slug = await getAuthSlug();
   if (!slug) return null;
@@ -74,6 +77,9 @@ export async function verifyAuth(): Promise<{
     eventDate: data.event_date,
     scriptFont: data.scriptFont ?? "great-vibes",
     draft: data.draft ?? false,
+    hasInvitationData: (data.locations ?? []).length > 0,
+    premium: data.premium ?? false,
+    premium_paid: data.premium_paid ?? false,
   };
 }
 
