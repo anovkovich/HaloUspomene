@@ -2228,7 +2228,7 @@ export default function QuestionnaireForm({
               .sort((a, b) => a.time.localeCompare(b.time))
               .map((l) => {
                 const typeToIcon: Record<string, string> = {
-                  home: "Home",
+                  home: "HouseHeart",
                   church: "Church",
                   ceremony: "Heart",
                   hall: "Utensils",
@@ -2301,7 +2301,7 @@ export default function QuestionnaireForm({
 
       // Classic flow: save to MongoDB, notify admin via Web3Forms
       const typeToIcon: Record<string, string> = {
-        home: "Home", church: "Church", ceremony: "Heart", hall: "Utensils",
+        home: "HouseHeart", church: "Church", ceremony: "Heart", hall: "Utensils",
       };
       const typeToWhat: Record<string, string> = {
         home: "Polazak od kuće", church: "Crkveno venčanje",

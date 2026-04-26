@@ -33,6 +33,11 @@ const IconMap: Record<
   Sparkles,
   CalendarHeart,
   HouseHeart,
+  // "Home" is what older form submissions persisted for the
+  // "Polazak od kuće" timeline step; alias it to the wedding-themed
+  // HouseHeart so existing records render with a real house icon
+  // instead of falling through to Heart.
+  Home: HouseHeart,
 };
 
 const slideInItem = {
