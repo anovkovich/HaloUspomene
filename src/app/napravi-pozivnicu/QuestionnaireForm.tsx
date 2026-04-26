@@ -52,6 +52,15 @@ const PremiumStepEnvelopeLab = dynamic(
 
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 
+// Whitened blobs from /api/premium-pozivnica/whiten-bg are written to
+// `premium/whitened/{slug}/...`, while raw generated blobs live at
+// `premium/results/{couple}/...`. The presence of the whitened path is
+// the only ground-truth signal that fal.ai birefnet actually succeeded —
+// the endpoint silently echoes the raw URL on any failure, so we can't
+// just trust that resultUrl is set.
+const isUrlWhitened = (url: string | undefined): boolean =>
+  !!url && url.includes("/premium/whitened/");
+
 // ─── Font categorization ──────────────────────────────────────────────────────
 
 // Fonts hidden in Cyrillic mode (Latin-only; great-vibes works for both)
@@ -1960,10 +1969,14 @@ export default function QuestionnaireForm({
           return;
         }
       }
-      // Async background whitening — fires when leaving this step. We track
-      // an isWhitening flag so the final-step submit can't fire until either
-      // the whitened blob URL replaces the raw one, or the request fails.
-      if (formData.ai_couple_image_url && formData.premium_theme === "line_art") {
+      // Async background whitening — fires when leaving this step. Only treat
+      // it as a real success if the response URL points at the whitened blob
+      // path; the endpoint echoes the raw URL on any internal failure.
+      if (
+        formData.ai_couple_image_url &&
+        formData.premium_theme === "line_art" &&
+        !isUrlWhitened(formData.ai_couple_image_url)
+      ) {
         const myToken = ++whitenTokenRef.current;
         const sourceUrl = formData.ai_couple_image_url;
         setIsWhitening(true);
@@ -1976,7 +1989,7 @@ export default function QuestionnaireForm({
           .then((d) => {
             // Drop stale responses (user regenerated and re-fired whitening)
             if (whitenTokenRef.current !== myToken) return;
-            if (d.resultUrl && d.resultUrl !== sourceUrl) {
+            if (isUrlWhitened(d.resultUrl)) {
               updateField("ai_couple_image_url", d.resultUrl);
             }
             setIsWhitening(false);
@@ -2085,12 +2098,22 @@ export default function QuestionnaireForm({
 
 
   const handleSubmit = async () => {
-    // Defensive guard — line_art needs the whitened AI image before submit;
-    // button is also disabled visually for this case but block here too.
+    // line_art needs an AI illustration at all
     if (
       formData.premium &&
       formData.premium_theme === "line_art" &&
-      (!formData.ai_couple_image_url || isWhitening)
+      !formData.ai_couple_image_url
+    ) {
+      setError(
+        "Generišite ilustraciju para pre nego što pošaljete zahtev.",
+      );
+      return;
+    }
+    // If background whitening is in flight, wait it out
+    if (
+      formData.premium &&
+      formData.premium_theme === "line_art" &&
+      isWhitening
     ) {
       setError(
         "Sačekajte još malo dok se slika u pozadini obradi i pripremi za pozivnicu.",
@@ -2099,6 +2122,48 @@ export default function QuestionnaireForm({
     }
     setError(null);
     setIsSubmitting(true);
+
+    // Hard gate: for line_art, ai_couple_image_url MUST point at the
+    // whitened blob path before we persist. The fire-and-forget whiten
+    // from goNext can fail silently (FAL_KEY missing, fal.ai timeout,
+    // birefnet FAILED, sharp crash) and leave the raw blob URL in form
+    // state. Re-run whiten synchronously here as a last-chance retry.
+    let aiCoupleImageUrl = formData.ai_couple_image_url;
+    if (
+      formData.premium &&
+      formData.premium_theme === "line_art" &&
+      aiCoupleImageUrl &&
+      !isUrlWhitened(aiCoupleImageUrl)
+    ) {
+      try {
+        const res = await fetch("/api/premium-pozivnica/whiten-bg", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageUrl: aiCoupleImageUrl,
+            bride: formData.bride,
+            groom: formData.groom,
+          }),
+        });
+        const d = await res.json();
+        if (!isUrlWhitened(d?.resultUrl)) {
+          setError(
+            "Slika nije uspešno obrađena. Vratite se na korak za ilustraciju i kliknite 'Generiši ponovo' pa Dalje.",
+          );
+          setIsSubmitting(false);
+          return;
+        }
+        aiCoupleImageUrl = d.resultUrl;
+        setFormData((prev) => ({ ...prev, ai_couple_image_url: d.resultUrl }));
+      } catch {
+        setError(
+          "Greška pri obradi slike. Sačekajte par sekundi i pokušajte ponovo.",
+        );
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     try {
       if (formData.premium) {
         // Premium flow: upgrade-or-create depending on isUpgrade
@@ -2118,7 +2183,7 @@ export default function QuestionnaireForm({
             theme: formData.theme,
             scriptFont: formData.scriptFont,
             premium_theme: formData.premium_theme,
-            ai_couple_image_url: formData.ai_couple_image_url,
+            ai_couple_image_url: aiCoupleImageUrl,
             premium_city: formData.premium_city,
             premium_car: formData.premium_car,
             couple_description: formData.couple_description,
@@ -2555,6 +2620,9 @@ export default function QuestionnaireForm({
                 formData.premium &&
                 formData.premium_theme === "line_art" &&
                 (!formData.ai_couple_image_url || isWhitening);
+              // URL is the ground-truth: if it's not on the whitened blob path,
+              // submit will trigger a synchronous whiten retry. Don't disable the
+              // button for that — the click is what kicks the retry off.
               return (
                 <button
                   type="button"
