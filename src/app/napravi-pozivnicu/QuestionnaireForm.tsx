@@ -1931,6 +1931,18 @@ export default function QuestionnaireForm({
         setStepError("Izaberite stil pozivnice pre nego što nastavite.");
         return;
       }
+      // line_art (Modern Parallax) is built around the AI couple illustration —
+      // can't proceed without one, otherwise the rendered invitation has a
+      // visible empty hero spot.
+      if (
+        formData.premium_theme === "line_art" &&
+        !formData.ai_couple_image_url
+      ) {
+        setStepError(
+          "Generišite ilustraciju para pre nego što nastavite.",
+        );
+        return;
+      }
       // Async background whitening — fire and forget when leaving this step
       if (formData.ai_couple_image_url && formData.premium_theme === "line_art") {
         fetch("/api/premium-pozivnica/whiten-bg", {
