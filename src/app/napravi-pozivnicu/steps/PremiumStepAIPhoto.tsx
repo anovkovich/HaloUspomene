@@ -419,7 +419,7 @@ export default function PremiumStepAIPhoto({
   const [generationCount, setGenerationCount] = useState(0);
   const [limitResetTime, setLimitResetTime] = useState<string | null>(null);
   const [showLimitPopup, setShowLimitPopup] = useState(false);
-  const MAX_GENERATIONS = 6;
+  const MAX_GENERATIONS = 7;
   const TTL_HOURS = 20;
 
   // localStorage key based on couple name
