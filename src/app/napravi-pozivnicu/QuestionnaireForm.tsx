@@ -2045,6 +2045,18 @@ export default function QuestionnaireForm({
 
 
   const handleSubmit = async () => {
+    // Defensive guard — line_art needs the whitened AI image before submit;
+    // button is also disabled visually for this case but block here too.
+    if (
+      formData.premium &&
+      formData.premium_theme === "line_art" &&
+      !formData.ai_couple_image_url
+    ) {
+      setError(
+        "Sačekajte još malo dok se slika u pozadini obradi i pripremi za pozivnicu.",
+      );
+      return;
+    }
     setError(null);
     setIsSubmitting(true);
     try {
@@ -2498,29 +2510,50 @@ export default function QuestionnaireForm({
               <ChevronRight size={16} />
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className={`flex items-center gap-2 px-8 py-3 rounded-2xl transition-all font-medium text-sm whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${tc.buttonPrimary}`}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Slanje...
-                </>
-              ) : (
-                <>
-                  Pošalji zahtev
-                  <Send size={14} />
-                </>
-              )}
-            </button>
+            (() => {
+              const waitingForAiImage =
+                formData.premium &&
+                formData.premium_theme === "line_art" &&
+                !formData.ai_couple_image_url;
+              return (
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || waitingForAiImage}
+                  className={`flex items-center gap-2 px-8 py-3 rounded-2xl transition-all font-medium text-sm whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${tc.buttonPrimary}`}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Slanje...
+                    </>
+                  ) : waitingForAiImage ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Pripremamo sliku...
+                    </>
+                  ) : (
+                    <>
+                      Pošalji zahtev
+                      <Send size={14} />
+                    </>
+                  )}
+                </button>
+              );
+            })()
           )}
         </div>
         {stepError && (
           <p className={`text-xs text-center px-4 pb-4 sm:px-8 sm:pb-6 ${tc.errorText}`}>{stepError}</p>
         )}
+        {step === totalSteps &&
+          formData.premium &&
+          formData.premium_theme === "line_art" &&
+          !formData.ai_couple_image_url && (
+            <p className="text-xs text-center px-4 pb-4 sm:px-8 sm:pb-6 text-[#8B7355]">
+              Sačekajte još malo dok se slika u pozadini obradi i pripremi za pozivnicu.
+            </p>
+          )}
       </div>
     </div>
   );

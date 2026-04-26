@@ -31,6 +31,7 @@ export default async function PremiumInvitationPage({ params }: Props) {
   const data = await getWeddingData(slug);
 
   if (!data?.premium) notFound();
+  if (data.draft && process.env.NODE_ENV === "production") notFound();
 
   return (
     <>
