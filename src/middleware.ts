@@ -74,6 +74,31 @@ export async function middleware(request: NextRequest) {
     );
   }
 
+  // ── Punoletstvo auth (portal) ─────────────────────────────────────────
+  // Mirrors the deciji-rodjendan gate but on its own cookie name so the
+  // two flows have independent sessions.
+  const punoletstvoMatch = pathname.match(
+    /^\/punoletstvo\/([^/]+)\/portal(\/|$)/
+  );
+  if (punoletstvoMatch) {
+    const slug = punoletstvoMatch[1];
+    const cookie = request.cookies.get(`auth_punoletstvo_${slug}`);
+
+    if (cookie) {
+      try {
+        await jwtVerify(cookie.value, secret);
+        return NextResponse.next();
+      } catch {
+        // Expired or invalid — fall through to redirect
+      }
+    }
+
+    const next = encodeURIComponent(pathname);
+    return NextResponse.redirect(
+      new URL(`/punoletstvo/${slug}/prijava?next=${next}`, request.url)
+    );
+  }
+
   return NextResponse.next();
 }
 
@@ -87,5 +112,7 @@ export const config = {
     "/deciji-rodjendan/:slug/portal/:path*",
     "/deciji-rodjendan/:slug/raspored-sedenja",
     "/deciji-rodjendan/:slug/raspored-sedenja/:path*",
+    "/punoletstvo/:slug/portal",
+    "/punoletstvo/:slug/portal/:path*",
   ],
 };
