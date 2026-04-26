@@ -1,8 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
-import { generateCoupleIllustration } from "@/lib/fal-ai";
+import {
+  generateCoupleIllustration,
+  AIGenerationError,
+  type AIGenerationErrorKind,
+} from "@/lib/fal-ai";
 
 export const maxDuration = 120;
+
+const KIND_TO_USER_MESSAGE: Record<AIGenerationErrorKind, string> = {
+  rate_limit:
+    "AI servis je trenutno preopterećen. Sačekajte malo i pokušajte ponovo.",
+  service_unavailable:
+    "AI servis je trenutno nedostupan. Pokušajte ponovo za par minuta.",
+  timeout:
+    "Generisanje je trajalo predugo. Pokušajte ponovo.",
+  invalid_response:
+    "AI servis je vratio nevažeći odgovor. Pokušajte ponovo sa malo drugačijim opisom.",
+  unknown: "Generisanje nije uspelo. Pokušajte ponovo.",
+};
+
+const KIND_TO_STATUS: Record<AIGenerationErrorKind, number> = {
+  rate_limit: 429,
+  service_unavailable: 503,
+  timeout: 504,
+  invalid_response: 502,
+  unknown: 500,
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,10 +66,20 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json({ resultUrl: blob.url });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    if (err instanceof AIGenerationError) {
+      console.error(
+        `AI generation error [${err.kind}${err.status ? ` ${err.status}` : ""}]:`,
+        err.message,
+      );
+      return NextResponse.json(
+        { error: KIND_TO_USER_MESSAGE[err.kind], kind: err.kind },
+        { status: KIND_TO_STATUS[err.kind] },
+      );
+    }
     console.error("AI generation error:", err);
     return NextResponse.json(
-      { error: "Generisanje nije uspelo. Pokušajte ponovo." },
+      { error: KIND_TO_USER_MESSAGE.unknown, kind: "unknown" },
       { status: 500 },
     );
   }
