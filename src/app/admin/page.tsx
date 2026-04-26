@@ -68,6 +68,19 @@ export default function AdminPage() {
     setMounted(true);
   }, []);
 
+  // Mirror activeTab to ?tab= so the URL is shareable / refresh-stable.
+  // Default ("pozivnice") drops the param to keep the canonical /admin URL clean.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (activeTab === "pozivnice") {
+      url.searchParams.delete("tab");
+    } else {
+      url.searchParams.set("tab", activeTab);
+    }
+    window.history.replaceState({}, "", url.toString());
+  }, [activeTab]);
+
   useEffect(() => {
     fetch("/api/admin/couples")
       .then(async (r) => {
