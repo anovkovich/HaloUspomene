@@ -2,7 +2,14 @@
 
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Check, Sparkles, ChevronLeft, ChevronRight, Loader2, RefreshCw } from "lucide-react";
+import {
+  Check,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import type { PremiumThemeType } from "@/app/pozivnica/[slug]/types";
 
 interface PremiumStepAIPhotoProps {
@@ -39,38 +46,101 @@ const THEMES: {
     name: "Luxury Romance",
     subtitle: "Birane ilustracije i luksuz na najvišem nivou",
     features: ["Akvarel pozadina", "Retro automobil", "Parallax efekat"],
-    preview:
-      "/images/premium/watercolor-invitation/backgrounds/Old-Hall.webp",
+    preview: "/images/premium/watercolor-invitation/backgrounds/Old-Hall.webp",
   },
   {
     id: "line_art",
     name: "Modern Parallax",
-    subtitle: "Vaša AI ilustracija i parallax papirni svet",
+    subtitle: "Vaša AI ilustracija u prelepom parallax svetu",
     features: ["AI portret para", "Line art stil", "Paper parallax"],
     preview: "/images/premium/line-art-invitation/Starry-night.webp",
   },
 ];
 
 const CITIES = [
-  { id: "saint_sava_temple", label: "Hram Svetog Save", img: "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.webp" },
-  { id: "saint_mark_church", label: "Crkva Svetog Marka", img: "/images/premium/watercolor-invitation/backgrounds/Saint-Mark-Church.webp" },
-  { id: "novi_sad_cathedral", label: "Novosadska katedrala", img: "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.webp" },
-  { id: "gradska_kuca_novi_sad", label: "Gradska kuća (Novi Sad)", img: "/images/premium/watercolor-invitation/backgrounds/Gradska-Kuća-NoviSad.webp" },
-  { id: "city_hall_subotica", label: "Gradska kuća (Subotica)", img: "/images/premium/watercolor-invitation/backgrounds/City-Hall-Subotica.webp" },
-  { id: "monastery", label: "Manastir", img: "/images/premium/watercolor-invitation/backgrounds/Monastery.webp" },
-  { id: "old_hall", label: "Stara sala", img: "/images/premium/watercolor-invitation/backgrounds/Old-Hall.webp" },
+  {
+    id: "saint_sava_temple",
+    label: "Hram Svetog Save",
+    img: "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.webp",
+  },
+  {
+    id: "saint_mark_church",
+    label: "Crkva Svetog Marka",
+    img: "/images/premium/watercolor-invitation/backgrounds/Saint-Mark-Church.webp",
+  },
+  {
+    id: "novi_sad_cathedral",
+    label: "Novosadska katedrala",
+    img: "/images/premium/watercolor-invitation/backgrounds/Cathedral-NoviSad.webp",
+  },
+  {
+    id: "gradska_kuca_novi_sad",
+    label: "Gradska kuća (Novi Sad)",
+    img: "/images/premium/watercolor-invitation/backgrounds/Gradska-Kuća-NoviSad.webp",
+  },
+  {
+    id: "city_hall_subotica",
+    label: "Gradska kuća (Subotica)",
+    img: "/images/premium/watercolor-invitation/backgrounds/City-Hall-Subotica.webp",
+  },
+  {
+    id: "monastery",
+    label: "Manastir",
+    img: "/images/premium/watercolor-invitation/backgrounds/Monastery.webp",
+  },
+  {
+    id: "old_hall",
+    label: "Stara sala",
+    img: "/images/premium/watercolor-invitation/backgrounds/Old-Hall.webp",
+  },
 ];
 
 const CARS = [
-  { id: "new_rolls_royce", label: "Rolls Royce", img: "/images/premium/watercolor-invitation/cars/New-Rolls-Royce.webp" },
-  { id: "old_rolls_royce", label: "Old Rolls Royce", img: "/images/premium/watercolor-invitation/cars/Old-Rolls-Royce.webp" },
-  { id: "maybach", label: "Maybach", img: "/images/premium/watercolor-invitation/cars/Maybach.webp" },
-  { id: "cadillac", label: "Cadillac", img: "/images/premium/watercolor-invitation/cars/Cadillac.webp" },
-  { id: "bmw_x6", label: "BMW X6", img: "/images/premium/watercolor-invitation/cars/BMW-X6.webp" },
-  { id: "range_rover", label: "Range Rover", img: "/images/premium/watercolor-invitation/cars/Range-Rover.webp" },
-  { id: "mercedes_190_sl", label: "Mercedes 190 SL", img: "/images/premium/watercolor-invitation/cars/Mercedes-190-SL.webp" },
-  { id: "old_mercedes", label: "Old Mercedes", img: "/images/premium/watercolor-invitation/cars/Old-Mercedes.webp" },
-  { id: "vw_beetle", label: "VW Buba", img: "/images/premium/watercolor-invitation/cars/VW-Beetle.webp" },
+  {
+    id: "new_rolls_royce",
+    label: "Rolls Royce",
+    img: "/images/premium/watercolor-invitation/cars/New-Rolls-Royce.webp",
+  },
+  {
+    id: "old_rolls_royce",
+    label: "Old Rolls Royce",
+    img: "/images/premium/watercolor-invitation/cars/Old-Rolls-Royce.webp",
+  },
+  {
+    id: "maybach",
+    label: "Maybach",
+    img: "/images/premium/watercolor-invitation/cars/Maybach.webp",
+  },
+  {
+    id: "cadillac",
+    label: "Cadillac",
+    img: "/images/premium/watercolor-invitation/cars/Cadillac.webp",
+  },
+  {
+    id: "bmw_x6",
+    label: "BMW X6",
+    img: "/images/premium/watercolor-invitation/cars/BMW-X6.webp",
+  },
+  {
+    id: "range_rover",
+    label: "Range Rover",
+    img: "/images/premium/watercolor-invitation/cars/Range-Rover.webp",
+  },
+  {
+    id: "mercedes_190_sl",
+    label: "Mercedes 190 SL",
+    img: "/images/premium/watercolor-invitation/cars/Mercedes-190-SL.webp",
+  },
+  {
+    id: "old_mercedes",
+    label: "Old Mercedes",
+    img: "/images/premium/watercolor-invitation/cars/Old-Mercedes.webp",
+  },
+  {
+    id: "vw_beetle",
+    label: "VW Buba",
+    img: "/images/premium/watercolor-invitation/cars/VW-Beetle.webp",
+  },
 ];
 
 function ScrollableCards({
@@ -90,18 +160,31 @@ function ScrollableCards({
 
   const scroll = (dir: "left" | "right") => {
     if (!scrollRef.current) return;
-    scrollRef.current.scrollBy({ left: dir === "left" ? -200 : 200, behavior: "smooth" });
+    scrollRef.current.scrollBy({
+      left: dir === "left" ? -200 : 200,
+      behavior: "smooth",
+    });
   };
 
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2.5">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B7355]">{label}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B7355]">
+          {label}
+        </p>
         <div className="flex gap-1">
-          <button type="button" onClick={() => scroll("left")} className="p-1 rounded-lg hover:bg-stone-100 text-stone-400">
+          <button
+            type="button"
+            onClick={() => scroll("left")}
+            className="p-1 rounded-lg hover:bg-stone-100 text-stone-400"
+          >
             <ChevronLeft size={16} />
           </button>
-          <button type="button" onClick={() => scroll("right")} className="p-1 rounded-lg hover:bg-stone-100 text-stone-400">
+          <button
+            type="button"
+            onClick={() => scroll("right")}
+            className="p-1 rounded-lg hover:bg-stone-100 text-stone-400"
+          >
             <ChevronRight size={16} />
           </button>
         </div>
@@ -176,10 +259,22 @@ const GROOM_LOOK = [
   { value: "short neat hair, clean shaven", label: "Kratka kosa, obrijan" },
   { value: "short neat hair, short beard", label: "Kratka kosa, kratka brada" },
   { value: "short neat hair, full beard", label: "Kratka kosa, puna brada" },
-  { value: "short textured hair, clean shaven", label: "Moderna frizura, obrijan" },
-  { value: "short textured hair, stubble", label: "Moderna frizura, neobrijana" },
-  { value: "short textured hair, short beard", label: "Moderna frizura, kratka brada" },
-  { value: "slicked back hair, clean shaven", label: "Začešljana kosa, obrijan" },
+  {
+    value: "short textured hair, clean shaven",
+    label: "Moderna frizura, obrijan",
+  },
+  {
+    value: "short textured hair, stubble",
+    label: "Moderna frizura, neobrijana",
+  },
+  {
+    value: "short textured hair, short beard",
+    label: "Moderna frizura, kratka brada",
+  },
+  {
+    value: "slicked back hair, clean shaven",
+    label: "Začešljana kosa, obrijan",
+  },
   { value: "slicked back hair, beard", label: "Začešljana kosa, brada" },
   { value: "curly short hair, clean shaven", label: "Kovrdžava, obrijan" },
   { value: "curly short hair, beard", label: "Kovrdžava, brada" },
@@ -188,25 +283,45 @@ const GROOM_LOOK = [
   { value: "short hair, mustache", label: "Kratka kosa, brkovi" },
 ];
 
-function DescSelect({ label, options, value, onChange }: {
-  label: string; options: { value: string; label: string }[]; value: string; onChange: (v: string) => void;
+function DescSelect({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
 }) {
   return (
     <div>
-      <label className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8B7355]/60 mb-1">{label}</label>
+      <label className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8B7355]/60 mb-1">
+        {label}
+      </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-[#232323] focus:outline-none focus:border-[#d4af37]/50 transition-colors appearance-none cursor-pointer"
       >
         <option value="">— izaberi —</option>
-        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
       </select>
     </div>
   );
 }
 
-function CoupleDescriptionBuilder({ value, onChange }: { value: string; onChange: (desc: string) => void }) {
+function CoupleDescriptionBuilder({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (desc: string) => void;
+}) {
   const [bhc, setBhc] = useState("");
   const [bhs, setBhs] = useState("");
   const [ghc, setGhc] = useState("");
@@ -214,7 +329,8 @@ function CoupleDescriptionBuilder({ value, onChange }: { value: string; onChange
 
   const build = (a: string, b: string, c: string, d: string) => {
     const parts: string[] = [];
-    if (a || b) parts.push(`bride with ${[b, a].filter(Boolean).join(" ")} hair`);
+    if (a || b)
+      parts.push(`bride with ${[b, a].filter(Boolean).join(" ")} hair`);
     if (c || d) {
       const gp = [];
       if (c) gp.push(`${c} hair`);
@@ -225,7 +341,12 @@ function CoupleDescriptionBuilder({ value, onChange }: { value: string; onChange
   };
 
   const set = (field: string, val: string) => {
-    const n = { bhc: field === "bhc" ? val : bhc, bhs: field === "bhs" ? val : bhs, ghc: field === "ghc" ? val : ghc, gl: field === "gl" ? val : gl };
+    const n = {
+      bhc: field === "bhc" ? val : bhc,
+      bhs: field === "bhs" ? val : bhs,
+      ghc: field === "ghc" ? val : ghc,
+      gl: field === "gl" ? val : gl,
+    };
     if (field === "bhc") setBhc(val);
     if (field === "bhs") setBhs(val);
     if (field === "ghc") setGhc(val);
@@ -236,17 +357,41 @@ function CoupleDescriptionBuilder({ value, onChange }: { value: string; onChange
   return (
     <div className="space-y-4">
       <div className="bg-[#d4af37]/5 rounded-2xl p-4 border border-[#d4af37]/10">
-        <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#d4af37] mb-3">Mlada</p>
+        <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#d4af37] mb-3">
+          Mlada
+        </p>
         <div className="grid grid-cols-2 gap-3">
-          <DescSelect label="Boja kose" options={BRIDE_HAIR_COLOR} value={bhc} onChange={(v) => set("bhc", v)} />
-          <DescSelect label="Frizura" options={BRIDE_HAIR_STYLE} value={bhs} onChange={(v) => set("bhs", v)} />
+          <DescSelect
+            label="Boja kose"
+            options={BRIDE_HAIR_COLOR}
+            value={bhc}
+            onChange={(v) => set("bhc", v)}
+          />
+          <DescSelect
+            label="Frizura"
+            options={BRIDE_HAIR_STYLE}
+            value={bhs}
+            onChange={(v) => set("bhs", v)}
+          />
         </div>
       </div>
       <div className="bg-stone-50 rounded-2xl p-4 border border-stone-100">
-        <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B7355] mb-3">Mladoženja</p>
+        <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B7355] mb-3">
+          Mladoženja
+        </p>
         <div className="grid grid-cols-2 gap-3">
-          <DescSelect label="Boja kose" options={GROOM_HAIR_COLOR} value={ghc} onChange={(v) => set("ghc", v)} />
-          <DescSelect label="Frizura i brada" options={GROOM_LOOK} value={gl} onChange={(v) => set("gl", v)} />
+          <DescSelect
+            label="Boja kose"
+            options={GROOM_HAIR_COLOR}
+            value={ghc}
+            onChange={(v) => set("ghc", v)}
+          />
+          <DescSelect
+            label="Frizura i brada"
+            options={GROOM_LOOK}
+            value={gl}
+            onChange={(v) => set("gl", v)}
+          />
         </div>
       </div>
     </div>
@@ -314,7 +459,9 @@ export default function PremiumStepAIPhoto({
           const parsed = JSON.parse(existing);
           expiresAt = parsed.expiresAt;
         } else {
-          expiresAt = new Date(Date.now() + TTL_HOURS * 60 * 60 * 1000).toISOString();
+          expiresAt = new Date(
+            Date.now() + TTL_HOURS * 60 * 60 * 1000,
+          ).toISOString();
         }
         localStorage.setItem(
           cacheKey,
@@ -368,7 +515,9 @@ export default function PremiumStepAIPhoto({
       setGenerationCount(newCount);
       saveCache(newCount, newHistory);
     } catch (err) {
-      setGenerationError(err instanceof Error ? err.message : "Greška pri generisanju.");
+      setGenerationError(
+        err instanceof Error ? err.message : "Greška pri generisanju.",
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -389,13 +538,22 @@ export default function PremiumStepAIPhoto({
       {/* Limit reached popup */}
       {showLimitPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowLimitPopup(false)} />
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setShowLimitPopup(false)}
+          />
           <motion.div
             className="relative bg-white rounded-2xl p-8 max-w-sm w-full shadow-xl border border-[#d4af37]/30"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
           >
-            <button type="button" onClick={() => setShowLimitPopup(false)} className="absolute top-3 right-3 text-stone-400 hover:text-stone-600 text-lg">✕</button>
+            <button
+              type="button"
+              onClick={() => setShowLimitPopup(false)}
+              className="absolute top-3 right-3 text-stone-400 hover:text-stone-600 text-lg"
+            >
+              ✕
+            </button>
             <div className="text-center">
               <div className="w-14 h-14 rounded-full bg-[#d4af37]/10 flex items-center justify-center mx-auto mb-4">
                 <Sparkles size={24} className="text-[#d4af37]" />
@@ -432,18 +590,18 @@ export default function PremiumStepAIPhoto({
               key={theme.id}
               type="button"
               onClick={() => onThemeChange(theme.id)}
-              className={`relative rounded-2xl border-2 text-left transition-all overflow-hidden ${
+              className={`relative rounded-2xl border-2 text-left transition-all overflow-hidden flex flex-col ${
                 isSelected
                   ? "border-[#d4af37] shadow-lg shadow-[#d4af37]/20"
                   : "border-stone-200 hover:border-[#d4af37]/40"
               }`}
             >
               {/* Preview image */}
-              <div className="relative w-full h-20 overflow-hidden">
+              <div className="relative w-full aspect-[5/3] overflow-hidden bg-stone-100 flex-shrink-0">
                 <img
                   src={theme.preview}
                   alt={theme.name}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
                 {isSelected && (
@@ -456,7 +614,7 @@ export default function PremiumStepAIPhoto({
                 </p>
               </div>
               {/* Details */}
-              <div className="p-3">
+              <div className="p-3 flex-1 flex items-start">
                 <p className="text-[11px] text-[#8B7355]">{theme.subtitle}</p>
               </div>
             </button>
@@ -504,7 +662,11 @@ export default function PremiumStepAIPhoto({
           <button
             type="button"
             onClick={handleGenerate}
-            disabled={isGenerating || !coupleDescription.trim() || generationCount >= MAX_GENERATIONS}
+            disabled={
+              isGenerating ||
+              !coupleDescription.trim() ||
+              generationCount >= MAX_GENERATIONS
+            }
             className="w-full flex items-center justify-center gap-2 mt-4 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white font-medium text-sm shadow-lg shadow-[#d4af37]/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {isGenerating ? (
@@ -516,7 +678,9 @@ export default function PremiumStepAIPhoto({
               <>
                 <RefreshCw size={16} />
                 Generiši ponovo
-                <span className="ml-1 text-xs opacity-70">({generationCount}/{MAX_GENERATIONS})</span>
+                <span className="ml-1 text-xs opacity-70">
+                  ({generationCount}/{MAX_GENERATIONS})
+                </span>
               </>
             ) : (
               <>
@@ -526,39 +690,51 @@ export default function PremiumStepAIPhoto({
             )}
           </button>
           {generationCount >= MAX_GENERATIONS && (
-            <p className="text-[10px] text-[#8B7355]/60 text-center mt-1">Iskorišćeno svih {MAX_GENERATIONS} pokušaja</p>
+            <p className="text-[10px] text-[#8B7355]/60 text-center mt-1">
+              Iskorišćeno svih {MAX_GENERATIONS} pokušaja
+            </p>
           )}
 
           {generationError && (
-            <p className="text-xs text-red-500 mt-2 text-center">{generationError}</p>
+            <p className="text-xs text-red-500 mt-2 text-center">
+              {generationError}
+            </p>
           )}
 
           {/* Image version tabs — always show when there's at least one image */}
-          {aiCoupleImageUrl && !isGenerating && (() => {
-            // Build full list: history + current (deduplicated)
-            const allImages = [...imageHistory];
-            if (!allImages.includes(aiCoupleImageUrl)) allImages.push(aiCoupleImageUrl);
-            return (
-              <div className="mt-3">
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {allImages.map((url, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => onImageGenerated(url)}
-                      className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
-                        url === aiCoupleImageUrl
-                          ? "border-[#d4af37] shadow-md shadow-[#d4af37]/20"
-                          : "border-stone-200 hover:border-[#d4af37]/40"
-                      }`}
-                    >
-                      <img src={url} alt={`Verzija ${i + 1}`} className="w-full h-full object-cover" style={{ mixBlendMode: "multiply" }} />
-                    </button>
-                  ))}
+          {aiCoupleImageUrl &&
+            !isGenerating &&
+            (() => {
+              // Build full list: history + current (deduplicated)
+              const allImages = [...imageHistory];
+              if (!allImages.includes(aiCoupleImageUrl))
+                allImages.push(aiCoupleImageUrl);
+              return (
+                <div className="mt-3">
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {allImages.map((url, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => onImageGenerated(url)}
+                        className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
+                          url === aiCoupleImageUrl
+                            ? "border-[#d4af37] shadow-md shadow-[#d4af37]/20"
+                            : "border-stone-200 hover:border-[#d4af37]/40"
+                        }`}
+                      >
+                        <img
+                          src={url}
+                          alt={`Verzija ${i + 1}`}
+                          className="w-full h-full object-cover"
+                          style={{ mixBlendMode: "multiply" }}
+                        />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
 
           {/* Loading skeleton */}
           {isGenerating && !aiCoupleImageUrl && (
@@ -583,8 +759,13 @@ export default function PremiumStepAIPhoto({
               {isGenerating ? (
                 <div className="w-full h-64 bg-gradient-to-r from-[#d4af37]/5 via-[#d4af37]/10 to-[#d4af37]/5 animate-pulse flex items-center justify-center">
                   <div className="text-center">
-                    <Loader2 size={28} className="mx-auto text-[#d4af37] animate-spin mb-3" />
-                    <p className="text-sm text-[#8B7355]">{LOADING_MESSAGES[loadingMsgIndex]}</p>
+                    <Loader2
+                      size={28}
+                      className="mx-auto text-[#d4af37] animate-spin mb-3"
+                    />
+                    <p className="text-sm text-[#8B7355]">
+                      {LOADING_MESSAGES[loadingMsgIndex]}
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -592,7 +773,10 @@ export default function PremiumStepAIPhoto({
                   src={aiCoupleImageUrl}
                   alt="AI ilustracija para"
                   className="max-h-96 mx-auto"
-                  style={{ mixBlendMode: "multiply", backgroundColor: "#ffffff" }}
+                  style={{
+                    mixBlendMode: "multiply",
+                    backgroundColor: "#ffffff",
+                  }}
                 />
               )}
             </motion.div>
