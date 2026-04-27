@@ -47,3 +47,19 @@ export function getPremiumRasporedPrice(): number {
 export function getPremiumAudioPrice(): number {
   return (pricing.premium as any).audioPrice ?? pricing.pozivnica.audio.price;
 }
+
+export function getRodjendanPozivnicaPrice(t18 = false): number {
+  const r = (pricing as any).rodjendan;
+  if (!r) return 0;
+  return t18 ? r.punoletstvo.price : r.pozivnica.price;
+}
+
+export function getRodjendanPozivnicaLabel(t18 = false): string {
+  const r = (pricing as any).rodjendan;
+  if (!r) return t18 ? "Pozivnica za punoletstvo" : "Rođendanska pozivnica";
+  return t18 ? r.punoletstvo.label : r.pozivnica.label;
+}
+
+export function getRodjendanRasporedPrice(): number {
+  return (pricing as any).rodjendan?.raspored?.price ?? 0;
+}

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Copy, Check, Pencil, Users, Cake, Armchair } from "lucide-react";
+import { Plus, Trash2, Copy, Check, Pencil, Users, Cake, Armchair, Receipt } from "lucide-react";
+import { encodeToBase64 } from "@/lib/encoding";
 
 interface Birthday {
   slug: string;
@@ -15,6 +16,9 @@ interface Birthday {
   type?: "child" | "eighteenth";
   draft?: boolean;
   paid_for_raspored?: boolean;
+  receipt_valid?: boolean;
+  receipt_created?: string;
+  custom_discount?: number;
 }
 
 interface BirthdayStats {
@@ -23,9 +27,10 @@ interface BirthdayStats {
 
 interface Props {
   onNeedsLogin: () => void;
+  bankAccountIdx: number;
 }
 
-export default function BirthdayAdminList({ onNeedsLogin }: Props) {
+export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Props) {
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
   const [stats, setStats] = useState<Record<string, BirthdayStats>>({});
   const [loading, setLoading] = useState(true);
@@ -33,6 +38,7 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [receiptCopiedSlug, setReceiptCopiedSlug] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -106,6 +112,72 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
     if (diff > 0) return `za ${diff} dana`;
     if (diff === 0) return "danas!";
     return `pre ${Math.abs(diff)} dana`;
+  }
+
+  function buildReceiptUrl(b: Birthday) {
+    const data: Record<string, unknown> = {
+      kind: "rodjendan",
+      s: b.slug,
+      par: b.child_name || b.slug,
+      datum: b.event_date,
+      r: b.paid_for_raspored ? 1 : 0,
+      t18: b.type === "eighteenth" ? 1 : 0,
+      d: b.custom_discount ?? 0,
+      ba: bankAccountIdx,
+      t: Date.now(),
+    };
+    return `https://halouspomene.rs/racun?d=${encodeToBase64(data)}`;
+  }
+
+  async function patchBirthday(slug: string, body: Record<string, unknown>) {
+    return fetch(`/api/admin/birthdays/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  }
+
+  async function handleGenerateReceipt(slug: string) {
+    const now = new Date().toISOString();
+    setBirthdays((prev) =>
+      prev.map((b) =>
+        b.slug === slug ? { ...b, receipt_valid: true, receipt_created: now } : b,
+      ),
+    );
+    const res = await patchBirthday(slug, { receipt_valid: true, receipt_created: now });
+    if (!res.ok) {
+      setBirthdays((prev) =>
+        prev.map((b) =>
+          b.slug === slug ? { ...b, receipt_valid: false } : b,
+        ),
+      );
+      alert(`Greška: Nisu mogli podesiti račun (${res.status})`);
+    }
+  }
+
+  async function handleInvalidateReceipt(slug: string) {
+    setBirthdays((prev) =>
+      prev.map((b) =>
+        b.slug === slug ? { ...b, receipt_valid: false } : b,
+      ),
+    );
+    await patchBirthday(slug, { receipt_valid: false });
+  }
+
+  async function handleSetDiscount(slug: string, amount: number) {
+    setBirthdays((prev) =>
+      prev.map((b) =>
+        b.slug === slug ? { ...b, custom_discount: amount } : b,
+      ),
+    );
+    await patchBirthday(slug, { custom_discount: amount });
+  }
+
+  async function copyReceiptLink(b: Birthday) {
+    const url = buildReceiptUrl(b);
+    await navigator.clipboard.writeText(url);
+    setReceiptCopiedSlug(b.slug);
+    setTimeout(() => setReceiptCopiedSlug(null), 2500);
   }
 
   async function handleDelete() {
@@ -280,6 +352,18 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
                   </div>
                 </div>
               </div>
+
+              <BirthdayReceiptDropdown
+                birthday={b}
+                copiedSlug={receiptCopiedSlug}
+                onGenerate={async () => {
+                  await handleGenerateReceipt(b.slug);
+                  await copyReceiptLink(b);
+                }}
+                onCopy={() => copyReceiptLink(b)}
+                onPaid={() => handleInvalidateReceipt(b.slug)}
+                onDiscount={(amount) => handleSetDiscount(b.slug, amount)}
+              />
             </div>
           );
         })}
@@ -316,6 +400,124 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
               >
                 {deleting ? "Brisanje..." : "Obriši"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BirthdayReceiptDropdown({
+  birthday,
+  copiedSlug,
+  onGenerate,
+  onCopy,
+  onPaid,
+  onDiscount,
+}: {
+  birthday: Birthday;
+  copiedSlug: string | null;
+  onGenerate: () => void;
+  onCopy: () => void;
+  onPaid: () => void;
+  onDiscount: (amount: number) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const isCopied = copiedSlug === birthday.slug;
+  const isActive = birthday.receipt_valid;
+
+  return (
+    <div ref={ref} className="relative mt-2 pt-2 border-t border-white/5">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`flex items-center gap-1.5 text-[10px] cursor-pointer transition-colors ${
+          isActive ? "text-green-400 hover:text-green-300" : "text-white/30 hover:text-white/50"
+        }`}
+      >
+        <Receipt size={11} />
+        {isCopied ? "✓ Link kopiran!" : isActive ? "Račun aktivan" : "Račun"}
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 16 16"
+          fill="none"
+          className={`transition-transform ${open ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M4 6l4 4 4-4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          className="absolute bottom-full left-0 mb-1 rounded-lg overflow-hidden shadow-xl z-30"
+          style={{ backgroundColor: "#2a2a2a", border: "1px solid rgba(255,255,255,0.1)", minWidth: 220 }}
+        >
+          <button
+            onClick={() => {
+              onGenerate();
+              setOpen(false);
+            }}
+            className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-white/70 hover:bg-white/5 cursor-pointer transition-colors"
+          >
+            <Receipt size={12} className="text-yellow-400" />
+            {isActive ? "Regeneriši račun" : "Generiši račun"}
+          </button>
+
+          {isActive && (
+            <button
+              onClick={() => {
+                onCopy();
+                setOpen(false);
+              }}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-white/70 hover:bg-white/5 cursor-pointer transition-colors"
+            >
+              <Copy size={12} className="text-green-400" />
+              Kopiraj link
+            </button>
+          )}
+
+          {isActive && (
+            <button
+              onClick={() => {
+                onPaid();
+                setOpen(false);
+              }}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-[11px] text-red-400/70 hover:bg-white/5 cursor-pointer transition-colors"
+            >
+              <Check size={12} />
+              Označi kao plaćeno
+            </button>
+          )}
+
+          <div className="px-4 py-2.5 border-t border-white/5">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-white/30">Popust:</span>
+              <input
+                type="number"
+                min={0}
+                step={500}
+                value={birthday.custom_discount ?? 0}
+                onChange={(e) => onDiscount(parseInt(e.target.value) || 0)}
+                className="w-16 text-[11px] text-white/60 bg-white/5 border border-white/10 rounded px-2 py-1 text-right outline-none focus:border-white/20"
+              />
+              <span className="text-[10px] text-white/30">din</span>
             </div>
           </div>
         </div>

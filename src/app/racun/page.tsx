@@ -10,6 +10,9 @@ import {
   getPremiumRasporedPrice,
   getPremiumAudioPrice,
   isPremiumPromoActive,
+  getRodjendanPozivnicaPrice,
+  getRodjendanPozivnicaLabel,
+  getRodjendanRasporedPrice,
 } from "@/data/pricing";
 import { decodeFromBase64 } from "@/lib/encoding";
 
@@ -224,6 +227,7 @@ const BANK_ACCOUNTS = [
 
 interface ReceiptPayload {
   s?: string; // slug (optional for standalone)
+  kind?: "rodjendan"; // record type — when set, validate against birthday_events
   custom?: 1; // standalone receipt — validate against custom_receipts collection
   id?: string; // custom receipt DB id
   par: string; // couple/recipient display name
@@ -237,6 +241,7 @@ interface ReceiptPayload {
   cc?: number; // custom colors
   ig?: number; // images
   p?: number; // premium invitation
+  t18?: number; // punoletstvo (only meaningful when kind === "rodjendan")
   d?: number; // custom discount
   ba?: number; // bank account index (0, 1, 2)
   t: number; // timestamp
@@ -289,7 +294,10 @@ function ReceiptContent() {
       return;
     }
 
-    fetch(`/api/racun/${data.s}/`)
+    const validateUrl = data.kind
+      ? `/api/racun/${data.s}/?kind=${data.kind}`
+      : `/api/racun/${data.s}/`;
+    fetch(validateUrl)
       .then((res) => res.json())
       .then((apiData) => {
         if (!apiData.valid) {
@@ -313,22 +321,27 @@ function ReceiptContent() {
   // Build line items
   const items: { label: string; amount: number; free?: boolean }[] = [];
 
-  if (payload.rp)
-    items.push({
-      label: "Audio Guest Book — telefon",
-      amount: getAudioPrice(),
-    });
-  if (payload.pd)
-    items.push({
-      label: "Personalizovana audio dobrodošlica",
-      amount: pricing.addons.find(
-        (a) => a.id === "personalizovana_dobrodoslica",
-      )!.price,
-    });
-
-  // Only add website items for invitations, not phone rentals or standalone custom receipts
+  const isRodjendan = payload.kind === "rodjendan";
   const isPhoneRental = payload.s?.startsWith("tel-") ?? false;
-  if (!isPhoneRental && !payload.custom) {
+  const isWedding = !isRodjendan && !isPhoneRental && !payload.custom;
+
+  // Wedding retro-phone add-ons (always allowed alongside any wedding/phone receipt).
+  if (!isRodjendan) {
+    if (payload.rp)
+      items.push({
+        label: "Audio Guest Book — telefon",
+        amount: getAudioPrice(),
+      });
+    if (payload.pd)
+      items.push({
+        label: "Personalizovana audio dobrodošlica",
+        amount: pricing.addons.find(
+          (a) => a.id === "personalizovana_dobrodoslica",
+        )!.price,
+      });
+  }
+
+  if (isWedding) {
     if (payload.p) {
       items.push({
         label: isPremiumPromoActive() ? "Premium pozivnica — PROMO" : "Premium pozivnica",
@@ -340,42 +353,56 @@ function ReceiptContent() {
         { label: "PDF pozivnica za štampu", amount: 0, free: true },
       );
     }
+
+    if (payload.r)
+      items.push({
+        label: "Raspored sedenja",
+        amount: payload.p
+          ? getPremiumRasporedPrice()
+          : pricing.pozivnica.raspored.price,
+      });
+    if (payload.a)
+      items.push({
+        label: "Audio knjiga utisaka",
+        amount: payload.p
+          ? getPremiumAudioPrice()
+          : pricing.pozivnica.audio.price,
+      });
+    if (payload.uk)
+      items.push({
+        label: "USB retro kaseta",
+        amount: pricing.addons.find((a) => a.id === "usb_kaseta")!.price,
+      });
+    if (payload.ub)
+      items.push({
+        label: "USB u bočici",
+        amount: pricing.addons.find((a) => a.id === "usb_bocica")!.price,
+      });
+    if (payload.cc)
+      items.push({
+        label: "Prilagođena boja teme",
+        amount: pricing.addons.find((a) => a.id === "custom_color")!.price,
+      });
+    if (payload.ig)
+      items.push({
+        label: "Polaroid galerija slika",
+        amount: pricing.addons.find((a) => a.id === "custom_color")!.price,
+      });
   }
 
-  if (payload.r)
+  if (isRodjendan) {
+    const isPunoletstvo = !!payload.t18;
     items.push({
-      label: "Raspored sedenja",
-      amount: payload.p
-        ? getPremiumRasporedPrice()
-        : pricing.pozivnica.raspored.price,
+      label: getRodjendanPozivnicaLabel(isPunoletstvo),
+      amount: getRodjendanPozivnicaPrice(isPunoletstvo),
     });
-  if (payload.a)
-    items.push({
-      label: "Audio knjiga utisaka",
-      amount: payload.p
-        ? getPremiumAudioPrice()
-        : pricing.pozivnica.audio.price,
-    });
-  if (payload.uk)
-    items.push({
-      label: "USB retro kaseta",
-      amount: pricing.addons.find((a) => a.id === "usb_kaseta")!.price,
-    });
-  if (payload.ub)
-    items.push({
-      label: "USB u bočici",
-      amount: pricing.addons.find((a) => a.id === "usb_bocica")!.price,
-    });
-  if (payload.cc)
-    items.push({
-      label: "Prilagođena boja teme",
-      amount: pricing.addons.find((a) => a.id === "custom_color")!.price,
-    });
-  if (payload.ig)
-    items.push({
-      label: "Polaroid galerija slika",
-      amount: pricing.addons.find((a) => a.id === "custom_color")!.price,
-    });
+    if (payload.r) {
+      items.push({
+        label: "Raspored sedenja",
+        amount: getRodjendanRasporedPrice(),
+      });
+    }
+  }
 
   // Custom line items added manually by admin
   if (payload.ci?.length) {
@@ -385,10 +412,10 @@ function ReceiptContent() {
   }
 
   const subtotal = items.reduce((s, i) => s + i.amount, 0);
-  // Classic bundle discount only applies to non-premium receipts; Premium
-  // already encodes its own bundled discount via getPremiumRasporedPrice /
-  // getPremiumAudioPrice, so don't stack another discount on top.
-  const isBundle = !payload.p && !!payload.r && !!payload.a;
+  // Classic bundle discount only applies to non-premium wedding receipts;
+  // Premium already encodes its own bundled discount via getPremiumRasporedPrice /
+  // getPremiumAudioPrice, and rodjendan has no bundle pricing yet.
+  const isBundle = isWedding && !payload.p && !!payload.r && !!payload.a;
   const bundleDiscount = isBundle
     ? pricing.pozivnica.bundleFullPrice - pricing.pozivnica.bundlePrice
     : 0;

@@ -423,7 +423,10 @@ export default function AdminPage() {
           <VendorAdminTab />
         </>
       ) : activeTab === "rodjendani" ? (
-        <BirthdayAdminList onNeedsLogin={() => setNeedsLogin(true)} />
+        <BirthdayAdminList
+          onNeedsLogin={() => setNeedsLogin(true)}
+          bankAccountIdx={bankAccountIdx}
+        />
       ) : (
       <>
       <div className="flex items-center justify-between mb-8">

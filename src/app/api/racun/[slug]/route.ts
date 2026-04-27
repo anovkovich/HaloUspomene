@@ -1,12 +1,32 @@
 import { NextResponse } from "next/server";
 import { getWeddingData } from "@/data/pozivnice";
 import { getPhoneRentalById } from "@/lib/phone-rentals";
+import { getBirthdayData } from "@/lib/birthday";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
+  const url = new URL(req.url);
+  const kind = url.searchParams.get("kind");
+
+  // Birthday / punoletstvo (kind=rodjendan disambiguates against couples).
+  if (kind === "rodjendan") {
+    const data = await getBirthdayData(slug);
+    if (!data) {
+      return NextResponse.json({ valid: false }, { status: 404 });
+    }
+    return NextResponse.json({
+      valid: data.receipt_valid ?? false,
+      created: data.receipt_created ?? null,
+      customDiscount: data.custom_discount ?? 0,
+      paidForRaspored: data.paid_for_raspored ?? false,
+      childName: data.child_name,
+      eventDate: data.event_date,
+      type: data.type ?? "child",
+    });
+  }
 
   // Handle phone rental IDs (tel-xxx)
   if (slug.startsWith("tel-")) {

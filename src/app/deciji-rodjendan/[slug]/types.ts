@@ -56,6 +56,9 @@ export interface BirthdayData {
    * the couple settles the custom receipt for this add-on.
    */
   paid_for_raspored?: boolean;
+  receipt_valid?: boolean;
+  receipt_created?: string;
+  custom_discount?: number;
 }
 
 export interface BirthdayThemeConfig {

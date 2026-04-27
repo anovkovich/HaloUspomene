@@ -69,5 +69,19 @@
     "promoActive": true,
     "rasporedPrice": 1000,
     "audioPrice": 1000
+  },
+  "rodjendan": {
+    "pozivnica": {
+      "label": "Rođendanska pozivnica",
+      "price": 4000
+    },
+    "punoletstvo": {
+      "label": "Pozivnica za punoletstvo",
+      "price": 4000
+    },
+    "raspored": {
+      "label": "Raspored sedenja",
+      "price": 2000
+    }
   }
 }
