@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform, useMotionValue, animate } from "framer
 import { Heart, Send, MapPin, Clock, Church, Home, Sparkles } from "lucide-react";
 import type { ThemeInvitationProps } from "../PremiumInvitationClient";
 import dynamic from "next/dynamic";
+import { MultilineText } from "@/lib/multiline";
 
 const HeroSection = dynamic(() => import("../components/HeroSection"), {
   ssr: false,
@@ -716,7 +717,7 @@ export default function LineArtInvitation({
             </p>
             {data.tagline && (
               <p className="text-[#5a4a2e] mt-4 sm:mt-6 italic font-serif text-lg sm:text-xl md:text-2xl leading-relaxed max-w-lg mx-auto">
-                {data.tagline}
+                <MultilineText text={data.tagline} />
               </p>
             )}
           </GlassCard>

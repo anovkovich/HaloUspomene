@@ -12,6 +12,7 @@ interface Birthday {
   theme: string;
   gender: string;
   age: number;
+  type?: "child" | "eighteenth";
   draft?: boolean;
   paid_for_raspored?: boolean;
 }
@@ -190,8 +191,12 @@ export default function BirthdayAdminList({ onNeedsLogin }: Props) {
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => {
+                        const prefix =
+                          b.type === "eighteenth"
+                            ? "punoletstvo"
+                            : "deciji-rodjendan";
                         navigator.clipboard.writeText(
-                          `https://halouspomene.rs/deciji-rodjendan/${b.slug}`,
+                          `https://halouspomene.rs/${prefix}/${b.slug}`,
                         );
                         setCopiedSlug(b.slug);
                         setTimeout(() => setCopiedSlug(null), 2000);

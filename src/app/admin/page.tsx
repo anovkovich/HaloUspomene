@@ -42,15 +42,9 @@ interface CoupleStats {
   audio: { messageCount: number } | null;
 }
 
-function resolveInitialTab(): AdminTab {
-  if (typeof window === "undefined") return "pozivnice";
-  const t = new URLSearchParams(window.location.search).get("tab");
-  if (t === "rodjendani" || t === "vendori" || t === "pozivnice") return t;
-  return "pozivnice";
-}
-
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<AdminTab>(resolveInitialTab);
+  const [activeTab, setActiveTab] = useState<AdminTab>("pozivnice");
+  const tabInitializedRef = useRef(false);
   const [couples, setCouples] = useState<Couple[]>([]);
   const [stats, setStats] = useState<Record<string, CoupleStats>>({});
   const [loading, setLoading] = useState(true);
@@ -68,10 +62,17 @@ export default function AdminPage() {
     setMounted(true);
   }, []);
 
-  // Mirror activeTab to ?tab= so the URL is shareable / refresh-stable.
-  // Default ("pozivnice") drops the param to keep the canonical /admin URL clean.
+  // Read tab from URL on mount, then mirror activeTab → ?tab= on changes.
+  // Reading happens in useEffect (not in useState init) because the SSR pass
+  // has no `window`, so a lazy initializer would always default to "pozivnice"
+  // and the mirror effect would strip the param on hydration.
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!tabInitializedRef.current) {
+      tabInitializedRef.current = true;
+      const t = new URLSearchParams(window.location.search).get("tab");
+      if (t === "rodjendani" || t === "vendori") setActiveTab(t);
+      return;
+    }
     const url = new URL(window.location.href);
     if (activeTab === "pozivnice") {
       url.searchParams.delete("tab");

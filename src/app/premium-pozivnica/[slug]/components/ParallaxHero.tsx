@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import type { PremiumThemeType } from "@/app/pozivnica/[slug]/types";
 import dynamic from "next/dynamic";
+import { MultilineText } from "@/lib/multiline";
 
 const ParticleBackground = dynamic(() => import("./ParticleBackground"), {
   ssr: false,
@@ -176,7 +177,7 @@ export default function ParallaxHero({
 
         {tagline && (
           <p className="text-[#8B7355] mt-6 max-w-md mx-auto italic text-lg">
-            &ldquo;{tagline}&rdquo;
+            &ldquo;<MultilineText text={tagline} />&rdquo;
           </p>
         )}
       </div>

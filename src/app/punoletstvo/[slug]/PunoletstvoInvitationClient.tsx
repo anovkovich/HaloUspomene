@@ -11,6 +11,7 @@ import type {
 import { ThemeProvider } from "@/app/pozivnica/[slug]/components/ThemeProvider";
 import { EnvelopeLoader } from "@/app/pozivnica/[slug]/components/EnvelopeLoader";
 import { BirthdayRSVPForm } from "@/app/deciji-rodjendan/[slug]/components/BirthdayRSVPForm";
+import { MultilineText } from "@/lib/multiline";
 
 interface Props {
   data: BirthdayData;
@@ -470,7 +471,7 @@ export default function PunoletstvoInvitationClient({ data, slug }: Props) {
                     className="font-serif italic text-base sm:text-lg max-w-lg mx-auto leading-relaxed my-5 sm:my-10"
                     style={{ color: "var(--theme-text-muted)" }}
                   >
-                    {data.tagline}
+                    <MultilineText text={data.tagline} />
                   </motion.p>
                 )}
 

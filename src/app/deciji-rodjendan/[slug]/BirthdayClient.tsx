@@ -12,6 +12,7 @@ import { BirthdayThemeProvider } from "./components/ThemeProvider";
 import { SceneDecorations, AgeBadge } from "./components/Illustrations";
 import { BirthdayCountdown } from "./components/Countdown";
 import { BirthdayRSVPForm } from "./components/BirthdayRSVPForm";
+import { MultilineText } from "@/lib/multiline";
 
 interface Props {
   data: BirthdayData;
@@ -139,7 +140,7 @@ export default function BirthdayClient({ data, slug }: Props) {
                 className="text-base sm:text-lg max-w-md mx-auto italic"
                 style={{ color: "var(--theme-text-muted)" }}
               >
-                {data.tagline}
+                <MultilineText text={data.tagline} />
               </motion.p>
             )}
           </motion.div>

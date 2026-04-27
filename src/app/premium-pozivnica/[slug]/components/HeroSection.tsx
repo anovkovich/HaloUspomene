@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { Heart, ChevronDown } from "lucide-react";
 import type { PremiumThemeType } from "@/app/pozivnica/[slug]/types";
+import { MultilineText } from "@/lib/multiline";
 import {
   getPremiumVisualTheme,
   type PremiumVisualTheme,
@@ -224,7 +225,7 @@ export default function HeroSection({
             transition={{ duration: 1, delay: 1 }}
             className="text-[#8B7355]/80 mt-8 max-w-sm mx-auto italic font-serif text-base sm:text-lg leading-relaxed"
           >
-            &ldquo;{tagline}&rdquo;
+            &ldquo;<MultilineText text={tagline} />&rdquo;
           </motion.p>
         )}
       </motion.div>

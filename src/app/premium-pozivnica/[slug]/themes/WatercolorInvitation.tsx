@@ -9,6 +9,7 @@ import {
 } from "framer-motion";
 import { Heart, Send, MapPin, Clock, ChevronDown } from "lucide-react";
 import type { ThemeInvitationProps } from "../PremiumInvitationClient";
+import { MultilineText } from "@/lib/multiline";
 
 /*
  * WATERCOLOR ROMANCE THEME
@@ -594,7 +595,7 @@ export default function WatercolorInvitation({
                   "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
               }}
             >
-              {data.tagline}
+              <MultilineText text={data.tagline} />
             </p>
           )}
         </motion.div>
