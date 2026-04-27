@@ -63,6 +63,13 @@ export interface WeddingData {
   event_date: string; // ISO string: YYYY-MM-DDTHH:mm:ss
   submit_until: string; // ISO date: YYYY-MM-DD — deadline for RSVP submissions
   tagline?: string;
+  /**
+   * Optional free-form note rendered between the map and the RSVP section.
+   * Manually populated via the admin JSON editor; absent for couples that
+   * don't need an extra message. Same font/size as `tagline` but in
+   * theme primary color.
+   */
+  note?: string;
   thankYouFooter?: string;
   locations: Location[];
   timeline: TimelineItem[];

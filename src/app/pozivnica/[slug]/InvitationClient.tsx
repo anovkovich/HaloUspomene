@@ -683,6 +683,25 @@ export default function InvitationClient({
           />
         )}
 
+        {/* Optional free-form note (admin-edited). No surrounding section
+            wrapper — slots into the existing flow only when the field
+            is present. */}
+        {data.note?.trim() && (
+          <div className="max-w-2xl mx-auto px-6 py-12 sm:py-16 text-center">
+            <p
+              className="font-serif italic text-lg sm:text-2xl leading-tight"
+              style={{ color: "var(--theme-primary)" }}
+            >
+              {data.note.split(/\\n|\n/).map((line, i, arr) => (
+                <React.Fragment key={i}>
+                  {line}
+                  {i < arr.length - 1 && <br />}
+                </React.Fragment>
+              ))}
+            </p>
+          </div>
+        )}
+
         {/* RSVP */}
         <section
           id="rsvp"
