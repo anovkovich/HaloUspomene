@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -688,6 +688,7 @@ export default function BirthdayQuestionnaireForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
+  const formTopRef = useRef<HTMLDivElement>(null);
 
   const updateField = <K extends keyof FormData>(
     key: K,
@@ -707,11 +708,17 @@ export default function BirthdayQuestionnaireForm() {
     setStepError(null);
     setDirection(1);
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
   const goPrev = () => {
     setStepError(null);
     setDirection(-1);
     setStep((s) => Math.max(s - 1, 1));
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
 
   const handleSubmit = async () => {
@@ -853,7 +860,7 @@ export default function BirthdayQuestionnaireForm() {
   const progress = ((step - 1) / (TOTAL_STEPS - 1)) * 100;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div ref={formTopRef} className="max-w-2xl mx-auto scroll-mt-4">
       {/* Floating illustrations — updates with selected theme */}
       <SceneDecorations
         illustration={currentThemeConfig.illustration}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -634,6 +634,7 @@ export default function PunoletstvoQuestionnaireForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
+  const formTopRef = useRef<HTMLDivElement>(null);
 
   const updateField = <K extends keyof FormData>(key: K, value: FormData[K]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -650,12 +651,18 @@ export default function PunoletstvoQuestionnaireForm() {
     setStepError(null);
     setDirection(1);
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
 
   const goPrev = () => {
     setStepError(null);
     setDirection(-1);
     setStep((s) => Math.max(s - 1, 1));
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
 
   const handleSubmit = async () => {
@@ -781,7 +788,7 @@ export default function PunoletstvoQuestionnaireForm() {
   const progress = ((step - 1) / (TOTAL_STEPS - 1)) * 100;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div ref={formTopRef} className="max-w-2xl mx-auto scroll-mt-4">
       {/* Progress */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-3">

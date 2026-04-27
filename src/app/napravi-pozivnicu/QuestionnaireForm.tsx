@@ -2046,11 +2046,17 @@ export default function QuestionnaireForm({
     setStepError("");
     setDirection(1);
     setStep((s) => Math.min(s + 1, totalSteps));
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
   const goPrev = () => {
     setStepError("");
     setDirection(-1);
     setStep((s) => Math.max(s - 1, 1));
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
 
   const toggleLocation = (idx: number) =>
@@ -2515,7 +2521,7 @@ export default function QuestionnaireForm({
   return (
     <div
       ref={formTopRef}
-      className="max-w-2xl mx-auto"
+      className="max-w-2xl mx-auto scroll-mt-4"
       style={{ "--accent": accent, "--accent-dark": accentDark } as React.CSSProperties}
     >
       {/* Progress indicator */}
