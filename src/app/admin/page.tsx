@@ -51,7 +51,7 @@ export default function AdminPage() {
   const [needsLogin, setNeedsLogin] = useState(false);
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
-  const [bankAccountIdx, setBankAccountIdx] = useState(0);
+  const [bankAccountIdx, setBankAccountIdx] = useState(1);
   const [showPhoneRental, setShowPhoneRental] = useState(false);
   const [showCustomReceipt, setShowCustomReceipt] = useState(false);
   const [customReceipts, setCustomReceipts] = useState<Array<{ id: string; par: string; datum?: string; items: Array<{l: string; p: number}>; ba: number; created_at: string }>>([]);
@@ -640,44 +640,44 @@ export default function AdminPage() {
                     </button>
                   </div>
                 </div>
-
-                {/* Receipt dropdown */}
-                <ReceiptDropdown
-                  couple={c}
-                  copiedSlug={copiedSlug}
-                  onGenerate={async (extras) => {
-                    await handleGenerateReceipt(c.slug);
-
-                    if (extras.retro_phone && c.event_date) {
-                      const eventDate = new Date(c.event_date);
-                      await fetch("/api/admin/phone-rentals", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          contact_name: c.couple_names?.full_display || c.slug,
-                          rental_date: eventDate.toISOString().split("T")[0],
-                          dobrodoslica: extras.dobrodoslica || false,
-                          receipt_valid: true,
-                          receipt_created: new Date().toISOString(),
-                        }),
-                      });
-                    }
-
-                    const url = buildReceiptUrl(c, extras);
-                    await navigator.clipboard.writeText(url);
-                    setCopiedSlug(c.slug);
-                    setTimeout(() => setCopiedSlug(null), 2500);
-                  }}
-                  onCopy={async (extras) => {
-                    const url = buildReceiptUrl(c, extras);
-                    await navigator.clipboard.writeText(url);
-                    setCopiedSlug(c.slug);
-                    setTimeout(() => setCopiedSlug(null), 2500);
-                  }}
-                  onPaid={() => handleInvalidateReceipt(c.slug)}
-                  onDiscount={(amount) => handleSetDiscount(c.slug, amount)}
-                />
               </div>
+
+              {/* Receipt dropdown — own row, mirrors the Rođendani card */}
+              <ReceiptDropdown
+                couple={c}
+                copiedSlug={copiedSlug}
+                onGenerate={async (extras) => {
+                  await handleGenerateReceipt(c.slug);
+
+                  if (extras.retro_phone && c.event_date) {
+                    const eventDate = new Date(c.event_date);
+                    await fetch("/api/admin/phone-rentals", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        contact_name: c.couple_names?.full_display || c.slug,
+                        rental_date: eventDate.toISOString().split("T")[0],
+                        dobrodoslica: extras.dobrodoslica || false,
+                        receipt_valid: true,
+                        receipt_created: new Date().toISOString(),
+                      }),
+                    });
+                  }
+
+                  const url = buildReceiptUrl(c, extras);
+                  await navigator.clipboard.writeText(url);
+                  setCopiedSlug(c.slug);
+                  setTimeout(() => setCopiedSlug(null), 2500);
+                }}
+                onCopy={async (extras) => {
+                  const url = buildReceiptUrl(c, extras);
+                  await navigator.clipboard.writeText(url);
+                  setCopiedSlug(c.slug);
+                  setTimeout(() => setCopiedSlug(null), 2500);
+                }}
+                onPaid={() => handleInvalidateReceipt(c.slug)}
+                onDiscount={(amount) => handleSetDiscount(c.slug, amount)}
+              />
             </div>
           );
         })}
