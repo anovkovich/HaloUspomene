@@ -100,7 +100,6 @@ export interface WeddingData {
   premium_car?: string; // Watercolor theme: car illustration key
   couple_description?: string; // Line art theme: AI couple description
   premium_paid?: boolean;
-  premium_created_at?: string; // ISO timestamp for 2-min preview lock
 }
 
 // Comprehensive theme configuration

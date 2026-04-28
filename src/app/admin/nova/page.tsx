@@ -100,7 +100,6 @@ export default function NovaPage() {
           ? {
               premium: true,
               premium_paid: true,
-              premium_created_at: new Date().toISOString(),
               theme: "luxury_gold",
             }
           : {}),

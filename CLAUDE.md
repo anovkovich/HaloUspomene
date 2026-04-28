@@ -139,9 +139,8 @@ src/
 │   │
 │   ├── premium-pozivnica/[slug]/     # PREMIUM AI invitation
 │   │   ├── layout.tsx                # 7-day grace-period guard
-│   │   ├── page.tsx                  # 2-minute preview lock logic
+│   │   ├── page.tsx                  # Server wrapper, anti-AI scraping notice
 │   │   ├── PremiumInvitationClient.tsx  # Theme router
-│   │   ├── PremiumLockedScreen.tsx   # Paywall after preview window
 │   │   ├── premiumThemeConfig.ts     # Theme configs & color system
 │   │   ├── components/
 │   │   │   ├── PremiumEnvelopeLoader.tsx  # Classic envelope animation
@@ -241,18 +240,17 @@ Lives at `src/app/pozivnica/[slug]/types.ts`. Selected fields:
 - `paid_for_images` — photo gallery
 - `draft` — hides invitation in production
 
-**Premium AI fields:** `premium`, `premium_paid`, `premium_theme` (`"watercolor" | "line_art"`), `premium_created_at` (ISO — drives 2-minute preview lock), `ai_couple_image_url`, `envelope_items[]`, `envelope_style` (`"classic" | "wing"`), `envelope_rose_petals`, `premium_city`, `premium_car`, `couple_description`.
+**Premium AI fields:** `premium`, `premium_paid`, `premium_theme` (`"watercolor" | "line_art"`), `ai_couple_image_url`, `envelope_items[]`, `envelope_style` (`"classic" | "wing"`), `envelope_rose_petals`, `premium_city`, `premium_car`, `couple_description`.
 
 **Receipt/billing:** `receipt_valid`, `receipt_created`, `custom_discount`, bank account selector (Erste / UniCredit).
 
 ### Premium Invitation System
-- Created via `POST /api/premium-pozivnica/create` (rate-limited 5 / IP / hour); auto-generates password as `{Groom}DDMM`, sets `premium: true, premium_paid: false, premium_created_at`.
+- Created via `POST /api/premium-pozivnica/create` (rate-limited 5 / IP / hour); auto-generates password as `{Groom}DDMM`, sets `premium: true, premium_paid: false`.
 - AI couple illustration via `POST /api/premium-pozivnica/generate` → Pollinations.ai (text-to-image, paper-craft prompt).
 - Background removal via `POST /api/premium-pozivnica/whiten-bg` → fal.ai birefnet queue API (requires `FAL_KEY`), polls up to 60s.
 - Custom uploads via `POST /api/premium-pozivnica/upload` → Vercel Blob (5MB, image MIME validation).
 - Cleanup via `POST /api/premium-pozivnica/cleanup` after submission to remove draft generations from blob storage.
 - Blob layout: `premium/results/{couple}/`, `premium/whitened/{slug}/`, `premium/uploads/`.
-- Page enforces a **2-minute preview window** from `premium_created_at`, then redirects to `PremiumLockedScreen` until `premium_paid` is true.
 - Layout enforces a **7-day post-event grace period**.
 - Premium pages set `robots: { index: false }` (not indexed).
 - All client themes use `dynamic(..., { ssr: false })` for animation-heavy components.
