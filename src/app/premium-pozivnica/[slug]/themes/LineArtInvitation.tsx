@@ -6,6 +6,7 @@ import { Heart, Send, MapPin, Clock, Church, Home, Sparkles } from "lucide-react
 import type { ThemeInvitationProps } from "../PremiumInvitationClient";
 import dynamic from "next/dynamic";
 import { MultilineText } from "@/lib/multiline";
+import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 
 const HeroSection = dynamic(() => import("../components/HeroSection"), {
   ssr: false,
@@ -485,6 +486,7 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
 }
 
 function LineArtRSVPForm({ slug, submitUntil, formattedDeadline }: { slug: string; submitUntil: string; formattedDeadline: string }) {
+  const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
   const [attending, setAttending] = useState<"Da" | "Ne">("Da");
   const [guestCount, setGuestCount] = useState(1);
@@ -499,10 +501,18 @@ function LineArtRSVPForm({ slug, submitUntil, formattedDeadline }: { slug: strin
     setError("");
     setIsSubmitting(true);
     try {
+      let recaptchaToken = "";
+      try {
+        recaptchaToken = await executeRecaptcha("rsvp");
+      } catch {
+        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setIsSubmitting(false);
+        return;
+      }
       const res = await fetch(`/api/pozivnica/${slug}/rsvp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), attending, guestCount, details }),
+        body: JSON.stringify({ name: name.trim(), attending, guestCount, details, recaptcha_token: recaptchaToken }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));

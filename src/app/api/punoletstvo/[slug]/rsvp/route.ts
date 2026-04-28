@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBirthdayData } from "@/lib/birthday";
 import { addBirthdayRSVP } from "@/lib/birthday-rsvp";
+import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
 
 export async function POST(
   req: NextRequest,
@@ -23,11 +24,32 @@ export async function POST(
     );
   }
 
-  let body: { name?: string; attending?: string; guestCount?: number; message?: string };
+  let body: {
+    name?: string;
+    attending?: string;
+    guestCount?: number;
+    message?: string;
+    recaptcha_token?: string;
+  };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+
+  try {
+    await verifyRecaptcha(body.recaptcha_token, "rsvp", { remoteIp: ip });
+  } catch (err) {
+    if (err instanceof RecaptchaError) {
+      return NextResponse.json(
+        { error: "Provera neuspešna. Osvežite stranicu i pokušajte ponovo." },
+        { status: 403 },
+      );
+    }
+    throw err;
   }
 
   const name = body.name?.trim();

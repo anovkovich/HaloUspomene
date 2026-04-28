@@ -19,6 +19,11 @@ import {
   type PunoletstvoGender,
   type PunoletstvoTheme,
 } from "./validators";
+import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
+import {
+  useRecaptcha,
+  RecaptchaDisclosure,
+} from "@/components/forms/RecaptchaProvider";
 
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 
@@ -56,6 +61,7 @@ interface FormData {
   submit_until_date: string;
   submit_until: string;
   contact_phone: string;
+  phone_trust_token: string;
   location_name: string;
   location_address: string;
   theme: PunoletstvoTheme;
@@ -121,6 +127,7 @@ const defaultFormData: FormData = {
   submit_until_date: "",
   submit_until: "",
   contact_phone: "",
+  phone_trust_token: "",
   location_name: "",
   location_address: "",
   theme: "white_gold_burgundy",
@@ -463,20 +470,20 @@ function Step2({
         </Field>
 
         <Field label="Vaš kontakt telefon (za naš tim, nije na pozivnici)">
-          <div className="flex items-center border-b border-stone-200 focus-within:border-[#AE343F] transition-colors">
-            <span className="py-2.5 pl-1 pr-2 text-stone-400 text-base select-none">+381</span>
-            <input
-              type="tel"
-              className="flex-1 bg-transparent py-2.5 pr-1 text-stone-800 text-base outline-none placeholder:text-stone-300"
-              placeholder="6X XXX XXXX"
-              value={formData.contact_phone}
-              onChange={(e) =>
-                updateField("contact_phone", e.target.value.replace(/^\+?381/, ""))
+          <PhoneVerificationField
+            value={formData.contact_phone}
+            onChange={(v) => {
+              updateField("contact_phone", v);
+              if (formData.phone_trust_token) {
+                updateField("phone_trust_token", "");
               }
-            />
-          </div>
+            }}
+            onVerified={(token) => updateField("phone_trust_token", token)}
+            onUnverified={() => updateField("phone_trust_token", "")}
+          />
         </Field>
       </div>
+      <RecaptchaDisclosure className="mt-4 text-[10px] text-stone-400 text-center" />
     </div>
   );
 }
@@ -635,6 +642,7 @@ export default function PunoletstvoQuestionnaireForm() {
   const [error, setError] = useState<string | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
   const formTopRef = useRef<HTMLDivElement>(null);
+  const { execute: executeRecaptcha } = useRecaptcha();
 
   const updateField = <K extends keyof FormData>(key: K, value: FormData[K]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -679,6 +687,15 @@ export default function PunoletstvoQuestionnaireForm() {
     setError(null);
     setIsSubmitting(true);
     try {
+      let recaptchaToken: string;
+      try {
+        recaptchaToken = await executeRecaptcha("create_punoletstvo");
+      } catch {
+        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setIsSubmitting(false);
+        return;
+      }
+
       // 1) Persist as draft in MongoDB (mirrors wedding classic flow).
       const res = await fetch("/api/punoletstvo/create", {
         method: "POST",
@@ -700,6 +717,9 @@ export default function PunoletstvoQuestionnaireForm() {
           },
           countdown_enabled: formData.countdown_enabled,
           map_enabled: formData.map_enabled,
+          contact_phone: `+381${formData.contact_phone}`,
+          phone_trust_token: formData.phone_trust_token,
+          recaptcha_token: recaptchaToken,
         }),
       });
       const created = await res.json();
@@ -867,7 +887,11 @@ export default function PunoletstvoQuestionnaireForm() {
             <button
               type="button"
               onClick={goNext}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#952c35] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20 cursor-pointer"
+              disabled={
+                STEP_KEYS[step - 1] === "date_location" &&
+                !formData.phone_trust_token
+              }
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#952c35] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               Dalje
               <ChevronRight size={16} />

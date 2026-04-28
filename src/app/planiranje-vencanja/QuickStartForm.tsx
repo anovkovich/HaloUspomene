@@ -17,6 +17,11 @@ import {
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
 import { signupAction } from "./actions";
+import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
+import {
+  useRecaptcha,
+  RecaptchaDisclosure,
+} from "@/components/forms/RecaptchaProvider";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -38,13 +43,34 @@ export default function QuickStartForm() {
   const [groom, setGroom] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneTrustToken, setPhoneTrustToken] = useState("");
   const [instagram, setInstagram] = useState("");
   const [password, setPassword] = useState("");
+  const { execute: executeRecaptcha } = useRecaptcha();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (!phone) {
+      setError("Unesite broj telefona.");
+      return;
+    }
+    if (!phoneTrustToken) {
+      setError("Verifikujte broj telefona pre kreiranja naloga.");
+      return;
+    }
+
     setLoading(true);
+
+    let recaptchaToken = "";
+    try {
+      recaptchaToken = await executeRecaptcha("quickstart");
+    } catch {
+      setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+      setLoading(false);
+      return;
+    }
 
     const result = await signupAction({
       bride,
@@ -53,6 +79,8 @@ export default function QuickStartForm() {
       phone,
       instagram,
       password,
+      recaptchaToken,
+      phoneTrustToken,
     });
 
     if (!result.ok) {
@@ -246,31 +274,26 @@ export default function QuickStartForm() {
         </p>
       </div>
 
-      {/* Contact — phone + instagram */}
+      {/* Contact — phone (required) + instagram (optional) */}
       <div>
         <p className="text-xs font-bold uppercase tracking-widest text-[#F5F4DC]/40 mb-3">
-          Kontakt{" "}
+          Kontakt telefon *{" "}
           <span className="text-[#F5F4DC]/20 normal-case tracking-normal font-normal">
-            (unesite bar jedno)
+            Instagram je opcioni
           </span>
         </p>
         <div className="space-y-3">
-          <div className="flex items-center bg-white/5 border border-white/10 rounded-xl focus-within:border-[#AE343F] transition-colors overflow-hidden">
-            <span className="flex items-center gap-2 pl-4 pr-2 text-[#F5F4DC]/40 shrink-0">
-              <Phone size={14} className="text-[#AE343F]" />
-              <span className="text-sm">+381</span>
-            </span>
-            <input
-              type="tel"
-              name="phone_ignore"
-              autoComplete="off"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/^\+?381/, ""))}
-              placeholder="6X XXX XXXX"
-              className="flex-1 bg-transparent py-3 pr-4 text-white placeholder:text-white/20 focus:outline-none"
-              disabled={loading}
-            />
-          </div>
+          <PhoneVerificationField
+            variant="dark"
+            disabled={loading}
+            value={phone}
+            onChange={(v) => {
+              setPhone(v);
+              if (phoneTrustToken) setPhoneTrustToken("");
+            }}
+            onVerified={(token) => setPhoneTrustToken(token)}
+            onUnverified={() => setPhoneTrustToken("")}
+          />
           <div className="flex items-center bg-white/5 border border-white/10 rounded-xl focus-within:border-[#AE343F] transition-colors overflow-hidden">
             <span className="flex items-center gap-2 pl-4 pr-2 text-[#F5F4DC]/40 shrink-0">
               <Instagram size={14} className="text-[#AE343F]" />
@@ -330,6 +353,7 @@ export default function QuickStartForm() {
       <p className="text-center text-[10px] text-[#F5F4DC]/20 leading-relaxed">
         Isprobajte odmah, a naš tim će vas kontaktirati za pozivnicu.
       </p>
+      <RecaptchaDisclosure className="text-center text-[9px] text-[#F5F4DC]/20" />
     </form>
   );
 }

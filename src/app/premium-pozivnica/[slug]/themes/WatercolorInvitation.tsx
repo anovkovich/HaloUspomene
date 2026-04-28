@@ -10,6 +10,7 @@ import {
 import { Heart, Send, MapPin, Clock, ChevronDown } from "lucide-react";
 import type { ThemeInvitationProps } from "../PremiumInvitationClient";
 import { MultilineText } from "@/lib/multiline";
+import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 
 /*
  * WATERCOLOR ROMANCE THEME
@@ -156,6 +157,7 @@ function WatercolorRSVPForm({
   submitUntil: string;
   formattedDeadline: string;
 }) {
+  const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
   const [attending, setAttending] = useState<"Da" | "Ne">("Da");
   const [guestCount, setGuestCount] = useState(1);
@@ -173,6 +175,14 @@ function WatercolorRSVPForm({
     setError("");
     setIsSubmitting(true);
     try {
+      let recaptchaToken = "";
+      try {
+        recaptchaToken = await executeRecaptcha("rsvp");
+      } catch {
+        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setIsSubmitting(false);
+        return;
+      }
       const res = await fetch(`/api/pozivnica/${slug}/rsvp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -181,6 +191,7 @@ function WatercolorRSVPForm({
           attending,
           guestCount,
           details,
+          recaptcha_token: recaptchaToken,
         }),
       });
       if (!res.ok) {

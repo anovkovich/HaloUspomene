@@ -23,6 +23,7 @@ export interface PunoletstvoFormData {
   event_time: string;
   submit_until_date: string;
   contact_phone: string;
+  phone_trust_token: string;
   location_name: string;
   location_address: string;
   theme: PunoletstvoTheme;
@@ -52,6 +53,8 @@ export const punoletstvoValidators: StepValidatorMap<
     if (isBlank(d.location_address)) return "Unesite adresu lokacije.";
     if (!isValidPhone("+381" + (d.contact_phone || "").replace(/[\s-]/g, "")))
       return "Unesite važeći kontakt telefon (npr. 6X XXX XXXX).";
+    if (!d.phone_trust_token)
+      return "Verifikujte kontakt telefon putem SMS koda pre nego što nastavite.";
     return null;
   },
   design: (d) => {

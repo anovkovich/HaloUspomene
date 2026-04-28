@@ -19,6 +19,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
 import { testimonials } from "@/data/testimonials";
+import { RecaptchaProvider } from "@/components/forms/RecaptchaProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -519,7 +520,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} ${raleway.variable} antialiased`}
       >
-        {children}
+        <RecaptchaProvider>{children}</RecaptchaProvider>
         <Toaster
           position="bottom-center"
           toastOptions={{

@@ -40,6 +40,11 @@ import type {
 } from "@/app/pozivnica/[slug]/types";
 import { getThemeClasses } from "./premium-theme";
 import dynamic from "next/dynamic";
+import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
+import {
+  useRecaptcha,
+  RecaptchaDisclosure,
+} from "@/components/forms/RecaptchaProvider";
 
 const PremiumStepAIPhoto = dynamic(
   () => import("./steps/PremiumStepAIPhoto"),
@@ -164,6 +169,8 @@ interface FormData {
   submit_until: string; // formatted text e.g. "31. Avgusta 2026."
   submit_until_date: string; // "YYYY-MM-DD" for DatePicker
   contact_phone: string;
+  contact_phone_secondary: string;
+  phone_trust_token: string;
   // Step 3
   theme: ThemeType;
   scriptFont: ScriptFontType;
@@ -202,9 +209,9 @@ const CLASSIC_STEPS: { key: StepKey; title: string }[] = [
 
 const PREMIUM_STEPS: { key: StepKey; title: string }[] = [
   { key: "couple_info", title: "Informacije o paru" },
+  { key: "date_rsvp", title: "Datum i rok za prijavu" },
   { key: "ai_photo", title: "Stil pozivnice" },
   { key: "envelope_lab", title: "Envelope Lab" },
-  { key: "date_rsvp", title: "Datum i rok za prijavu" },
   { key: "locations", title: "Lokacije" },
   { key: "personal", title: "Lični detalji" },
   { key: "settings", title: "Podešavanja" },
@@ -244,6 +251,8 @@ const defaultFormData: FormData = {
   submit_until: "",
   submit_until_date: "",
   contact_phone: "",
+  contact_phone_secondary: "",
+  phone_trust_token: "",
   theme: "classic_rose",
   scriptFont: "great-vibes",
   custom_primary_color: "",
@@ -1015,6 +1024,9 @@ function Step2({
   formData: FormData;
   updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
 }) {
+  const [showSecondaryPhone, setShowSecondaryPhone] = useState(
+    !!formData.contact_phone_secondary,
+  );
   const handleWeddingDateChange = (dateOnly: string) => {
     updateField("event_date_only", dateOnly);
     updateField(
@@ -1097,10 +1109,68 @@ function Step2({
               </div>
             </div>
           </div>
-          <PhoneTagInput
+          <PhoneVerificationField
             value={formData.contact_phone}
-            onChange={(v) => updateField("contact_phone", v)}
+            onChange={(v) => {
+              updateField("contact_phone", v);
+              if (formData.phone_trust_token) {
+                updateField("phone_trust_token", "");
+              }
+            }}
+            onVerified={(token) => updateField("phone_trust_token", token)}
+            onUnverified={() => updateField("phone_trust_token", "")}
           />
+          {formData.phone_trust_token ? (
+            showSecondaryPhone ? (
+              <div className="mt-3 space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs text-stone-500">
+                    Drugi broj za pozivnicu (neće biti verifikovan)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateField("contact_phone_secondary", "");
+                      setShowSecondaryPhone(false);
+                    }}
+                    className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
+                  >
+                    Ukloni
+                  </button>
+                </div>
+                <div className="flex items-center border-b border-stone-200 focus-within:border-[var(--accent,#AE343F)] transition-colors">
+                  <span className="py-1.5 pl-1 pr-2 text-stone-400 text-base select-none">
+                    +381
+                  </span>
+                  <input
+                    type="tel"
+                    autoFocus
+                    className="flex-1 bg-transparent py-1.5 pr-1 text-stone-800 text-base outline-none placeholder:text-stone-300"
+                    placeholder="6X XXX XXXX"
+                    value={formData.contact_phone_secondary}
+                    onChange={(e) =>
+                      updateField(
+                        "contact_phone_secondary",
+                        e.target.value
+                          .replace(/^\+?381/, "")
+                          .replace(/\D/g, "")
+                          .replace(/^0+/, ""),
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowSecondaryPhone(true)}
+                className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl border border-dashed border-stone-300 py-2.5 text-xs font-medium text-stone-500 hover:border-[var(--accent,#AE343F)] hover:text-[var(--accent,#AE343F)] transition-colors"
+              >
+                <Plus size={14} />
+                Dodaj drugi broj za pozivnicu (opciono)
+              </button>
+            )
+          ) : null}
         </div>
       </div>
     </div>
@@ -1807,6 +1877,7 @@ export default function QuestionnaireForm({
   initialFormData?: Partial<FormData>;
 }) {
   const isUpgrade = !!upgradeSlug;
+  const { execute: executeRecaptcha } = useRecaptcha();
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState<FormData>(() => ({
@@ -2029,6 +2100,12 @@ export default function QuestionnaireForm({
         setStepError("Unesite vaš kontakt telefon.");
         return;
       }
+      if (!formData.phone_trust_token) {
+        setStepError(
+          "Verifikujte kontakt telefon putem SMS koda pre nego što nastavite.",
+        );
+        return;
+      }
     }
     if (key === "locations") {
       const incomplete = formData.locations.find(
@@ -2185,6 +2262,24 @@ export default function QuestionnaireForm({
       }
     }
 
+    let recaptchaToken: string;
+    try {
+      recaptchaToken = await executeRecaptcha("create_invitation");
+    } catch {
+      setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const combinedPhone = [
+      formData.contact_phone ? `+381${formData.contact_phone}` : "",
+      formData.contact_phone_secondary
+        ? `+381${formData.contact_phone_secondary}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(",");
+
     try {
       if (formData.premium) {
         // Premium flow: upgrade-or-create depending on isUpgrade
@@ -2217,7 +2312,9 @@ export default function QuestionnaireForm({
             map_enabled: formData.map_enabled,
             custom_primary_color: formData.custom_primary_color,
             custom_background_color: formData.custom_background_color,
-            contact_phone: formData.contact_phone,
+            contact_phone: combinedPhone,
+            phone_trust_token: formData.phone_trust_token,
+            recaptcha_token: recaptchaToken,
             locations: formData.locations
               .filter(
                 (l) =>
@@ -2342,7 +2439,9 @@ export default function QuestionnaireForm({
             : "",
           custom_primary_color: formData.custom_primary_color || undefined,
           custom_background_color: formData.custom_background_color || undefined,
-          contact_phone: formData.contact_phone,
+          contact_phone: combinedPhone,
+          phone_trust_token: formData.phone_trust_token,
+          recaptcha_token: recaptchaToken,
           locations: formData.locations
             .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
             .map((l) => ({ name: l.name, address: l.address, type: l.type })),
@@ -2381,7 +2480,7 @@ export default function QuestionnaireForm({
             Tip: isUpgrade
               ? "Upgrade postojećeg draft-a (planiranje-vencanja)"
               : "Novo kreiranje",
-            "Kontakt telefon": `+381${formData.contact_phone}`,
+            "Kontakt telefon": combinedPhone,
             "Raspored sedenja": formData.extra_raspored ? "✅ DA" : "❌ Ne",
             "Audio knjiga": formData.extra_audio ? "✅ DA" : "❌ Ne",
             "USB suvenir": formData.extra_usb_kaseta
@@ -2624,7 +2723,10 @@ export default function QuestionnaireForm({
             <button
               type="button"
               onClick={goNext}
-              className={`flex items-center gap-2 px-8 py-3 rounded-2xl transition-all font-medium text-sm ${tc.buttonPrimary}`}
+              disabled={
+                currentStepKey === "date_rsvp" && !formData.phone_trust_token
+              }
+              className={`flex items-center gap-2 px-8 py-3 rounded-2xl transition-all font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed ${tc.buttonPrimary}`}
             >
               Dalje
               <ChevronRight size={16} />

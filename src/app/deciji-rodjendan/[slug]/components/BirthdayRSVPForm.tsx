@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, Minus, Plus } from "lucide-react";
+import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 
 interface BirthdayRSVPFormProps {
   slug: string;
@@ -12,6 +13,7 @@ interface BirthdayRSVPFormProps {
 }
 
 export function BirthdayRSVPForm({ slug, submitUntil, gender = "neutral" }: BirthdayRSVPFormProps) {
+  const { execute: executeRecaptcha } = useRecaptcha();
   const honoreeNoun =
     gender === "girl" ? "slavljenicu" : "slavljenika";
   const [name, setName] = useState("");
@@ -85,6 +87,14 @@ export function BirthdayRSVPForm({ slug, submitUntil, gender = "neutral" }: Birt
     setError(null);
 
     try {
+      let recaptchaToken = "";
+      try {
+        recaptchaToken = await executeRecaptcha("rsvp");
+      } catch {
+        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setIsSubmitting(false);
+        return;
+      }
       const res = await fetch(`/api/deciji-rodjendan/${slug}/rsvp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -93,6 +103,7 @@ export function BirthdayRSVPForm({ slug, submitUntil, gender = "neutral" }: Birt
           attending,
           guestCount: attending === "Da" ? guestCount : 0,
           message: message.trim(),
+          recaptcha_token: recaptchaToken,
         }),
       });
 

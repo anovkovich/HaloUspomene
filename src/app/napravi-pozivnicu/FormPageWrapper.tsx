@@ -17,6 +17,7 @@ export interface UpgradeInitialFormData {
   event_time: string;
   submit_until_date: string;
   contact_phone: string;
+  contact_phone_secondary: string;
   scriptFont: ScriptFontType;
   theme: ThemeType;
   tagline: string;

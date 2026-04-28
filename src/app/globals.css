@@ -19,6 +19,20 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Suppress browser autofill background tint (Chrome/Safari yellow/white).
+   The 9999s transition delay effectively prevents the painted bg from
+   materializing; text color inherits the input's own color. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  transition: background-color 9999s ease-in-out 0s;
+  -webkit-text-fill-color: inherit !important;
+  caret-color: currentColor;
+}
+
 @layer utilities {
   .animate-fade-up {
     animation: fadeUp 0.6s ease-out forwards;

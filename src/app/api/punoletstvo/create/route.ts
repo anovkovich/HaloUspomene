@@ -5,6 +5,8 @@ import type {
   BirthdayData,
   BirthdayThemeType,
 } from "@/app/deciji-rodjendan/[slug]/types";
+import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
+import { ensurePhoneVerified, normalizePhone } from "@/lib/phone-verification";
 
 const ipMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 5;
@@ -36,6 +38,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "honoree_name and honoree_surname are required" },
         { status: 400 },
+      );
+    }
+
+    try {
+      await verifyRecaptcha(body.recaptcha_token, "create_punoletstvo", {
+        remoteIp: ip,
+      });
+    } catch (err) {
+      if (err instanceof RecaptchaError) {
+        return NextResponse.json(
+          { error: "Provera neuspešna. Osvežite stranicu i pokušajte ponovo." },
+          { status: 403 },
+        );
+      }
+      throw err;
+    }
+
+    const phoneE164 = normalizePhone(String(body.contact_phone || ""));
+    if (!phoneE164) {
+      return NextResponse.json(
+        { error: "Unesite važeći kontakt telefon." },
+        { status: 400 },
+      );
+    }
+    try {
+      await ensurePhoneVerified(body.phone_trust_token, phoneE164);
+    } catch {
+      return NextResponse.json(
+        { error: "Verifikujte broj telefona pre slanja." },
+        { status: 403 },
       );
     }
 

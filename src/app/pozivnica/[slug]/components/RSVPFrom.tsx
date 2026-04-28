@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Heart, Check, Send, Users, MessageSquare, User } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 
 interface RSVPFormProps {
   slug: string;
@@ -10,6 +11,7 @@ interface RSVPFormProps {
 
 export const RSVPForm: React.FC<RSVPFormProps> = ({ slug }) => {
   const { t } = useTheme();
+  const { execute: executeRecaptcha } = useRecaptcha();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -29,6 +31,15 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ slug }) => {
     setError("");
 
     try {
+      let recaptchaToken = "";
+      try {
+        recaptchaToken = await executeRecaptcha("rsvp");
+      } catch {
+        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setLoading(false);
+        return;
+      }
+
       const res = await fetch(`/api/pozivnica/${slug}/rsvp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,6 +48,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ slug }) => {
           attending: formData.attending,
           guestCount: isAttending ? parseInt(formData.guestCount) : 0,
           details: isAttending ? formData.details || "" : "",
+          recaptcha_token: recaptchaToken,
         }),
       });
 

@@ -61,10 +61,16 @@ export default async function NapraviPozivnicuPage({
     const [event_date_only, event_time_full] = evt.split("T");
     const event_time = event_time_full ? event_time_full.slice(0, 5) : "18:00";
 
-    // Strip "+381" prefix from quick-register contact_phone
+    // Strip "+381" prefix and split legacy comma-separated value into
+    // primary (verified) + optional secondary (PDF-only) slots.
     const rawPhone =
       (existing as unknown as { contact_phone?: string }).contact_phone || "";
-    const contact_phone = rawPhone.replace(/^\+?381/, "").trim();
+    const phoneParts = rawPhone
+      .split(",")
+      .map((p) => p.replace(/^\+?381/, "").trim())
+      .filter(Boolean);
+    const contact_phone = phoneParts[0] || "";
+    const contact_phone_secondary = phoneParts[1] || "";
 
     initialFormData = {
       bride: existing.couple_names?.bride || "",
@@ -79,6 +85,7 @@ export default async function NapraviPozivnicuPage({
       event_time,
       submit_until_date: existing.submit_until || "",
       contact_phone,
+      contact_phone_secondary,
       scriptFont: existing.scriptFont || "great-vibes",
       theme: existing.theme || "classic_rose",
       tagline: existing.tagline || "",

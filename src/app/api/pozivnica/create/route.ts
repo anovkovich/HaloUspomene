@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { upsertCouple } from "@/lib/couples";
 import { generateUniqueSlug } from "@/lib/slug";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
+import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
+import { ensurePhoneVerified, normalizePhone } from "@/lib/phone-verification";
 
 // Simple IP-based rate limiting (5 per IP per hour)
 const ipMap = new Map<string, { count: number; resetAt: number }>();
@@ -34,6 +36,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Bride and groom names are required" },
         { status: 400 },
+      );
+    }
+
+    try {
+      await verifyRecaptcha(body.recaptcha_token, "create_invitation", {
+        remoteIp: ip,
+      });
+    } catch (err) {
+      if (err instanceof RecaptchaError) {
+        return NextResponse.json(
+          { error: "Provera neuspešna. Osvežite stranicu i pokušajte ponovo." },
+          { status: 403 },
+        );
+      }
+      throw err;
+    }
+
+    // Phone verification: contact_phone arrives as comma-separated E.164 strings.
+    // We require the trust token to match the FIRST (primary) number only.
+    const primaryRaw = String(body.contact_phone || "").split(",")[0]?.trim();
+    const phoneE164 = normalizePhone(primaryRaw);
+    if (!phoneE164) {
+      return NextResponse.json(
+        { error: "Unesite važeći kontakt telefon." },
+        { status: 400 },
+      );
+    }
+    try {
+      await ensurePhoneVerified(body.phone_trust_token, phoneE164);
+    } catch {
+      return NextResponse.json(
+        { error: "Verifikujte broj telefona pre slanja." },
+        { status: 403 },
       );
     }
 
@@ -85,7 +120,12 @@ export async function POST(request: NextRequest) {
       draft: true,
     };
 
-    await upsertCouple(slug, weddingData);
+    const weddingDataWithContact = {
+      ...weddingData,
+      contact_phone: String(body.contact_phone || ""),
+    } as WeddingData;
+
+    await upsertCouple(slug, weddingDataWithContact);
 
     return NextResponse.json({ slug });
   } catch (err) {

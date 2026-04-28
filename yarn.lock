@@ -3379,6 +3379,11 @@ levn@^0.4.1:
     prelude-ls "^1.2.1"
     type-check "~0.4.0"
 
+libphonenumber-js@^1.12.42:
+  version "1.12.42"
+  resolved "https://registry.npmjs.org/libphonenumber-js/-/libphonenumber-js-1.12.42.tgz"
+  integrity sha512-oKQFPTibqQwZZkChCDVMFVJXMZdyJNqDWZWYNn8BgyAaK/6yFJEowxCY0RVFirRyWP63hMRuKlkSEd9qlvbWXg==
+
 lightningcss-win32-x64-msvc@1.30.2:
   version "1.30.2"
   resolved "https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.30.2.tgz"

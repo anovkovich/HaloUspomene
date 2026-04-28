@@ -1,9 +1,14 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { SignJWT } from "jose";
 import { getWeddingData, upsertCouple } from "@/lib/couples";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
+import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
+import {
+  ensurePhoneVerified,
+  normalizePhone,
+} from "@/lib/phone-verification";
 
 const secret = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "dev-secret",
@@ -47,12 +52,32 @@ export async function signupAction(formData: {
   phone: string;
   instagram: string;
   password: string;
+  recaptchaToken: string;
+  phoneTrustToken?: string;
 }): Promise<SignupResult> {
   const bride = formData.bride.trim();
   const groom = formData.groom.trim();
   const password = formData.password.trim();
   const phone = formData.phone.trim().replace(/^\+?381/, "");
   const instagram = formData.instagram.trim().replace(/^@/, "");
+
+  const hdrs = await headers();
+  const ip =
+    hdrs.get("x-forwarded-for")?.split(",")[0].trim() ||
+    hdrs.get("x-real-ip") ||
+    "unknown";
+
+  try {
+    await verifyRecaptcha(formData.recaptchaToken, "quickstart", { remoteIp: ip });
+  } catch (err) {
+    if (err instanceof RecaptchaError) {
+      return {
+        ok: false,
+        error: "Provera neuspešna. Osvežite stranicu i pokušajte ponovo.",
+      };
+    }
+    throw err;
+  }
 
   // Validation
   if (!bride || bride.length < 2)
@@ -62,18 +87,33 @@ export async function signupAction(formData: {
       ok: false,
       error: "Ime mladoženje mora imati najmanje 2 karaktera",
     };
-  if (!phone && !instagram)
+  if (!phone)
     return {
       ok: false,
-      error: "Unesite broj telefona ili Instagram nalog",
+      error: "Unesite broj telefona",
     };
-  if (phone && !/^0?6\d{7,8}$/.test(phone))
+  if (!/^0?6\d{7,8}$/.test(phone))
     return {
       ok: false,
       error: "Unesite validan srpski broj telefona (06X XXX XXXX)",
     };
   if (!password || password.length < 4)
     return { ok: false, error: "Lozinka mora imati najmanje 4 karaktera" };
+
+  {
+    const phoneE164 = normalizePhone(phone);
+    if (!phoneE164) {
+      return { ok: false, error: "Broj telefona nije ispravan." };
+    }
+    try {
+      await ensurePhoneVerified(formData.phoneTrustToken, phoneE164);
+    } catch {
+      return {
+        ok: false,
+        error: "Verifikujte broj telefona pre kreiranja naloga.",
+      };
+    }
+  }
 
   // Generate unique slug
   const slug = await resolveSlug(bride, groom);

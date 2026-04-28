@@ -15,9 +15,11 @@ import {
   ChevronDown,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
-
-// Web3Forms access key - get yours free at https://web3forms.com
-const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
+import {
+  useRecaptcha,
+  RecaptchaDisclosure,
+} from "@/components/forms/RecaptchaProvider";
 
 const HEARD_ABOUT_OPTIONS = [
   { value: "Google pretraga", label: "Google pretraga" },
@@ -73,7 +75,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
       >
         <span
           className={`${
-            !value ? "text-white/20" : "text-[#F5F4DC]"
+            !value ? "text-white/50" : "text-[#F5F4DC]"
           } transition-colors`}
         >
           {selectedLabel}
@@ -115,6 +117,7 @@ const ContactForm: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { execute: executeRecaptcha } = useRecaptcha();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -124,47 +127,49 @@ const ContactForm: React.FC = () => {
     howHeardAbout: "",
     acceptedTerms: false,
   });
+  const [phoneTrustToken, setPhoneTrustToken] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!phoneTrustToken) {
+      setError("Verifikujte broj telefona pre slanja zahteva.");
+      return;
+    }
     setIsLoading(true);
 
     try {
-      const formattedDate = formData.date
-        ? new Date(formData.date).toLocaleDateString("sr-Latn-RS", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-        : "";
+      let recaptchaToken: string;
+      try {
+        recaptchaToken = await executeRecaptcha("contact");
+      } catch {
+        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setIsLoading(false);
+        return;
+      }
 
-      const response = await fetch("https://api.web3forms.com/submit", {
+      const response = await fetch("/api/contact", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `Retro Telefon - Nova rezervacija - ${formData.name} - ${formattedDate}`,
-          from_name: "HALO Uspomene",
           name: formData.name,
-          telefon: `+381${formData.phone}`,
-          datum_dogadjaja: formattedDate,
-          lokacija: formData.location,
-          kako_je_cuo: formData.howHeardAbout || "Nije navedeno",
-          paket: "Audio Guest Book",
-          opsti_uslovi: formData.acceptedTerms
-            ? "Prihvaćeni"
-            : "Nisu prihvaćeni",
+          phone: `+381${formData.phone}`,
+          date: formData.date,
+          location: formData.location,
+          howHeardAbout: formData.howHeardAbout,
+          acceptedTerms: formData.acceptedTerms,
+          phoneTrustToken,
+          recaptchaToken,
         }),
       });
 
-      const data = await response.json();
+      const data = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+      };
 
-      if (!data.success) {
-        throw new Error(data.message || "Došlo je do greške");
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "Došlo je do greške");
       }
 
       setIsSubmitted(true);
@@ -190,6 +195,7 @@ const ContactForm: React.FC = () => {
       howHeardAbout: "",
       acceptedTerms: false,
     });
+    setPhoneTrustToken("");
   };
 
   if (isSubmitted) {
@@ -223,11 +229,11 @@ const ContactForm: React.FC = () => {
         className="space-y-10 bg-white/5 backdrop-blur-md p-6 sm:p-10 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/10 shadow-2xl relative"
       >
         {/* Form context note */}
-        <div className="flex items-center gap-3 text-[#F5F4DC]/40 text-sm">
+        <div className="flex items-center gap-3 text-[#F5F4DC]/80 text-sm">
           <MessageCircle size={16} className="text-[#AE343F] shrink-0" />
           <span>
             Ova forma je za rezervaciju{" "}
-            <strong className="text-[#F5F4DC]/60">
+            <strong className="text-white">
               Retro Telefona Uspomena
             </strong>{" "}
             na Vašem venčanju.
@@ -245,14 +251,14 @@ const ContactForm: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
           {/* Name Input */}
           <div className="space-y-3">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
               <User size={14} className="text-[#AE343F]" /> Vaše Ime
             </label>
             <input
               required
               type="text"
               placeholder="Ime i Prezime"
-              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -263,7 +269,7 @@ const ContactForm: React.FC = () => {
 
           {/* Date Input - Custom DatePicker */}
           <div className="space-y-3 mt-1">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
               <Calendar size={14} className="text-[#AE343F]" /> Datum Događaja
             </label>
             <DatePicker
@@ -275,33 +281,26 @@ const ContactForm: React.FC = () => {
 
           {/* Phone Input */}
           <div className="space-y-3">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
               <Phone size={14} className="text-[#AE343F]" /> Broj Telefona
             </label>
-            <div className="flex items-center border-b border-white/10 focus-within:border-[#AE343F] transition-colors">
-              <span className="py-3 pl-4 pr-2 text-[#F5F4DC]/50 text-lg select-none">
-                +381
-              </span>
-              <input
-                required
-                type="tel"
-                placeholder="6X XXX XXXX"
-                className="flex-1 bg-transparent py-3 pr-4 text-[#F5F4DC] text-lg focus:outline-none placeholder:text-white/20"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    phone: e.target.value.replace(/^\+?381/, ""),
-                  })
-                }
-                disabled={isLoading}
-              />
-            </div>
+            <PhoneVerificationField
+              variant="dark"
+              required
+              disabled={isLoading}
+              value={formData.phone}
+              onChange={(v) => {
+                setFormData((prev) => ({ ...prev, phone: v }));
+                if (phoneTrustToken) setPhoneTrustToken("");
+              }}
+              onVerified={(token) => setPhoneTrustToken(token)}
+              onUnverified={() => setPhoneTrustToken("")}
+            />
           </div>
 
           {/* Location Input */}
           <div className="space-y-3">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
               <MapPin size={14} className="text-[#AE343F]" /> Lokacija /
               Restoran
             </label>
@@ -309,7 +308,7 @@ const ContactForm: React.FC = () => {
               required
               type="text"
               placeholder="npr. Beograd, Sala XY"
-              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
               value={formData.location}
               onChange={(e) =>
                 setFormData({ ...formData, location: e.target.value })
@@ -320,7 +319,7 @@ const ContactForm: React.FC = () => {
 
           {/* How Heard About Dropdown */}
           <div className="space-y-3 md:col-span-2">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
               <HelpCircle size={14} className="text-[#AE343F]" /> Kako ste čuli
               za nas
             </label>
@@ -335,7 +334,7 @@ const ContactForm: React.FC = () => {
 
           {/* Package info */}
           <div className="md:col-span-2">
-            <p className="text-[#F5F4DC]/30 text-xs pl-1">
+            <p className="text-[#F5F4DC]/70 text-xs pl-1">
               Lična dostava i montaža dostupna je samo u Novom Sadu.
             </p>
           </div>
@@ -356,7 +355,7 @@ const ContactForm: React.FC = () => {
           />
           <label
             htmlFor="acceptedTerms"
-            className="text-[#F5F4DC]/60 text-sm cursor-pointer leading-relaxed"
+            className="text-[#F5F4DC]/90 text-sm cursor-pointer leading-relaxed"
           >
             Pročitao/la sam i prihvatam{" "}
             <a
@@ -372,7 +371,7 @@ const ContactForm: React.FC = () => {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !phoneTrustToken}
           className="btn bg-[#AE343F] hover:bg-[#8A2A32] btn-lg w-full min-h-[48px] h-16 sm:h-20 rounded-2xl text-[#F5F4DC] text-base sm:text-lg font-bold shadow-2xl shadow-[#AE343F]/40 group relative overflow-hidden border-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="relative z-10 flex items-center gap-3">
@@ -395,6 +394,7 @@ const ContactForm: React.FC = () => {
             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
           )}
         </button>
+        <RecaptchaDisclosure className="text-[10px] text-[#F5F4DC]/70 text-center" />
       </form>
     </div>
   );
