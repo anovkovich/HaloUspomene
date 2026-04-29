@@ -75,28 +75,6 @@ export default async function OGImage() {
             gap: 24,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <div
-              style={{
-                width: 60,
-                height: 1,
-                background: "#AE343F",
-                opacity: 0.3,
-              }}
-            />
-            <span style={{ fontSize: 18, color: "#AE343F", opacity: 0.5 }}>
-              &#9874;
-            </span>
-            <div
-              style={{
-                width: 60,
-                height: 1,
-                background: "#AE343F",
-                opacity: 0.3,
-              }}
-            />
-          </div>
-
           <span
             style={{
               fontFamily: "Cormorant Garamond",
@@ -132,7 +110,7 @@ export default async function OGImage() {
             }}
           >
             Gosti skeniraju pano na ulazu, ukucaju ime — i telefon ih vodi do
-            njihovog stola. Bez gužve, bez spiskova.
+            njihovog stola.
           </span>
 
           <span
@@ -145,7 +123,7 @@ export default async function OGImage() {
               textTransform: "uppercase",
             }}
           >
-            Drag-and-drop editor &nbsp;·&nbsp; QR kod za štampu
+            Bez gužve &nbsp;·&nbsp; Bez spiskova
           </span>
         </div>
       </div>
