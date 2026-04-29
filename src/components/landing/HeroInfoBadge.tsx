@@ -124,7 +124,7 @@ const HeroInfoBadge: React.FC = () => {
         className="inline-flex items-center gap-2 px-4 py-2 bg-[#AE343F]/10 text-[#AE343F] rounded-full text-xs font-bold uppercase tracking-[0.2em] mb-8 hover:bg-[#AE343F]/20 transition-colors cursor-pointer"
       >
         <Sparkles size={14} className="sparkle-flash" />
-        Vaš Dan Zaslužuje Više Od Fotografija
+        Vaš dan zaslužuje posebnu pažnju
       </button>
 
       {modal}

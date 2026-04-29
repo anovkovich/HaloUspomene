@@ -7,9 +7,8 @@ const Testimonials: React.FC = () => {
   return (
     <section
       id="utisci"
-      className="pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32 bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6] relative overflow-hidden"
+      className="pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32 bg-[#F5F4DC] relative overflow-hidden"
     >
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4af37]/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-12 sm:mb-16 md:mb-20">

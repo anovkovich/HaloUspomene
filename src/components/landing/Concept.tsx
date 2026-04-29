@@ -48,7 +48,7 @@ const Concept: React.FC = () => {
   return (
     <section
       id="zasto-mi"
-      className="pt-16 pb-8 sm:pt-24 sm:pb-10 md:pt-32 md:pb-12 bg-gradient-to-t from-[#f5f4dc] to-[#faf9f6] relative overflow-hidden"
+      className="pt-16 pb-8 sm:pt-24 sm:pb-10 md:pt-32 md:pb-12 bg-[#F5F4DC] relative overflow-hidden"
     >
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center mb-12 sm:mb-16 md:mb-24">
@@ -57,12 +57,11 @@ const Concept: React.FC = () => {
             <span className="italic text-[#AE343F]">nas</span>?
           </h2>
           <p className="text-xl text-[#232323]/50 leading-relaxed font-light">
-            Digitalna pozivnica, raspored sedenja, audio knjiga utisaka i retro
-            telefon — sve za vaše savršeno venčanje na jednom mestu.
+            Sve za vaše savršeno venčanje na jednom mestu!
           </p>
           <p className="text-sm text-[#232323]/30 mt-3">
-            Website pozivnica za venčanje sa besplatnom PDF verzijom za štampu +
-            audio knjiga uspomena — digitalna ili uz retro telefon.
+            Website pozivnica za venčanje, alat za raspored sedenja, audio
+            knjiga uspomena — digitalna ili uz retro telefon.
           </p>
         </div>
 

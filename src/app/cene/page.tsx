@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import PricingClient from "./PricingClient";
 
@@ -191,7 +192,9 @@ export default function CenePage() {
     <>
       <PricingStructuredData />
       <FAQStructuredData />
-      <PricingClient />
+      <Suspense fallback={null}>
+        <PricingClient />
+      </Suspense>
 
       {/* Hidden SEO content — server-rendered, visible to crawlers */}
       <div className="sr-only" aria-hidden="true">

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Check,
   Globe,
@@ -122,7 +123,10 @@ const FULL_PRICE = pricing.pozivnica.bundleFullPrice;
 const BUNDLE_PRICE = pricing.pozivnica.bundlePrice;
 
 export default function PricingClient() {
-  const [mode, setMode] = useState<"classic" | "premium">("classic");
+  const searchParams = useSearchParams();
+  const initialMode: "classic" | "premium" =
+    searchParams?.get("premium") === "1" ? "premium" : "classic";
+  const [mode, setMode] = useState<"classic" | "premium">(initialMode);
   const [selected, setSelected] = useState<Record<string, boolean>>({
     website: true,
     pdf: true,

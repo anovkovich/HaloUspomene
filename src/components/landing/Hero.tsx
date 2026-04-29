@@ -42,38 +42,25 @@ const Hero: React.FC = () => {
         .hero-image { animation: fadeInScale 0.8s ease-out 0.2s both; }
       `}</style>
 
-      <div className="absolute top-[-10%] right-[-5%] w-[70%] sm:w-[60%] md:w-[50%] h-[70%] bg-[#AE343F]/5 rounded-full blur-[80px] sm:blur-[100px] md:blur-[120px] -z-10" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[60%] sm:w-[50%] md:w-[40%] h-[60%] bg-[#AE343F]/10 rounded-full blur-[60px] sm:blur-[80px] md:blur-[100px] -z-10" />
-
       <div className="container mx-auto px-4 md:px-8">
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           <div className="hero-text">
             <HeroInfoBadge />
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-serif text-[#232323] leading-none mb-8">
-              Reči koje postaju
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-[#232323] leading-[1.05] mb-6">
+              Sve za venčanje
               <br />
               <span className="italic text-[#AE343F] font-medium">
-                uspomena
+                na jednom mestu!
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg md:text-xl text-[#232323]/60 mb-8 sm:mb-10 md:mb-12 max-w-lg leading-relaxed font-light">
-              Sačuvajte glasove vaših najdražih zauvek. Putem našeg retro
-              telefona na venčanju ili digitalne audio knjige utisaka — svaka
-              poruka postaje uspomena koju ćete slušati godinama.
+            <p className="text-base sm:text-lg md:text-xl text-[#232323]/60 mb-8 sm:mb-10 max-w-lg leading-relaxed font-light">
+              Pozivnice koje gosti pamte. Raspored sedenja bez stresa. Glasovne
+              uspomene koje ćete slušati godinama.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5">
-              <Link
-                href="/#kontakt"
-                className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] hover:border-[#232323] btn-lg rounded-full px-12"
-                data-track="cta_click"
-                data-track-cta-name="zakazite_konsultacije"
-                data-track-cta-location="hero"
-              >
-                Zakažite retro telefon
-              </Link>
               <Link
                 href="/napravi-pozivnicu"
                 className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] btn-lg rounded-full px-12 shadow-2xl shadow-[#AE343F]/30 group border-none"
@@ -82,6 +69,15 @@ const Hero: React.FC = () => {
                 data-track-cta-location="hero"
               >
                 Napravite pozivnicu
+              </Link>
+              <Link
+                href="/cene"
+                className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] hover:border-[#232323] btn-lg rounded-full px-12"
+                data-track="cta_click"
+                data-track-cta-name="pogledajte_cene"
+                data-track-cta-location="hero"
+              >
+                Pogledajte cene
               </Link>
             </div>
 
