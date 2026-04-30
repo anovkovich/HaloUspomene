@@ -16,7 +16,10 @@ import { generateStandaloneWelcomePDF } from "./generateStandaloneWelcomePDF";
 interface Props {
   slug: string;
   eventName: string;
-  ownerEmail: string;
+  /** Optional contact details — newer records carry name+phone, older ones email. */
+  ownerName?: string;
+  ownerPhone?: string;
+  ownerEmail?: string;
   guests: StandaloneGuest[];
 }
 
@@ -47,6 +50,8 @@ function toAttendingEntries(guests: StandaloneGuest[]): RSVPEntry[] {
 export default function StandaloneRasporedRoot({
   slug,
   eventName,
+  ownerName,
+  ownerPhone,
   ownerEmail,
   guests,
 }: Props) {
@@ -68,20 +73,25 @@ export default function StandaloneRasporedRoot({
       const editorUrl = `https://halouspomene.rs/raspored-sedenja/${slug}`;
       const lookupUrl = `https://halouspomene.rs/raspored-sedenja/${slug}/gde-sedim/`;
 
+      const ownerLines = [
+        ownerName ? `Ime klijenta: ${ownerName}` : null,
+        ownerPhone ? `Telefon klijenta: ${ownerPhone}` : null,
+        ownerEmail ? `Email klijenta: ${ownerEmail}` : null,
+      ].filter(Boolean) as string[];
+
       const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `🎨 QR Pano dizajn zahtev — ${eventName}`,
+          subject: `QR Pano dizajn zahtev — ${eventName}`,
           from_name: requestContactName.trim() || "Standalone klijent",
-          email: ownerEmail,
           message: [
             `Klijent zahteva dizajn QR panoa za standalone raspored sedenja.`,
             ``,
             `Event: ${eventName}`,
             `Slug: ${slug}`,
-            `Email klijenta: ${ownerEmail}`,
+            ...ownerLines,
             `Kontakt osoba: ${requestContactName.trim() || "—"}`,
             `Broj stavki gostiju: ${guests.length}`,
             `Ukupno gostiju (sa pratiocima): ${totalGuests}`,
@@ -226,8 +236,8 @@ export default function StandaloneRasporedRoot({
               className="text-[11px] mb-5 leading-relaxed"
               style={{ color: "rgba(35,35,35,0.5)" }}
             >
-              Vaš email <strong>{ownerEmail}</strong>, slug, broj gostiju i link
-              na editor će automatski biti uključeni u zahtev.
+              Vaši kontakt podaci, slug, broj gostiju i link na editor će
+              automatski biti uključeni u zahtev.
             </p>
 
             <div className="flex justify-end gap-2">

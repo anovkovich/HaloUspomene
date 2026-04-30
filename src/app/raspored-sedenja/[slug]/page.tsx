@@ -33,6 +33,8 @@ export default async function StandaloneSeatingPage({ params }: PageProps) {
     <StandaloneRasporedRoot
       slug={slug}
       eventName={data.eventName}
+      ownerName={data.ownerName}
+      ownerPhone={data.ownerPhone}
       ownerEmail={data.ownerEmail}
       guests={data.guests}
     />
