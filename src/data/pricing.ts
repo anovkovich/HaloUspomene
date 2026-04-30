@@ -63,3 +63,8 @@ export function getRodjendanPozivnicaLabel(t18 = false): string {
 export function getRodjendanRasporedPrice(): number {
   return (pricing as any).rodjendan?.raspored?.price ?? 0;
 }
+
+/** Fixed price for the standalone seating tool (raspored za organizatore). */
+export function getStandaloneSeatingPrice(): number {
+  return (pricing as any).standalone_seating?.price ?? 0;
+}

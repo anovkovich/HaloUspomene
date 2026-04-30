@@ -12,10 +12,9 @@ import {
   QrCode,
   Link2,
   Heart,
+  Sparkles,
 } from "lucide-react";
-import type { TableData } from "./types";
-import type { ScriptFontType, ThemeType } from "../types";
-import { generateWelcomePDF } from "./generateWelcomePDF";
+import type { TableData } from "../types";
 
 interface Props {
   slug: string;
@@ -26,27 +25,19 @@ interface Props {
   saveSuccess: boolean;
   saveError: string;
   paidForRaspored: boolean;
-  theme: ThemeType;
-  scriptFont?: ScriptFontType;
-  useCyrillic: boolean;
   onSave: () => void;
   onDownloadPDF: () => void;
-  /** Back-link target. Defaults to the wedding planner guests tab. */
+  /** Back-link target. Each consumer route supplies its own. */
   backHref?: string;
-  /**
-   * Welcome PDF generator. When provided, replaces the default wedding
-   * generateWelcomePDF — useful so the birthday route can hand us a
-   * birthday-themed generator.
-   */
-  onGenerateWelcomePDF?: () => void | Promise<void>;
-  /**
-   * Full URL of the seat-lookup page used for QR + copy link. Defaults to
-   * the classic /pozivnica/{slug}/gde-sedim/. Birthday routes override with
-   * /deciji-rodjendan/{slug}/gde-sedim/.
-   */
+  /** When true, hide the "← Nazad" link entirely. Used by standalone routes
+   *  where there's no parent portal to return to. */
+  hideBackButton?: boolean;
+  /** Welcome PDF generator. Each consumer (wedding/birthday/standalone) supplies its own. */
+  onGenerateWelcomePDF: () => void | Promise<void>;
+  /** Full URL of the seat-lookup page used for QR + copy link. */
   guestLookupUrl?: string;
-  /** When true, hide wedding-only special elements (e.g. "Mladenački sto"). */
-  hideWeddingOnlyElements?: boolean;
+  /** When provided, the download dropdown shows an extra "Zatraži dizajn QR panoa" item. */
+  onRequestPanoDesign?: () => void;
 }
 
 async function downloadQR(slug: string, guestLookupUrl: string) {
@@ -75,14 +66,13 @@ export default function Toolbar({
   saveSuccess,
   saveError,
   paidForRaspored,
-  theme,
-  scriptFont,
-  useCyrillic,
   onSave,
   onDownloadPDF,
   backHref = "/moje-vencanje?tab=guests",
+  hideBackButton = false,
   onGenerateWelcomePDF,
   guestLookupUrl,
+  onRequestPanoDesign,
 }: Props) {
   const lookupUrl =
     guestLookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
@@ -111,19 +101,23 @@ export default function Toolbar({
         backgroundColor: "var(--theme-surface)",
       }}
     >
-      <Link
-        href={backHref}
-        className="flex items-center gap-1.5 text-xs font-raleway transition-opacity hover:opacity-60"
-        style={{ color: "var(--theme-text-light)" }}
-      >
-        <ArrowLeft size={13} />
-        Nazad
-      </Link>
+      {!hideBackButton && (
+        <>
+          <Link
+            href={backHref}
+            className="flex items-center gap-1.5 text-xs font-raleway transition-opacity hover:opacity-60"
+            style={{ color: "var(--theme-text-light)" }}
+          >
+            <ArrowLeft size={13} />
+            Nazad
+          </Link>
 
-      <div
-        className="h-4 w-px"
-        style={{ backgroundColor: "var(--theme-border-light)" }}
-      />
+          <div
+            className="h-4 w-px"
+            style={{ backgroundColor: "var(--theme-border-light)" }}
+          />
+        </>
+      )}
 
       <p
         className="font-script text-lg leading-none"
@@ -190,21 +184,11 @@ export default function Toolbar({
               onClick={async () => {
                 setDownloadOpen(false);
                 try {
-                  if (onGenerateWelcomePDF) {
-                    await onGenerateWelcomePDF();
-                  } else {
-                    await generateWelcomePDF({
-                      slug,
-                      coupleDisplay: coupleNames,
-                      theme,
-                      scriptFont,
-                      useCyrillic,
-                    });
-                  }
+                  await onGenerateWelcomePDF();
                 } catch (err) {
-                  console.error("Welcome PDF failed:", err);
+                  console.error("QR pano PDF failed:", err);
                   alert(
-                    "Greška pri generisanju Welcome PDF-a. Pokušajte ponovo.",
+                    "Greška pri generisanju QR pano PDF-a. Pokušajte ponovo.",
                   );
                 }
               }}
@@ -212,7 +196,7 @@ export default function Toolbar({
               style={{ color: "var(--theme-text)" }}
             >
               <Heart size={14} style={{ color: "var(--theme-primary)" }} />
-              Preuzmi Welcome PDF
+              Preuzmi QR pano PDF
             </button>
             <div
               className="h-px"
@@ -251,6 +235,25 @@ export default function Toolbar({
               )}
               {linkCopied ? "Link kopiran!" : "Kopiraj link Gde sedim"}
             </button>
+            {onRequestPanoDesign && (
+              <>
+                <div
+                  className="h-px"
+                  style={{ backgroundColor: "var(--theme-border-light)" }}
+                />
+                <button
+                  onClick={() => {
+                    onRequestPanoDesign();
+                    setDownloadOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
+                  style={{ color: "var(--theme-text)" }}
+                >
+                  <Sparkles size={14} style={{ color: "var(--theme-primary)" }} />
+                  Zatraži dizajn QR panoa
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

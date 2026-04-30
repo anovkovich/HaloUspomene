@@ -83,5 +83,9 @@
       "label": "Raspored sedenja",
       "price": 2500
     }
+  },
+  "standalone_seating": {
+    "label": "Raspored sedenja za organizatore",
+    "price": 4990
   }
 }

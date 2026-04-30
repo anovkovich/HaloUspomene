@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { X } from "lucide-react";
-import type { TableData } from "./types";
+import type { TableData } from "../types";
 
 // Desktop canvas & geometry constants (from TableNode.tsx)
 const CANVAS_W = 1600;

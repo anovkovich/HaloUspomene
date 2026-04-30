@@ -10,8 +10,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import type { RSVPEntry } from "@/lib/rsvp";
-import type { TableData, TableType, SeatAssignment } from "./types";
-import type { ScriptFontType, ThemeType } from "../types";
+import type { TableData, TableType, SeatAssignment } from "../types";
 import {
   Menu,
   ZoomIn,
@@ -36,13 +35,7 @@ import UpgradeModal from "./UpgradeModal";
 import MobileTableCard from "./MobileTableCard";
 import MobileSeatSheet from "./MobileSeatSheet";
 import MobileLayoutScreen from "./MobileLayoutScreen";
-import {
-  saveRaspored as defaultSaveRaspored,
-  loadRaspored as defaultLoadRaspored,
-  checkPaidStatus as defaultCheckPaidStatus,
-} from "./actions";
-import { generateAndDownloadPDF } from "./generatePDF";
-import { generateWelcomePDF } from "./generateWelcomePDF";
+import { generateAndDownloadPDF } from "../pdf/generatePDF";
 
 type RasporedActions = {
   save: (
@@ -56,33 +49,36 @@ type RasporedActions = {
 interface Props {
   attending: RSVPEntry[];
   slug: string;
+  /** Display name shown in the toolbar (couple names, honoree name, event name). */
   coupleNames: string;
   paidForRaspored: boolean;
-  theme: ThemeType;
-  scriptFont?: ScriptFontType;
-  useCyrillic: boolean;
-  /**
-   * Override for the save/load/checkPaid server actions. Defaults to the
-   * wedding actions in ./actions. Birthday routes pass their own trio
-   * that read/write paid_for_raspored from the birthday_events collection.
-   */
-  actions?: RasporedActions;
+  /** save/load/checkPaid server actions specific to the consumer route. */
+  actions: RasporedActions;
   /** Back-link target, forwarded to Toolbar. */
   backHref?: string;
-  /**
-   * Override for the B1 welcome PDF generator. Defaults to the wedding
-   * generateWelcomePDF. Birthday routes pass a wrapper that calls the
-   * birthday-specific generator with age + type + birthday theme data.
-   */
-  onGenerateWelcomePDF?: () => void | Promise<void>;
-  /**
-   * Full URL for the guest-seat-lookup page (used in QR + copy link).
-   * Defaults to /pozivnica/{slug}/gde-sedim/; birthday routes pass
-   * /deciji-rodjendan/{slug}/gde-sedim/.
-   */
+  /** When true, the editor hides all "← Nazad" affordances (toolbar + mobile bar).
+   *  Used by standalone routes where there's no parent portal to return to. */
+  hideBackButton?: boolean;
+  /** Optional sticky CTA rendered at the top of the GuestSidebar. Used by
+   *  standalone routes to surface the "Lista gostiju" link without a back button. */
+  sidebarTopAction?: { label: string; href: string };
+  /** Welcome-PDF generator. Each consumer (wedding/birthday/standalone) supplies its own. */
+  onGenerateWelcomePDF: () => void | Promise<void>;
+  /** Full URL for the guest-seat-lookup page (used in QR + copy link). */
   guestLookupUrl?: string;
   /** When true, hide wedding-only elements (Mladenački sto) from the add-table UI. */
   hideWeddingOnlyElements?: boolean;
+  /** When true, hide the Specijalni elementi dropdown (music, dance floor, entrance) entirely
+   *  and expose a standalone "Jednostran sto" button for non-wedding events. */
+  hideDecorations?: boolean;
+  /** Optional CSS variable overrides for the editor's color palette. Defaults to
+   *  a luxury-gold scheme that suits both wedding and birthday flows. Standalone
+   *  routes pass HALO Uspomene brand variables here. */
+  themeVarsOverride?: React.CSSProperties;
+  /** When provided, the Toolbar download menu shows an extra "Zatraži dizajn QR panoa"
+   *  item that invokes this callback. Used by standalone routes — wedding/birthday
+   *  flows handle pano design out-of-band. */
+  onRequestPanoDesign?: () => void;
 }
 
 function createTable(
@@ -107,18 +103,20 @@ export default function RasporedClient({
   slug,
   coupleNames,
   paidForRaspored: initialPaid,
-  theme,
-  scriptFont,
-  useCyrillic,
   actions,
   backHref,
+  hideBackButton,
+  sidebarTopAction,
   onGenerateWelcomePDF,
   guestLookupUrl,
   hideWeddingOnlyElements,
+  hideDecorations,
+  themeVarsOverride,
+  onRequestPanoDesign,
 }: Props) {
-  const saveRaspored = actions?.save ?? defaultSaveRaspored;
-  const loadRaspored = actions?.load ?? defaultLoadRaspored;
-  const checkPaidStatus = actions?.checkPaid ?? defaultCheckPaidStatus;
+  const saveRaspored = actions.save;
+  const loadRaspored = actions.load;
+  const checkPaidStatus = actions.checkPaid;
   const resolvedLookupUrl =
     guestLookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
   const [tables, setTables] = useState<TableData[]>([]);
@@ -138,7 +136,7 @@ export default function RasporedClient({
     tableId: string;
     seatIndex: number;
     tableLabel: string;
-    assignment: import("./types").SeatAssignment | null;
+    assignment: import("../types").SeatAssignment | null;
   } | null>(null);
   const [showMobileAddTable, setShowMobileAddTable] = useState(false);
   const [showMobileGuests, setShowMobileGuests] = useState(false);
@@ -482,7 +480,7 @@ export default function RasporedClient({
     (g) => (assignedCounts[g.id] || 0) < (parseInt(g.guestCount) || 1),
   ).length;
 
-  const themeVars = {
+  const defaultThemeVars = {
     backgroundColor: "var(--theme-background)",
     "--theme-primary": "#d4af37",
     "--theme-primary-light": "rgba(212,175,55,0.25)",
@@ -496,6 +494,10 @@ export default function RasporedClient({
     "--theme-border": "rgba(35,35,35,0.32)",
     "--theme-border-light": "rgba(35,35,35,0.2)",
   } as React.CSSProperties;
+
+  const themeVars: React.CSSProperties = themeVarsOverride
+    ? { ...defaultThemeVars, ...themeVarsOverride }
+    : defaultThemeVars;
 
   // ══════════════════════════════════════════════════════════════════════════
   // LOADING — wait for layout detection before rendering anything
@@ -538,13 +540,15 @@ export default function RasporedClient({
             borderBottom: "1px solid var(--theme-border-light)",
           }}
         >
-          <a
-            href={backHref ?? "/moje-vencanje"}
-            className="w-8 h-8 flex items-center justify-center rounded-full shrink-0"
-            style={{ color: "var(--theme-text)" }}
-          >
-            <ArrowLeft size={18} />
-          </a>
+          {!hideBackButton && (
+            <a
+              href={backHref ?? "/moje-vencanje"}
+              className="w-8 h-8 flex items-center justify-center rounded-full shrink-0"
+              style={{ color: "var(--theme-text)" }}
+            >
+              <ArrowLeft size={18} />
+            </a>
+          )}
           <span
             className="flex-1 text-sm font-raleway font-semibold truncate"
             style={{ color: "var(--theme-text)" }}
@@ -614,21 +618,11 @@ export default function RasporedClient({
                     onClick={async () => {
                       setShowMobileMenu(false);
                       try {
-                        if (onGenerateWelcomePDF) {
-                          await onGenerateWelcomePDF();
-                        } else {
-                          await generateWelcomePDF({
-                            slug,
-                            coupleDisplay: coupleNames,
-                            theme,
-                            scriptFont,
-                            useCyrillic,
-                          });
-                        }
+                        await onGenerateWelcomePDF();
                       } catch (err) {
-                        console.error("Welcome PDF failed:", err);
+                        console.error("QR pano PDF failed:", err);
                         showToast(
-                          "Greška pri generisanju Welcome PDF-a",
+                          "Greška pri generisanju QR pano PDF-a",
                         );
                       }
                     }}
@@ -636,7 +630,7 @@ export default function RasporedClient({
                     style={{ color: "var(--theme-text)" }}
                   >
                     <Heart size={16} style={{ color: "var(--theme-primary)" }} />
-                    Preuzmi Welcome PDF
+                    Preuzmi QR pano PDF
                   </button>
                   <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
                   <button
@@ -957,6 +951,7 @@ export default function RasporedClient({
           onSelectGuest={setSelectedGuest}
           assignedCounts={assignedCounts}
           onStartOver={handleStartOver}
+          topAction={sidebarTopAction}
         />
       )}
 
@@ -971,17 +966,15 @@ export default function RasporedClient({
             saveSuccess={saveSuccess}
             saveError={saveError}
             paidForRaspored={paidForRaspored}
-            theme={theme}
-            scriptFont={scriptFont}
-            useCyrillic={useCyrillic}
             backHref={backHref}
+            hideBackButton={hideBackButton}
             onGenerateWelcomePDF={onGenerateWelcomePDF}
             guestLookupUrl={resolvedLookupUrl}
-            hideWeddingOnlyElements={hideWeddingOnlyElements}
             onSave={() => handleSave()}
             onDownloadPDF={() =>
               generateAndDownloadPDF(tables, attending, coupleNames, slug)
             }
+            onRequestPanoDesign={onRequestPanoDesign}
           />
         )}
 
@@ -993,6 +986,7 @@ export default function RasporedClient({
               totalSeats={totalSeats}
               occupiedSeats={occupiedSeats}
               hideWeddingOnlyElements={hideWeddingOnlyElements}
+              hideDecorations={hideDecorations}
             />
           )}
 
@@ -1206,6 +1200,7 @@ export default function RasporedClient({
                   onSelectGuest={(g) => { setSheetGuest(g); setShowGuestPanel(false); }}
                   assignedCounts={assignedCounts}
                   onStartOver={handleStartOver}
+                  topAction={sidebarTopAction}
                 />
               </div>
             </div>

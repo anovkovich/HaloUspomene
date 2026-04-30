@@ -8,10 +8,11 @@ import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
 import BirthdayAdminList from "./BirthdayAdminList";
 import VendorAdminTab from "./VendorAdminTab";
+import SeatingAdminTab from "./SeatingAdminTab";
 import PhoneRentalModal from "./PhoneRentalModal";
 import AdminCalendar from "./AdminCalendar";
 
-type AdminTab = "pozivnice" | "rodjendani" | "vendori";
+type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja";
 
 const BANK_ACCOUNTS = [
   { raw: "340000003258405791", display: "340-0000032584057-91", label: "Erste (340)" },
@@ -70,7 +71,8 @@ export default function AdminPage() {
     if (!tabInitializedRef.current) {
       tabInitializedRef.current = true;
       const t = new URLSearchParams(window.location.search).get("tab");
-      if (t === "rodjendani" || t === "vendori") setActiveTab(t);
+      if (t === "rodjendani" || t === "vendori" || t === "raspored-sedenja")
+        setActiveTab(t);
       return;
     }
     const url = new URL(window.location.href);
@@ -408,6 +410,16 @@ export default function AdminPage() {
         >
           <Star size={14} /> Vendori
         </button>
+        <button
+          onClick={() => setActiveTab("raspored-sedenja")}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+            activeTab === "raspored-sedenja"
+              ? "bg-[#2563eb] text-white"
+              : "text-white/50 hover:text-white/80"
+          }`}
+        >
+          <Armchair size={14} /> Raspored sedenja
+        </button>
       </div>
 
       {activeTab === "vendori" ? (
@@ -422,6 +434,11 @@ export default function AdminPage() {
           </div>
           <VendorAdminTab />
         </>
+      ) : activeTab === "raspored-sedenja" ? (
+        <SeatingAdminTab
+          onNeedsLogin={() => setNeedsLogin(true)}
+          bankAccountIdx={bankAccountIdx}
+        />
       ) : activeTab === "rodjendani" ? (
         <BirthdayAdminList
           onNeedsLogin={() => setNeedsLogin(true)}

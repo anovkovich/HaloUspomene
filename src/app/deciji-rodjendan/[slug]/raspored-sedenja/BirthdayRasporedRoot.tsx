@@ -5,7 +5,7 @@ import type {
   BirthdayThemeType,
   BirthdayType,
 } from "@/app/deciji-rodjendan/[slug]/types";
-import RasporedClient from "@/app/pozivnica/[slug]/raspored-sedenja/RasporedClient";
+import RasporedClient from "@/lib/seating/editor/RasporedClient";
 import {
   saveBirthdayRaspored,
   loadBirthdayRaspored,
@@ -43,10 +43,6 @@ export default function BirthdayRasporedRoot({
       slug={slug}
       coupleNames={honoreeDisplay}
       paidForRaspored={paidForRaspored}
-      // `theme` is only consumed by the default wedding welcome-PDF path,
-      // which we override below — this is a safe placeholder.
-      theme="luxury_gold"
-      useCyrillic={false}
       actions={{
         save: saveBirthdayRaspored,
         load: loadBirthdayRaspored,

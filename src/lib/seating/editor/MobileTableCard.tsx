@@ -7,7 +7,7 @@ import {
   Minus,
   RotateCw,
 } from "lucide-react";
-import type { TableData, SeatAssignment } from "./types";
+import type { TableData, SeatAssignment } from "../types";
 
 const SEAT_SIZE = 36;
 const CIRCLE_TABLE_R = 58;

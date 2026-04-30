@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getBirthdayData, getAllBirthdaySlugs } from "@/lib/birthday";
-import { loadSeatingLayout } from "@/lib/seating";
-import { getBirthdayThemeCSSVariables } from "../constants";
-import type { TableData } from "@/lib/seating";
+import { getStandaloneSeating } from "@/lib/standalone-seating";
+import { loadSeatingLayout, type TableData } from "@/lib/seating";
 import type {
   GuestLookupEntry,
   GuestTableEntry,
@@ -15,50 +13,53 @@ import GdeSedimClient from "@/app/pozivnica/[slug]/gde-sedim/GdeSedimClient";
 export const dynamicParams = true;
 export const revalidate = 60;
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
-
 export async function generateMetadata({
   params,
-}: PageProps): Promise<Metadata> {
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const { slug } = await params;
-  const data = await getBirthdayData(slug);
+  const data = await getStandaloneSeating(slug);
   if (!data) return {};
-  const honoree =
-    data.type === "eighteenth"
-      ? `${data.honoree_name ?? ""} ${data.honoree_surname ?? ""}`.trim() ||
-        data.child_name
-      : data.child_name;
-  const title = `${honoree} — Gde sedim?`;
-  const description = `Pronađite svoje mesto sedenja za proslavu — ${honoree}`;
   return {
-    title,
-    description,
-    openGraph: { title, description, type: "website" },
-    twitter: { card: "summary_large_image", title, description },
+    title: `${data.eventName} — Gde sedim?`,
+    description: `Pronađite svoje mesto sedenja — ${data.eventName}`,
+    openGraph: {
+      title: `${data.eventName} — Gde sedim?`,
+      type: "website",
+    },
     robots: { index: false, follow: false },
   };
 }
 
-export async function generateStaticParams() {
-  const slugs = await getAllBirthdaySlugs();
-  return slugs.map((slug) => ({ slug }));
+interface PageProps {
+  params: Promise<{ slug: string }>;
 }
 
-export default async function BirthdayGdeSedimPage({ params }: PageProps) {
+// Brand palette CSS variables — feeds the shared GdeSedimClient + HallMap
+// which read var(--theme-*) tokens for colors.
+const BRAND_VARS: React.CSSProperties = {
+  "--theme-primary": "#AE343F",
+  "--theme-primary-light": "rgba(174,52,63,0.25)",
+  "--theme-primary-muted": "rgba(174,52,63,0.15)",
+  "--theme-background": "#FAFAF5",
+  "--theme-surface": "#F5F4DC",
+  "--theme-surface-alt": "#F0EFCF",
+  "--theme-text": "#232323",
+  "--theme-text-muted": "rgba(35,35,35,0.92)",
+  "--theme-text-light": "rgba(35,35,35,0.78)",
+  "--theme-border": "rgba(35,35,35,0.32)",
+  "--theme-border-light": "rgba(35,35,35,0.2)",
+} as React.CSSProperties;
+
+export default async function StandaloneGdeSedimPage({ params }: PageProps) {
   const { slug } = await params;
-  const data = await getBirthdayData(slug);
+  const data = await getStandaloneSeating(slug);
 
-  if (!data) notFound();
-  if (!data.paid_for_raspored) notFound();
+  if (!data || !data.active) notFound();
 
-  const cssVars = getBirthdayThemeCSSVariables(data.theme, data.displayFont);
-
-  // ── Load seating data from MongoDB ──────────────────────────────────────
   let tables: TableData[] = [];
   let parseError = false;
-
   try {
     const loaded = await loadSeatingLayout(slug);
     if (loaded) tables = loaded;
@@ -66,7 +67,7 @@ export default async function BirthdayGdeSedimPage({ params }: PageProps) {
     parseError = true;
   }
 
-  // ── Build guest lookup — same algorithm as the wedding page ─────────────
+  // ── Build guest lookup (mirrors wedding /gde-sedim) ────────────────────
   const guestTableMap = new Map<
     string,
     Map<
@@ -119,45 +120,30 @@ export default async function BirthdayGdeSedimPage({ params }: PageProps) {
     ),
   }));
 
-  const honoree =
-    data.type === "eighteenth"
-      ? `${data.honoree_name ?? ""} ${data.honoree_surname ?? ""}`.trim() ||
-        data.child_name
-      : data.child_name;
-
-  // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen" style={cssVars as React.CSSProperties}>
+    <div className="min-h-screen" style={BRAND_VARS}>
       <div
-        className="min-h-screen"
-        style={{
-          backgroundColor: "var(--theme-background)",
-          color: "var(--theme-text)",
-        }}
+        className="min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6]"
+        style={{ color: "var(--theme-text)" }}
       >
         <div className="max-w-lg mx-auto px-4 py-10 sm:py-14">
-          {/* Back link */}
           <div className="mb-8">
             <Link
-              href={`/deciji-rodjendan/${slug}`}
-              className="inline-flex items-center gap-1.5 text-sm transition-opacity hover:opacity-60"
+              href="/"
+              className="inline-flex items-center gap-1.5 text-sm font-raleway transition-opacity hover:opacity-60"
               style={{ color: "var(--theme-text-light)" }}
             >
               <ChevronLeft size={15} />
-              Nazad na pozivnicu
+              halouspomene.rs
             </Link>
           </div>
 
-          {/* Header */}
           <div className="text-center mb-10">
             <h1
-              className="text-5xl sm:text-6xl mb-4 font-bold"
-              style={{
-                color: "var(--theme-primary)",
-                fontFamily: "var(--theme-display-font)",
-              }}
+              className="font-script text-5xl sm:text-6xl mb-4"
+              style={{ color: "var(--theme-primary)" }}
             >
-              {honoree}
+              {data.eventName}
             </h1>
             <div className="flex items-center justify-center gap-4 my-4">
               <div
@@ -179,7 +165,7 @@ export default async function BirthdayGdeSedimPage({ params }: PageProps) {
               />
             </div>
             <p
-              className="text-xs uppercase tracking-widest"
+              className="font-raleway text-xs uppercase tracking-widest"
               style={{ color: "var(--theme-text-light)" }}
             >
               Gde sedim?
@@ -195,7 +181,7 @@ export default async function BirthdayGdeSedimPage({ params }: PageProps) {
               }}
             >
               <p
-                className="text-base mb-2"
+                className="font-raleway text-base mb-2"
                 style={{ color: "var(--theme-text-muted)" }}
               >
                 Greška pri učitavanju rasporeda
@@ -209,7 +195,24 @@ export default async function BirthdayGdeSedimPage({ params }: PageProps) {
             </div>
           )}
 
-          {!parseError && (
+          {!parseError && tables.length === 0 && (
+            <div
+              className="text-center py-14 px-6 rounded-xl"
+              style={{
+                backgroundColor: "var(--theme-surface)",
+                border: "1px solid var(--theme-border-light)",
+              }}
+            >
+              <p
+                className="font-raleway text-base"
+                style={{ color: "var(--theme-text-muted)" }}
+              >
+                Raspored još nije objavljen.
+              </p>
+            </div>
+          )}
+
+          {!parseError && tables.length > 0 && (
             <GdeSedimClient guestLookup={guestLookup} tables={tables} />
           )}
         </div>

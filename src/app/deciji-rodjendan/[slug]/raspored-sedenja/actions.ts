@@ -2,7 +2,7 @@
 
 import { loadSeatingLayout, saveSeatingLayout } from "@/lib/seating";
 import { getBirthdayData } from "@/lib/birthday";
-import type { TableData } from "@/app/pozivnica/[slug]/raspored-sedenja/types";
+import type { TableData } from "@/lib/seating";
 
 // Birthday raspored shares seating_layouts (slug-keyed) with the wedding
 // editor but checks paid_for_raspored against birthday_events instead.

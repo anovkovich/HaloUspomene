@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Search, X, UserMinus } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
-import type { TableData, SeatAssignment } from "./types";
+import type { TableData, SeatAssignment } from "../types";
 
 interface SeatTarget {
   tableId: string;

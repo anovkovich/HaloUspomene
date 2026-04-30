@@ -25,6 +25,7 @@ export default function robots(): MetadataRoute.Robots {
           "/pozivnica/*/audio-knjiga",
           "/deciji-rodjendan/*/portal",
           "/deciji-rodjendan/*/prijava",
+          "/raspored-sedenja/*/",
         ],
       },
       {
@@ -41,6 +42,7 @@ export default function robots(): MetadataRoute.Robots {
           "/pozivnica/*/audio-knjiga",
           "/deciji-rodjendan/*/portal",
           "/deciji-rodjendan/*/prijava",
+          "/raspored-sedenja/*/",
         ],
       },
       {
@@ -57,6 +59,7 @@ export default function robots(): MetadataRoute.Robots {
           "/pozivnica/*/audio-knjiga",
           "/deciji-rodjendan/*/portal",
           "/deciji-rodjendan/*/prijava",
+          "/raspored-sedenja/*/",
         ],
       },
       {
@@ -73,6 +76,7 @@ export default function robots(): MetadataRoute.Robots {
           "/pozivnica/*/audio-knjiga",
           "/deciji-rodjendan/*/portal",
           "/deciji-rodjendan/*/prijava",
+          "/raspored-sedenja/*/",
         ],
       },
       {
@@ -89,6 +93,7 @@ export default function robots(): MetadataRoute.Robots {
           "/pozivnica/*/audio-knjiga",
           "/deciji-rodjendan/*/portal",
           "/deciji-rodjendan/*/prijava",
+          "/raspored-sedenja/*/",
         ],
       },
     ],

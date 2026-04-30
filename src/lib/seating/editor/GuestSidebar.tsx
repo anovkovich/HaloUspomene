@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, RotateCcw } from "lucide-react";
+import { Check, X, RotateCcw, ExternalLink } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
 
-const FILTER_OPTIONS = [
-  { value: "", label: "Svi gosti" },
-  { value: "Mladini", label: "Mladini" },
-  { value: "Mladozenjini", label: "Mladoženjini" },
-  { value: "Zajednicki", label: "Zajednički" },
-  { value: "Nekategorisani", label: "Nekategorisani" },
-];
+// Wedding category values are stored without diacritics in the DB ("Mladozenjini"),
+// but displayed with them ("Mladoženjini"). This map only enriches labels for the
+// known wedding values; unknown categories (standalone events, custom imports)
+// fall through and use the raw value as label.
+const WEDDING_CATEGORY_LABELS: Record<string, string> = {
+  Mladini: "Mladini",
+  Mladozenjini: "Mladoženjini",
+  Zajednicki: "Zajednički",
+};
 
 interface Props {
   attending: RSVPEntry[];
@@ -18,6 +20,9 @@ interface Props {
   onSelectGuest: (guest: RSVPEntry | null) => void;
   assignedCounts: Record<string, number>;
   onStartOver: () => void;
+  /** Optional sticky CTA at the top of the sidebar (e.g. "Lista gostiju" link
+   *  for standalone routes that have no toolbar back button). */
+  topAction?: { label: string; href: string };
 }
 
 export default function GuestSidebar({
@@ -26,6 +31,7 @@ export default function GuestSidebar({
   onSelectGuest,
   assignedCounts,
   onStartOver,
+  topAction,
 }: Props) {
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -34,6 +40,30 @@ export default function GuestSidebar({
   // Birthday RSVPs don't carry wedding-side categories (Mladini/Mladoženjini/…),
   // so the filter becomes noise — hide it entirely when no guest has one.
   const hasCategorizedGuests = attending.some((g) => !!g.category);
+  const hasUncategorized = attending.some((g) => !g.category);
+
+  // Build filter options from the actual category values present on the guest
+  // list. This adapts to whatever the consumer route provides (wedding sides,
+  // birthday categories, standalone imports like VIP/Govornici/Sponzori) without
+  // showing hardcoded options that don't apply.
+  const categoryValues = Array.from(
+    new Set(
+      attending
+        .map((g) => g.category)
+        .filter((c): c is string => typeof c === "string" && c.length > 0),
+    ),
+  ).sort();
+
+  const filterOptions: { value: string; label: string }[] = [
+    { value: "", label: "Svi gosti" },
+    ...categoryValues.map((cat) => ({
+      value: cat,
+      label: WEDDING_CATEGORY_LABELS[cat] ?? cat,
+    })),
+    ...(hasUncategorized
+      ? [{ value: "Nekategorisani", label: "Nekategorisani" }]
+      : []),
+  ];
 
   const categoryFiltered = attending.filter((g) => {
     if (filter === "") return true;
@@ -74,10 +104,25 @@ export default function GuestSidebar({
         backgroundColor: "var(--theme-surface)",
       }}
     >
+      {/* Optional top CTA — used by standalone routes for "Lista gostiju" */}
+      {topAction && (
+        <a
+          href={topAction.href}
+          className="flex items-center justify-center gap-1.5 mx-3 mt-3 px-3 py-2 rounded-lg text-xs font-raleway font-semibold text-white transition-opacity hover:opacity-90"
+          style={{ backgroundColor: "var(--theme-primary)" }}
+        >
+          <ExternalLink size={12} />
+          {topAction.label}
+        </a>
+      )}
+
       {/* Header stats */}
       <div
         className="px-4 py-3 border-b"
-        style={{ borderColor: "var(--theme-border-light)" }}
+        style={{
+          borderColor: "var(--theme-border-light)",
+          marginTop: topAction ? "0.75rem" : 0,
+        }}
       >
         <p
           className="font-raleway text-xs font-medium uppercase tracking-wider mb-0.5"
@@ -115,7 +160,7 @@ export default function GuestSidebar({
               color: "var(--theme-text)",
             }}
           >
-            {FILTER_OPTIONS.map((o) => (
+            {filterOptions.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>

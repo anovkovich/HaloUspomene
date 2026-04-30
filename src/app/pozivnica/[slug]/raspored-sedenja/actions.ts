@@ -2,7 +2,7 @@
 
 import { loadSeatingLayout, saveSeatingLayout } from "@/lib/seating";
 import { getWeddingData } from "@/lib/couples";
-import type { TableData } from "./types";
+import type { TableData } from "@/lib/seating";
 
 export async function saveRaspored(
   slug: string,

@@ -23,7 +23,7 @@ import type {
   SeatAssignment,
   DecorationType,
   EntranceDirection,
-} from "./types";
+} from "../types";
 
 const SEAT_SIZE = 30;
 const CIRCLE_TABLE_R = 52;

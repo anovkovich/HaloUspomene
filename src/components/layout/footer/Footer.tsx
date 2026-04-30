@@ -57,17 +57,16 @@ const Footer: React.FC = () => {
             </a>
           </div>
 
-          {/* Column 2: Usluge */}
+          {/* Column 2: Pozivnice */}
           <div>
             <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/80 mb-6">
-              Usluge
+              Pozivnice
             </h4>
             <ul className="space-y-3">
               {[
                 { name: "Website Pozivnice", href: "/pozivnice" },
+                { name: "QR Pano dobrodošlice", href: "/qr-pano-dobrodoslice" },
                 { name: "Telefon Uspomena", href: "/telefon-uspomena" },
-                { name: "Planer za Venčanje", href: "/planiranje-vencanja" },
-                { name: "Vendori", href: "/vendori" },
                 { name: "Kako funkcioniše", href: "/#proces" },
                 { name: "Cene", href: "/cene" },
                 { name: "FAQ", href: "/#faq" },
@@ -159,6 +158,34 @@ const Footer: React.FC = () => {
               ))}
             </ul>
           </div>
+        </div>
+
+        {/* Alati */}
+        <div className="border-t border-white/5 pt-10 sm:pt-12 mb-10 sm:mb-12">
+          <ul className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3 items-baseline">
+            <li>
+              <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/80">
+                Alati
+              </h4>
+            </li>
+            {[
+              { name: "Planer za Venčanje", href: "/planiranje-vencanja" },
+              {
+                name: "Raspored sedenja za organizatore",
+                href: "/raspored-sedenja",
+              },
+              { name: "Vendori", href: "/vendori" },
+            ].map((link) => (
+              <li key={link.name}>
+                <Link
+                  href={link.href}
+                  className="text-[#F5F4DC]/40 hover:text-[#AE343F] transition-colors text-sm"
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* Vendori po kategorijama */}

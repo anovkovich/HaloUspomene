@@ -1,7 +1,7 @@
 "use client";
 
-import type { TableData } from "../raspored-sedenja/types";
-import { rectFor, computeBoundingBox, SURFACE_H, SEAT_ZONE } from "../raspored-sedenja/geometry";
+import type { TableData } from "@/lib/seating";
+import { rectFor, computeBoundingBox, SURFACE_H, SEAT_ZONE } from "@/lib/seating/geometry";
 
 interface Props {
   tables: TableData[];

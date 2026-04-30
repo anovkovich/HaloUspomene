@@ -99,6 +99,36 @@ export async function middleware(request: NextRequest) {
     );
   }
 
+  // ── Standalone seating auth (editor + gosti) ──────────────────────────
+  // /raspored-sedenja/{slug} (editor) and /raspored-sedenja/{slug}/gosti are
+  // gated. /prijava and /gde-sedim are explicitly excluded so the login form
+  // and the public guest lookup remain accessible.
+  const seatingMatch = pathname.match(
+    /^\/raspored-sedenja\/([^/]+)(?:\/(gosti)(?:\/|$)|$|\/$)/
+  );
+  if (seatingMatch) {
+    const slug = seatingMatch[1];
+    if (slug === "prijava" || slug === "gde-sedim") {
+      // Defensive — these aren't valid slug values, but keep middleware permissive.
+      return NextResponse.next();
+    }
+    const cookie = request.cookies.get(`auth_seating_${slug}`);
+
+    if (cookie) {
+      try {
+        await jwtVerify(cookie.value, secret);
+        return NextResponse.next();
+      } catch {
+        // Expired or invalid — fall through to redirect
+      }
+    }
+
+    const next = encodeURIComponent(pathname);
+    return NextResponse.redirect(
+      new URL(`/raspored-sedenja/${slug}/prijava?next=${next}`, request.url)
+    );
+  }
+
   return NextResponse.next();
 }
 
@@ -114,5 +144,8 @@ export const config = {
     "/deciji-rodjendan/:slug/raspored-sedenja/:path*",
     "/punoletstvo/:slug/portal",
     "/punoletstvo/:slug/portal/:path*",
+    "/raspored-sedenja/:slug",
+    "/raspored-sedenja/:slug/gosti",
+    "/raspored-sedenja/:slug/gosti/:path*",
   ],
 };

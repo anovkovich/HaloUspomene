@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
+import { Search, Armchair } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { GuestLookupEntry, GuestTableEntry } from "./page";
-import type { TableData } from "../raspored-sedenja/types";
+import type { TableData } from "@/lib/seating";
 import HallMap from "./HallMap";
 
 interface Props {
@@ -83,19 +85,30 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
     }
   }
 
+  const isFocused = showDropdown && query.length > 0;
+
   return (
-    <div className="space-y-6">
+    <div>
       {/* Search box */}
       <div className="relative">
         <label
           htmlFor="guest-search"
-          className="block font-raleway text-sm mb-2"
-          style={{ color: "var(--theme-text-muted)" }}
+          className="block font-raleway text-[11px] uppercase tracking-[0.2em] mb-3 text-center"
+          style={{ color: "var(--theme-text-light)" }}
         >
-          Unesite vaše ime ili ime na koje je prijavljen dolazak
+          Unesite vaše ime
         </label>
 
         <div className="relative">
+          <Search
+            size={16}
+            className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
+            style={{
+              color: isFocused
+                ? "var(--theme-primary)"
+                : "var(--theme-text-light)",
+            }}
+          />
           <input
             ref={inputRef}
             id="guest-search"
@@ -114,11 +127,14 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
               if (query.length > 0) setShowDropdown(true);
             }}
             onKeyDown={handleKeyDown}
-            className="w-full px-4 py-3 rounded-xl font-raleway text-base outline-none transition-shadow"
+            className="w-full pl-11 pr-4 py-3.5 rounded-2xl font-raleway text-base outline-none transition-all"
             style={{
               backgroundColor: "var(--theme-surface)",
-              border: "1.5px solid var(--theme-border)",
+              border: `1.5px solid ${isFocused ? "var(--theme-primary)" : "var(--theme-border)"}`,
               color: "var(--theme-text)",
+              boxShadow: isFocused
+                ? "0 0 0 4px var(--theme-primary-muted), 0 4px 16px rgba(0,0,0,0.04)"
+                : "0 1px 3px rgba(0,0,0,0.04)",
             }}
           />
         </div>
@@ -127,10 +143,11 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
         {showDropdown && suggestions.length > 0 && (
           <div
             ref={dropdownRef}
-            className="absolute z-10 w-full mt-1 rounded-xl overflow-hidden shadow-lg"
+            className="absolute z-10 w-full mt-2 rounded-2xl overflow-hidden"
             style={{
               backgroundColor: "var(--theme-surface)",
               border: "1px solid var(--theme-border)",
+              boxShadow: "0 12px 32px rgba(0,0,0,0.08)",
             }}
           >
             {suggestions.map((entry, i) => (
@@ -140,7 +157,7 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
                   e.preventDefault();
                   handleSelect(entry);
                 }}
-                className="w-full text-left px-4 py-3 font-raleway text-sm transition-colors"
+                className="w-full text-left px-5 py-3 font-raleway text-sm transition-colors"
                 style={{
                   backgroundColor:
                     i === activeIndex
@@ -160,95 +177,171 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
         )}
       </div>
 
-      {/* Result card */}
-      {selected && (
-        <div
-          className="rounded-xl p-6 space-y-3"
-          style={{
-            backgroundColor: "var(--theme-surface)",
-            border: "1.5px solid var(--theme-border)",
-          }}
-        >
-          <p
-            className="font-serif text-lg"
-            style={{ color: "var(--theme-text)" }}
+      {/* Animated result card — wraps in motion so the hall map smoothly
+          slides up/down when the card mounts/unmounts. Outer div animates
+          height + opacity + margin so there's no leftover spacing during exit. */}
+      <AnimatePresence initial={false}>
+        {selected && (
+          <motion.div
+            key="result-card"
+            initial={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
+            animate={{
+              opacity: 1,
+              height: "auto",
+              marginTop: "2rem",
+              marginBottom: 0,
+            }}
+            exit={{
+              opacity: 0,
+              height: 0,
+              marginTop: 0,
+              marginBottom: 0,
+            }}
+            transition={{
+              duration: 0.4,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            style={{ overflow: "hidden" }}
           >
-            {selected.guestName}
-          </p>
-          <p
-            className="font-raleway text-sm uppercase tracking-wider"
-            style={{ color: "var(--theme-text-light)" }}
-          >
-            {selected.tables.length === 1
-              ? "Vaše mesto je za stolom:"
-              : "Vaša mesta su za stolovima:"}
-          </p>
+            <div
+              className="relative rounded-3xl overflow-hidden"
+              style={{
+                backgroundColor: "var(--theme-surface)",
+                border: "1px solid var(--theme-border)",
+                boxShadow:
+                  "0 20px 48px -16px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.04)",
+              }}
+            >
+          {/* Top accent strip */}
+          <div
+            className="h-[3px] w-full"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, var(--theme-primary) 50%, transparent 100%)",
+            }}
+          />
 
-          {selected.tables.length === 1 ? (
-            // Single table — simple display
-            <>
+          <div className="px-6 py-8 sm:px-10 sm:py-10 text-center space-y-5">
+            {/* Guest name in script */}
+            <div>
               <p
-                className="font-raleway text-3xl font-bold leading-tight"
+                className="font-raleway text-[10px] uppercase tracking-[0.25em] mb-2"
+                style={{ color: "var(--theme-text-light)" }}
+              >
+                Dobrodošli
+              </p>
+              <p
+                className="font-script text-3xl sm:text-4xl leading-tight"
                 style={{ color: "var(--theme-primary)" }}
               >
-                {selected.tables[0].tableLabel}
+                {selected.guestName}
               </p>
-              <p
-                className="font-raleway text-sm"
-                style={{ color: "var(--theme-text-muted)" }}
-              >
-                {selected.tables[0].occupiedCount} od{" "}
-                {selected.tables[0].seatCount} mesta popunjeno
-              </p>
-            </>
-          ) : (
-            // Multiple tables — list each with seat count
+            </div>
+
+            {/* Ornamental divider */}
+            <div className="flex items-center justify-center gap-3">
+              <div
+                className="h-px w-12"
+                style={{ backgroundColor: "var(--theme-border)" }}
+              />
+              <Armchair
+                size={14}
+                style={{ color: "var(--theme-primary)", opacity: 0.7 }}
+              />
+              <div
+                className="h-px w-12"
+                style={{ backgroundColor: "var(--theme-border)" }}
+              />
+            </div>
+
+            {/* Table info */}
             <div className="space-y-2">
-              {selected.tables.map((t: GuestTableEntry) => (
-                <div key={t.tableId} className="flex items-baseline gap-3">
-                  <span
-                    className="font-raleway text-2xl font-bold"
-                    style={{ color: "var(--theme-primary)" }}
+              <p
+                className="font-raleway text-[10px] uppercase tracking-[0.25em]"
+                style={{ color: "var(--theme-text-light)" }}
+              >
+                {selected.tables.length === 1
+                  ? "Vaše mesto"
+                  : "Vaša mesta"}
+              </p>
+
+              {selected.tables.length === 1 ? (
+                <>
+                  <p
+                    className="font-script text-5xl sm:text-6xl leading-none"
+                    style={{ color: "var(--theme-text)" }}
                   >
-                    {t.tableLabel}
-                  </span>
-                  <span
-                    className="font-raleway text-sm"
+                    {selected.tables[0].tableLabel}
+                  </p>
+                  <p
+                    className="font-raleway text-xs pt-2"
                     style={{ color: "var(--theme-text-muted)" }}
                   >
-                    {t.assignedSeats}{" "}
-                    {t.assignedSeats === 1
-                      ? "mesto"
-                      : t.assignedSeats < 5
-                        ? "mesta"
-                        : "mesta"}
-                  </span>
+                    {selected.tables[0].occupiedCount} od{" "}
+                    {selected.tables[0].seatCount} mesta popunjeno
+                  </p>
+                </>
+              ) : (
+                <div className="space-y-3 pt-2">
+                  {selected.tables.map((t: GuestTableEntry) => (
+                    <div
+                      key={t.tableId}
+                      className="flex items-baseline justify-center gap-3"
+                    >
+                      <span
+                        className="font-script text-3xl sm:text-4xl"
+                        style={{ color: "var(--theme-text)" }}
+                      >
+                        {t.tableLabel}
+                      </span>
+                      <span
+                        className="font-raleway text-xs"
+                        style={{ color: "var(--theme-text-muted)" }}
+                      >
+                        ({t.assignedSeats}{" "}
+                        {t.assignedSeats === 1 ? "mesto" : "mesta"})
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          </div>
 
-          {/* <div
-            className="pt-3 mt-3 font-raleway text-xs leading-relaxed"
+          {/* Bottom accent strip */}
+          <div
+            className="h-[3px] w-full"
             style={{
-              borderTop: "1px solid var(--theme-border-light)",
-              color: "var(--theme-text-light)",
+              background:
+                "linear-gradient(90deg, transparent 0%, var(--theme-primary) 50%, transparent 100%)",
+              opacity: 0.4,
             }}
-          >
-            Notes if needed...
-          </div> */}
-        </div>
-      )}
+          />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Hall map */}
+      {/* Hall map — fixed top margin so it always sits 32px below the
+          previous element (search input, or the result card when present). */}
       {tables.length > 0 && (
-        <div>
-          <p
-            className="font-raleway text-xs uppercase tracking-wider mb-3"
-            style={{ color: "var(--theme-text-light)" }}
-          >
-            Plan sale
-          </p>
+        <div className="mt-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div
+              className="h-px w-8"
+              style={{ backgroundColor: "var(--theme-border)" }}
+            />
+            <p
+              className="font-raleway text-[10px] uppercase tracking-[0.25em]"
+              style={{ color: "var(--theme-text-light)" }}
+            >
+              Plan sale
+            </p>
+            <div
+              className="h-px w-8"
+              style={{ backgroundColor: "var(--theme-border)" }}
+            />
+          </div>
           <HallMap
             tables={tables}
             highlightTableIds={

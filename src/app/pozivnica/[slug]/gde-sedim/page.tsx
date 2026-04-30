@@ -11,7 +11,7 @@ import {
 } from "@/data/pozivnice";
 import { loadSeatingLayout } from "@/lib/seating";
 import { getThemeCSSVariables } from "../constants";
-import type { TableData } from "../raspored-sedenja/types";
+import type { TableData } from "@/lib/seating";
 import GdeSedimClient from "./GdeSedimClient";
 
 interface PageProps {

@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import { getRSVPResponses } from "@/lib/rsvp";
 import { getThemeCSSVariables } from "../constants";
-import RasporedClient from "./RasporedClient";
+import WeddingRasporedRoot from "./WeddingRasporedRoot";
 
 
 interface PageProps {
@@ -57,7 +57,7 @@ export default async function RasporedSedenja({ params }: PageProps) {
 
   return (
     <div style={editorVars}>
-      <RasporedClient
+      <WeddingRasporedRoot
         attending={attending}
         slug={slug}
         coupleNames={weddingData.couple_names.full_display}

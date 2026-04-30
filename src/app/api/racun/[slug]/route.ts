@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getWeddingData } from "@/data/pozivnice";
 import { getPhoneRentalById } from "@/lib/phone-rentals";
 import { getBirthdayData } from "@/lib/birthday";
+import { getStandaloneSeating } from "@/lib/standalone-seating";
 
 export async function GET(
   req: Request,
@@ -10,6 +11,21 @@ export async function GET(
   const { slug } = await params;
   const url = new URL(req.url);
   const kind = url.searchParams.get("kind");
+
+  // Standalone seating receipt (kind=raspored).
+  if (kind === "raspored") {
+    const data = await getStandaloneSeating(slug);
+    if (!data) {
+      return NextResponse.json({ valid: false }, { status: 404 });
+    }
+    return NextResponse.json({
+      valid: data.receipt_valid ?? false,
+      created: data.receipt_created ?? null,
+      customDiscount: data.custom_discount ?? 0,
+      eventName: data.eventName,
+      eventDate: data.eventDate,
+    });
+  }
 
   // Birthday / punoletstvo (kind=rodjendan disambiguates against couples).
   if (kind === "rodjendan") {

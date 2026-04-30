@@ -1,5 +1,5 @@
-import clientPromise from "./mongodb";
-import type { TableData } from "@/app/pozivnica/[slug]/raspored-sedenja/types";
+import clientPromise from "../mongodb";
+import type { TableData } from "./types";
 
 interface SeatingDocument {
   slug: string;

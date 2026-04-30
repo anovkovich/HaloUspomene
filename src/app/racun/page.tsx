@@ -13,6 +13,7 @@ import {
   getRodjendanPozivnicaPrice,
   getRodjendanPozivnicaLabel,
   getRodjendanRasporedPrice,
+  getStandaloneSeatingPrice,
 } from "@/data/pricing";
 import { decodeFromBase64 } from "@/lib/encoding";
 
@@ -227,7 +228,7 @@ const BANK_ACCOUNTS = [
 
 interface ReceiptPayload {
   s?: string; // slug (optional for standalone)
-  kind?: "rodjendan"; // record type — when set, validate against birthday_events
+  kind?: "rodjendan" | "raspored"; // record type — when set, validate against the matching collection
   custom?: 1; // standalone receipt — validate against custom_receipts collection
   id?: string; // custom receipt DB id
   par: string; // couple/recipient display name
@@ -322,11 +323,13 @@ function ReceiptContent() {
   const items: { label: string; amount: number; free?: boolean }[] = [];
 
   const isRodjendan = payload.kind === "rodjendan";
+  const isRaspored = payload.kind === "raspored";
   const isPhoneRental = payload.s?.startsWith("tel-") ?? false;
-  const isWedding = !isRodjendan && !isPhoneRental && !payload.custom;
+  const isWedding =
+    !isRodjendan && !isRaspored && !isPhoneRental && !payload.custom;
 
   // Wedding retro-phone add-ons (always allowed alongside any wedding/phone receipt).
-  if (!isRodjendan) {
+  if (!isRodjendan && !isRaspored) {
     if (payload.rp)
       items.push({
         label: "Audio Guest Book — telefon",
@@ -402,6 +405,13 @@ function ReceiptContent() {
         amount: getRodjendanRasporedPrice(),
       });
     }
+  }
+
+  if (isRaspored) {
+    items.push({
+      label: "Raspored sedenja za organizatore",
+      amount: getStandaloneSeatingPrice(),
+    });
   }
 
   // Custom line items added manually by admin

@@ -1,5 +1,5 @@
 import type { RSVPEntry } from "@/lib/rsvp";
-import type { TableData } from "./types";
+import type { TableData } from "../types";
 
 async function loadFont(path: string): Promise<string> {
   const res = await fetch(path);

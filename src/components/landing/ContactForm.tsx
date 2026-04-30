@@ -136,6 +136,11 @@ const ContactForm: React.FC = () => {
       setError("Verifikujte broj telefona pre slanja zahteva.");
       return;
     }
+    const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+    if (!WEB3FORMS_KEY) {
+      setError("Forma trenutno nije dostupna. Pišite na halouspomene@gmail.com.");
+      return;
+    }
     setIsLoading(true);
 
     try {
@@ -148,28 +153,61 @@ const ContactForm: React.FC = () => {
         return;
       }
 
-      const response = await fetch("/api/contact", {
+      const verifyRes = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name,
           phone: `+381${formData.phone}`,
-          date: formData.date,
-          location: formData.location,
-          howHeardAbout: formData.howHeardAbout,
-          acceptedTerms: formData.acceptedTerms,
           phoneTrustToken,
           recaptchaToken,
         }),
       });
 
-      const data = (await response.json().catch(() => ({}))) as {
+      const verifyData = (await verifyRes.json().catch(() => ({}))) as {
         ok?: boolean;
         error?: string;
       };
 
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || "Došlo je do greške");
+      if (!verifyRes.ok || !verifyData.ok) {
+        throw new Error(verifyData.error || "Provera nije uspela.");
+      }
+
+      const formattedDate = new Date(formData.date).toLocaleDateString(
+        "sr-Latn-RS",
+        {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        },
+      );
+
+      // Web3Forms is called from the client because Cloudflare blocks
+      // server-side requests to api.web3forms.com from Vercel.
+      const w3 = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: `Retro Telefon - Nova rezervacija - ${formData.name} - ${formattedDate}`,
+          from_name: "HALO Uspomene",
+          name: formData.name,
+          telefon: `+381${formData.phone}`,
+          datum_dogadjaja: formattedDate,
+          lokacija: formData.location,
+          kako_je_cuo: formData.howHeardAbout || "Nije navedeno",
+          paket: "Audio Guest Book",
+          opsti_uslovi: formData.acceptedTerms ? "Prihvaćeni" : "Nisu prihvaćeni",
+        }),
+      });
+
+      const w3Data = (await w3.json().catch(() => ({}))) as {
+        success?: boolean;
+        message?: string;
+      };
+
+      if (!w3.ok || !w3Data.success) {
+        throw new Error(w3Data.message || "Slanje nije uspelo. Pokušajte ponovo.");
       }
 
       setIsSubmitted(true);

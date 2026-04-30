@@ -10,9 +10,9 @@ import {
   Music,
   DoorOpen,
   Disc3,
+  Minus,
 } from "lucide-react";
-import type { TableType } from "./types";
-import type { TableData } from "./types";
+import type { TableType, TableData } from "../types";
 
 interface Props {
   onAddTable: (type: TableType, label?: string, seats?: number) => void;
@@ -24,6 +24,9 @@ interface Props {
   occupiedSeats: number;
   /** When true, hide wedding-only items (e.g. "Mladenački sto"). */
   hideWeddingOnlyElements?: boolean;
+  /** When true, hide the entire "Specijalni elementi" dropdown and instead expose
+   *  a standalone "Jednostran sto" button. Used by non-wedding event organizers. */
+  hideDecorations?: boolean;
 }
 
 export default function AddTablePanel({
@@ -32,6 +35,7 @@ export default function AddTablePanel({
   totalSeats,
   occupiedSeats,
   hideWeddingOnlyElements,
+  hideDecorations,
 }: Props) {
   const [specialOpen, setSpecialOpen] = useState(false);
   const specialRef = useRef<HTMLDivElement>(null);
@@ -118,52 +122,63 @@ export default function AddTablePanel({
         Okrugli sto
       </button>
 
-      <div ref={specialRef} className="relative">
+      {hideDecorations ? (
         <button
-          onClick={() => setSpecialOpen((v) => !v)}
+          onClick={() => onAddTable("single-sided", undefined, 6)}
           className="flex items-center gap-2 px-3 py-2 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 shadow-sm"
           style={btnStyle}
         >
-          <Sparkles size={13} />
-          Specijalni elementi
-          <ChevronDown
-            size={11}
-            className="ml-auto transition-transform"
-            style={{ transform: specialOpen ? "rotate(180deg)" : "none" }}
-          />
+          <Minus size={13} />
+          Jednostran sto
         </button>
-
-        {specialOpen && (
-          <div
-            className="absolute top-full left-0 mt-1 rounded-lg overflow-hidden shadow-lg z-20 w-full"
-            style={{
-              backgroundColor: "var(--theme-surface)",
-              border: "1px solid var(--theme-border-light)",
-              minWidth: 180,
-            }}
+      ) : (
+        <div ref={specialRef} className="relative">
+          <button
+            onClick={() => setSpecialOpen((v) => !v)}
+            className="flex items-center gap-2 px-3 py-2 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 shadow-sm"
+            style={btnStyle}
           >
-            {specialItems.map((item, idx, arr) => (
-              <button
-                key={item.label}
-                onClick={item.action}
-                className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs font-raleway text-left transition-colors hover:opacity-70"
-                style={{
-                  color: "var(--theme-text)",
-                  borderBottom:
-                    idx < arr.length - 1
-                      ? "1px solid var(--theme-border-light)"
-                      : "none",
-                }}
-              >
-                <span style={{ color: "var(--theme-primary)" }}>
-                  {item.icon}
-                </span>
-                {item.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+            <Sparkles size={13} />
+            Specijalni elementi
+            <ChevronDown
+              size={11}
+              className="ml-auto transition-transform"
+              style={{ transform: specialOpen ? "rotate(180deg)" : "none" }}
+            />
+          </button>
+
+          {specialOpen && (
+            <div
+              className="absolute top-full left-0 mt-1 rounded-lg overflow-hidden shadow-lg z-20 w-full"
+              style={{
+                backgroundColor: "var(--theme-surface)",
+                border: "1px solid var(--theme-border-light)",
+                minWidth: 180,
+              }}
+            >
+              {specialItems.map((item, idx, arr) => (
+                <button
+                  key={item.label}
+                  onClick={item.action}
+                  className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs font-raleway text-left transition-colors hover:opacity-70"
+                  style={{
+                    color: "var(--theme-text)",
+                    borderBottom:
+                      idx < arr.length - 1
+                        ? "1px solid var(--theme-border-light)"
+                        : "none",
+                  }}
+                >
+                  <span style={{ color: "var(--theme-primary)" }}>
+                    {item.icon}
+                  </span>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {totalSeats > 0 && (
         <div
