@@ -112,11 +112,20 @@ const DatePicker: React.FC<DatePickerProps> = ({
       const left = overflowsRight
         ? Math.max(8, rect.right - calendarWidth)
         : rect.left;
-      setDropdownPos({
-        top: rect.bottom + 8,
-        left,
-        width: calendarWidth,
-      });
+
+      // Estimated calendar height: header (~40) + day labels (~32) +
+      // 6 rows × 40 + paddings (~32). With quick actions add ~52.
+      const estimatedHeight = showQuickActions ? 440 : 390;
+      const spaceBelow = window.innerHeight - rect.bottom - 8;
+      const spaceAbove = rect.top - 8;
+      const flipAbove =
+        spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+
+      const top = flipAbove
+        ? Math.max(8, rect.top - 8 - estimatedHeight)
+        : rect.bottom + 8;
+
+      setDropdownPos({ top, left, width: calendarWidth });
     }
     setIsOpen(true);
   };
@@ -229,17 +238,18 @@ const DatePicker: React.FC<DatePickerProps> = ({
         />
       </button>
 
-      {/* Dropdown — portalled to body to escape backdrop-filter ancestors */}
+      {/* Dropdown — portalled to body to escape backdrop-filter ancestors.
+          z-[100]/[110] sits above all app-level modals (which top out at z-[81]). */}
       {isOpen && typeof document !== "undefined" && createPortal(
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[100]"
             onClick={() => setIsOpen(false)}
           />
 
           <div
-            className="fixed z-50 rounded-2xl shadow-2xl p-4"
+            className="fixed z-[110] rounded-2xl shadow-2xl p-4"
             style={{
               top: dropdownPos.top,
               left: dropdownPos.left,

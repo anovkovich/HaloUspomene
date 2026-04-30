@@ -43,6 +43,67 @@ export async function getAllVendors(): Promise<VendorDocument[]> {
   return c.find({}, { projection: { _id: 0 } }).toArray();
 }
 
+// Public-safe vendor projection — strips contacts, stats, endorsementCount.
+// Used by /vendori public routes. Bio is server-truncated to 2 sentences
+// (so the unredacted remainder never reaches the client bundle).
+export interface PublicVendor {
+  id: string;
+  name: string;
+  category: VendorCategory;
+  city: string;
+  bioTeaser?: string;
+  hasMoreBio?: boolean;
+}
+
+function truncateBioToTeaser(bio?: string): {
+  bioTeaser?: string;
+  hasMoreBio: boolean;
+} {
+  if (!bio) return { hasMoreBio: false };
+  const sentences = bio.split(/(?<=[.!?])\s+/);
+  const teaser = sentences.slice(0, 2).join(" ");
+  return {
+    bioTeaser: teaser,
+    hasMoreBio: sentences.length > 2,
+  };
+}
+
+export async function getPublicVendors(filter?: {
+  category?: VendorCategory;
+}): Promise<PublicVendor[]> {
+  const c = await col();
+  const query = filter?.category ? { category: filter.category } : {};
+  const docs = await c
+    .find<{
+      id: string;
+      name: string;
+      category: VendorCategory;
+      city: string;
+      bio?: string;
+    }>(query, {
+      projection: {
+        _id: 0,
+        id: 1,
+        name: 1,
+        category: 1,
+        city: 1,
+        bio: 1,
+      },
+    })
+    .toArray();
+  return docs.map((d) => {
+    const { bioTeaser, hasMoreBio } = truncateBioToTeaser(d.bio);
+    return {
+      id: d.id,
+      name: d.name,
+      category: d.category,
+      city: d.city,
+      bioTeaser,
+      hasMoreBio,
+    };
+  });
+}
+
 export async function getExistingIds(ids: string[]): Promise<string[]> {
   const c = await col();
   const docs = await c

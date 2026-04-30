@@ -25,9 +25,9 @@ import { formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricin
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
-  title: "Planer za Venčanje — Checklista, Budžet, Vendori | HALO Uspomene",
+  title: "Planer za Venčanje — Checklista i Budžet Kalkulator | HALO Uspomene",
   description:
-    "Online planer za organizaciju venčanja u Srbiji. Checklista zadataka, kalkulator budžeta, direktorijum vendora — sve na jednom mestu uz naše usluge. Registrujte se za 10 sekundi.",
+    "Online planer za organizaciju venčanja u Srbiji. Checklista zadataka i kalkulator budžeta na jednom mestu uz naše usluge. Registrujte se za 10 sekundi.",
   keywords: [
     "planiranje venčanja",
     "organizacija venčanja",
@@ -38,8 +38,6 @@ export const metadata: Metadata = {
     "budžet za venčanje kalkulator",
     "kalkulator za svadbu",
     "troškovi venčanja srbija",
-    "vendori za venčanje",
-    "vendori za venčanje srbija",
     "organizacija svadbe",
     "planiranje svadbe",
     "wedding planner srbija",
@@ -54,7 +52,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Planer za Venčanje | HALO Uspomene",
     description:
-      "Checklista, budžet kalkulator i direktorijum vendora — sve što vam treba za organizaciju venčanja uz HALO Uspomene.",
+      "Checklista i budžet kalkulator — sve što vam treba za organizaciju venčanja uz HALO Uspomene.",
     type: "website",
     url: `${siteUrl}/planiranje-vencanja`,
     siteName: "Halo Uspomene",
@@ -63,7 +61,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Planer za Venčanje | HALO Uspomene",
     description:
-      "Checklista, budžet, vendori — online planer za organizaciju venčanja u Srbiji uz HALO Uspomene.",
+      "Checklista i budžet kalkulator — online planer za organizaciju venčanja u Srbiji uz HALO Uspomene.",
   },
   alternates: {
     canonical: `${siteUrl}/planiranje-vencanja`,
@@ -95,12 +93,12 @@ const features = [
   {
     icon: <Search size={28} />,
     title: "Direktorijum vendora",
-    desc: "Pretražite sale, muziku, fotografe, torte, dekoraciju, cveće i ostale vendore širom Srbije.",
+    desc: "Sale, muzika, fotografi, torte, dekoracija, cveće i ostalo — pregled vendora širom Srbije sa direktnim kontaktima u planeru.",
     highlights: [
-      "Filter po kategoriji i gradu",
-      "Sačuvajte favorite",
-      "Direktan kontakt: telefon, sajt, Instagram",
-      "Sve na jednom mestu",
+      "Pregled po kategoriji i gradu",
+      "Kontakti, opisi i preporuke parova",
+      "Sačuvajte omiljene vendore",
+      "Pogledajte javan pregled na /vendori",
     ],
   },
 ];
@@ -150,7 +148,7 @@ const faqItems = [
   },
   {
     q: "Koji vendori su dostupni u direktorijumu?",
-    a: "Direktorijum pokriva sale, muziku, fotografe i video snimatelje, torte, dekoraciju, cveće, vatromet, prevoz, poklone i još mnogo toga. Vendori su iz Beograda, Novog Sada, Niša, Kragujevca, Subotice i drugih gradova.",
+    a: "Direktorijum pokriva sale, muziku (bendovi i DJ), fotografe i video snimatelje, torte, dekoraciju, cveće, vatromet, venčanice, šminku, burme i poklone. Vendori su iz Beograda, Novog Sada, Niša, Kragujevca, Subotice i Čačka. Javan pregled možete pogledati na stranici /vendori, a pun pristup (kontakti, opisi, preporuke) dobijate u planeru.",
   },
   {
     q: "Da li planer radi na telefonu?",
@@ -174,7 +172,7 @@ export default function PlaniranjeVencanjaPage() {
     "@type": "SoftwareApplication",
     name: "HALO Uspomene — Planer za Venčanje",
     description:
-      "Besplatan online planer za organizaciju venčanja: checklista, budžet kalkulator, direktorijum vendora.",
+      "Besplatan online planer za organizaciju venčanja: checklista, budžet kalkulator i pristup direktorijumu vendora.",
     url: `${siteUrl}/planiranje-vencanja`,
     applicationCategory: "LifestyleApplication",
     operatingSystem: "Web",
@@ -558,23 +556,20 @@ export default function PlaniranjeVencanjaPage() {
           <p>
             HALO Uspomene nudi online planer za organizaciju venčanja uz naše
             usluge. Planer uključuje checklistu zadataka organizovanu po
-            mesecima pre venčanja, budžet kalkulator sa EUR/RSD automatskom
-            konverzijom, i bazu velikog broja vendora sa filterima po kategoriji
-            i gradu. Dostupan je kao aplikacija za mobilne telefone!
+            mesecima pre venčanja i budžet kalkulator sa EUR/RSD automatskom
+            konverzijom. Dostupan je kao aplikacija za mobilne telefone!
           </p>
           <p>
             Planiranje venčanja, organizacija venčanja, checklista za venčanje,
             checklista za svadbu, budžet za venčanje, kalkulator troškova za
-            venčanje, vendori za venčanje Srbija, sale za venčanje, muzika za
-            venčanje, fotograf za venčanje, torta za venčanje, dekoracija za
-            venčanje, cveće za venčanje, wedding planner Srbija, online planer
-            venčanje, digitalni planer za svadbu.
+            venčanje, wedding planner Srbija, online planer venčanje, digitalni
+            planer za svadbu.
           </p>
           <p>
-            Vendori u Beogradu, Novom Sadu, Nišu, Kragujevcu, Subotici i svim
-            gradovima Srbije. Planer za venčanje uključen uz pozivnicu.
-            Registracija za 10 sekundi. Pogledajte i naše{" "}
+            Planer za venčanje uključen uz pozivnicu. Registracija za 10
+            sekundi. Pogledajte i naše{" "}
             <Link href="/cene">cene pozivnica</Link>,{" "}
+            <Link href="/vendori">pregled vendora</Link>,{" "}
             <Link href="/telefon-uspomena">telefon uspomena</Link> i{" "}
             <Link href="/lokacije">dostupne gradove</Link>.
           </p>

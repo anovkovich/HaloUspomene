@@ -1,7 +1,16 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Instagram } from "lucide-react";
+import { Heart, Instagram, ArrowRight } from "lucide-react";
+import { CATEGORY_CONTENT } from "@/data/vendori/categories";
+import { CATEGORY_META } from "@/app/moje-vencanje/vendor-constants";
+
+const vendorCategoryLinks = CATEGORY_META.map((meta) => {
+  const content = CATEGORY_CONTENT.find((c) => c.category === meta.id);
+  return content
+    ? { name: meta.labelPlural, href: `/vendori/${content.slug}` }
+    : null;
+}).filter((x): x is { name: string; href: string } => x !== null);
 
 const Footer: React.FC = () => {
   return (
@@ -58,6 +67,7 @@ const Footer: React.FC = () => {
                 { name: "Website Pozivnice", href: "/pozivnice" },
                 { name: "Telefon Uspomena", href: "/telefon-uspomena" },
                 { name: "Planer za Venčanje", href: "/planiranje-vencanja" },
+                { name: "Vendori", href: "/vendori" },
                 { name: "Kako funkcioniše", href: "/#proces" },
                 { name: "Cene", href: "/cene" },
                 { name: "FAQ", href: "/#faq" },
@@ -150,6 +160,35 @@ const Footer: React.FC = () => {
             </ul>
           </div>
         </div>
+
+        {/* Vendori po kategorijama */}
+        <div className="border-t border-white/5 pt-10 sm:pt-12 mb-12 sm:mb-16">
+          <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/80 mb-6">
+            Vendori po kategorijama
+          </h4>
+          <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-3">
+            {vendorCategoryLinks.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-[#F5F4DC]/40 hover:text-[#AE343F] transition-colors text-sm"
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link
+                href="/vendori"
+                className="inline-flex items-center gap-1.5 text-[#F5F4DC]/40 hover:text-[#AE343F] transition-colors text-sm"
+              >
+                Svi vendori
+                <ArrowRight size={12} />
+              </Link>
+            </li>
+          </ul>
+        </div>
+
         <div className="pt-12 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest text-[#F5F4DC]/20">
           <p>&copy; {new Date().getFullYear()} HALO Uspomene.</p>
           <p className="flex items-center gap-1">

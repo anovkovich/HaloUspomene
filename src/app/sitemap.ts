@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { getAllBlogSlugs } from "@/data/blog/posts";
 import { getAllLocationSlugs } from "@/data/locations";
+import { CATEGORY_SLUGS } from "@/data/vendori/categories";
 
 // Required for static export
 export const dynamic = "force-static";
@@ -96,6 +97,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "monthly" as const,
       priority: 0.7,
+    })),
+    {
+      url: `${siteUrl}/vendori`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    ...Object.values(CATEGORY_SLUGS).map((slug) => ({
+      url: `${siteUrl}/vendori/${slug}`,
+      lastModified,
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
     })),
   ];
 }

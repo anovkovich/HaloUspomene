@@ -10,7 +10,6 @@ const navLinks = [
   { name: "Pozivnice", href: "/pozivnice" },
   { name: "QR-Pano", href: "/qr-pano-dobrodoslice" },
   { name: "Telefon", href: "/telefon-uspomena" },
-  { name: "Cene", href: "/cene" },
   { name: "Blog", href: "/blog" },
 ];
 
