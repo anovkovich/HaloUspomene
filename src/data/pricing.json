@@ -87,7 +87,7 @@
   "standalone_seating": {
     "label": "Raspored sedenja za organizatore",
     "price": 5000,
-    "promoPrice": 4000,
+    "promoPrice": 3900,
     "promoActive": true
   }
 }
