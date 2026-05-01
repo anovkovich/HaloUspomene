@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   Gift,
   Sparkles,
+  Tag,
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
@@ -318,23 +319,27 @@ export default function TelefonUspomenaPage() {
                   </Link>
                 </div>
 
-                <div className="flex items-center gap-6 text-sm text-[#232323]/40">
+                <div className="flex items-center gap-6 text-sm text-[#232323]/40 flex-wrap">
                   <span className="flex items-center gap-1.5">
                     <Truck size={14} className="text-[#AE343F]" />
                     Dostava u celoj Srbiji
                   </span>
-                  {isAudioDiscountActive() ? (
-                    <span className="font-bold text-[#AE343F] flex items-center gap-2">
-                      <span className="line-through text-[#AE343F]/40 text-sm">
+                  <span className="flex items-center gap-1.5">
+                    <Tag size={14} className="text-[#AE343F]" />
+                    <span>Cena:</span>
+                    {isAudioDiscountActive() ? (
+                      <span className="font-bold text-[#AE343F] flex items-center gap-2">
+                        <span className="line-through text-[#AE343F]/40 text-sm">
+                          {formatPrice(pricing.packages.essential.price)}
+                        </span>
+                        <span>{formatPrice(getAudioPrice())}</span>
+                      </span>
+                    ) : (
+                      <span className="font-bold text-[#AE343F]">
                         {formatPrice(pricing.packages.essential.price)}
                       </span>
-                      <span>{formatPrice(getAudioPrice())}</span>
-                    </span>
-                  ) : (
-                    <span className="font-bold text-[#AE343F]">
-                      {formatPrice(pricing.packages.essential.price)}
-                    </span>
-                  )}
+                    )}
+                  </span>
                 </div>
               </div>
 
