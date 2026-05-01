@@ -18,7 +18,12 @@ import {
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
-import { formatPrice, getStandaloneSeatingPrice } from "@/data/pricing";
+import {
+  formatPrice,
+  getStandaloneSeatingPrice,
+  getStandaloneSeatingRegularPrice,
+  isStandaloneSeatingPromoActive,
+} from "@/data/pricing";
 import RasporedKontaktForm from "./RasporedKontaktForm";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
@@ -125,6 +130,8 @@ const useCases = [
 
 export default function RasporedSedenjaLanding() {
   const standalonePrice = getStandaloneSeatingPrice();
+  const standaloneRegular = getStandaloneSeatingRegularPrice();
+  const standalonePromoActive = isStandaloneSeatingPromoActive();
   return (
     <>
       <Header />
@@ -314,9 +321,21 @@ export default function RasporedSedenjaLanding() {
               </div>
 
               <div className="text-center pt-4 border-t border-stone-200">
-                <p className="text-4xl sm:text-5xl font-serif text-[#AE343F] mb-5">
-                  {formatPrice(standalonePrice)}
-                </p>
+                {standalonePromoActive && (
+                  <span className="inline-block mb-3 px-3 py-1 rounded-full bg-[#AE343F]/10 text-[#AE343F] text-[10px] font-bold uppercase tracking-[0.2em]">
+                    Majska akcija
+                  </span>
+                )}
+                <div className="flex items-baseline justify-center gap-3 mb-5">
+                  {standalonePromoActive && (
+                    <span className="text-xl sm:text-2xl font-serif text-stone-400 line-through">
+                      {formatPrice(standaloneRegular)}
+                    </span>
+                  )}
+                  <p className="text-4xl sm:text-5xl font-serif text-[#AE343F]">
+                    {formatPrice(standalonePrice)}
+                  </p>
+                </div>
                 <a
                   href="#kontakt-raspored"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] text-sm uppercase tracking-widest font-medium rounded-full transition-all shadow-xl shadow-[#AE343F]/20"

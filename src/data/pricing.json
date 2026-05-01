@@ -2,9 +2,9 @@
   "packages": {
     "essential": {
       "name": "Audio Guest Book",
-      "price": 9000,
-      "discountPrice": 8000,
-      "discountActive": true
+      "price": 8000,
+      "discountPrice": null,
+      "discountActive": false
     }
   },
   "pozivnica": {
@@ -86,6 +86,8 @@
   },
   "standalone_seating": {
     "label": "Raspored sedenja za organizatore",
-    "price": 4990
+    "price": 5000,
+    "promoPrice": 4000,
+    "promoActive": true
   }
 }

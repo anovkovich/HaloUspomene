@@ -64,7 +64,21 @@ export function getRodjendanRasporedPrice(): number {
   return (pricing as any).rodjendan?.raspored?.price ?? 0;
 }
 
-/** Fixed price for the standalone seating tool (raspored za organizatore). */
+/** Effective price for the standalone seating tool (raspored za organizatore):
+ *  promoPrice when promo is active, otherwise the regular price. */
 export function getStandaloneSeatingPrice(): number {
+  const ss = (pricing as any).standalone_seating;
+  if (!ss) return 0;
+  return ss.promoActive && ss.promoPrice ? ss.promoPrice : ss.price;
+}
+
+/** True if a standalone seating promo is currently configured and active. */
+export function isStandaloneSeatingPromoActive(): boolean {
+  const ss = (pricing as any).standalone_seating;
+  return !!(ss?.promoActive && ss?.promoPrice);
+}
+
+/** Regular (non-promo) standalone seating price. */
+export function getStandaloneSeatingRegularPrice(): number {
   return (pricing as any).standalone_seating?.price ?? 0;
 }
