@@ -49,9 +49,14 @@ export interface VerifiedPhone {
 
 /**
  * Normalize a user-entered phone (e.g. "61 234 5678", "061234567", "+38161234567")
- * into E.164 (e.g. "+38161234567"). Returns null if not a valid mobile/landline.
+ * into E.164 (e.g. "+38161234567"). Returns null if the number is not a
+ * plausible length for the given country.
  *
- * Accepts string with or without country code; defaults to Serbia.
+ * Uses libphonenumber-js's `isPossible()` (length-only check) instead of
+ * the stricter `isValid()` (format-pattern match), because libphonenumber-js
+ * metadata lags real-world Serbian numbering plans and rejects legitimate
+ * 9-digit mobile numbers like 06XX XXX XXXX. SMS delivery is the real
+ * validation step — the metadata pattern check is the wrong gate here.
  */
 export function normalizePhone(
   input: string | undefined | null,
@@ -74,7 +79,7 @@ export function normalizePhone(
     candidate = `+381${localDigits}`;
   }
   const parsed = parsePhoneNumberFromString(candidate, defaultCountry);
-  if (!parsed || !parsed.isValid()) return null;
+  if (!parsed || !parsed.isPossible()) return null;
   return parsed.number;
 }
 
