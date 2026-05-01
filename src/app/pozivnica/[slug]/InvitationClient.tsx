@@ -7,7 +7,7 @@ import { Heart, Calendar, MapPin, Clock, Mic, Church } from "lucide-react";
 // MapPin and Clock retained for Feature Cards section below
 import { WeddingData } from "./types";
 import { getThemeConfig } from "./constants";
-import { getTranslations } from "./translations";
+import { getTranslations, type Lang } from "./translations";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { EnvelopeLoader } from "./components/EnvelopeLoader";
 import { Countdown } from "./components/Countdown";
@@ -21,6 +21,10 @@ import { Download } from "lucide-react";
 interface InvitationClientProps {
   data: WeddingData;
   slug: string;
+  /** Optional explicit language override. When omitted, derived from
+   *  `data.useCyrillic` (true → "sr-Cyrl", false → "sr-Latn"). The
+   *  /hochzeitseinladung/[slug]/ route passes "de" to render German. */
+  lang?: Lang;
 }
 
 // Helper to format date with translation support
@@ -63,26 +67,55 @@ const countdownAnim = {
 
 const LOCATION_TYPE_LABELS: Record<
   string,
-  { latin: string; cyrillic: string; icon: React.ReactNode }
+  { latin: string; cyrillic: string; german: string; icon: React.ReactNode }
 > = {
   hall: {
     latin: "Svečana sala",
     cyrillic: "Свечана сала",
+    german: "Festsaal",
     icon: <MapPin size={14} />,
   },
-  church: { latin: "Crkva", cyrillic: "Црква", icon: <Church size={14} /> },
+  church: {
+    latin: "Crkva",
+    cyrillic: "Црква",
+    german: "Kirche",
+    icon: <Church size={14} />,
+  },
 };
+
+function pickLocationLabel(
+  meta: { latin: string; cyrillic: string; german: string } | undefined,
+  lang: Lang,
+): string | undefined {
+  if (!meta) return undefined;
+  if (lang === "sr-Cyrl") return meta.cyrillic;
+  if (lang === "de") return meta.german;
+  return meta.latin;
+}
+
+/** Returns the German variant of a free-form text field when `lang === "de"`,
+ *  otherwise returns the base (Serbian) value. Falls back to base if German
+ *  variant is missing — graceful degradation lets us ship even if the couple
+ *  hasn't filled in every translation. */
+function localized(
+  base: string | undefined,
+  de: string | undefined,
+  lang: Lang,
+): string {
+  if (lang === "de") return (de ?? base ?? "").toString();
+  return (base ?? "").toString();
+}
 
 function LocationMapSection({
   locations,
   singleLabel,
   pluralLabel,
-  useCyrillic,
+  lang,
 }: {
   locations: import("./types").Location[];
   singleLabel: string;
   pluralLabel: string;
-  useCyrillic?: boolean;
+  lang: Lang;
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const active = locations[activeIdx];
@@ -120,7 +153,7 @@ function LocationMapSection({
                   }}
                 >
                   {meta?.icon}
-                  {(useCyrillic ? meta?.cyrillic : meta?.latin) || loc.name || loc.type}
+                  {pickLocationLabel(meta, lang) || localized(loc.name, loc.name_de, lang) || loc.type}
                 </button>
               );
             })}
@@ -130,7 +163,7 @@ function LocationMapSection({
             className="font-elegant text-xs uppercase tracking-[0.3em]"
             style={{ color: "var(--theme-text-light)" }}
           >
-            {active?.address}
+            {localized(active?.address, active?.address_de, lang)}
           </p>
         )}
       </div>
@@ -142,7 +175,7 @@ function LocationMapSection({
           style={{ color: "var(--theme-text-light)" }}
           key={activeIdx}
         >
-          {active?.address}
+          {localized(active?.address, active?.address_de, lang)}
         </p>
       )}
 
@@ -184,12 +217,15 @@ function LocationMapSection({
 export default function InvitationClient({
   data,
   slug,
+  lang: langProp,
 }: InvitationClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
 
-  const useCyrillic = data.useCyrillic ?? false;
-  const t = useMemo(() => getTranslations(useCyrillic), [useCyrillic]);
+  const lang: Lang =
+    langProp ?? (data.useCyrillic ? "sr-Cyrl" : "sr-Latn");
+  const useCyrillic = lang === "sr-Cyrl"; // legacy flag kept for sub-components / fonts
+  const t = useMemo(() => getTranslations(lang), [lang]);
 
   const themeConfig = useMemo(() => getThemeConfig(data.theme), [data.theme]);
   const formattedDate = useMemo(
@@ -455,12 +491,14 @@ export default function InvitationClient({
               className={`font-serif italic text-lg sm:text-2xl max-w-2xl mx-auto leading-tight font-normal px-10 transition-all duration-[1500ms] delay-1000 ${isRevealed ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
               style={{ color: "var(--theme-text-muted)", opacity: 0.9 }}
             >
-              {data.tagline?.split(/\\n|\n/).map((line, i, arr) => (
-                <React.Fragment key={i}>
-                  {line}
-                  {i < arr.length - 1 && <br />}
-                </React.Fragment>
-              ))}
+              {localized(data.tagline, data.tagline_de, lang)
+                .split(/\\n|\n/)
+                .map((line, i, arr) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < arr.length - 1 && <br />}
+                  </React.Fragment>
+                ))}
             </div>
 
             {/* Date display */}
@@ -668,7 +706,7 @@ export default function InvitationClient({
                 {t.protocol}
               </h2>
             </div>
-            <Timeline items={data.timeline} />
+            <Timeline items={data.timeline} lang={lang} />
             {renderDivider("bottom")}
           </section>
         )}
@@ -679,28 +717,31 @@ export default function InvitationClient({
             locations={mapLocations}
             singleLabel={t.location}
             pluralLabel={t.locations}
-            useCyrillic={useCyrillic}
+            lang={lang}
           />
         )}
 
         {/* Optional free-form note (admin-edited). No surrounding section
             wrapper — slots into the existing flow only when the field
             is present. */}
-        {data.note?.trim() && (
-          <div className="max-w-2xl mx-auto px-6 py-12 sm:py-16 text-center">
-            <p
-              className="font-serif italic text-lg sm:text-2xl leading-tight"
-              style={{ color: "var(--theme-primary)" }}
-            >
-              {data.note.split(/\\n|\n/).map((line, i, arr) => (
-                <React.Fragment key={i}>
-                  {line}
-                  {i < arr.length - 1 && <br />}
-                </React.Fragment>
-              ))}
-            </p>
-          </div>
-        )}
+        {(() => {
+          const noteText = localized(data.note, data.note_de, lang);
+          return noteText.trim() ? (
+            <div className="max-w-2xl mx-auto px-6 py-12 sm:py-16 text-center">
+              <p
+                className="font-serif italic text-lg sm:text-2xl leading-tight"
+                style={{ color: "var(--theme-primary)" }}
+              >
+                {noteText.split(/\\n|\n/).map((line, i, arr) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < arr.length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </p>
+            </div>
+          ) : null;
+        })()}
 
         {/* RSVP */}
         <section
@@ -811,7 +852,8 @@ export default function InvitationClient({
               className="font-serif italic text-lg sm:text-2xl tracking-wide px-3 mb-8"
               style={{ color: "var(--theme-primary)", opacity: 0.9 }}
             >
-              {(data.thankYouFooter || t.thankYouFooter)
+              {(localized(data.thankYouFooter, data.thankYouFooter_de, lang) ||
+                t.thankYouFooter)
                 .split(/\\n|\n/)
                 .map((line, i, arr) => (
                   <React.Fragment key={i}>

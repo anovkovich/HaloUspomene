@@ -34,8 +34,12 @@ export interface EnvelopeItem {
 
 export interface Location {
   name: string;
+  /** German variant of `name`. Rendered when invitation lang is "de". */
+  name_de?: string;
   time?: string;
   address: string;
+  /** German variant of `address`. */
+  address_de?: string;
   lat?: number;
   lng?: number;
   map_url?: string;
@@ -44,9 +48,15 @@ export interface Location {
 
 export interface TimelineItem {
   title: string;
+  /** German variant of `title`. */
+  title_de?: string;
   time: string;
   description?: string;
+  /** German variant of `description`. */
+  description_de?: string;
   what?: string; // e.g. "Polazak od kuće", "Crkveno venčanje", "Skup u svečanoj sali"
+  /** German variant of `what`. */
+  what_de?: string;
   icon: string;
 }
 
@@ -63,6 +73,8 @@ export interface WeddingData {
   event_date: string; // ISO string: YYYY-MM-DDTHH:mm:ss
   submit_until: string; // ISO date: YYYY-MM-DD — deadline for RSVP submissions
   tagline?: string;
+  /** German variant of `tagline`. Used on /hochzeitseinladung/[slug]/. */
+  tagline_de?: string;
   /**
    * Optional free-form note rendered between the map and the RSVP section.
    * Manually populated via the admin JSON editor; absent for couples that
@@ -70,7 +82,14 @@ export interface WeddingData {
    * theme primary color.
    */
   note?: string;
+  /** German variant of `note`. */
+  note_de?: string;
   thankYouFooter?: string;
+  /** German variant of `thankYouFooter`. */
+  thankYouFooter_de?: string;
+  /** Opt-in: when true, the couple is also reachable at
+   *  /hochzeitseinladung/[slug]/ rendered in German. Defaults to false. */
+  german_enabled?: boolean;
   locations: Location[];
   timeline: TimelineItem[];
   countdown_enabled: boolean;

@@ -13,6 +13,13 @@ import {
   HouseHeart,
 } from "lucide-react";
 import { TimelineItem } from "../types";
+import type { Lang } from "../translations";
+
+const localized = (
+  base: string | undefined,
+  de: string | undefined,
+  lang: Lang,
+): string => (lang === "de" ? (de ?? base ?? "") : (base ?? ""));
 
 const IconMap: Record<
   string,
@@ -47,9 +54,10 @@ const slideInItem = {
 
 interface TimelineProps {
   items: TimelineItem[];
+  lang?: Lang;
 }
 
-export const Timeline: React.FC<TimelineProps> = ({ items }) => {
+export const Timeline: React.FC<TimelineProps> = ({ items, lang = "sr-Latn" }) => {
   return (
     <div className="relative max-w-3xl mx-auto px-6 py-12">
       {/* Central Line */}
@@ -157,32 +165,38 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
                     </span>
 
                     {/* What */}
-                    {item.what && (
-                      <p
-                        className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1.5"
-                        style={{ color: "var(--theme-primary)", opacity: 0.6 }}
-                      >
-                        {item.what}
-                      </p>
-                    )}
+                    {(() => {
+                      const whatText = localized(item.what, item.what_de, lang);
+                      return whatText ? (
+                        <p
+                          className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1.5"
+                          style={{ color: "var(--theme-primary)", opacity: 0.6 }}
+                        >
+                          {whatText}
+                        </p>
+                      ) : null;
+                    })()}
 
                     {/* Title */}
                     <h4
                       className="text-xl sm:text-2xl font-serif mb-2 leading-tight"
                       style={{ color: "var(--theme-text)" }}
                     >
-                      {item.title}
+                      {localized(item.title, item.title_de, lang)}
                     </h4>
 
                     {/* Description */}
-                    {item.description && (
-                      <p
-                        className="text-sm sm:text-base font-light leading-relaxed tracking-wide"
-                        style={{ color: "var(--theme-text-muted)" }}
-                      >
-                        {item.description}
-                      </p>
-                    )}
+                    {(() => {
+                      const descText = localized(item.description, item.description_de, lang);
+                      return descText ? (
+                        <p
+                          className="text-sm sm:text-base font-light leading-relaxed tracking-wide"
+                          style={{ color: "var(--theme-text-muted)" }}
+                        >
+                          {descText}
+                        </p>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </div>

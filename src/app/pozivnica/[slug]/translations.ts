@@ -1,5 +1,7 @@
 // Static text translations for wedding invitations
-// Latin (default) and Cyrillic versions
+// Three locales: Serbian Latin, Serbian Cyrillic, German (formal "Sie")
+
+export type Lang = "sr-Latn" | "sr-Cyrl" | "de";
 
 export interface Translations {
   // Hero section
@@ -350,6 +352,148 @@ export const cyrillicTranslations: Translations = {
   ],
 };
 
-export function getTranslations(useCyrillic: boolean): Translations {
-  return useCyrillic ? cyrillicTranslations : latinTranslations;
+export const germanTranslations: Translations = {
+  // Hero section
+  celebrateLove: "Wir feiern die Liebe",
+  when: "Wann:",
+
+  // Countdown
+  countdown: "Countdown",
+  days: "Tage",
+  hours: "Stunden",
+  minutes: "Minuten",
+  seconds: "Sekunden",
+
+  // Feature cards
+  where: "Wo",
+  whenLabel: "Wann",
+
+  // Timeline
+  protocol: "Programm",
+  ourDayPlan: "Unser Tagesablauf",
+
+  // Location
+  location: "Ort",
+  locations: "Orte",
+
+  // RSVP
+  rsvpTitle: "Antwort erbeten",
+  rsvpSubtitle: "Bitte bestätigen Sie Ihre Teilnahme bis",
+  nameLabel: "Vor- und Nachname",
+  namePlaceholder: "Ihr Name",
+  attendingLabel: "Werden Sie kommen?",
+  attendingYes: "Ich komme",
+  attendingYesSub: "Mit Freude!",
+  attendingNo: "Leider nein",
+  attendingNoSub: "Alles Gute!",
+  guestCount: "Anzahl der Personen (inklusive Sie)",
+  additionalNotes: "Anmerkungen",
+  notesPlaceholder: "Besondere Wünsche oder eine Nachricht an das Brautpaar...",
+  sending: "Wird gesendet...",
+  confirmAttendance: "Teilnahme bestätigen",
+
+  // Success messages
+  thankYou: "Danke!",
+  thankYouResponse: "Danke für Ihre Antwort!",
+  confirmationRecorded: "Ihre Bestätigung wurde erfolgreich gespeichert.",
+  sorryNotAttending: "Schade, dass Sie nicht dabei sein können.",
+  lookingForward: "Wir freuen uns darauf, Sie auf der Feier zu sehen!",
+  hopeToSee: "Wir hoffen, uns ein anderes Mal zu sehen.",
+  submitAnother: "Neue Antwort senden",
+  person: "Person",
+  people: "Personen",
+  notAttending: "Wird nicht teilnehmen",
+
+  // RSVP closed
+  rsvpClosed: "Die Anmeldung ist geschlossen",
+  rsvpClosedSub: "Die Anmeldefrist ist abgelaufen.",
+
+  // Seating lookup
+  findSeating: "✦ Finden Sie Ihren Sitzplatz ✦",
+  seatingAvailableNote:
+    "Einen Tag vor der Feier können Sie Ihren Sitzplatz nachschauen.",
+
+  // Footer
+  thankYouFooter: "Danke, dass Sie Teil unseres Glücks sind",
+
+  // PDF
+  downloadPDF: "Einladung herunterladen",
+
+  // Envelope
+  inviteYou: "Laden Sie ein zur Hochzeit",
+
+  // Audio guest book
+  audioGuestBook: "Audio-Gästebuch",
+  audioRecordMessage: "Hinterlassen Sie eine Audio-Nachricht für das Brautpaar",
+  audioRecordButton: "Nachricht aufnehmen",
+  audioStopButton: "Stoppen",
+  audioYourName: "Ihr Name",
+  audioSendMessage: "Nachricht senden",
+  audioThankYou: "Danke für Ihre Nachricht!",
+  audioRecordAnother: "Noch eine aufnehmen",
+  audioMaxDuration: "Maximale Dauer: 60 Sekunden",
+  audioNotAvailableYet: "Das Audio-Gästebuch ist am Hochzeitstag verfügbar",
+  audioDemoTitle: "Audio-Gästebuch — Demo",
+  audioDemoDescription: "Dies ist eine Demo-Version. Kontaktieren Sie uns für die Aktivierung.",
+  audioListenTitle: "Audio-Nachrichten der Gäste",
+  audioNoMessages: "Noch keine Audio-Nachrichten",
+  audioBeFirst: "Hinterlassen Sie als erste/r eine Nachricht!",
+  audioDownloadAll: "Alle Nachrichten herunterladen",
+
+  // Date labels
+  months: [
+    "Januar",
+    "Februar",
+    "März",
+    "April",
+    "Mai",
+    "Juni",
+    "Juli",
+    "August",
+    "September",
+    "Oktober",
+    "November",
+    "Dezember",
+  ],
+  months_genitive: [
+    "Januar",
+    "Februar",
+    "März",
+    "April",
+    "Mai",
+    "Juni",
+    "Juli",
+    "August",
+    "September",
+    "Oktober",
+    "November",
+    "Dezember",
+  ],
+  days_week: [
+    "Sonntag",
+    "Montag",
+    "Dienstag",
+    "Mittwoch",
+    "Donnerstag",
+    "Freitag",
+    "Samstag",
+  ],
+};
+
+/** Returns translations for the given language. Accepts the legacy boolean
+ *  signature (true → Cyrillic, false → Latin) for backward compatibility
+ *  with existing call sites in the audio/PDF/sub-routes. */
+export function getTranslations(langOrUseCyrillic: Lang | boolean): Translations {
+  if (typeof langOrUseCyrillic === "boolean") {
+    return langOrUseCyrillic ? cyrillicTranslations : latinTranslations;
+  }
+  switch (langOrUseCyrillic) {
+    case "sr-Cyrl":
+      return cyrillicTranslations;
+    case "de":
+      return germanTranslations;
+    case "sr-Latn":
+    default:
+      return latinTranslations;
+  }
 }

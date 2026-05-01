@@ -33,6 +33,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     robots: { index: false, follow: false },
     openGraph: { title, description, type: "website" },
     twitter: { card: "summary_large_image", title, description },
+    // When the couple opted into a German variant, point search engines to it.
+    alternates: weddingData.german_enabled
+      ? {
+          languages: {
+            "de-DE": `/hochzeitseinladung/${slug}/`,
+          },
+        }
+      : undefined,
   };
 }
 
