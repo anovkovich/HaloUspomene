@@ -97,7 +97,7 @@ export default function Home() {
             Audio guest book (audio knjiga uspomena, audio knjiga utisaka,
             audio spomenar) — gosti snimaju glasovne čestitke koje slušate
             celog života. Dve opcije: vintage retro telefon sa rotirajućim
-            brojčanikom (8.000 — 9.000 din, dostava u celoj Srbiji), ili
+            brojčanikom (8.000 din, dostava u celoj Srbiji), ili
             digitalna audio knjiga preko QR koda za stolovima (3.000 din uz
             pozivnicu). Opcioni USB suveniri: retro kaseta sa USB-om i
             uspomene u bočici.
