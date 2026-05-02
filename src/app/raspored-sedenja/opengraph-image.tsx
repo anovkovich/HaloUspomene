@@ -97,7 +97,7 @@ export default async function OGImage() {
                 textAlign: "center",
               }}
             >
-              Konferencije · Slave · Korporativni eventi
+              Konferencije · Proslave · Korporativni eventi
             </span>
 
             <span
@@ -124,7 +124,7 @@ export default async function OGImage() {
                 textTransform: "uppercase",
               }}
             >
-              Drag &amp; drop &nbsp;·&nbsp; Excel uvoz &nbsp;·&nbsp; QR pano
+              Excel uvoz &nbsp;·&nbsp; Raspored sedenja &nbsp;·&nbsp; QR pano
             </span>
           </div>
         </div>
