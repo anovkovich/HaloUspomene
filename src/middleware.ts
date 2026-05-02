@@ -101,15 +101,26 @@ export async function middleware(request: NextRequest) {
 
   // ── Standalone seating auth (editor + gosti) ──────────────────────────
   // /raspored-sedenja/{slug} (editor) and /raspored-sedenja/{slug}/gosti are
-  // gated. /prijava and /gde-sedim are explicitly excluded so the login form
-  // and the public guest lookup remain accessible.
+  // gated. Skip the slug names that aren't real seating records: the public
+  // /prijava and /gde-sedim route segments and the Next.js metadata file
+  // conventions (opengraph-image, twitter-image, icon, apple-icon, sitemap,
+  // robots) which Next serves out of the parent route folder.
+  const SEATING_RESERVED_SLUGS = new Set([
+    "prijava",
+    "gde-sedim",
+    "opengraph-image",
+    "twitter-image",
+    "icon",
+    "apple-icon",
+    "sitemap",
+    "robots",
+  ]);
   const seatingMatch = pathname.match(
     /^\/raspored-sedenja\/([^/]+)(?:\/(gosti)(?:\/|$)|$|\/$)/
   );
   if (seatingMatch) {
     const slug = seatingMatch[1];
-    if (slug === "prijava" || slug === "gde-sedim") {
-      // Defensive — these aren't valid slug values, but keep middleware permissive.
+    if (SEATING_RESERVED_SLUGS.has(slug)) {
       return NextResponse.next();
     }
     const cookie = request.cookies.get(`auth_seating_${slug}`);
