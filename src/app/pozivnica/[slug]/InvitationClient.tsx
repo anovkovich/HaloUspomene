@@ -399,6 +399,7 @@ export default function InvitationClient({
         theme={data.theme}
         scriptFont={data.scriptFont}
         useCyrillic={useCyrillic}
+        lang={lang}
         customPrimaryColor={data.custom_primary_color}
         customBackgroundColor={data.custom_background_color}
       >
