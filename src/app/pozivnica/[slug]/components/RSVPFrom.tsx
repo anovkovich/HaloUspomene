@@ -35,7 +35,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ slug }) => {
       try {
         recaptchaToken = await executeRecaptcha("rsvp");
       } catch {
-        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setError(t.rsvpRecaptchaFailed);
         setLoading(false);
         return;
       }
@@ -54,12 +54,12 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ slug }) => {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Greška pri slanju");
+        setError(data.error || t.rsvpSendError);
         setLoading(false);
         return;
       }
     } catch {
-      setError("Greška pri slanju. Pokušajte ponovo.");
+      setError(t.rsvpSendError);
       setLoading(false);
       return;
     }

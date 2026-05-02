@@ -62,6 +62,10 @@ export interface Translations {
   rsvpClosed: string;
   rsvpClosedSub: string;
 
+  // RSVP error states
+  rsvpRecaptchaFailed: string;
+  rsvpSendError: string;
+
   // Seating lookup
   findSeating: string;
   seatingAvailableNote: string;
@@ -151,6 +155,10 @@ export const latinTranslations: Translations = {
   // RSVP closed
   rsvpClosed: "Prijave su zatvorene",
   rsvpClosedSub: "Rok za prijavu je istekao.",
+
+  // RSVP error states
+  rsvpRecaptchaFailed: "Provera neuspešna. Osvežite stranicu i pokušajte ponovo.",
+  rsvpSendError: "Greška pri slanju. Pokušajte ponovo.",
 
   // Seating lookup
   findSeating: "✦ Pronađite mesto sedenja ✦",
@@ -280,6 +288,10 @@ export const cyrillicTranslations: Translations = {
   rsvpClosed: "Пријаве су затворене",
   rsvpClosedSub: "Рок за пријаву је истекао.",
 
+  // RSVP error states
+  rsvpRecaptchaFailed: "Провера неуспешна. Освежите страницу и покушајте поново.",
+  rsvpSendError: "Грешка при слању. Покушајте поново.",
+
   // Seating lookup
   findSeating: "✦ Пронађите место седења ✦",
   seatingAvailableNote:
@@ -370,7 +382,7 @@ export const germanTranslations: Translations = {
   whenLabel: "Wann",
 
   // Timeline
-  protocol: "Programm",
+  protocol: "Ablauf",
   ourDayPlan: "Unser Tagesablauf",
 
   // Location
@@ -408,6 +420,12 @@ export const germanTranslations: Translations = {
   // RSVP closed
   rsvpClosed: "Die Anmeldung ist geschlossen",
   rsvpClosedSub: "Die Anmeldefrist ist abgelaufen.",
+
+  // RSVP error states
+  rsvpRecaptchaFailed:
+    "Überprüfung fehlgeschlagen. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
+  rsvpSendError:
+    "Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
 
   // Seating lookup
   findSeating: "✦ Finden Sie Ihren Sitzplatz ✦",
