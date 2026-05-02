@@ -85,7 +85,7 @@ export default async function OGImage() {
                 textAlign: "center",
               }}
             >
-              Raspored sedenja za organizatore
+              Raspored sedenja za događaje
             </span>
 
             <span
