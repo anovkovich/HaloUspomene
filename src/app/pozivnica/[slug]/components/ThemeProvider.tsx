@@ -9,7 +9,7 @@ import {
   buildCustomColorOverrides,
   ScriptFontConfig,
 } from "../constants";
-import { Translations, getTranslations } from "../translations";
+import { Translations, getTranslations, type Lang } from "../translations";
 
 interface ThemeContextValue {
   theme: ThemeType;
@@ -17,6 +17,7 @@ interface ThemeContextValue {
   scriptFont: ScriptFontType;
   scriptFontConfig: ScriptFontConfig;
   useCyrillic: boolean;
+  lang: Lang;
   t: Translations;
 }
 
@@ -34,6 +35,10 @@ interface ThemeProviderProps {
   theme: ThemeType;
   scriptFont?: ScriptFontType;
   useCyrillic?: boolean;
+  /** Explicit language. When omitted, derived from useCyrillic for backward
+   *  compatibility (true → "sr-Cyrl", false → "sr-Latn"). The German mirror
+   *  route passes "de" so children read German translations from context. */
+  lang?: Lang;
   customPrimaryColor?: string;
   customBackgroundColor?: string;
   children: React.ReactNode;
@@ -43,6 +48,7 @@ export function ThemeProvider({
   theme,
   scriptFont = "great-vibes",
   useCyrillic = false,
+  lang: langProp,
   customPrimaryColor,
   customBackgroundColor,
   children,
@@ -78,7 +84,8 @@ export function ThemeProvider({
       : config;
 
   const scriptFontConfig = getScriptFontConfig(scriptFont);
-  const translations = getTranslations(useCyrillic);
+  const lang: Lang = langProp ?? (useCyrillic ? "sr-Cyrl" : "sr-Latn");
+  const translations = getTranslations(lang);
 
   return (
     <ThemeContext.Provider
@@ -88,6 +95,7 @@ export function ThemeProvider({
         scriptFont,
         scriptFontConfig,
         useCyrillic,
+        lang,
         t: translations,
       }}
     >
