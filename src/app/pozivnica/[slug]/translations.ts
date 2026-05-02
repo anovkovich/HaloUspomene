@@ -357,8 +357,9 @@ export const germanTranslations: Translations = {
   celebrateLove: "Wir feiern die Liebe",
   when: "Wann:",
 
-  // Countdown
-  countdown: "Countdown",
+  // Countdown — "Countdown" is a loanword in German; use a native phrase
+  // that reads as a section heading rather than tech jargon.
+  countdown: "Bis zum großen Tag",
   days: "Tage",
   hours: "Stunden",
   minutes: "Minuten",
