@@ -391,7 +391,7 @@ export const germanTranslations: Translations = {
 
   // RSVP
   rsvpTitle: "Antwort erbeten",
-  rsvpSubtitle: "Bitte bestätigen Sie Ihre Teilnahme bis",
+  rsvpSubtitle: "Bitte BESTÄTIGT EURE Teilnahme bis",
   nameLabel: "Vor- und Nachname",
   namePlaceholder: "Ihr Name",
   attendingLabel: "Werden Sie kommen?",
