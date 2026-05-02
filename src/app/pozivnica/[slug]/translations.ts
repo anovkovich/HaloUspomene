@@ -389,17 +389,18 @@ export const germanTranslations: Translations = {
   location: "Ort",
   locations: "Orte",
 
-  // RSVP
+  // RSVP — informal plural (ihr/Euch) since the rest of the user-facing copy
+  // also uses that register. System errors below stay on Sie.
   rsvpTitle: "Antwort erbeten",
   rsvpSubtitle: "Bitte bestätigt Eure Teilnahme bis",
   nameLabel: "Vor- und Nachname",
-  namePlaceholder: "Ihr Name",
-  attendingLabel: "Werden Sie kommen?",
+  namePlaceholder: "Euer Name",
+  attendingLabel: "Kommt Ihr?",
   attendingYes: "Ich komme",
   attendingYesSub: "Mit Freude!",
   attendingNo: "Leider nein",
   attendingNoSub: "Alles Gute!",
-  guestCount: "Anzahl der Personen (inklusive Sie)",
+  guestCount: "Anzahl der Personen (Euch eingeschlossen)",
   additionalNotes: "Anmerkungen",
   notesPlaceholder: "Besondere Wünsche oder eine Nachricht an das Brautpaar...",
   sending: "Wird gesendet...",
@@ -407,10 +408,10 @@ export const germanTranslations: Translations = {
 
   // Success messages
   thankYou: "Danke!",
-  thankYouResponse: "Danke für Ihre Antwort!",
-  confirmationRecorded: "Ihre Bestätigung wurde erfolgreich gespeichert.",
-  sorryNotAttending: "Schade, dass Sie nicht dabei sein können.",
-  lookingForward: "Wir freuen uns darauf, Sie auf der Feier zu sehen!",
+  thankYouResponse: "Danke für Eure Antwort!",
+  confirmationRecorded: "Eure Bestätigung wurde erfolgreich gespeichert.",
+  sorryNotAttending: "Schade, dass Ihr nicht dabei sein könnt.",
+  lookingForward: "Wir freuen uns darauf, Euch auf der Feier zu sehen!",
   hopeToSee: "Wir hoffen, uns ein anderes Mal zu sehen.",
   submitAnother: "Neue Antwort senden",
   person: "Person",
@@ -428,27 +429,27 @@ export const germanTranslations: Translations = {
     "Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
 
   // Seating lookup
-  findSeating: "✦ Finden Sie Ihren Sitzplatz ✦",
+  findSeating: "✦ Findet Euren Sitzplatz ✦",
   seatingAvailableNote:
-    "Einen Tag vor der Feier können Sie Ihren Sitzplatz nachschauen.",
+    "Einen Tag vor der Feier könnt Ihr Euren Sitzplatz nachschauen.",
 
   // Footer
-  thankYouFooter: "Danke, dass Sie Teil unseres Glücks sind",
+  thankYouFooter: "Danke, dass Ihr Teil unseres Glücks seid",
 
   // PDF
   downloadPDF: "Einladung herunterladen",
 
   // Envelope
-  inviteYou: "Laden Sie ein zur Hochzeit",
+  inviteYou: "Laden Euch ein zur Hochzeit",
 
   // Audio guest book
   audioGuestBook: "Audio-Gästebuch",
-  audioRecordMessage: "Hinterlassen Sie eine Audio-Nachricht für das Brautpaar",
+  audioRecordMessage: "Hinterlasst eine Audio-Nachricht für das Brautpaar",
   audioRecordButton: "Nachricht aufnehmen",
   audioStopButton: "Stoppen",
-  audioYourName: "Ihr Name",
+  audioYourName: "Euer Name",
   audioSendMessage: "Nachricht senden",
-  audioThankYou: "Danke für Ihre Nachricht!",
+  audioThankYou: "Danke für Eure Nachricht!",
   audioRecordAnother: "Noch eine aufnehmen",
   audioMaxDuration: "Maximale Dauer: 60 Sekunden",
   audioNotAvailableYet: "Das Audio-Gästebuch ist am Hochzeitstag verfügbar",
@@ -456,7 +457,7 @@ export const germanTranslations: Translations = {
   audioDemoDescription: "Dies ist eine Demo-Version. Kontaktieren Sie uns für die Aktivierung.",
   audioListenTitle: "Audio-Nachrichten der Gäste",
   audioNoMessages: "Noch keine Audio-Nachrichten",
-  audioBeFirst: "Hinterlassen Sie als erste/r eine Nachricht!",
+  audioBeFirst: "Hinterlasst als erste eine Nachricht!",
   audioDownloadAll: "Alle Nachrichten herunterladen",
 
   // Date labels
