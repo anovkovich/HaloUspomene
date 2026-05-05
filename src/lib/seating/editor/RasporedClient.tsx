@@ -26,6 +26,8 @@ import {
   RotateCw,
   Search,
   Heart,
+  Link2,
+  Sparkles,
 } from "lucide-react";
 import GuestSidebar from "./GuestSidebar";
 import TableNode from "./TableNode";
@@ -79,6 +81,10 @@ interface Props {
    *  item that invokes this callback. Used by standalone routes — wedding/birthday
    *  flows handle pano design out-of-band. */
   onRequestPanoDesign?: () => void;
+  /** When provided, the Toolbar download menu shows an extra "Preuzmi QR za RSVP"
+   *  item. Generates a QR linking to the standalone /rsvp/dogadjaj-{slug} page
+   *  so guests can self-RSVP from a printed invitation. */
+  onDownloadRsvpQR?: () => void;
 }
 
 function createTable(
@@ -113,6 +119,7 @@ export default function RasporedClient({
   hideDecorations,
   themeVarsOverride,
   onRequestPanoDesign,
+  onDownloadRsvpQR,
 }: Props) {
   const saveRaspored = actions.save;
   const loadRaspored = actions.load;
@@ -632,7 +639,7 @@ export default function RasporedClient({
                     <Heart size={16} style={{ color: "var(--theme-primary)" }} />
                     Preuzmi QR pano PDF
                   </button>
-                  <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
+                  {/* Pano group: QR pano PDF + samo QR + Zatraži dizajn — no internal dividers */}
                   <button
                     onClick={async () => {
                       if (isDirty) { showToast("Sačuvaj pre preuzimanja"); setShowMobileMenu(false); return; }
@@ -649,7 +656,50 @@ export default function RasporedClient({
                     style={{ color: "var(--theme-text)" }}
                   >
                     <QrCode size={16} style={{ color: "var(--theme-primary)" }} />
-                    Preuzmi QR kod
+                    Preuzmi samo QR za pano
+                  </button>
+                  {onRequestPanoDesign && (
+                    <button
+                      onClick={() => {
+                        onRequestPanoDesign();
+                        setShowMobileMenu(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium active:bg-black/5"
+                      style={{ color: "var(--theme-text)" }}
+                    >
+                      <Sparkles size={16} style={{ color: "var(--theme-primary)" }} />
+                      Zatraži dizajn QR panoa
+                    </button>
+                  )}
+                  {onDownloadRsvpQR && (
+                    <>
+                      <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
+                      <button
+                        onClick={() => {
+                          onDownloadRsvpQR();
+                          setShowMobileMenu(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium active:bg-black/5"
+                        style={{ color: "var(--theme-text)" }}
+                      >
+                        <QrCode size={16} style={{ color: "var(--theme-primary)" }} />
+                        QR za potvrdu dolaska
+                      </button>
+                    </>
+                  )}
+                  <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(resolvedLookupUrl).then(() => {
+                        showToast("Link kopiran!");
+                      });
+                      setShowMobileMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium active:bg-black/5"
+                    style={{ color: "var(--theme-text)" }}
+                  >
+                    <Link2 size={16} style={{ color: "var(--theme-primary)" }} />
+                    Kopiraj link Gde sedim
                   </button>
                   <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
                   <button
@@ -975,6 +1025,7 @@ export default function RasporedClient({
               generateAndDownloadPDF(tables, attending, coupleNames, slug)
             }
             onRequestPanoDesign={onRequestPanoDesign}
+            onDownloadRsvpQR={onDownloadRsvpQR}
           />
         )}
 
@@ -1153,6 +1204,23 @@ export default function RasporedClient({
                 <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
                 <button
                   onClick={async () => {
+                    setShowPWAMenu(false);
+                    try {
+                      await onGenerateWelcomePDF();
+                    } catch (err) {
+                      console.error("QR pano PDF failed:", err);
+                      showToast("Greška pri generisanju QR pano PDF-a");
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium hover:bg-black/5"
+                  style={{ color: "var(--theme-text)" }}
+                >
+                  <Heart size={16} style={{ color: "var(--theme-primary)" }} />
+                  Preuzmi QR pano PDF
+                </button>
+                {/* Pano group: QR pano PDF + samo QR + Zatraži dizajn — no internal dividers */}
+                <button
+                  onClick={async () => {
                     const QRCode = (await import("qrcode")).default;
                     const dataUrl = await QRCode.toDataURL(resolvedLookupUrl, { width: 1200, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
                     const a = document.createElement("a");
@@ -1165,7 +1233,50 @@ export default function RasporedClient({
                   style={{ color: "var(--theme-text)" }}
                 >
                   <QrCode size={16} style={{ color: "var(--theme-primary)" }} />
-                  Preuzmi QR kod
+                  Preuzmi samo QR za pano
+                </button>
+                {onRequestPanoDesign && (
+                  <button
+                    onClick={() => {
+                      onRequestPanoDesign();
+                      setShowPWAMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium hover:bg-black/5"
+                    style={{ color: "var(--theme-text)" }}
+                  >
+                    <Sparkles size={16} style={{ color: "var(--theme-primary)" }} />
+                    Zatraži dizajn QR panoa
+                  </button>
+                )}
+                {onDownloadRsvpQR && (
+                  <>
+                    <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
+                    <button
+                      onClick={() => {
+                        onDownloadRsvpQR();
+                        setShowPWAMenu(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium hover:bg-black/5"
+                      style={{ color: "var(--theme-text)" }}
+                    >
+                      <QrCode size={16} style={{ color: "var(--theme-primary)" }} />
+                      QR za potvrdu dolaska
+                    </button>
+                  </>
+                )}
+                <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(resolvedLookupUrl).then(() => {
+                      showToast("Link kopiran!");
+                    });
+                    setShowPWAMenu(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium hover:bg-black/5"
+                  style={{ color: "var(--theme-text)" }}
+                >
+                  <Link2 size={16} style={{ color: "var(--theme-primary)" }} />
+                  Kopiraj link Gde sedim
                 </button>
                 <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
                 <button

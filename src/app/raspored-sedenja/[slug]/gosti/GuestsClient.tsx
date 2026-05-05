@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -75,6 +75,31 @@ export default function GuestsClient({
   const [committing, setCommitting] = useState(false);
 
   const totalGuestCount = guests.reduce((s, g) => s + g.guestCount, 0);
+
+  // Detect duplicates by normalized name (case-insensitive, trimmed). Display
+  // order clusters duplicate-name groups together while preserving the
+  // original order of unique entries (group ordered by first appearance).
+  const { displayGuests, dupKeys } = useMemo(() => {
+    const norm = (s: string) => s.trim().toLowerCase();
+    const groups = new Map<string, StandaloneGuest[]>();
+    const order: string[] = [];
+    for (const g of guests) {
+      const key = norm(g.name);
+      if (!groups.has(key)) {
+        groups.set(key, []);
+        order.push(key);
+      }
+      groups.get(key)!.push(g);
+    }
+    const display: StandaloneGuest[] = [];
+    const dups = new Set<string>();
+    for (const key of order) {
+      const items = groups.get(key)!;
+      display.push(...items);
+      if (items.length > 1) dups.add(key);
+    }
+    return { displayGuests: display, dupKeys: dups };
+  }, [guests]);
 
   function openEdit(g: StandaloneGuest) {
     setEditGuest(g);
@@ -441,52 +466,74 @@ export default function GuestsClient({
           </div>
         ) : (
           <div className="space-y-2">
-            {guests.map((g) => (
-              <div
-                key={g.id}
-                className="flex items-center gap-3 rounded-xl px-4 py-2.5"
-                style={{
-                  backgroundColor: "#ffffff",
-                  border: "1px solid rgba(35,35,35,0.08)",
-                }}
-              >
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="text-sm font-medium truncate"
-                    style={{ color: "#232323" }}
-                  >
-                    {g.name}
-                  </p>
-                  <div className="flex items-center gap-3 mt-0.5">
-                    <span
-                      className="text-xs"
-                      style={{ color: "rgba(35,35,35,0.55)" }}
-                    >
-                      {g.guestCount} {g.guestCount === 1 ? "osoba" : "osoba"}
-                    </span>
-                    {g.category && (
-                      <span
-                        className="text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider"
-                        style={{
-                          backgroundColor: "rgba(174,52,63,0.08)",
-                          color: "#AE343F",
-                        }}
-                      >
-                        {g.category}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <button
-                  onClick={() => openEdit(g)}
-                  className="p-2 rounded-lg hover:bg-black/5 transition-colors"
-                  style={{ color: "rgba(35,35,35,0.5)" }}
-                  title="Uredi"
+            {displayGuests.map((g) => {
+              const isDup = dupKeys.has(g.name.trim().toLowerCase());
+              return (
+                <div
+                  key={g.id}
+                  className="flex items-center gap-3 rounded-xl px-4 py-2.5"
+                  style={{
+                    backgroundColor: isDup
+                      ? "rgba(212,175,55,0.10)"
+                      : "#ffffff",
+                    border: isDup
+                      ? "1px solid rgba(212,175,55,0.45)"
+                      : "1px solid rgba(35,35,35,0.08)",
+                  }}
                 >
-                  <Pencil size={13} />
-                </button>
-              </div>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p
+                        className="text-sm font-medium truncate"
+                        style={{ color: "#232323" }}
+                      >
+                        {g.name}
+                      </p>
+                      {isDup && (
+                        <span
+                          className="text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold flex items-center gap-1 shrink-0"
+                          style={{
+                            backgroundColor: "rgba(212,175,55,0.22)",
+                            color: "#a87a00",
+                          }}
+                          title="Više stavki sa istim imenom — proverite duplikate"
+                        >
+                          <AlertTriangle size={9} />
+                          Duplikat
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      <span
+                        className="text-xs"
+                        style={{ color: "rgba(35,35,35,0.55)" }}
+                      >
+                        {g.guestCount} {g.guestCount === 1 ? "osoba" : "osoba"}
+                      </span>
+                      {g.category && (
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider"
+                          style={{
+                            backgroundColor: "rgba(174,52,63,0.08)",
+                            color: "#AE343F",
+                          }}
+                        >
+                          {g.category}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => openEdit(g)}
+                    className="p-2 rounded-lg hover:bg-black/5 transition-colors"
+                    style={{ color: "rgba(35,35,35,0.5)" }}
+                    title="Uredi"
+                  >
+                    <Pencil size={13} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 

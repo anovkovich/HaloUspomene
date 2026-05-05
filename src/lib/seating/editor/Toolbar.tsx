@@ -38,6 +38,9 @@ interface Props {
   guestLookupUrl?: string;
   /** When provided, the download dropdown shows an extra "Zatraži dizajn QR panoa" item. */
   onRequestPanoDesign?: () => void;
+  /** When provided, the download dropdown shows an extra "Preuzmi QR za RSVP" item.
+   *  Used to share an online RSVP link guests can scan from a printed invitation. */
+  onDownloadRsvpQR?: () => void;
 }
 
 async function downloadQR(slug: string, guestLookupUrl: string) {
@@ -73,6 +76,7 @@ export default function Toolbar({
   onGenerateWelcomePDF,
   guestLookupUrl,
   onRequestPanoDesign,
+  onDownloadRsvpQR,
 }: Props) {
   const lookupUrl =
     guestLookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
@@ -198,10 +202,7 @@ export default function Toolbar({
               <Heart size={14} style={{ color: "var(--theme-primary)" }} />
               Preuzmi QR pano PDF
             </button>
-            <div
-              className="h-px"
-              style={{ backgroundColor: "var(--theme-border-light)" }}
-            />
+            {/* Pano group: QR pano PDF + samo QR + Zatraži dizajn — no internal dividers */}
             <button
               onClick={() => {
                 downloadQR(slug, lookupUrl);
@@ -211,8 +212,40 @@ export default function Toolbar({
               style={{ color: "var(--theme-text)" }}
             >
               <QrCode size={14} style={{ color: "var(--theme-primary)" }} />
-              Preuzmi QR kod
+              Preuzmi samo QR za pano
             </button>
+            {onRequestPanoDesign && (
+              <button
+                onClick={() => {
+                  onRequestPanoDesign();
+                  setDownloadOpen(false);
+                }}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
+                style={{ color: "var(--theme-text)" }}
+              >
+                <Sparkles size={14} style={{ color: "var(--theme-primary)" }} />
+                Zatraži dizajn QR panoa
+              </button>
+            )}
+            {onDownloadRsvpQR && (
+              <>
+                <div
+                  className="h-px"
+                  style={{ backgroundColor: "var(--theme-border-light)" }}
+                />
+                <button
+                  onClick={() => {
+                    onDownloadRsvpQR();
+                    setDownloadOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
+                  style={{ color: "var(--theme-text)" }}
+                >
+                  <QrCode size={14} style={{ color: "var(--theme-primary)" }} />
+                  QR za potvrdu dolaska
+                </button>
+              </>
+            )}
             <div
               className="h-px"
               style={{ backgroundColor: "var(--theme-border-light)" }}
@@ -235,25 +268,6 @@ export default function Toolbar({
               )}
               {linkCopied ? "Link kopiran!" : "Kopiraj link Gde sedim"}
             </button>
-            {onRequestPanoDesign && (
-              <>
-                <div
-                  className="h-px"
-                  style={{ backgroundColor: "var(--theme-border-light)" }}
-                />
-                <button
-                  onClick={() => {
-                    onRequestPanoDesign();
-                    setDownloadOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
-                  style={{ color: "var(--theme-text)" }}
-                >
-                  <Sparkles size={14} style={{ color: "var(--theme-primary)" }} />
-                  Zatraži dizajn QR panoa
-                </button>
-              </>
-            )}
           </div>
         )}
       </div>

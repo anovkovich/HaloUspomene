@@ -145,6 +145,19 @@ export default function StandaloneRasporedRoot({
           generateStandaloneWelcomePDF({ slug, eventName })
         }
         onRequestPanoDesign={() => setShowRequestModal(true)}
+        onDownloadRsvpQR={async () => {
+          const QRCode = (await import("qrcode")).default;
+          const url = `https://halouspomene.rs/rsvp/dogadjaj-${slug}`;
+          const dataUrl = await QRCode.toDataURL(url, {
+            width: 1200,
+            margin: 2,
+            color: { dark: "#232323", light: "#ffffff" },
+          });
+          const a = document.createElement("a");
+          a.href = dataUrl;
+          a.download = `rsvp-qr-${slug}.png`;
+          a.click();
+        }}
       />
 
       {showRequestModal && (

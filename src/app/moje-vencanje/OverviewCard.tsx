@@ -156,6 +156,16 @@ export default function OverviewCard({
     a.click();
   }, [coupleInfo.slug]);
 
+  const handleDownloadRsvpQR = useCallback(async () => {
+    const QRCode = await import("qrcode");
+    const url = `https://halouspomene.rs/rsvp/pozivnica-${coupleInfo.slug}`;
+    const dataUrl = await QRCode.toDataURL(url, { width: 512, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `rsvp-${coupleInfo.slug}.png`;
+    a.click();
+  }, [coupleInfo.slug]);
+
   const handleOpenSeatingModal = useCallback(async () => {
     setSeatingLoading(true);
     const stats = await loadSeatingStatsAction();
@@ -406,6 +416,26 @@ export default function OverviewCard({
         <p className="text-xs font-semibold uppercase tracking-widest text-[#232323]/70 mb-4">
           Brze akcije
         </p>
+        <button
+          onClick={() => {
+            if (coupleInfo.draft) {
+              toast("Dostupno nakon kreiranja pozivnice — naš tim će vas kontaktirati");
+              return;
+            }
+            handleDownloadRsvpQR();
+          }}
+          className={`flex items-center justify-center gap-2 w-full px-4 py-3 mb-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors ${
+            coupleInfo.draft
+              ? "bg-[#F5F4DC]/50 border-[#232323]/15 text-[#232323]/55 cursor-pointer"
+              : "bg-[#F5F4DC]/50 border-[#232323]/15 text-[#232323]/85 hover:border-[#AE343F]/40 hover:text-[#AE343F] cursor-pointer"
+          }`}
+        >
+          <QrCode size={14} className="shrink-0" />
+          <span className="hidden sm:inline">
+            Dodajte QR za online potvrde na vaše štampane pozivnice
+          </span>
+          <span className="sm:hidden">QR potvrda za papirne pozivnice</span>
+        </button>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {coupleInfo.draft ? (
             <>

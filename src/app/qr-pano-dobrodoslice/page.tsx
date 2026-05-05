@@ -311,6 +311,56 @@ export default function QRPanoLandingPage() {
           </div>
         </section>
 
+        {/* RSVP QR bonus */}
+        <section className="py-16 sm:py-20 bg-[#F5F4DC]">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto bg-white rounded-3xl p-8 sm:p-10 md:p-12 border border-stone-200 shadow-sm">
+              <div className="flex flex-col md:flex-row gap-8 md:gap-10 items-start">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-[#d4af37]/15 text-[#d4af37] flex items-center justify-center shrink-0">
+                  <QrCode size={36} strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#d4af37] mb-3">
+                    Bonus uz QR pano
+                  </p>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#232323] leading-tight mb-4">
+                    Drugi QR kod —{" "}
+                    <span className="italic text-[#AE343F]">
+                      za potvrde dolaska
+                    </span>
+                  </h2>
+                  <p className="text-base text-[#232323]/70 leading-relaxed mb-5">
+                    Pored QR panoa za sedenje, dobijate i poseban QR kod do
+                    stranice za online potvrdu dolaska. Zalepite ga na štampane
+                    pozivnice — gosti skeniraju, ukucaju ime i potvrđuju dolazak
+                    online. Manje SMS-ova vama, manje papira, brže potvrde.
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 mb-2">
+                    {[
+                      "QR vodi na stranicu samo za potvrdu dolaska",
+                      "Automatski usklađen sa stilom vaše pozivnice",
+                      "Sve potvrde se slivaju u Moje Venčanje portal",
+                      "Idealno za goste koji više vole papirne pozivnice",
+                    ].map((item) => (
+                      <div
+                        key={item}
+                        className="flex items-start gap-2 text-sm text-[#232323]/80"
+                      >
+                        <Check
+                          size={15}
+                          className="text-[#AE343F] shrink-0 mt-0.5"
+                          strokeWidth={2.5}
+                        />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* SEO hidden */}
         <section className="sr-only">
           <h2>
