@@ -43,12 +43,6 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  if (!ownerPhone || ownerPhone.trim().length < 6) {
-    return NextResponse.json(
-      { error: "Broj telefona klijenta je obavezan" },
-      { status: 400 },
-    );
-  }
   if (!eventName || eventName.trim().length < 3) {
     return NextResponse.json(
       { error: "Ime eventa je obavezno (min 3 karaktera)" },

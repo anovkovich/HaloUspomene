@@ -203,6 +203,10 @@ src/
 
 ## Key Patterns
 
+### Shared UI Components
+- **DatePicker** (`src/components/ui/DatePicker.tsx`) — branded calendar with portal-rendered dropdown. **Always use this instead of `<input type="date">`.** Accepts `value`/`onChange` (ISO `YYYY-MM-DD`), `variant: "dark" | "light"`, `accentColor`, optional `minDate`, `placeholder`, `showQuickActions` (Danas / Za nedelju dana). Default accent is `#AE343F`.
+- Other reusable UI: `Breadcrumbs`, `ScrollReveal`.
+
 ### Rendering Strategy
 - **Server components** by default for all `page.tsx` files
 - `"use client"` only on the smallest interactive components

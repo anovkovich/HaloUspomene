@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { StandaloneSeating } from "@/lib/standalone-seating";
 import { encodeToBase64 } from "@/lib/encoding";
+import DatePicker from "@/components/ui/DatePicker";
 
 interface Props {
   onNeedsLogin: () => void;
@@ -456,12 +457,10 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                 </div>
                 <div>
                   <label className="text-[10px] uppercase tracking-wider text-white/40 mb-1 block">
-                    Telefon klijenta
+                    Telefon klijenta (opciono)
                   </label>
                   <input
                     type="tel"
-                    required
-                    minLength={6}
                     value={createOwnerPhone}
                     onChange={(e) => setCreateOwnerPhone(e.target.value)}
                     placeholder="+381 6X XXX XXXX"
@@ -487,11 +486,13 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                 <label className="text-[10px] uppercase tracking-wider text-white/40 mb-1 block">
                   Datum eventa (opciono)
                 </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={createDate}
-                  onChange={(e) => setCreateDate(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#2563eb]"
+                  onChange={setCreateDate}
+                  variant="dark"
+                  accentColor="#2563eb"
+                  placeholder="Izaberite datum eventa"
+                  showQuickActions={false}
                 />
               </div>
             </div>
