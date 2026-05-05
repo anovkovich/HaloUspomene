@@ -28,6 +28,7 @@ import {
   Heart,
   Link2,
   Sparkles,
+  Pencil,
 } from "lucide-react";
 import GuestSidebar from "./GuestSidebar";
 import TableNode from "./TableNode";
@@ -894,12 +895,25 @@ export default function RasporedClient({
               </div>
               <div className="flex items-center justify-between px-5 pb-3 shrink-0">
                 <h3 className="font-raleway font-semibold text-sm" style={{ color: "var(--theme-text)" }}>
-                  Lista gostiju
+                  Gosti
                 </h3>
                 <button onClick={() => setShowMobileGuests(false)} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ color: "var(--theme-text-light)" }}>
                   <X size={18} />
                 </button>
               </div>
+              {/* Top action — surfaces the consumer route's full guest-management
+                  link (same target as the desktop GuestSidebar topAction). Only
+                  standalone routes provide this; couple flow leaves it undefined. */}
+              {sidebarTopAction && (
+                <a
+                  href={sidebarTopAction.href}
+                  className="mx-5 mb-3 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-raleway font-semibold text-white transition-opacity active:opacity-80 shrink-0"
+                  style={{ backgroundColor: "var(--theme-primary)" }}
+                >
+                  <Pencil size={13} />
+                  {sidebarTopAction.label}
+                </a>
+              )}
               {/* Search */}
               <div className="px-5 pb-3 shrink-0">
                 <div className="relative">

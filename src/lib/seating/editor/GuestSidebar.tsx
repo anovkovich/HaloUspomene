@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, RotateCcw, ExternalLink } from "lucide-react";
+import { Check, X, RotateCcw, Pencil } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
 
 // Wedding category values are stored without diacritics in the DB ("Mladozenjini"),
@@ -111,7 +111,7 @@ export default function GuestSidebar({
           className="flex items-center justify-center gap-1.5 mx-3 mt-3 px-3 py-2 rounded-lg text-xs font-raleway font-semibold text-white transition-opacity hover:opacity-90"
           style={{ backgroundColor: "var(--theme-primary)" }}
         >
-          <ExternalLink size={12} />
+          <Pencil size={12} />
           {topAction.label}
         </a>
       )}

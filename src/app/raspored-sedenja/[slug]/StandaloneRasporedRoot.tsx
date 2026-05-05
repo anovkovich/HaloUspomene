@@ -134,7 +134,7 @@ export default function StandaloneRasporedRoot({
         }}
         hideBackButton
         sidebarTopAction={{
-          label: "Lista gostiju",
+          label: "Uredi listu",
           href: `/raspored-sedenja/${slug}/gosti`,
         }}
         guestLookupUrl={`https://halouspomene.rs/raspored-sedenja/${slug}/gde-sedim/`}
