@@ -1,0 +1,125 @@
+# Daily MongoDB backup for HaloUspomene
+#
+# Runs every day at 01:00 UTC (= 03:00 Belgrade summer / 02:00 winter).
+# Dumps the production Atlas cluster, gzips it, attaches it as an asset
+# to a dated GitHub Release, then prunes old releases per the retention
+# policy (30 daily + 12 monthly + yearly forever).
+#
+# Atlas tier is M0 (free, no Atlas-side snapshots) — this workflow is
+# the project's ONLY backup. Failure notifications are mandatory.
+#
+# ── REQUIRED REPO SECRETS ──
+#   MONGODB_URI            full connection string (same value as Vercel env var)
+#   GMAIL_APP_PASSWORD     16-char Gmail App Password for halouspomene@gmail.com
+#                          (generate at https://myaccount.google.com/apppasswords —
+#                          requires 2FA on the gmail account first)
+#
+# ── RESTORE PROCEDURE ──
+#   1. gh release download backup-YYYY-MM-DD --pattern "*.archive.gz"
+#   2. mongorestore --uri "<TARGET_URI>" --gzip --archive=halouspomene-YYYY-MM-DD.archive.gz --drop
+#      (--drop replaces existing collections; omit for selective merge restore)
+#
+# ── MANUAL TRIGGER ──
+#   Actions tab → "Daily MongoDB Backup" → "Run workflow" button.
+
+name: Daily MongoDB Backup
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Install MongoDB Database Tools
+        run: |
+          wget -qO mongodb-tools.deb https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.10.0.deb
+          sudo apt-get install -y ./mongodb-tools.deb
+          mongodump --version
+
+      - name: Compute backup date
+        id: date
+        run: echo "DATE=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      - name: Run mongodump
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        run: |
+          ARCHIVE="halouspomene-${{ steps.date.outputs.DATE }}.archive.gz"
+          mongodump --uri="$MONGODB_URI" --gzip --archive="$ARCHIVE"
+          echo "Archive: $ARCHIVE"
+          ls -lh "$ARCHIVE"
+
+      - name: Create GitHub Release with backup asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="backup-${{ steps.date.outputs.DATE }}"
+          ARCHIVE="halouspomene-${{ steps.date.outputs.DATE }}.archive.gz"
+          gh release create "$TAG" \
+            --title "DB Backup ${{ steps.date.outputs.DATE }}" \
+            --notes "Automated daily MongoDB backup of the halouspomene database." \
+            "$ARCHIVE"
+
+      - name: Prune old releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          TODAY=$(date -u +%s)
+          gh release list --limit 1000 --json tagName --jq '.[].tagName' \
+            | grep '^backup-' \
+            | while read -r tag; do
+                date_str="${tag#backup-}"
+                ts=$(date -u -d "$date_str" +%s 2>/dev/null) || continue
+                age_days=$(( (TODAY - ts) / 86400 ))
+                day="${date_str:8:2}"
+                month_day="${date_str:5:5}"
+
+                keep=false
+                # Keep last 30 days (any day)
+                if [ "$age_days" -le 30 ]; then keep=true; fi
+                # Keep 1st of month within last 365 days
+                if [ "$day" = "01" ] && [ "$age_days" -le 365 ]; then keep=true; fi
+                # Keep 1st of January forever
+                if [ "$month_day" = "01-01" ]; then keep=true; fi
+
+                if [ "$keep" = "false" ]; then
+                  echo "Pruning old backup: $tag (age ${age_days}d)"
+                  gh release delete "$tag" --yes --cleanup-tag
+                fi
+              done
+
+  notify_failure:
+    needs: backup
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send failure email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: halouspomene@gmail.com
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          from: HaloUspomene Backup <halouspomene@gmail.com>
+          to: halouspomene@gmail.com
+          subject: "🚨 HaloUspomene DB backup FAILED"
+          body: |
+            Daily MongoDB backup workflow failed.
+
+            Repo:    ${{ github.repository }}
+            Run ID:  ${{ github.run_id }}
+            Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Open the run logs to see which step failed. Common causes:
+              • MongoDB Atlas IP allowlist no longer includes GitHub Actions runner IPs (they rotate)
+              • MONGODB_URI secret expired or password rotated
+              • Atlas cluster paused (M0 auto-pauses after 60 days idle)
+              • mongodump-tools package URL outdated (rare)
