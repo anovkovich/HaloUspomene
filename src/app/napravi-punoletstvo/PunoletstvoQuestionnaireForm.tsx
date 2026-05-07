@@ -697,30 +697,31 @@ export default function PunoletstvoQuestionnaireForm() {
       }
 
       // 1) Persist as draft in MongoDB (mirrors wedding classic flow).
+      const punoletstvoApiPayload = {
+        theme: formData.theme,
+        scriptFont: formData.scriptFont,
+        gender: formData.gender,
+        honoree_name: formData.honoree_name,
+        honoree_surname: formData.honoree_surname,
+        event_date: formData.event_date_only
+          ? `${formData.event_date_only}T${formData.event_time}:00`
+          : "",
+        submit_until: formData.submit_until_date,
+        tagline: formData.tagline,
+        location: {
+          name: formData.location_name,
+          address: formData.location_address,
+        },
+        countdown_enabled: formData.countdown_enabled,
+        map_enabled: formData.map_enabled,
+        contact_phone: `+381${formData.contact_phone}`,
+        phone_trust_token: formData.phone_trust_token,
+        recaptcha_token: recaptchaToken,
+      };
       const res = await fetch("/api/punoletstvo/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          theme: formData.theme,
-          scriptFont: formData.scriptFont,
-          gender: formData.gender,
-          honoree_name: formData.honoree_name,
-          honoree_surname: formData.honoree_surname,
-          event_date: formData.event_date_only
-            ? `${formData.event_date_only}T${formData.event_time}:00`
-            : "",
-          submit_until: formData.submit_until_date,
-          tagline: formData.tagline,
-          location: {
-            name: formData.location_name,
-            address: formData.location_address,
-          },
-          countdown_enabled: formData.countdown_enabled,
-          map_enabled: formData.map_enabled,
-          contact_phone: `+381${formData.contact_phone}`,
-          phone_trust_token: formData.phone_trust_token,
-          recaptcha_token: recaptchaToken,
-        }),
+        body: JSON.stringify(punoletstvoApiPayload),
       });
       const created = await res.json();
       if (!res.ok) throw new Error(created.error || "Greška pri kreiranju pozivnice");
@@ -761,6 +762,7 @@ export default function PunoletstvoQuestionnaireForm() {
             Boje: themeLabel,
             Napomena: formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/rodjendan/${created.slug}`,
+            "JSON podaci": JSON.stringify(punoletstvoApiPayload, null, 2),
           }),
         }).catch(() => {});
       }

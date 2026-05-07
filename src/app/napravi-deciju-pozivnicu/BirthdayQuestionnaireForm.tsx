@@ -749,31 +749,32 @@ export default function BirthdayQuestionnaireForm() {
       }
 
       // 1) Persist as draft in MongoDB (mirrors wedding classic flow).
+      const birthdayApiPayload = {
+        theme: formData.theme,
+        gender: formData.gender,
+        displayFont: formData.displayFont,
+        child_name: formData.child_name,
+        parent_names: formData.parent_names,
+        age: formData.age,
+        event_date: formData.event_date_only
+          ? `${formData.event_date_only}T${formData.event_time}:00`
+          : "",
+        submit_until: formData.submit_until_date,
+        tagline: formData.tagline,
+        location: {
+          name: formData.location_name,
+          address: formData.location_address,
+        },
+        countdown_enabled: formData.countdown_enabled,
+        map_enabled: formData.map_enabled,
+        contact_phone: `+381${formData.contact_phone}`,
+        phone_trust_token: formData.phone_trust_token,
+        recaptcha_token: recaptchaToken,
+      };
       const res = await fetch("/api/deciji-rodjendan/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          theme: formData.theme,
-          gender: formData.gender,
-          displayFont: formData.displayFont,
-          child_name: formData.child_name,
-          parent_names: formData.parent_names,
-          age: formData.age,
-          event_date: formData.event_date_only
-            ? `${formData.event_date_only}T${formData.event_time}:00`
-            : "",
-          submit_until: formData.submit_until_date,
-          tagline: formData.tagline,
-          location: {
-            name: formData.location_name,
-            address: formData.location_address,
-          },
-          countdown_enabled: formData.countdown_enabled,
-          map_enabled: formData.map_enabled,
-          contact_phone: `+381${formData.contact_phone}`,
-          phone_trust_token: formData.phone_trust_token,
-          recaptcha_token: recaptchaToken,
-        }),
+        body: JSON.stringify(birthdayApiPayload),
       });
       const created = await res.json();
       if (!res.ok) throw new Error(created.error || "Greška pri kreiranju pozivnice");
@@ -813,6 +814,7 @@ export default function BirthdayQuestionnaireForm() {
             "Kontakt telefon": `+381${formData.contact_phone}`,
             Napomena: formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/rodjendan/${created.slug}`,
+            "JSON podaci": JSON.stringify(birthdayApiPayload, null, 2),
           }),
         }).catch(() => {});
       }

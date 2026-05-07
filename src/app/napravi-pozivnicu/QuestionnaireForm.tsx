@@ -2289,71 +2289,72 @@ export default function QuestionnaireForm({
         const premiumUrl = isUpgrade
           ? `/api/premium-pozivnica/${encodeURIComponent(upgradeSlug!)}/upgrade`
           : "/api/premium-pozivnica/create";
+        const premiumPayload = {
+          bride: formData.bride,
+          groom: formData.groom,
+          full_display: formData.full_display,
+          useCyrillic: formData.useCyrillic,
+          event_date: formData.event_date,
+          submit_until_date: formData.submit_until_date,
+          theme: formData.theme,
+          scriptFont: formData.scriptFont,
+          premium_theme: formData.premium_theme,
+          ai_couple_image_url: aiCoupleImageUrl,
+          premium_city: formData.premium_city,
+          premium_car: formData.premium_car,
+          couple_description: formData.couple_description,
+          envelope_items: formData.envelope_items,
+          envelope_style: formData.envelope_style,
+          envelope_rose_petals: formData.envelope_rose_petals,
+          tagline: formData.tagline,
+          thankYouFooter: formData.thankYouFooter,
+          countdown_enabled: formData.countdown_enabled,
+          map_enabled: formData.map_enabled,
+          custom_primary_color: formData.custom_primary_color,
+          custom_background_color: formData.custom_background_color,
+          contact_phone: combinedPhone,
+          phone_trust_token: formData.phone_trust_token,
+          recaptcha_token: recaptchaToken,
+          locations: formData.locations
+            .filter(
+              (l) =>
+                l.enabled && (l.type === "hall" || l.type === "church"),
+            )
+            .map((l) => ({
+              name: l.name,
+              address: l.address,
+              map_url: "",
+              type: l.type,
+            })),
+          timeline: [...formData.locations]
+            .filter((l) => l.enabled)
+            .sort((a, b) => a.time.localeCompare(b.time))
+            .map((l) => {
+              const typeToIcon: Record<string, string> = {
+                home: "HouseHeart",
+                church: "Church",
+                ceremony: "Heart",
+                hall: "Utensils",
+              };
+              const typeToWhat: Record<string, string> = {
+                home: "Polazak od kuće",
+                church: "Crkveno venčanje",
+                ceremony: "Građansko venčanje",
+                hall: "Skup u svečanoj sali",
+              };
+              return {
+                title: l.name,
+                time: l.time,
+                description: l.address,
+                what: typeToWhat[l.type] || "",
+                icon: typeToIcon[l.type] || "MapPin",
+              };
+            }),
+        };
         const res = await fetch(premiumUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            bride: formData.bride,
-            groom: formData.groom,
-            full_display: formData.full_display,
-            useCyrillic: formData.useCyrillic,
-            event_date: formData.event_date,
-            submit_until_date: formData.submit_until_date,
-            theme: formData.theme,
-            scriptFont: formData.scriptFont,
-            premium_theme: formData.premium_theme,
-            ai_couple_image_url: aiCoupleImageUrl,
-            premium_city: formData.premium_city,
-            premium_car: formData.premium_car,
-            couple_description: formData.couple_description,
-            envelope_items: formData.envelope_items,
-            envelope_style: formData.envelope_style,
-            envelope_rose_petals: formData.envelope_rose_petals,
-            tagline: formData.tagline,
-            thankYouFooter: formData.thankYouFooter,
-            countdown_enabled: formData.countdown_enabled,
-            map_enabled: formData.map_enabled,
-            custom_primary_color: formData.custom_primary_color,
-            custom_background_color: formData.custom_background_color,
-            contact_phone: combinedPhone,
-            phone_trust_token: formData.phone_trust_token,
-            recaptcha_token: recaptchaToken,
-            locations: formData.locations
-              .filter(
-                (l) =>
-                  l.enabled && (l.type === "hall" || l.type === "church"),
-              )
-              .map((l) => ({
-                name: l.name,
-                address: l.address,
-                map_url: "",
-                type: l.type,
-              })),
-            timeline: [...formData.locations]
-              .filter((l) => l.enabled)
-              .sort((a, b) => a.time.localeCompare(b.time))
-              .map((l) => {
-                const typeToIcon: Record<string, string> = {
-                  home: "HouseHeart",
-                  church: "Church",
-                  ceremony: "Heart",
-                  hall: "Utensils",
-                };
-                const typeToWhat: Record<string, string> = {
-                  home: "Polazak od kuće",
-                  church: "Crkveno venčanje",
-                  ceremony: "Građansko venčanje",
-                  hall: "Skup u svečanoj sali",
-                };
-                return {
-                  title: l.name,
-                  time: l.time,
-                  description: l.address,
-                  what: typeToWhat[l.type] || "",
-                  icon: typeToIcon[l.type] || "MapPin",
-                };
-              }),
-          }),
+          body: JSON.stringify(premiumPayload),
         });
         const data = await res.json();
         if (!res.ok)
@@ -2380,6 +2381,7 @@ export default function QuestionnaireForm({
               "AI Tema": formData.premium_theme || "(nije izabrana)",
               "Preview URL": `https://halouspomene.rs/premium-pozivnica/${data.slug}`,
               "Admin link": `https://halouspomene.rs/admin/${data.slug}`,
+              "JSON podaci": JSON.stringify(premiumPayload, null, 2),
             }),
           }).catch(() => {});
         }
@@ -2417,48 +2419,49 @@ export default function QuestionnaireForm({
       const classicUrl = isUpgrade
         ? `/api/pozivnica/${encodeURIComponent(upgradeSlug!)}/upgrade`
         : "/api/pozivnica/create";
+      const classicApiPayload = {
+        bride: formData.bride,
+        groom: formData.groom,
+        full_display: formData.full_display,
+        useCyrillic: formData.useCyrillic,
+        event_date: formData.event_date,
+        submit_until_date: formData.submit_until_date,
+        theme: formData.theme,
+        scriptFont: formData.scriptFont,
+        tagline: formData.tagline,
+        thankYouFooter: formData.thankYouFooter,
+        countdown_enabled: formData.countdown_enabled,
+        map_enabled: formData.map_enabled,
+        paid_for_raspored: formData.extra_raspored,
+        paid_for_audio: formData.extra_audio,
+        paid_for_audio_USB: formData.extra_usb_kaseta
+          ? "kaseta"
+          : formData.extra_usb_bocica
+          ? "bocica"
+          : "",
+        custom_primary_color: formData.custom_primary_color || undefined,
+        custom_background_color: formData.custom_background_color || undefined,
+        contact_phone: combinedPhone,
+        phone_trust_token: formData.phone_trust_token,
+        recaptcha_token: recaptchaToken,
+        locations: formData.locations
+          .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
+          .map((l) => ({ name: l.name, address: l.address, type: l.type })),
+        timeline: [...formData.locations]
+          .filter((l) => l.enabled)
+          .sort((a, b) => a.time.localeCompare(b.time))
+          .map((l) => ({
+            title: l.name,
+            time: l.time,
+            description: l.address,
+            what: typeToWhat[l.type] || "",
+            icon: typeToIcon[l.type] || "MapPin",
+          })),
+      };
       const res = await fetch(classicUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bride: formData.bride,
-          groom: formData.groom,
-          full_display: formData.full_display,
-          useCyrillic: formData.useCyrillic,
-          event_date: formData.event_date,
-          submit_until_date: formData.submit_until_date,
-          theme: formData.theme,
-          scriptFont: formData.scriptFont,
-          tagline: formData.tagline,
-          thankYouFooter: formData.thankYouFooter,
-          countdown_enabled: formData.countdown_enabled,
-          map_enabled: formData.map_enabled,
-          paid_for_raspored: formData.extra_raspored,
-          paid_for_audio: formData.extra_audio,
-          paid_for_audio_USB: formData.extra_usb_kaseta
-            ? "kaseta"
-            : formData.extra_usb_bocica
-            ? "bocica"
-            : "",
-          custom_primary_color: formData.custom_primary_color || undefined,
-          custom_background_color: formData.custom_background_color || undefined,
-          contact_phone: combinedPhone,
-          phone_trust_token: formData.phone_trust_token,
-          recaptcha_token: recaptchaToken,
-          locations: formData.locations
-            .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
-            .map((l) => ({ name: l.name, address: l.address, type: l.type })),
-          timeline: [...formData.locations]
-            .filter((l) => l.enabled)
-            .sort((a, b) => a.time.localeCompare(b.time))
-            .map((l) => ({
-              title: l.name,
-              time: l.time,
-              description: l.address,
-              what: typeToWhat[l.type] || "",
-              icon: typeToIcon[l.type] || "MapPin",
-            })),
-        }),
+        body: JSON.stringify(classicApiPayload),
       });
 
       const data = await res.json();
@@ -2493,6 +2496,7 @@ export default function QuestionnaireForm({
               : "❌ Ne",
             "Napomena": formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/${data.slug}`,
+            "JSON podaci": JSON.stringify(classicApiPayload, null, 2),
           }),
         }).catch(() => {});
       }
