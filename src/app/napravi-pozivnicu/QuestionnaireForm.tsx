@@ -26,6 +26,7 @@ import {
 } from "@/data/pricing";
 import {
   THEME_CONFIGS,
+  WEDDING_THEME_KEYS,
   SCRIPT_FONT_CONFIGS,
   getThemeCSSVariables,
   getThemeConfig,
@@ -1197,10 +1198,12 @@ function Step3({
   const colorInputRef = React.useRef<HTMLInputElement>(null);
   const bgInputRef = React.useRef<HTMLInputElement>(null);
 
-  const themes = Object.entries(THEME_CONFIGS) as [
-    ThemeType,
-    (typeof THEME_CONFIGS)[ThemeType],
-  ][];
+  const themes = WEDDING_THEME_KEYS.map(
+    (key) => [key, THEME_CONFIGS[key]] as [
+      ThemeType,
+      (typeof THEME_CONFIGS)[ThemeType],
+    ],
+  );
   const fonts = Object.entries(SCRIPT_FONT_CONFIGS) as [
     ScriptFontType,
     (typeof SCRIPT_FONT_CONFIGS)[ScriptFontType],

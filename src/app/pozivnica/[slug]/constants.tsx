@@ -7,6 +7,20 @@ export interface ScriptFontConfig {
   description: string;
 }
 
+/**
+ * Wedding-only theme keys, in display order. THEME_CONFIGS still contains
+ * punoletstvo themes (white_gold_burgundy, white_gold_navy) because shared
+ * helpers like getThemeCSSVariables / OG image / PDF rendering must resolve
+ * them — but the wedding theme picker UIs must not surface them.
+ */
+export const WEDDING_THEME_KEYS: ThemeType[] = [
+  "classic_rose",
+  "luxury_gold",
+  "modern_mono",
+  "minimal_sage",
+  "warm_terracotta",
+];
+
 export const SCRIPT_FONT_CONFIGS: Record<ScriptFontType, ScriptFontConfig> = {
   "great-vibes": {
     name: "Great Vibes",

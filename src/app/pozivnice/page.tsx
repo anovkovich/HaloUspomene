@@ -29,7 +29,7 @@ import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import BirthdayTypeButton from "@/components/landing/BirthdayTypeButton";
 import { pricing, formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
-import { THEME_CONFIGS } from "@/app/pozivnica/[slug]/constants";
+import { THEME_CONFIGS, WEDDING_THEME_KEYS } from "@/app/pozivnica/[slug]/constants";
 import type { ThemeType, ThemeConfig } from "@/app/pozivnica/[slug]/types";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
@@ -125,10 +125,9 @@ const features = [
   },
 ];
 
-const themeEntries = Object.entries(THEME_CONFIGS) as [
-  ThemeType,
-  ThemeConfig,
-][];
+const themeEntries = WEDDING_THEME_KEYS.map(
+  (key) => [key, THEME_CONFIGS[key]] as [ThemeType, ThemeConfig],
+);
 
 const comparisonRows = [
   {
