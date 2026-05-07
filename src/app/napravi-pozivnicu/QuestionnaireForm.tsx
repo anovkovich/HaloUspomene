@@ -2381,7 +2381,7 @@ export default function QuestionnaireForm({
               "AI Tema": formData.premium_theme || "(nije izabrana)",
               "Preview URL": `https://halouspomene.rs/premium-pozivnica/${data.slug}`,
               "Admin link": `https://halouspomene.rs/admin/${data.slug}`,
-              "JSON podaci": JSON.stringify(premiumPayload, null, 2),
+              "JSON podaci": JSON.stringify(premiumPayload, (k, v) => k === "recaptcha_token" ? undefined : v, 2),
             }),
           }).catch(() => {});
         }
@@ -2496,7 +2496,7 @@ export default function QuestionnaireForm({
               : "❌ Ne",
             "Napomena": formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/${data.slug}`,
-            "JSON podaci": JSON.stringify(classicApiPayload, null, 2),
+            "JSON podaci": JSON.stringify(classicApiPayload, (k, v) => k === "recaptcha_token" ? undefined : v, 2),
           }),
         }).catch(() => {});
       }

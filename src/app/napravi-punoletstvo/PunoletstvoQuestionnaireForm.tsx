@@ -762,7 +762,7 @@ export default function PunoletstvoQuestionnaireForm() {
             Boje: themeLabel,
             Napomena: formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/rodjendan/${created.slug}`,
-            "JSON podaci": JSON.stringify(punoletstvoApiPayload, null, 2),
+            "JSON podaci": JSON.stringify(punoletstvoApiPayload, (k, v) => k === "recaptcha_token" ? undefined : v, 2),
           }),
         }).catch(() => {});
       }

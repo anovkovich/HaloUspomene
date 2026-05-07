@@ -814,7 +814,7 @@ export default function BirthdayQuestionnaireForm() {
             "Kontakt telefon": `+381${formData.contact_phone}`,
             Napomena: formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/rodjendan/${created.slug}`,
-            "JSON podaci": JSON.stringify(birthdayApiPayload, null, 2),
+            "JSON podaci": JSON.stringify(birthdayApiPayload, (k, v) => k === "recaptcha_token" ? undefined : v, 2),
           }),
         }).catch(() => {});
       }
