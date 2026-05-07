@@ -1,5 +1,11 @@
 # HaloUspomene — Claude Code Context
 
+> ⚠️ **PRODUCTION APPLICATION** — `halouspomene.rs` is live and serves real paying couples preparing for real weddings. RSVP submissions, audio guest-book recordings, seating layouts, and payment receipts are all real customer data. A bad deploy can break a couple's wedding day.
+>
+> **Be conservative.** Only ship changes you are 100% confident will work correctly. Prefer narrow, reversible edits over broad refactors. Verify against the current code before trusting any memory or assumption. When in doubt, ask the user before acting — especially for anything that touches MongoDB, auth, payments, the `couples` collection, or production env config.
+>
+> Sa srećom.
+
 ## Project Overview
 
 **HaloUspomene** (`halouspomene.rs`) is a Serbian wedding & celebration SaaS platform. It started as a wedding-invitation builder and has grown into a multi-product suite:
@@ -234,7 +240,7 @@ src/
 ### Couple Data Shape (`WeddingData`)
 Lives at `src/app/pozivnica/[slug]/types.ts`. Selected fields:
 
-**Core:** `theme`, `scriptFont`, `useCyrillic`, `couple_names`, `event_date`, `submit_until`, `potvrde_password` (format: `GroomNameDDMM`).
+**Core:** `theme`, `scriptFont`, `useCyrillic`, `couple_names`, `event_date`, `submit_until`, `potvrde_password` (auto-generated as `${groom}${4 random digits}` by `/api/pozivnica/create` and `/api/premium-pozivnica/create`; admin-typed via `/admin/nova` Quick Start; user-typed via `/planiranje-vencanja` signup. Older couples created before 2026-04-18 may have legacy `${groom}${DDMM}` format from the deprecated lead-gen JSON generator).
 
 **Paid features (admin toggles):**
 - `paid_for_raspored` — unlocks seating editor + `/gde-sedim` lookup

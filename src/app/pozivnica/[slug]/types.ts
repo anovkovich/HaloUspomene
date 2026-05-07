@@ -64,7 +64,7 @@ export interface WeddingData {
   theme: ThemeType;
   scriptFont?: ScriptFontType;
   useCyrillic?: boolean; // Use Cyrillic script for static text
-  potvrde_password?: string; // Password to access the /potvrde admin page (format: GroomNameDDMM)
+  potvrde_password?: string; // Password for /potvrde + /moje-vencanje login. Auto-create routes generate ${groom}${random4}; admin/Quick-Start accepts whatever is typed. Legacy couples (pre-2026-04-18) may have ${groom}${DDMM} format from the old lead-gen generator.
   couple_names: {
     bride: string;
     groom: string;
