@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { upsertCouple } from "@/lib/couples";
-import { generateUniqueSlug } from "@/lib/slug";
+import { generateUniqueSlug, InvalidSlugInputError } from "@/lib/slug";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 
 // Simple IP-based rate limiting
@@ -40,7 +40,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate unique slug
-    const slug = await generateUniqueSlug(bride, groom);
+    let slug: string;
+    try {
+      slug = await generateUniqueSlug(bride, groom);
+    } catch (err) {
+      if (err instanceof InvalidSlugInputError) {
+        return NextResponse.json({ error: err.message }, { status: 400 });
+      }
+      throw err;
+    }
 
     // Auto-generate password: GroomName + 4 random digits
     const digits = String(Math.floor(1000 + Math.random() * 9000));

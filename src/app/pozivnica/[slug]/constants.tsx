@@ -204,8 +204,9 @@ export function getThemeCSSVariables(
   theme: ThemeType,
   scriptFont: ScriptFontType = "great-vibes",
 ): Record<string, string> {
-  const config = THEME_CONFIGS[theme];
-  const fontConfig = SCRIPT_FONT_CONFIGS[scriptFont];
+  const config = THEME_CONFIGS[theme] ?? THEME_CONFIGS["classic_rose"];
+  const fontConfig =
+    SCRIPT_FONT_CONFIGS[scriptFont] ?? SCRIPT_FONT_CONFIGS["great-vibes"];
   return {
     "--theme-primary": config.colors.primary,
     "--theme-primary-light": config.colors.primaryLight,
@@ -228,7 +229,7 @@ export function getThemeCSSVariables(
 
 // Get script font config
 export function getScriptFontConfig(font: ScriptFontType): ScriptFontConfig {
-  return SCRIPT_FONT_CONFIGS[font];
+  return SCRIPT_FONT_CONFIGS[font] ?? SCRIPT_FONT_CONFIGS["great-vibes"];
 }
 
 // Get theme config

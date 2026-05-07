@@ -71,6 +71,12 @@ export default function NovaPage() {
       setError("Slug je obavezan (npr. ana-dejan)");
       return;
     }
+    if (!/^[a-z0-9]+(-[a-z0-9]+)+$/.test(trimmedSlug)) {
+      setError(
+        "Slug mora biti u formatu mlada-mladozenja (samo mala slova, cifre i crtice, npr. ana-dejan).",
+      );
+      return;
+    }
 
     let body: Record<string, unknown>;
 

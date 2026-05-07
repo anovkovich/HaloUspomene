@@ -2,7 +2,8 @@
 
 import { cookies, headers } from "next/headers";
 import { SignJWT } from "jose";
-import { getWeddingData, upsertCouple } from "@/lib/couples";
+import { upsertCouple } from "@/lib/couples";
+import { generateUniqueSlug, InvalidSlugInputError } from "@/lib/slug";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
 import {
@@ -13,33 +14,6 @@ import {
 const secret = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "dev-secret",
 );
-function slugify(bride: string, groom: string): string {
-  return `${bride}-${groom}`
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // strip diacritics
-    .replace(/đ/g, "dj")
-    .replace(/ž/g, "z")
-    .replace(/č/g, "c")
-    .replace(/ć/g, "c")
-    .replace(/š/g, "s")
-    .replace(/[^a-z0-9-]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-async function resolveSlug(bride: string, groom: string): Promise<string> {
-  const base = slugify(bride, groom);
-  let candidate = base;
-  let i = 2;
-
-  while (await getWeddingData(candidate)) {
-    candidate = `${base}-${i}`;
-    i++;
-  }
-
-  return candidate;
-}
 
 export type SignupResult =
   | { ok: true; slug: string }
@@ -115,8 +89,17 @@ export async function signupAction(formData: {
     }
   }
 
-  // Generate unique slug
-  const slug = await resolveSlug(bride, groom);
+  // Generate unique slug — transliterates Cyrillic, throws if names produce
+  // an empty slug (e.g. emoji-only input).
+  let slug: string;
+  try {
+    slug = await generateUniqueSlug(bride, groom);
+  } catch (err) {
+    if (err instanceof InvalidSlugInputError) {
+      return { ok: false, error: err.message };
+    }
+    throw err;
+  }
 
   // Create couple document
   const coupleData: WeddingData = {

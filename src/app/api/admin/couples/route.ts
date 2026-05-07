@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { getAllCouples, upsertCouple } from "@/lib/couples";
+import { SLUG_FORMAT } from "@/lib/slug";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
@@ -37,6 +38,15 @@ export async function POST(req: NextRequest) {
   if (!slug || typeof slug !== "string") {
     return NextResponse.json(
       { error: "Slug is required" },
+      { status: 400 }
+    );
+  }
+  if (!SLUG_FORMAT.test(slug)) {
+    return NextResponse.json(
+      {
+        error:
+          "Slug mora biti u formatu mlada-mladozenja (samo mala slova, cifre i crtice, npr. ana-dejan).",
+      },
       { status: 400 }
     );
   }
