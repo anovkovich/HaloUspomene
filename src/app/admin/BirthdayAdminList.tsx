@@ -23,6 +23,7 @@ interface Birthday {
 
 interface BirthdayStats {
   rsvp: { attending: number; declined: number; totalGuests: number } | null;
+  seating: { totalSeats: number; assignedSeats: number } | null;
 }
 
 interface Props {
@@ -201,7 +202,7 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 mb-8">
+      <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8 flex-wrap">
         <h2 className="text-xl sm:text-2xl font-semibold text-white">
           Rođendani ({birthdays.length})
         </h2>
@@ -209,7 +210,7 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
           onClick={() => router.push("/admin/novi-rodjendan")}
           className="flex items-center gap-2 bg-[#FF6B6B] hover:bg-[#E55A5A] text-white rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors cursor-pointer shrink-0"
         >
-          <Plus size={14} /> Novi rođendan
+          <Plus size={14} /> <span className="hidden sm:inline">Novi rođendan</span><span className="sm:hidden">Novi</span>
         </button>
       </div>
 
@@ -223,7 +224,7 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
           return (
             <div
               key={b.slug}
-              className={`rounded-xl px-5 py-4 ${
+              className={`rounded-xl px-4 py-4 sm:px-5 ${
                 isPast
                   ? "bg-white/5 opacity-50 border border-white/10"
                   : "bg-white/5 border border-white/10"
@@ -314,6 +315,26 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
                     </span>
                   </div>
                 )}
+
+                {s?.seating && b.paid_for_raspored && (
+                  <div className="flex items-center gap-1.5 text-xs text-white/50">
+                    <Armchair size={12} />
+                    <span>
+                      {s.seating.assignedSeats}/{s.seating.totalSeats} raspoređeno
+                    </span>
+                    {s.seating.totalSeats > 0 && (
+                      <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#AE343F] rounded-full transition-all"
+                          style={{
+                            width: `${Math.round((s.seating.assignedSeats / s.seating.totalSeats) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex items-center gap-3 sm:ml-auto">
                   <div
                     className="flex items-center gap-1.5"

@@ -25,11 +25,15 @@ interface Props {
   bankAccountIdx: number;
 }
 
+type AdminSeating = StandaloneSeating & {
+  seatingStats?: { totalSeats: number; assignedSeats: number } | null;
+};
+
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props) {
-  const [seatings, setSeatings] = useState<StandaloneSeating[]>([]);
+  const [seatings, setSeatings] = useState<AdminSeating[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
@@ -221,15 +225,17 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-white">
-          Standalone raspored sedenja ({seatings.length})
+      <div className="flex items-center justify-between mb-5 sm:mb-6 gap-3 flex-wrap">
+        <h2 className="text-xl sm:text-2xl font-semibold text-white">
+          <span className="hidden sm:inline">Standalone raspored sedenja</span>
+          <span className="sm:hidden">Raspored sedenja</span>
+          {" "}({seatings.length})
         </h2>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer"
+          className="flex items-center gap-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-lg px-3 sm:px-4 py-2 text-sm font-medium transition-colors cursor-pointer shrink-0"
         >
-          <Plus size={16} /> Novi pristup
+          <Plus size={16} /> <span className="hidden sm:inline">Novi pristup</span><span className="sm:hidden">Novi</span>
         </button>
       </div>
 
@@ -259,7 +265,7 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
           return (
             <div
               key={s.slug}
-              className={`rounded-xl px-5 py-4 ${
+              className={`rounded-xl px-4 py-4 sm:px-5 ${
                 !s.active
                   ? "bg-white/[0.02] border border-white/10 opacity-60"
                   : isPast
@@ -267,52 +273,25 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                     : "bg-white/5 border border-[#2563eb]/30"
               }`}
             >
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                {/* Left: event details */}
-                <div className="flex-1 min-w-[260px]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-base font-semibold text-white">
-                      {s.eventName}
-                    </h3>
-                    {!s.active && (
-                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-red-500/20 text-red-300">
-                        Onemogućen
-                      </span>
-                    )}
-                    {isPast && s.active && (
-                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/10 text-white/50">
-                        Prošao
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-4 text-xs text-white/50 flex-wrap">
-                    {s.ownerName && (
-                      <span className="flex items-center gap-1.5">
-                        <User size={11} /> {s.ownerName}
-                      </span>
-                    )}
-                    {s.ownerPhone && (
-                      <span className="flex items-center gap-1.5">
-                        <Phone size={11} /> {s.ownerPhone}
-                      </span>
-                    )}
-                    {eventDate && (
-                      <span className="flex items-center gap-1.5">
-                        <Calendar size={11} />{" "}
-                        {eventDate.toLocaleDateString("sr-RS")}
-                      </span>
-                    )}
-                    <span className="flex items-center gap-1.5">
-                      <Users size={11} /> {s.guests.length} gostiju
+              {/* Top row: title (+ status badges) on the left, actions on the right */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <h3 className="text-base font-semibold text-white truncate">
+                    {s.eventName}
+                  </h3>
+                  {!s.active && (
+                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-red-500/20 text-red-300 shrink-0">
+                      Onemogućen
                     </span>
-                    <span className="text-white/30 font-mono text-[10px]">
-                      {s.slug}
+                  )}
+                  {isPast && s.active && (
+                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/10 text-white/50 shrink-0">
+                      Prošao
                     </span>
-                  </div>
+                  )}
                 </div>
 
-                {/* Right: action buttons */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     onClick={() => handleToggleActive(s.slug, s.active)}
                     className={`text-[11px] px-2.5 py-1 rounded transition-colors cursor-pointer ${
@@ -333,12 +312,52 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                 </div>
               </div>
 
-              {/* Credentials block */}
+              {/* Metadata: owner, phone, date, guests, seating stats */}
+              <div className="mt-1 flex items-center gap-x-3 gap-y-1 text-xs text-white/50 flex-wrap">
+                {s.ownerName && (
+                  <span className="flex items-center gap-1.5">
+                    <User size={11} /> {s.ownerName}
+                  </span>
+                )}
+                {s.ownerPhone && (
+                  <span className="flex items-center gap-1.5">
+                    <Phone size={11} /> {s.ownerPhone}
+                  </span>
+                )}
+                {eventDate && (
+                  <span className="flex items-center gap-1.5">
+                    <Calendar size={11} />{" "}
+                    {eventDate.toLocaleDateString("sr-RS")}
+                  </span>
+                )}
+                <span className="flex items-center gap-1.5">
+                  <Users size={11} /> {s.guests.length} gostiju
+                </span>
+                {s.seatingStats && (
+                  <span className="flex items-center gap-1.5">
+                    <Armchair size={11} />
+                    {s.seatingStats.assignedSeats}/
+                    {s.seatingStats.totalSeats} raspoređeno
+                    {s.seatingStats.totalSeats > 0 && (
+                      <span className="inline-block w-12 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <span
+                          className="block h-full bg-[#2563eb] rounded-full transition-all"
+                          style={{
+                            width: `${Math.round((s.seatingStats.assignedSeats / s.seatingStats.totalSeats) * 100)}%`,
+                          }}
+                        />
+                      </span>
+                    )}
+                  </span>
+                )}
+              </div>
+
+              {/* Credentials block — wraps top→bottom on narrow viewports */}
               <div className="mt-3 pt-3 border-t border-white/5 flex flex-wrap items-center gap-2">
                 {/* URL */}
-                <div className="flex items-center gap-1.5 bg-white/[0.04] rounded-lg px-3 py-1.5 flex-1 min-w-[260px]">
+                <div className="flex items-center gap-1.5 bg-white/[0.04] rounded-lg px-3 py-1.5 flex-1 basis-full sm:basis-[260px] min-w-0">
                   <ExternalLink size={11} className="text-white/40 shrink-0" />
-                  <code className="text-[11px] text-white/70 truncate flex-1">
+                  <code className="text-[11px] text-white/70 truncate flex-1 min-w-0">
                     {url}
                   </code>
                   <button
@@ -355,7 +374,7 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                 </div>
 
                 {/* Password */}
-                <div className="flex items-center gap-1.5 bg-white/[0.04] rounded-lg px-3 py-1.5">
+                <div className="flex items-center gap-1.5 bg-white/[0.04] rounded-lg px-3 py-1.5 shrink-0">
                   <span className="text-[10px] uppercase tracking-wider text-white/40">
                     PIN
                   </span>
@@ -392,7 +411,7 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                       `combo-${s.slug}`,
                     )
                   }
-                  className="text-[11px] px-3 py-1.5 rounded bg-[#2563eb]/15 text-[#60a5fa] hover:bg-[#2563eb]/25 transition-colors cursor-pointer"
+                  className="text-[11px] px-3 py-1.5 rounded bg-[#2563eb]/15 text-[#60a5fa] hover:bg-[#2563eb]/25 transition-colors cursor-pointer shrink-0"
                 >
                   {copied === `combo-${s.slug}`
                     ? "Kopirano!"

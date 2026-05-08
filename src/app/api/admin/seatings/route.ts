@@ -4,6 +4,7 @@ import {
   createStandaloneSeating,
   listStandaloneSeatings,
 } from "@/lib/standalone-seating";
+import { loadSeatingLayout } from "@/lib/seating";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
@@ -22,7 +23,25 @@ export async function GET(req: NextRequest) {
   if (!(await isAdmin(req)))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const seatings = await listStandaloneSeatings();
-  return NextResponse.json(seatings);
+  const enriched = await Promise.all(
+    seatings.map(async (s) => {
+      try {
+        const tables = await loadSeatingLayout(s.slug);
+        if (!tables) return { ...s, seatingStats: null };
+        let totalSeats = 0;
+        let assignedSeats = 0;
+        for (const t of tables) {
+          if (t.type === "decoration") continue;
+          totalSeats += t.seats;
+          assignedSeats += t.assignments.filter(Boolean).length;
+        }
+        return { ...s, seatingStats: { totalSeats, assignedSeats } };
+      } catch {
+        return { ...s, seatingStats: null };
+      }
+    }),
+  );
+  return NextResponse.json(enriched);
 }
 
 export async function POST(req: NextRequest) {

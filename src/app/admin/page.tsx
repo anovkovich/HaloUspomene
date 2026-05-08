@@ -14,6 +14,18 @@ import AdminCalendar from "./AdminCalendar";
 
 type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja";
 
+const TABS: ReadonlyArray<{
+  id: AdminTab;
+  label: string;
+  icon: typeof Heart;
+  activeBg: string;
+}> = [
+  { id: "pozivnice", label: "Pozivnice", icon: Heart, activeBg: "bg-[#AE343F]" },
+  { id: "rodjendani", label: "Rođendani", icon: Cake, activeBg: "bg-[#FF6B6B]" },
+  { id: "vendori", label: "Vendori", icon: Star, activeBg: "bg-[#d4af37]" },
+  { id: "raspored-sedenja", label: "Raspored sedenja", icon: Armchair, activeBg: "bg-[#2563eb]" },
+];
+
 const BANK_ACCOUNTS = [
   { raw: "340000003258405791", display: "340-0000032584057-91", label: "Erste (340)" },
   { raw: "170001040456500004", display: "170-0010404565000-04", label: "UniCredit (170)" },
@@ -378,48 +390,26 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Tab bar */}
-      <div className="flex items-center gap-1 mb-8 bg-white/5 rounded-xl p-1 w-fit">
-        <button
-          onClick={() => setActiveTab("pozivnice")}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-            activeTab === "pozivnice"
-              ? "bg-[#AE343F] text-white"
-              : "text-white/50 hover:text-white/80"
-          }`}
-        >
-          <Heart size={14} /> Pozivnice
-        </button>
-        <button
-          onClick={() => setActiveTab("rodjendani")}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-            activeTab === "rodjendani"
-              ? "bg-[#FF6B6B] text-white"
-              : "text-white/50 hover:text-white/80"
-          }`}
-        >
-          <Cake size={14} /> Rođendani
-        </button>
-        <button
-          onClick={() => setActiveTab("vendori")}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-            activeTab === "vendori"
-              ? "bg-[#d4af37] text-white"
-              : "text-white/50 hover:text-white/80"
-          }`}
-        >
-          <Star size={14} /> Vendori
-        </button>
-        <button
-          onClick={() => setActiveTab("raspored-sedenja")}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-            activeTab === "raspored-sedenja"
-              ? "bg-[#2563eb] text-white"
-              : "text-white/50 hover:text-white/80"
-          }`}
-        >
-          <Armchair size={14} /> Raspored sedenja
-        </button>
+      {/* Tab bar — 2×2 on mobile, single row on sm+ */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 mb-6 sm:mb-8 bg-white/5 rounded-xl p-1">
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
+                isActive
+                  ? `text-white ${tab.activeBg}`
+                  : "text-white/50 hover:text-white/80"
+              }`}
+            >
+              <Icon size={14} className="shrink-0" />
+              <span className="truncate">{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {activeTab === "vendori" ? (
@@ -446,11 +436,11 @@ export default function AdminPage() {
         />
       ) : (
       <>
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-semibold text-white">
+      <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3 flex-wrap">
+        <h2 className="text-xl sm:text-2xl font-semibold text-white">
           Pozivnice ({couples.length})
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setShowPhoneRental(true)}
             className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-lg px-3 py-2 text-sm font-medium transition-colors"
@@ -460,9 +450,9 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => router.push("/admin/nova")}
-            className="flex items-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-lg px-3 sm:px-4 py-2 text-sm font-medium transition-colors"
           >
-            <Plus size={16} /> Nova pozivnica
+            <Plus size={16} /> <span className="hidden sm:inline">Nova pozivnica</span><span className="sm:hidden">Nova</span>
           </button>
         </div>
       </div>
@@ -483,7 +473,7 @@ export default function AdminPage() {
           return (
             <div
               key={c.slug}
-              className={`rounded-xl px-5 py-4 ${
+              className={`rounded-xl px-4 py-4 sm:px-5 ${
                 isQuickStart
                   ? "bg-indigo-950/30 border border-dashed border-indigo-400/30"
                   : isExpired

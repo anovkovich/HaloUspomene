@@ -93,14 +93,16 @@ export default function VendorAdminTab() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-white">
-          Vendori — Preporučeni ({highlighted.size})
+      <div className="flex items-center justify-between gap-3 mb-5 sm:mb-6 flex-wrap">
+        <h2 className="text-xl sm:text-2xl font-semibold text-white">
+          <span className="hidden sm:inline">Vendori — Preporučeni</span>
+          <span className="sm:hidden">Preporučeni</span>
+          {" "}({highlighted.size})
         </h2>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 bg-[#d4af37] hover:bg-[#b8972e] text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 bg-[#d4af37] hover:bg-[#b8972e] text-white rounded-lg px-3 sm:px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 shrink-0"
         >
           <Check size={16} />
           {saving ? "Čuvam..." : "Sačuvaj"}
