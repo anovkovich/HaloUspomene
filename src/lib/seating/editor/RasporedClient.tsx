@@ -35,6 +35,7 @@ import TableNode from "./TableNode";
 import Toolbar from "./Toolbar";
 import AddTablePanel from "./AddTablePanel";
 import UpgradeModal from "./UpgradeModal";
+import CursorGuestBadge from "./CursorGuestBadge";
 import MobileTableCard from "./MobileTableCard";
 import MobileSeatSheet from "./MobileSeatSheet";
 import MobileLayoutScreen from "./MobileLayoutScreen";
@@ -92,14 +93,14 @@ function createTable(
   type: TableType,
   label: string,
   seats: number,
-  offset: number,
+  pos: { x: number; y: number },
 ): TableData {
   return {
     id: `table-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     type,
     seats,
-    x: 40 + (offset % 4) * 250,
-    y: 40 + Math.floor(offset / 4) * 290,
+    x: pos.x,
+    y: pos.y,
     label,
     assignments: Array(seats).fill(null),
   };
@@ -129,6 +130,8 @@ export default function RasporedClient({
     guestLookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
   const [tables, setTables] = useState<TableData[]>([]);
   const [selectedGuest, setSelectedGuest] = useState<RSVPEntry | null>(null);
+  const [hoverSeat, setHoverSeat] = useState<SeatAssignment | null>(null);
+  const [hoverHint, setHoverHint] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -286,6 +289,27 @@ export default function RasporedClient({
     [assignedCounts],
   );
 
+  // Place new tables/decorations near the top-left of the currently visible
+  // canvas viewport instead of an absolute grid, so users see what they just
+  // added. Cascades diagonally if the spot would overlap an existing item.
+  const findSpawnPosition = useCallback(() => {
+    const canvas = canvasRef.current;
+    const baseX = (canvas?.scrollLeft ?? 0) + 60;
+    const baseY = (canvas?.scrollTop ?? 0) + 60;
+    const TILE = 220; // approximate bounding-box for collision avoidance
+    let x = baseX;
+    let y = baseY;
+    for (let i = 0; i < 20; i++) {
+      const collides = tables.some(
+        (t) => Math.abs(t.x - x) < TILE && Math.abs(t.y - y) < TILE,
+      );
+      if (!collides) return { x, y };
+      x += 30;
+      y += 30;
+    }
+    return { x, y };
+  }, [tables]);
+
   const addTable = async (type: TableType, label?: string, seats?: number) => {
     if (
       (type === "rectangular" || type === "circle") &&
@@ -300,9 +324,10 @@ export default function RasporedClient({
     const defaultSeats =
       type === "circle" ? 12 : type === "single-sided" ? 6 : 10;
     const idx = tables.length;
+    const pos = findSpawnPosition();
     setTables((prev) => [
       ...prev,
-      createTable(type, label ?? `Sto ${idx + 1}`, seats ?? defaultSeats, idx),
+      createTable(type, label ?? `Sto ${idx + 1}`, seats ?? defaultSeats, pos),
     ]);
   };
 
@@ -310,15 +335,15 @@ export default function RasporedClient({
     label: string,
     decorationType: TableData["decorationType"],
   ) => {
-    const idx = tables.length;
+    const pos = findSpawnPosition();
     setTables((prev) => [
       ...prev,
       {
         id: `deco-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         type: "decoration",
         seats: 0,
-        x: 40 + (idx % 4) * 200,
-        y: 40 + Math.floor(idx / 4) * 120,
+        x: pos.x,
+        y: pos.y,
         label,
         assignments: [],
         decorationType,
@@ -1117,6 +1142,8 @@ export default function RasporedClient({
                       table={table}
                       selectedGuest={selectedGuest}
                       onSeatClick={handleSeatClick}
+                      onSeatHover={setHoverSeat}
+                      onElementHover={setHoverHint}
                       onUpdate={updateTable}
                       onDelete={deleteTable}
                     />
@@ -1405,6 +1432,15 @@ export default function RasporedClient({
             );
           })()}
         </>
+      )}
+
+      {!isPWADesktop && (
+        <CursorGuestBadge
+          selectedGuest={selectedGuest}
+          hoverSeat={hoverSeat}
+          hint={hoverHint}
+          containerRef={canvasRef}
+        />
       )}
 
       {showUpgradeModal && (

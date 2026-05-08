@@ -47,22 +47,19 @@ function getInitials(name: string) {
 function Seat({
   assignment,
   onClick,
+  onHover,
   isSelecting,
 }: {
   assignment: SeatAssignment | null;
   onClick: () => void;
+  onHover?: (a: SeatAssignment | null) => void;
   isSelecting: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      title={
-        assignment
-          ? `${assignment.guestName} — klikni za uklanjanje`
-          : isSelecting
-            ? "Dodeli mesto"
-            : ""
-      }
+      onMouseEnter={() => onHover?.(assignment)}
+      onMouseLeave={() => onHover?.(null)}
       className="rounded-full flex items-center justify-center transition-all"
       style={{
         width: SEAT_SIZE,
@@ -107,11 +104,17 @@ function ArrowBtn({
   dir,
   icon: Icon,
   onSetDir,
+  onElementHover,
+  restoreHint,
 }: {
   d: EntranceDirection;
   dir: EntranceDirection | undefined;
   icon: React.ComponentType<{ size: number; style?: React.CSSProperties }>;
   onSetDir: (d: EntranceDirection) => void;
+  onElementHover?: (hint: string | null) => void;
+  /** Hint to restore on mouseLeave — used so the badge falls back to the
+   *  parent decoration's "Pomeri element" instead of clearing entirely. */
+  restoreHint?: string | null;
 }) {
   const color = dir === d
     ? "var(--theme-primary)"
@@ -120,9 +123,10 @@ function ArrowBtn({
   return (
     <button
       onClick={() => onSetDir(d)}
+      onMouseEnter={() => onElementHover?.(`Ulaz ${label}`)}
+      onMouseLeave={() => onElementHover?.(restoreHint ?? null)}
       className="flex items-center justify-center transition-all hover:opacity-80"
       style={{ width: 28, height: 28, color }}
-      title={`Ulaz ${label}`}
     >
       <Icon size={22} style={{ strokeWidth: dir === d ? 2.5 : 1.5 }} />
     </button>
@@ -134,11 +138,15 @@ function EntranceDecoration({
   table,
   onUpdate,
   onDelete,
+  onElementHover,
 }: {
   table: TableData;
   onUpdate: (id: string, changes: Partial<TableData>) => void;
   onDelete: (id: string) => void;
+  onElementHover?: (hint: string | null) => void;
 }) {
+  const wrapperHint = "Pomeri element";
+  const restoreWrapperHint = () => onElementHover?.(wrapperHint);
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [labelInput, setLabelInput] = useState(table.label);
@@ -192,7 +200,8 @@ function EntranceDecoration({
             setLabelInput(table.label);
             setIsEditing(true);
           }}
-          title="Dupli klik za preimenovanje"
+          onMouseEnter={() => onElementHover?.("Dupli klik za preimenovanje")}
+          onMouseLeave={restoreWrapperHint}
         >
           {table.label}
         </span>
@@ -200,6 +209,8 @@ function EntranceDecoration({
 
       <button
         onClick={() => onDelete(table.id)}
+        onMouseEnter={() => onElementHover?.("Obriši element")}
+        onMouseLeave={restoreWrapperHint}
         className="flex items-center justify-center w-5 h-5 rounded hover:opacity-60 transition-opacity"
         style={{ color: "var(--theme-primary)" }}
       >
@@ -219,6 +230,8 @@ function EntranceDecoration({
         ref={nodeRef}
         className="absolute cursor-grab active:cursor-grabbing"
         style={{ userSelect: "none" }}
+        onMouseEnter={() => onElementHover?.(wrapperHint)}
+        onMouseLeave={() => onElementHover?.(null)}
       >
         {/* 3×3 grid: arrows + center box */}
         <div
@@ -233,15 +246,15 @@ function EntranceDecoration({
         >
           {/* row 1 */}
           <div />
-          <ArrowBtn d="up" dir={dir} icon={ArrowUp} onSetDir={setDir} />
+          <ArrowBtn d="up" dir={dir} icon={ArrowUp} onSetDir={setDir} onElementHover={onElementHover} restoreHint={wrapperHint} />
           <div />
           {/* row 2 */}
-          <ArrowBtn d="left" dir={dir} icon={ArrowLeft} onSetDir={setDir} />
+          <ArrowBtn d="left" dir={dir} icon={ArrowLeft} onSetDir={setDir} onElementHover={onElementHover} restoreHint={wrapperHint} />
           {box}
-          <ArrowBtn d="right" dir={dir} icon={ArrowRight} onSetDir={setDir} />
+          <ArrowBtn d="right" dir={dir} icon={ArrowRight} onSetDir={setDir} onElementHover={onElementHover} restoreHint={wrapperHint} />
           {/* row 3 */}
           <div />
-          <ArrowBtn d="down" dir={dir} icon={ArrowDown} onSetDir={setDir} />
+          <ArrowBtn d="down" dir={dir} icon={ArrowDown} onSetDir={setDir} onElementHover={onElementHover} restoreHint={wrapperHint} />
           <div />
         </div>
       </div>
@@ -254,11 +267,21 @@ function ResizableZone({
   table,
   onUpdate,
   onDelete,
+  onElementHover,
 }: {
   table: TableData;
   onUpdate: (id: string, changes: Partial<TableData>) => void;
   onDelete: (id: string) => void;
+  onElementHover?: (hint: string | null) => void;
 }) {
+  const wrapperHint = "Pomeri element";
+  const restoreWrapperHint = () => onElementHover?.(wrapperHint);
+  const labelHintProps = onElementHover
+    ? {
+        onMouseEnter: () => onElementHover("Dupli klik za preimenovanje"),
+        onMouseLeave: restoreWrapperHint,
+      }
+    : {};
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [labelInput, setLabelInput] = useState(table.label);
@@ -327,6 +350,8 @@ function ResizableZone({
         ref={nodeRef}
         className="absolute cursor-grab active:cursor-grabbing"
         style={{ userSelect: "none", width: w }}
+        onMouseEnter={() => onElementHover?.(wrapperHint)}
+        onMouseLeave={() => onElementHover?.(null)}
       >
         {/* Box — single dashed border, icon + label + delete */}
         <div
@@ -365,14 +390,16 @@ function ResizableZone({
                   setLabelInput(table.label);
                   setIsEditing(true);
                 }}
-                title="Dupli klik za preimenovanje"
-              >
+                {...labelHintProps}
+                    >
                 {table.label}
               </span>
             )}
 
             <button
               onClick={() => onDelete(table.id)}
+              onMouseEnter={() => onElementHover?.("Obriši element")}
+              onMouseLeave={restoreWrapperHint}
               className="w-5 h-5 flex items-center justify-center rounded hover:opacity-60 transition-opacity"
               style={{ color: "var(--theme-primary)" }}
             >
@@ -439,6 +466,10 @@ interface Props {
   table: TableData;
   selectedGuest: RSVPEntry | null;
   onSeatClick: (tableId: string, seatIndex: number) => void;
+  onSeatHover?: (assignment: SeatAssignment | null) => void;
+  /** Replaces the cursor badge primary line with the given hint while hovering
+   *  non-seat interactive elements (grab handle, rotate, label, entrance arrow). */
+  onElementHover?: (hint: string | null) => void;
   onUpdate: (id: string, changes: Partial<TableData>) => void;
   onDelete: (id: string) => void;
   readOnly?: boolean;
@@ -449,6 +480,8 @@ export default function TableNode({
   table,
   selectedGuest,
   onSeatClick,
+  onSeatHover,
+  onElementHover,
   onUpdate,
   onDelete,
   readOnly,
@@ -459,6 +492,14 @@ export default function TableNode({
   const [labelInput, setLabelInput] = useState(table.label);
   const isSelecting = readOnly ? false : !!selectedGuest;
   const seatClick = readOnly ? () => {} : onSeatClick;
+  const seatHover = readOnly ? undefined : onSeatHover;
+  const elementHover = readOnly ? undefined : onElementHover;
+  const labelHintProps = elementHover
+    ? {
+        onMouseEnter: () => elementHover("Dupli klik za preimenovanje"),
+        onMouseLeave: () => elementHover(null),
+      }
+    : {};
 
   // ── Route to specialised decoration components ───────────────────────────
   if (table.type === "decoration") {
@@ -489,11 +530,12 @@ export default function TableNode({
           table={table}
           onUpdate={onUpdate}
           onDelete={onDelete}
+          onElementHover={elementHover}
         />
       );
     }
     return (
-      <ResizableZone table={table} onUpdate={onUpdate} onDelete={onDelete} />
+      <ResizableZone table={table} onUpdate={onUpdate} onDelete={onDelete} onElementHover={elementHover} />
     );
   }
 
@@ -557,7 +599,7 @@ export default function TableNode({
         setLabelInput(table.label);
         setIsEditing(true);
       }}
-      title="Dupli klik za preimenovanje"
+      {...labelHintProps}
     >
       {table.label}
     </span>
@@ -587,7 +629,8 @@ export default function TableNode({
     <span
       className="shrink-0 flex items-center opacity-60 hover:opacity-100 transition-opacity"
       style={{ cursor: "grab" }}
-      title="Pomeri sto"
+      onMouseEnter={() => elementHover?.("Pomeri sto")}
+      onMouseLeave={() => elementHover?.(null)}
     >
       <GripVertical size={12} />
     </span>
@@ -597,8 +640,9 @@ export default function TableNode({
     table.type === "rectangular" ? (
       <button
         onClick={() => onUpdate(table.id, { rotated: !table.rotated })}
+        onMouseEnter={() => elementHover?.("Rotiraj sto")}
+        onMouseLeave={() => elementHover?.(null)}
         className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/20"
-        title="Rotiraj sto"
         style={{ opacity: isRotated ? 1 : 0.6 }}
       >
         <RotateCw size={9} />
@@ -608,6 +652,8 @@ export default function TableNode({
   const deleteBtn = (
     <button
       onClick={() => onDelete(table.id)}
+      onMouseEnter={() => elementHover?.("Obriši sto")}
+      onMouseLeave={() => elementHover?.(null)}
       className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/20"
     >
       <Trash2 size={9} />
@@ -716,6 +762,7 @@ export default function TableNode({
                   key={i}
                   assignment={a}
                   onClick={() => seatClick(table.id, i)}
+                  onHover={seatHover}
                   isSelecting={isSelecting}
                 />
               ))}
@@ -734,6 +781,7 @@ export default function TableNode({
                   key={seatsPerRow + i}
                   assignment={a}
                   onClick={() => seatClick(table.id, seatsPerRow + i)}
+                  onHover={seatHover}
                   isSelecting={isSelecting}
                 />
               ))}
@@ -751,6 +799,7 @@ export default function TableNode({
                   key={i}
                   assignment={a}
                   onClick={() => seatClick(table.id, i)}
+                  onHover={seatHover}
                   isSelecting={isSelecting}
                 />
               ))}
@@ -773,6 +822,7 @@ export default function TableNode({
                   key={seatsPerRow + i}
                   assignment={a}
                   onClick={() => seatClick(table.id, seatsPerRow + i)}
+                  onHover={seatHover}
                   isSelecting={isSelecting}
                 />
               ))}
@@ -789,6 +839,7 @@ export default function TableNode({
                   key={i}
                   assignment={a}
                   onClick={() => seatClick(table.id, i)}
+                  onHover={seatHover}
                   isSelecting={isSelecting}
                 />
               ))}
@@ -839,6 +890,7 @@ export default function TableNode({
                   <Seat
                     assignment={a}
                     onClick={() => seatClick(table.id, i)}
+                    onHover={seatHover}
                     isSelecting={isSelecting}
                   />
                 </div>

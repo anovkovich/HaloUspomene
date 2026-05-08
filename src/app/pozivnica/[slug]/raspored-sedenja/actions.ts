@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { loadSeatingLayout, saveSeatingLayout } from "@/lib/seating";
 import { getWeddingData } from "@/lib/couples";
 import type { TableData } from "@/lib/seating";
@@ -15,6 +16,7 @@ export async function saveRaspored(
     }
     const tables: TableData[] = JSON.parse(json);
     await saveSeatingLayout(slug, tables);
+    revalidatePath(`/pozivnica/${slug}/gde-sedim`);
     return { success: true };
   } catch (err) {
     return {
