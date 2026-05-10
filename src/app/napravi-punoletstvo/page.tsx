@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import PunoletstvoQuestionnaireForm from "./PunoletstvoQuestionnaireForm";
+import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
 
 export const metadata: Metadata = {
   title: "Napravi Pozivnicu za Punoletstvo | Digitalna 18. Rođendan Pozivnica",
@@ -40,6 +41,9 @@ export default function NapraviPunoletstvoPage() {
             <p className="text-[#7A242C] text-lg max-w-xl mx-auto">
               Popunite upitnik u 4 koraka — klasičan dizajn sa elegantnim script
               fontom, RSVP formom i odbrojavanjem. Gotova za 24h.
+            </p>
+            <p className="inline-block mt-4 text-xs tracking-widest uppercase text-stone-400 border border-stone-200 rounded-full px-4 py-1.5">
+              Cena: <span className="font-semibold text-[#AE343F]">{formatPrice(getRodjendanPozivnicaPrice(true))}</span>
             </p>
           </div>
 

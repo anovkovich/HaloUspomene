@@ -1825,16 +1825,21 @@ function Step6({
         title="Poslednji korak!"
         desc="Izaberite šta želite da se prikaže na pozivnici. RSVP formu za potvrdu dolaska ćemo podesiti mi."
       />
-      <div className="space-y-6">
+      <div className="space-y-6 -mt-4">
         {/* Info box */}
-        <div className="bg-[var(--accent,#AE343F)]/5 border border-[var(--accent,#AE343F)]/15 rounded-2xl px-5 py-4 text-sm text-[#8B2833] leading-relaxed">
-          <p className="font-semibold mb-1">🎉 Skoro sve je spremno!</p>
-          <p>
-            Nakon kreiranja pozivnice, na portalu <strong>Moje Venčanje</strong>{" "}
-            možete pratiti potvrde gostiju, organizovati raspored sedenja,
-            planirati budžet i još mnogo toga. Kredencijale za prijavu ćete
-            dobiti zajedno sa pozivnicom.
+        <div>
+          <p className="text-[11px] text-stone-400 leading-relaxed text-center mb-0">
+            Slanjem zahteva prihvatate politiku odustanka navedenu u podnožju sajta.
           </p>
+          <div className="bg-[var(--accent,#AE343F)]/5 border border-[var(--accent,#AE343F)]/15 rounded-2xl px-5 py-4 text-sm text-[#8B2833] leading-relaxed">
+            <p className="font-semibold mb-1">🎉 Skoro sve je spremno!</p>
+            <p>
+              Nakon kreiranja pozivnice, na portalu <strong>Moje Venčanje</strong>{" "}
+              možete pratiti potvrde gostiju, organizovati raspored sedenja,
+              planirati budžet i još mnogo toga. Kredencijale za prijavu ćete
+              dobiti zajedno sa pozivnicom.
+            </p>
+          </div>
         </div>
 
         <div className="space-y-5">
@@ -1861,6 +1866,7 @@ function Step6({
             placeholder="Ovde napišite ukoliko imate posebne zahteve ili napomene..."
           />
         </Field>
+
       </div>
     </div>
   );

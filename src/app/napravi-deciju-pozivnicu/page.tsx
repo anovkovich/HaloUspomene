@@ -10,6 +10,7 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import BirthdayQuestionnaireForm from "./BirthdayQuestionnaireForm";
 import PortalLink from "./PortalLink";
+import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
 
 const fredoka = Fredoka({
   subsets: ["latin", "latin-ext"],
@@ -89,6 +90,9 @@ export default function NapraviDecijuPozivnicuPage() {
             </p>
             <p className="text-stone-400 text-sm mt-3">
               ili pođite na <PortalLink />
+            </p>
+            <p className="inline-block mt-4 text-xs tracking-widest uppercase text-stone-400 border border-stone-200 rounded-full px-4 py-1.5">
+              Cena: <span className="font-semibold text-[#FF6B6B]">{formatPrice(getRodjendanPozivnicaPrice(false))}</span>
             </p>
           </div>
 

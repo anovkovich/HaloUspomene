@@ -216,7 +216,15 @@ const Footer: React.FC = () => {
           </ul>
         </div>
 
-        <div className="pt-12 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest text-[#F5F4DC]/20">
+        {/* Cancellation policy */}
+        <div className="border-t border-white/5 pt-8 pb-6">
+          <p className="text-[11px] text-[#F5F4DC]/25 leading-relaxed max-w-3xl">
+            <span className="text-[#F5F4DC]/40 font-semibold uppercase tracking-widest text-[10px]">Politika odustanka — </span>
+            U slučaju odustanka nakon popunjenog i poslatog formulara, korisnik je dužan da uplati 50% od ukupne vrednosti usluge na ime naknade za obavljeni posao. Slanjem formulara prihvatate ove uslove.
+          </p>
+        </div>
+
+        <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest text-[#F5F4DC]/20">
           <p>&copy; {new Date().getFullYear()} HALO Uspomene.</p>
           <p className="flex items-center gap-1">
             Made with <Heart size={10} className="text-[#AE343F]" /> | Halo

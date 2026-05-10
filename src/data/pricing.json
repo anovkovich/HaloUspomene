@@ -88,6 +88,6 @@
     "label": "Raspored sedenja za organizatore",
     "price": 5000,
     "promoPrice": 3900,
-    "promoActive": true
+    "promoActive": false
   }
 }
