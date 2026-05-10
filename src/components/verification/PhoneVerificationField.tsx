@@ -94,6 +94,9 @@ export function PhoneVerificationField({
   // whenever the phone format becomes valid, so parent forms unblock without
   // an SMS round-trip. The server-side `ensurePhoneVerified` short-circuits
   // its own check based on the same env flag.
+  // Depends on `value` too so the token is re-emitted on every keystroke
+  // while the phone is valid — parent onChange may clear the token when the
+  // user edits, and we need to restore it immediately.
   useEffect(() => {
     if (!VERIFICATION_DISABLED) return;
     if (phoneLooksValid) {
@@ -102,7 +105,7 @@ export function PhoneVerificationField({
       onUnverified?.();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phoneLooksValid]);
+  }, [phoneLooksValid, value]);
 
   const sendCode = async () => {
     if (!phoneLooksValid || isBusy) return;
