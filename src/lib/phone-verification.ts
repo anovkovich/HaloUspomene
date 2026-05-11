@@ -113,27 +113,13 @@ export async function verifyTrustToken(
 }
 
 /**
- * Returns true when phone-OTP verification is globally bypassed via the
- * NEXT_PUBLIC_PHONE_VERIFICATION_DISABLED env var. Used while the Infobip
- * sender is awaiting MNO approval — UI keeps the phone field but skips the
- * SMS round-trip, and server-side guards skip trust-token validation.
- *
- * Remove this flag (and call sites) once the sender is approved and SMS
- * delivery is reliable.
- */
-export function isPhoneVerificationDisabled(): boolean {
-  return process.env.NEXT_PUBLIC_PHONE_VERIFICATION_DISABLED === "true";
-}
-
-/**
- * Skip-aware wrapper around verifyTrustToken. Use this in API route guards
- * so the disable flag short-circuits the check.
+ * Void-returning wrapper around verifyTrustToken for API-route guards that
+ * only care whether the trust token is valid, not its payload.
  */
 export async function ensurePhoneVerified(
   token: string | undefined | null,
   expectedPhoneE164: string,
 ): Promise<void> {
-  if (isPhoneVerificationDisabled()) return;
   await verifyTrustToken(token, expectedPhoneE164);
 }
 

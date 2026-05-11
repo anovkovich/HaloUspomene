@@ -31,10 +31,6 @@ type Phase =
 const RESEND_SECONDS = 60;
 const PIN_LENGTH = 4;
 
-const VERIFICATION_DISABLED =
-  process.env.NEXT_PUBLIC_PHONE_VERIFICATION_DISABLED === "true";
-const DISABLED_TOKEN = "__verification_disabled__";
-
 function isValidLocalPhone(local: string): boolean {
   const digits = local.replace(/\D/g, "");
   return digits.length >= 8 && digits.length <= 9;
@@ -89,23 +85,6 @@ export function PhoneVerificationField({
   const phoneLooksValid = isValidLocalPhone(value);
   const isVerified = phase.kind === "verified";
   const isBusy = phase.kind === "sending" || phase.kind === "verifying";
-
-  // When the global disable flag is set, auto-emit a sentinel trust token
-  // whenever the phone format becomes valid, so parent forms unblock without
-  // an SMS round-trip. The server-side `ensurePhoneVerified` short-circuits
-  // its own check based on the same env flag.
-  // Depends on `value` too so the token is re-emitted on every keystroke
-  // while the phone is valid — parent onChange may clear the token when the
-  // user edits, and we need to restore it immediately.
-  useEffect(() => {
-    if (!VERIFICATION_DISABLED) return;
-    if (phoneLooksValid) {
-      onVerified(DISABLED_TOKEN);
-    } else {
-      onUnverified?.();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phoneLooksValid, value]);
 
   const sendCode = async () => {
     if (!phoneLooksValid || isBusy) return;
@@ -245,8 +224,7 @@ export function PhoneVerificationField({
         ) : null}
       </div>
 
-      {!VERIFICATION_DISABLED &&
-      !isVerified &&
+      {!isVerified &&
       (phase.kind === "idle" || phase.kind === "error") ? (
         <button
           type="button"
@@ -259,7 +237,7 @@ export function PhoneVerificationField({
         </button>
       ) : null}
 
-      {!VERIFICATION_DISABLED && phase.kind === "sending" ? (
+      {phase.kind === "sending" ? (
         <button
           type="button"
           disabled
@@ -270,8 +248,7 @@ export function PhoneVerificationField({
         </button>
       ) : null}
 
-      {!VERIFICATION_DISABLED &&
-      (phase.kind === "awaiting" || phase.kind === "verifying") ? (
+      {phase.kind === "awaiting" || phase.kind === "verifying" ? (
         <div className="space-y-2 pt-1">
           <p className={styles.subText}>
             Unesite {PIN_LENGTH}-cifreni kod koji smo poslali na +381 {value}.
@@ -322,15 +299,13 @@ export function PhoneVerificationField({
         </div>
       ) : null}
 
-      {!VERIFICATION_DISABLED && isVerified ? (
+      {isVerified ? (
         <div className={styles.verifiedBadge}>
           <CheckCircle2 size={14} /> Broj telefona je verifikovan.
         </div>
       ) : null}
 
-      {!VERIFICATION_DISABLED && error ? (
-        <p className={styles.errorText}>{error}</p>
-      ) : null}
+      {error ? <p className={styles.errorText}>{error}</p> : null}
     </div>
   );
 }
