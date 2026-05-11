@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
 import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
@@ -47,7 +47,10 @@ interface Couple {
   receipt_valid?: boolean;
   receipt_created?: string;
   custom_discount?: number;
+  created_at?: string;
 }
+
+type SortMode = "newest" | "event_proximity";
 
 interface CoupleStats {
   rsvp: { attending: number; declined: number; totalGuests: number } | null;
@@ -64,9 +67,37 @@ export default function AdminPage() {
   const [needsLogin, setNeedsLogin] = useState(false);
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
-  const [bankAccountIdx, setBankAccountIdx] = useState(1);
+  const [bankAccountIdx, setBankAccountIdx] = useState(0);
   const [showPhoneRental, setShowPhoneRental] = useState(false);
   const [showCustomReceipt, setShowCustomReceipt] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>("newest");
+  const [sortMenuOpen, setSortMenuOpen] = useState(false);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!sortMenuOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(e.target as Node)) {
+        setSortMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [sortMenuOpen]);
+
+  const sortedCouples = useMemo(() => {
+    if (sortMode === "newest") return couples; // API already returns created_at desc
+    const now = Date.now();
+    const diff = (c: Couple) =>
+      c.event_date ? new Date(c.event_date).getTime() - now : Number.POSITIVE_INFINITY;
+    return [...couples].sort((a, b) => {
+      const da = diff(a);
+      const db = diff(b);
+      const absCmp = Math.abs(da) - Math.abs(db);
+      if (absCmp !== 0) return absCmp;
+      return db - da; // tie: future before past
+    });
+  }, [couples, sortMode]);
   const [customReceipts, setCustomReceipts] = useState<Array<{ id: string; par: string; datum?: string; items: Array<{l: string; p: number}>; ba: number; created_at: string }>>([]);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -437,9 +468,56 @@ export default function AdminPage() {
       ) : (
       <>
       <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3 flex-wrap">
-        <h2 className="text-xl sm:text-2xl font-semibold text-white">
-          Pozivnice ({couples.length})
-        </h2>
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <h2 className="text-xl sm:text-2xl font-semibold text-white">
+            Pozivnice ({couples.length})
+          </h2>
+          <div className="relative" ref={sortMenuRef}>
+            {(() => {
+              const SORT_OPTIONS = [
+                { id: "newest" as const, label: "Najnovije" },
+                { id: "event_proximity" as const, label: "Po datumu" },
+              ];
+              const current = SORT_OPTIONS.find((o) => o.id === sortMode)?.label ?? "Najnovije";
+              return (
+                <>
+                  <button
+                    onClick={() => setSortMenuOpen((v) => !v)}
+                    className="flex items-center gap-1.5 text-xs text-white/45 hover:text-white/80 transition-colors cursor-pointer"
+                  >
+                    <ArrowUpDown size={11} />
+                    <span>{current}</span>
+                    <ChevronDown
+                      size={11}
+                      className={`transition-transform ${sortMenuOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {sortMenuOpen && (
+                    <div className="absolute top-full left-0 mt-1.5 z-20 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl py-1 min-w-[150px]">
+                      {SORT_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => {
+                            setSortMode(opt.id);
+                            setSortMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-white/80 hover:bg-white/5 transition-colors cursor-pointer"
+                        >
+                          {sortMode === opt.id ? (
+                            <Check size={12} className="text-[#AE343F]" />
+                          ) : (
+                            <span className="w-3" />
+                          )}
+                          <span>{opt.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setShowPhoneRental(true)}
@@ -458,7 +536,7 @@ export default function AdminPage() {
       </div>
 
       <div className="space-y-3">
-        {couples.map((c) => {
+        {sortedCouples.map((c) => {
           const s = stats[c.slug];
           const eventDate = c.event_date ? new Date(c.event_date) : null;
           const today = new Date();
