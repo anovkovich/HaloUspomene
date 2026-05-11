@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { jwtVerify } from "jose";
 import { upsertCouple, deleteCouple, patchCouple, getWeddingData } from "@/lib/couples";
 import { deleteRSVPResponses } from "@/lib/rsvp";
@@ -20,6 +21,16 @@ async function isAdmin(req: NextRequest) {
   }
 }
 
+// Drop ISR cache for both public invitation routes so admin edits show up
+// immediately instead of waiting for the 10s revalidate window + a visitor
+// to trigger background regeneration. We don't know which variant the couple
+// has, so we hit both paths; revalidatePath is a no-op when the path isn't
+// in the cache.
+function revalidateCouplePaths(slug: string) {
+  revalidatePath(`/pozivnica/${slug}`);
+  revalidatePath(`/premium-pozivnica/${slug}`);
+}
+
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -30,6 +41,7 @@ export async function PUT(
   const { slug } = await params;
   const data = await req.json();
   await upsertCouple(slug, data);
+  revalidateCouplePaths(slug);
   return NextResponse.json({ ok: true });
 }
 
@@ -43,6 +55,7 @@ export async function PATCH(
   const { slug } = await params;
   const updates = await req.json();
   await patchCouple(slug, updates);
+  revalidateCouplePaths(slug);
   return NextResponse.json({ ok: true });
 }
 
@@ -86,5 +99,6 @@ export async function DELETE(
     deletePortalData(slug),
     deleteAllAudioMessages(slug),
   ]);
+  revalidateCouplePaths(slug);
   return NextResponse.json({ ok: true });
 }

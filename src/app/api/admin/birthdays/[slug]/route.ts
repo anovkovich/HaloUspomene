@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { jwtVerify } from "jose";
 import { getBirthdayData, upsertBirthday, deleteBirthday, patchBirthday } from "@/lib/birthday";
 
@@ -13,6 +14,12 @@ async function isAdmin(request: NextRequest): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// Drop ISR cache so admin edits show up immediately instead of waiting for
+// the revalidate window + a visitor to trigger background regeneration.
+function revalidateBirthdayPaths(slug: string) {
+  revalidatePath(`/deciji-rodjendan/${slug}`);
 }
 
 export async function PUT(
@@ -30,6 +37,7 @@ export async function PUT(
   }
 
   await upsertBirthday(slug, body);
+  revalidateBirthdayPaths(slug);
   return NextResponse.json({ ok: true });
 }
 
@@ -48,6 +56,7 @@ export async function PATCH(
   }
 
   await patchBirthday(slug, body);
+  revalidateBirthdayPaths(slug);
   return NextResponse.json({ ok: true });
 }
 
@@ -66,5 +75,6 @@ export async function DELETE(
   }
 
   await deleteBirthday(slug); // Cascades: birthday_events + birthday_rsvp
+  revalidateBirthdayPaths(slug);
   return NextResponse.json({ ok: true });
 }
