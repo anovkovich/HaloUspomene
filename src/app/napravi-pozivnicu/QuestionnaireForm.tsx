@@ -723,7 +723,7 @@ function Step1({
       {/* Pricing section */}
       <div className={`mb-3 p-5 ${tc.pricingBox}`}>
         <a
-          href="/cene"
+          href={formData.premium ? "/cene?premium=1" : "/cene"}
           target="_blank"
           rel="noopener noreferrer"
           className={`flex items-center justify-between gap-3 text-sm font-semibold ${tc.priceText} hover:opacity-80 transition-opacity`}
