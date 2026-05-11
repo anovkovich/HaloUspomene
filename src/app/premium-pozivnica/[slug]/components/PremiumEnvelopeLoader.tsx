@@ -206,8 +206,8 @@ export default function PremiumEnvelopeLoader({
             {dateParts ? (
               <div className="flex flex-col items-center leading-none select-none mt-0.5 sm:mt-1">
                 <span
-                  className="font-serif font-bold text-[40px] sm:text-[64px] leading-[0.82]"
-                  style={{ color: t.text.dateDay, letterSpacing: "-0.02em" }}
+                  className="font-elegant font-normal text-[40px] sm:text-[64px] leading-[0.82] pt-2 sm:pt-3"
+                  style={{ color: t.text.dateDay, letterSpacing: "0" }}
                 >
                   {dateParts.day}
                 </span>
