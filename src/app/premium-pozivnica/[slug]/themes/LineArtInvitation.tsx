@@ -7,6 +7,7 @@ import type { ThemeInvitationProps } from "../PremiumInvitationClient";
 import dynamic from "next/dynamic";
 import { MultilineText } from "@/lib/multiline";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import PremiumCallCTA from "../components/PremiumCallCTA";
 
 const HeroSection = dynamic(() => import("../components/HeroSection"), {
   ssr: false,
@@ -831,6 +832,15 @@ export default function LineArtInvitation({
             ) : (
               <LineArtRSVPForm slug={slug} submitUntil={data.submit_until} formattedDeadline={formattedDate} />
             )}
+            <PremiumCallCTA
+              contactPhone={data.contact_phone}
+              showNumbers={data.show_numbers}
+              useCyrillic={data.useCyrillic}
+              labelClassName="text-[#8B7355]/70"
+              numberClassName="text-[#d4af37]"
+              separatorClassName="text-[#8B7355]/40"
+              wrapperClassName="mt-5"
+            />
           </GlassCard>
         </div>
       </section>

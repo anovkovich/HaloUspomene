@@ -116,10 +116,10 @@ export async function POST(
     }
 
     // Only overwrite contact_phone if the form sent a non-empty one;
-    // otherwise preserve quick-register value.
+    // otherwise preserve quick-register value. Preserve the comma-separated
+    // E.164 string verbatim so secondary numbers survive into show_numbers.
     if (body.contact_phone?.trim()) {
-      const digits = String(body.contact_phone).trim().replace(/^\+?381/, "");
-      updates.contact_phone = `+381${digits}`;
+      updates.contact_phone = String(body.contact_phone).trim();
     }
 
     await patchCouple(slug, updates as Partial<WeddingData>);

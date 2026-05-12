@@ -55,6 +55,13 @@ const THEMES: {
     features: ["AI portret para", "Line art stil", "Paper parallax"],
     preview: "/images/premium/line-art-invitation/Starry-night.webp",
   },
+  {
+    id: "fountain",
+    name: "Royal Fountain",
+    subtitle: "Burgundy elegancija sa fontanom, golubovima i ružama",
+    features: ["Cinematska pozadina", "Animirani golubovi", "Pocepani papir"],
+    preview: "/images/premium/fountain/bg-portrait.png",
+  },
 ];
 
 const CITIES = [

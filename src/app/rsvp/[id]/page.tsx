@@ -47,6 +47,14 @@ export default async function RsvpPage({ params }: PageProps) {
 
     const subtitle = data.useCyrillic ? "Венчање" : "Venčanje";
 
+    const phones = (data.contact_phone ?? "")
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    const enabledPhones = phones.filter(
+      (_, i) => data.show_numbers?.[i] === true,
+    );
+
     return (
       <RsvpClient
         kind={data.premium ? "premium" : "classic"}
@@ -58,6 +66,8 @@ export default async function RsvpPage({ params }: PageProps) {
         theme={data.theme}
         scriptFont={data.scriptFont ?? "great-vibes"}
         useCyrillic={data.useCyrillic ?? false}
+        premiumTheme={data.premium_theme}
+        callNumbers={enabledPhones}
       />
     );
   }

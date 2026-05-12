@@ -17,7 +17,11 @@ export type ScriptFontType =
   | "bad-script";
 
 // Premium AI types
-export type PremiumThemeType = "watercolor" | "disney_pixar" | "line_art";
+export type PremiumThemeType =
+  | "watercolor"
+  | "disney_pixar"
+  | "line_art"
+  | "fountain";
 
 export interface EnvelopeItem {
   type:
@@ -119,6 +123,10 @@ export interface WeddingData {
   premium_car?: string; // Watercolor theme: car illustration key
   couple_description?: string; // Line art theme: AI couple description
   premium_paid?: boolean;
+  /** Comma-separated E.164 phone numbers collected at submission (e.g. "+381638261775,+381615000363"). Optional. */
+  contact_phone?: string;
+  /** Per-number toggle for displaying call-CTA on the RSVP page. Parallel to `contact_phone`'s split-by-comma order. */
+  show_numbers?: boolean[];
 }
 
 // Comprehensive theme configuration

@@ -6,7 +6,11 @@ import { ThemeProvider } from "@/app/pozivnica/[slug]/components/ThemeProvider";
 import { RSVPForm } from "@/app/pozivnica/[slug]/components/RSVPFrom";
 import { BirthdayRSVPForm } from "@/app/deciji-rodjendan/[slug]/components/BirthdayRSVPForm";
 import StandaloneRSVPForm from "./StandaloneRSVPForm";
-import type { ThemeType, ScriptFontType } from "@/app/pozivnica/[slug]/types";
+import type {
+  ThemeType,
+  ScriptFontType,
+  PremiumThemeType,
+} from "@/app/pozivnica/[slug]/types";
 
 interface BaseProps {
   slug: string;
@@ -20,6 +24,7 @@ interface CoupleSpecific {
   theme: ThemeType;
   scriptFont: ScriptFontType;
   useCyrillic: boolean;
+  callNumbers?: string[];
 }
 
 interface ClassicProps extends BaseProps, CoupleSpecific {
@@ -28,6 +33,7 @@ interface ClassicProps extends BaseProps, CoupleSpecific {
 
 interface PremiumProps extends BaseProps, CoupleSpecific {
   kind: "premium";
+  premiumTheme?: PremiumThemeType;
 }
 
 interface BirthdayProps extends BaseProps {
@@ -64,6 +70,12 @@ const MONTHS_CYRILLIC = [
   "јануар", "фебруар", "март", "април", "мај", "јун",
   "јул", "август", "септембар", "октобар", "новембар", "децембар",
 ];
+
+function formatPhone(raw: string): string {
+  const match = raw.replace(/\s+/g, "").match(/^\+381(\d{2})(\d{3})(\d+)$/);
+  if (match) return `+381 ${match[1]} ${match[2]} ${match[3]}`;
+  return raw;
+}
 
 function formatDate(iso: string, cyrillic: boolean): string | null {
   if (!iso) return null;
@@ -131,6 +143,47 @@ export default function RsvpClient(props: Props) {
     </div>
   );
 
+  const callNumbers = (
+    (props.kind === "classic" || props.kind === "premium") && props.callNumbers
+  ) || [];
+
+  const callBlock =
+    callNumbers.length > 0 ? (
+      <div
+        className="mt-6 text-center text-sm"
+        style={{ color: "var(--theme-text-muted)" }}
+      >
+        <p
+          className="text-[11px] uppercase tracking-[0.25em] mb-2"
+          style={{ color: "var(--theme-text-light)" }}
+        >
+          {cyrillic
+            ? callNumbers.length > 1
+              ? "Или позови један од бројева:"
+              : "Или позови број:"
+            : callNumbers.length > 1
+              ? "Ili pozovi jedan od brojeva:"
+              : "Ili pozovi broj:"}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          {callNumbers.map((num, i) => (
+            <React.Fragment key={`${num}-${i}`}>
+              {i > 0 && (
+                <span style={{ color: "var(--theme-text-light)" }}>•</span>
+              )}
+              <a
+                href={`tel:${num.replace(/\s+/g, "")}`}
+                className="font-medium underline-offset-2 hover:underline"
+                style={{ color: "var(--theme-primary)" }}
+              >
+                {formatPhone(num)}
+              </a>
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    ) : null;
+
   if (props.kind === "classic") {
     return (
       <ThemeProvider
@@ -138,21 +191,32 @@ export default function RsvpClient(props: Props) {
         scriptFont={props.scriptFont}
         useCyrillic={props.useCyrillic}
       >
-        {wrap(<RSVPForm slug={props.slug} />)}
+        {wrap(
+          <>
+            <RSVPForm slug={props.slug} />
+            {callBlock}
+          </>,
+        )}
       </ThemeProvider>
     );
   }
 
   if (props.kind === "premium") {
+    const isFountain = props.premiumTheme === "fountain";
     return (
       <ThemeProvider
         theme={props.theme}
         scriptFont={props.scriptFont}
         useCyrillic={props.useCyrillic}
-        customPrimaryColor="#d4af37"
-        customBackgroundColor="#fffdf5"
+        customPrimaryColor={isFountain ? "#6B0E1E" : "#d4af37"}
+        customBackgroundColor={isFountain ? "#fdfaf3" : "#fffdf5"}
       >
-        {wrap(<RSVPForm slug={props.slug} />)}
+        {wrap(
+          <>
+            <RSVPForm slug={props.slug} />
+            {callBlock}
+          </>,
+        )}
       </ThemeProvider>
     );
   }

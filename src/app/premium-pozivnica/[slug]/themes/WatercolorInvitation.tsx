@@ -11,6 +11,7 @@ import { Heart, Send, MapPin, Clock, ChevronDown } from "lucide-react";
 import type { ThemeInvitationProps } from "../PremiumInvitationClient";
 import { MultilineText } from "@/lib/multiline";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import PremiumCallCTA from "../components/PremiumCallCTA";
 
 /*
  * WATERCOLOR ROMANCE THEME
@@ -754,6 +755,15 @@ export default function WatercolorInvitation({
               formattedDeadline={formattedDate}
             />
           )}
+          <PremiumCallCTA
+            contactPhone={data.contact_phone}
+            showNumbers={data.show_numbers}
+            useCyrillic={data.useCyrillic}
+            labelClassName="text-white/70"
+            numberClassName="text-[#d4af37]"
+            separatorClassName="text-white/30"
+            wrapperClassName="mt-6"
+          />
         </motion.div>
       </section>
 

@@ -96,6 +96,14 @@ export async function POST(request: NextRequest) {
       draft: true,
     };
 
+    // Persist the contact_phone the couple submitted (comma-separated E.164).
+    // Stored as plain string so the admin can later toggle show_numbers per
+    // entry. Skipped when blank so we don't bloat optional fields.
+    if (body.contact_phone?.trim()) {
+      (weddingData as WeddingData & { contact_phone?: string }).contact_phone =
+        String(body.contact_phone).trim();
+    }
+
     // Save to MongoDB
     await upsertCouple(slug, weddingData);
 

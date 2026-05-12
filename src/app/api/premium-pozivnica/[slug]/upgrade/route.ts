@@ -113,9 +113,10 @@ export async function POST(
       draft: true,
     };
 
+    // Preserve the comma-separated E.164 string from the form (primary,
+    // optional secondary) so both numbers can be toggled via show_numbers.
     if (body.contact_phone?.trim()) {
-      const digits = String(body.contact_phone).trim().replace(/^\+?381/, "");
-      updates.contact_phone = `+381${digits}`;
+      updates.contact_phone = String(body.contact_phone).trim();
     }
 
     await patchCouple(slug, updates as Partial<WeddingData>);

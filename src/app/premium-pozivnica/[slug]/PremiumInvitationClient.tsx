@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 import dynamic from "next/dynamic";
 
@@ -21,6 +21,16 @@ const LineArtInvitation = dynamic(
   () => import("./themes/LineArtInvitation"),
   { ssr: false },
 );
+const FountainInvitation = dynamic(
+  () => import("./themes/FountainInvitation"),
+  { ssr: false },
+);
+
+const themeComponents = {
+  watercolor: WatercolorInvitation,
+  line_art: LineArtInvitation,
+  fountain: FountainInvitation,
+} as const;
 
 interface PremiumInvitationClientProps {
   data: WeddingData;
@@ -37,6 +47,10 @@ export interface ThemeInvitationProps {
   formattedDate: string;
   formattedDateShort: string;
   isPastDeadline: boolean;
+  /** True once the envelope loader has finished and the invitation is on
+   *  screen. Themes can gate heavy / time-locked animations (e.g. the
+   *  fountain doves) behind this so they don't fire while still hidden. */
+  isRevealed: boolean;
 }
 
 export default function PremiumInvitationClient({
@@ -46,6 +60,17 @@ export default function PremiumInvitationClient({
   const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
   const { bride, groom, full_display } = data.couple_names;
+
+  // On every page load/refresh, jump the user back to the top of the
+  // invitation. Otherwise the browser restores their previous scroll
+  // position, which mid-page bypasses the envelope-loader reveal.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }, []);
 
   const formattedDate = useMemo(() => {
     if (!data.event_date) return "";
@@ -93,12 +118,12 @@ export default function PremiumInvitationClient({
     formattedDate,
     formattedDateShort,
     isPastDeadline,
+    isRevealed,
   };
 
   const InvitationTheme =
-    data.premium_theme === "watercolor"
-      ? WatercolorInvitation
-      : LineArtInvitation;
+    (data.premium_theme && themeComponents[data.premium_theme as keyof typeof themeComponents]) ||
+    WatercolorInvitation;
 
   return (
     <>

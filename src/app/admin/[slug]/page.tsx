@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, Trash2, MapPin, ChevronDown } from "lucide-react";
+import { ArrowLeft, Save, Trash2, MapPin, ChevronDown, Phone } from "lucide-react";
 import Link from "next/link";
 import DeleteModal from "../DeleteModal";
 import PlannerStatsSection from "@/app/pozivnica/[slug]/PlannerStatsSection";
@@ -23,6 +23,8 @@ export default function EditCouplePage() {
   const [uploading, setUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [jsonOpen, setJsonOpen] = useState(false);
+  const [contactPhone, setContactPhone] = useState("");
+  const [showNumbers, setShowNumbers] = useState<boolean[]>([]);
 
   useEffect(() => {
     fetch("/api/admin/couples")
@@ -37,6 +39,8 @@ export default function EditCouplePage() {
           setPaidForImages(data.paid_for_images ?? false);
           setImages(data.images ?? []);
           setImageLayout(data.image_layout ?? "line");
+          setContactPhone(data.contact_phone ?? "");
+          setShowNumbers(Array.isArray(data.show_numbers) ? data.show_numbers : []);
         } else {
           toast.error("Pozivnica nije pronađena");
         }
@@ -50,6 +54,46 @@ export default function EditCouplePage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(fields),
     });
+  }
+
+  function syncJsonFields(fields: Record<string, unknown>) {
+    try {
+      const parsed = JSON.parse(json);
+      for (const [k, v] of Object.entries(fields)) {
+        if (v === undefined || v === "" || (Array.isArray(v) && v.length === 0)) {
+          delete parsed[k];
+        } else {
+          parsed[k] = v;
+        }
+      }
+      setJson(JSON.stringify(parsed, null, 2));
+    } catch {
+      // Invalid JSON in textarea; leave it for handleSave to surface the error.
+    }
+  }
+
+  const parsedPhones = contactPhone
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  async function saveContactPhone() {
+    const normalized = parsedPhones.join(",");
+    // Trim show_numbers to match the new phone count so toggles never drift past
+    // the list (e.g. when admin shortens it from 2 phones to 1).
+    const trimmed = parsedPhones.map((_, i) => showNumbers[i] ?? false);
+    setContactPhone(normalized);
+    setShowNumbers(trimmed);
+    syncJsonFields({ contact_phone: normalized, show_numbers: trimmed });
+    await autoPatch({ contact_phone: normalized, show_numbers: trimmed });
+  }
+
+  async function toggleShowNumber(idx: number) {
+    const next = parsedPhones.map((_, i) => showNumbers[i] ?? false);
+    next[idx] = !next[idx];
+    setShowNumbers(next);
+    syncJsonFields({ show_numbers: next });
+    await autoPatch({ show_numbers: next });
   }
 
   async function handleSave() {
@@ -346,6 +390,71 @@ export default function EditCouplePage() {
             )}
           </div>
         )}
+
+        {/* Brojevi telefona — toggle per number to surface a call-CTA below the RSVP form */}
+        <div className="border border-white/10 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-white/70">
+            <Phone size={14} /> Brojevi telefona
+          </div>
+          <div className="space-y-2">
+            <label className="block text-[11px] uppercase tracking-wider text-white/40">
+              Kontakt brojevi (razdvojeni zarezima, npr. +381638261775,+381615000363)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                onBlur={saveContactPhone}
+                placeholder="+381..."
+                className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-md text-white text-sm focus:outline-none focus:border-[#AE343F]"
+                spellCheck={false}
+              />
+              <button
+                onClick={saveContactPhone}
+                className="px-3 py-2 rounded-md bg-white/10 hover:bg-white/15 text-white/70 hover:text-white text-xs font-medium transition-colors cursor-pointer"
+              >
+                Sačuvaj
+              </button>
+            </div>
+          </div>
+
+          {parsedPhones.length === 0 ? (
+            <p className="text-xs text-white/30 italic">
+              Nema sačuvanih brojeva. Dodaj jedan ili više brojeva pa će se pojaviti prekidači za prikaz ispod RSVP forme.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-[11px] uppercase tracking-wider text-white/40">
+                Prikaži ispod RSVP forme
+              </p>
+              {parsedPhones.map((phone, idx) => {
+                const enabled = showNumbers[idx] ?? false;
+                return (
+                  <div
+                    key={`${phone}-${idx}`}
+                    className="flex items-center justify-between px-3 py-2 bg-white/5 rounded-md"
+                  >
+                    <span className="text-sm text-white/80 font-mono">{phone}</span>
+                    <button
+                      onClick={() => toggleShowNumber(idx)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        enabled ? "bg-[#AE343F]" : "bg-white/20"
+                      }`}
+                      aria-label={`Prikaži ${phone}`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                          enabled ? "translate-x-5" : "translate-x-0.5"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Planner Stats Section */}
         <div className="border border-white/10 rounded-lg p-4 bg-white/5">

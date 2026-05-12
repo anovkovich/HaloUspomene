@@ -2,7 +2,7 @@
 // Drives every color, gradient, shadow, and text tone so the loading
 // envelope matches the invitation theme the user will see underneath.
 
-export type EnvelopeTheme = "watercolor" | "line_art";
+export type EnvelopeTheme = "watercolor" | "line_art" | "fountain";
 
 export interface EnvelopeThemeConfig {
   /** Full-screen loader backdrop (behind the envelope scene). */
@@ -185,6 +185,19 @@ export function getLoaderTheme(
         bgSealed: "radial-gradient(ellipse 95% 85% at 50% 50%, #FDFBF4 0%, #EFE9D8 100%)",
         bgOpen: "radial-gradient(ellipse 95% 85% at 50% 50%, rgba(253,251,244,0.85) 0%, rgba(239,233,216,0.9) 100%)",
         backdropFilterOpen: "blur(6px)",
+      },
+    };
+  }
+  if (theme === "fountain") {
+    // Gold wax envelope on burgundy backdrop
+    return {
+      ...WATERCOLOR_LOADER,
+      overlay: {
+        bgSealed:
+          "radial-gradient(ellipse 80% 70% at 50% 50%, #8B1428 0%, #4A0813 100%)",
+        bgOpen:
+          "radial-gradient(ellipse 80% 70% at 50% 50%, rgba(139,20,40,0.88) 0%, rgba(74,8,19,0.92) 100%)",
+        backdropFilterOpen: "blur(10px)",
       },
     };
   }

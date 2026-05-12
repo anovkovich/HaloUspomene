@@ -67,10 +67,29 @@ const lineArtTheme: PremiumVisualTheme = {
   dividerStyle: "gold",
 };
 
+const fountainTheme: PremiumVisualTheme = {
+  primary: "#6B0E1E",
+  primaryLight: "#a82435",
+  textMain: "#ffffff",
+  textMuted: "rgba(255,255,255,0.75)",
+  bgGradient: "bg-[#6B0E1E]",
+  cardBg: "bg-[#4A0813]/40 backdrop-blur-md",
+  cardBorder: "border-white/15",
+  archFrame: null,
+  garlandTop: null,
+  garlandBottom: null,
+  floatingElements: [],
+  showParticles: false,
+  glassOpacity: "bg-white/10",
+  buttonGradient: "from-white to-[#f0e3d6]",
+  dividerStyle: "watercolor",
+};
+
 const themeMap: Record<PremiumThemeType, PremiumVisualTheme> = {
   watercolor: watercolorTheme,
   line_art: lineArtTheme,
   disney_pixar: watercolorTheme, // fallback, unused since we removed disney
+  fountain: fountainTheme,
 };
 
 export function getPremiumVisualTheme(
