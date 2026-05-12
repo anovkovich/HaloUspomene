@@ -127,6 +127,8 @@ export interface WeddingData {
   contact_phone?: string;
   /** Per-number toggle for displaying call-CTA on the RSVP page. Parallel to `contact_phone`'s split-by-comma order. */
   show_numbers?: boolean[];
+  /** Optional per-number labels rendered above each phone in the call-CTA (e.g. "Mama mlade"). Parallel to `contact_phone`. */
+  number_names?: string[];
 }
 
 // Comprehensive theme configuration

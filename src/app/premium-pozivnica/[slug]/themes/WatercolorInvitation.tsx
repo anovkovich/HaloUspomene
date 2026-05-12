@@ -358,8 +358,8 @@ export default function WatercolorInvitation({
   bride,
   groom,
   full_display,
-  formattedDate,
   formattedDateShort,
+  formattedSubmitUntil,
   isPastDeadline,
 }: ThemeInvitationProps) {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -752,16 +752,18 @@ export default function WatercolorInvitation({
             <WatercolorRSVPForm
               slug={slug}
               submitUntil={data.submit_until}
-              formattedDeadline={formattedDate}
+              formattedDeadline={formattedSubmitUntil}
             />
           )}
           <PremiumCallCTA
             contactPhone={data.contact_phone}
             showNumbers={data.show_numbers}
+            numberNames={data.number_names}
             useCyrillic={data.useCyrillic}
             labelClassName="text-white/70"
             numberClassName="text-[#d4af37]"
             separatorClassName="text-white/30"
+            nameClassName="text-white/65"
             wrapperClassName="mt-6"
           />
         </motion.div>

@@ -5,6 +5,7 @@ import React from "react";
 interface PremiumCallCTAProps {
   contactPhone?: string;
   showNumbers?: boolean[];
+  numberNames?: string[];
   useCyrillic?: boolean;
   /** Tailwind text color class for the label (e.g. "text-white/65"). */
   labelClassName?: string;
@@ -12,6 +13,8 @@ interface PremiumCallCTAProps {
   numberClassName?: string;
   /** Tailwind text color class for the separator dot. */
   separatorClassName?: string;
+  /** Tailwind text color class for the per-number name label. */
+  nameClassName?: string;
   /** Extra classes for the outer wrapper, used to control margin. */
   wrapperClassName?: string;
 }
@@ -26,18 +29,24 @@ function formatPhone(raw: string): string {
 export default function PremiumCallCTA({
   contactPhone,
   showNumbers,
+  numberNames,
   useCyrillic,
   labelClassName = "text-white/70",
   numberClassName = "text-white",
   separatorClassName = "text-white/40",
+  nameClassName = "text-white/60",
   wrapperClassName = "mt-5",
 }: PremiumCallCTAProps) {
   const phones = (contactPhone ?? "")
     .split(",")
     .map((p) => p.trim())
     .filter(Boolean);
-  const enabled = phones.filter((_, i) => showNumbers?.[i] === true);
+  const enabled = phones
+    .map((num, i) => ({ num, name: (numberNames?.[i] ?? "").trim() }))
+    .filter((_, i) => showNumbers?.[i] === true);
   if (enabled.length === 0) return null;
+
+  const hasAnyName = enabled.some((e) => e.name !== "");
 
   const label = useCyrillic
     ? enabled.length > 1
@@ -54,16 +63,27 @@ export default function PremiumCallCTA({
       >
         {label}
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-        {enabled.map((num, i) => (
+      <div className="flex flex-wrap items-end justify-center gap-x-5 gap-y-3">
+        {enabled.map(({ num, name }, i) => (
           <React.Fragment key={`${num}-${i}`}>
-            {i > 0 && <span className={separatorClassName}>•</span>}
-            <a
-              href={`tel:${num.replace(/\s+/g, "")}`}
-              className={`text-sm font-medium underline-offset-2 hover:underline ${numberClassName}`}
-            >
-              {formatPhone(num)}
-            </a>
+            {i > 0 && !hasAnyName && (
+              <span className={separatorClassName}>•</span>
+            )}
+            <div className="flex flex-col items-center gap-0.5">
+              {name && (
+                <span
+                  className={`text-[10px] sm:text-xs tracking-wide ${nameClassName}`}
+                >
+                  {name}
+                </span>
+              )}
+              <a
+                href={`tel:${num.replace(/\s+/g, "")}`}
+                className={`text-sm font-medium underline-offset-2 hover:underline ${numberClassName}`}
+              >
+                {formatPhone(num)}
+              </a>
+            </div>
           </React.Fragment>
         ))}
       </div>

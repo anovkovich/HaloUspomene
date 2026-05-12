@@ -25,6 +25,7 @@ export default function EditCouplePage() {
   const [jsonOpen, setJsonOpen] = useState(false);
   const [contactPhone, setContactPhone] = useState("");
   const [showNumbers, setShowNumbers] = useState<boolean[]>([]);
+  const [numberNames, setNumberNames] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("/api/admin/couples")
@@ -41,6 +42,7 @@ export default function EditCouplePage() {
           setImageLayout(data.image_layout ?? "line");
           setContactPhone(data.contact_phone ?? "");
           setShowNumbers(Array.isArray(data.show_numbers) ? data.show_numbers : []);
+          setNumberNames(Array.isArray(data.number_names) ? data.number_names : []);
         } else {
           toast.error("Pozivnica nije pronađena");
         }
@@ -79,13 +81,23 @@ export default function EditCouplePage() {
 
   async function saveContactPhone() {
     const normalized = parsedPhones.join(",");
-    // Trim show_numbers to match the new phone count so toggles never drift past
-    // the list (e.g. when admin shortens it from 2 phones to 1).
-    const trimmed = parsedPhones.map((_, i) => showNumbers[i] ?? false);
+    // Trim show_numbers / number_names to match the new phone count so they never
+    // drift past the list (e.g. when admin shortens it from 2 phones to 1).
+    const trimmedToggles = parsedPhones.map((_, i) => showNumbers[i] ?? false);
+    const trimmedNames = parsedPhones.map((_, i) => numberNames[i] ?? "");
     setContactPhone(normalized);
-    setShowNumbers(trimmed);
-    syncJsonFields({ contact_phone: normalized, show_numbers: trimmed });
-    await autoPatch({ contact_phone: normalized, show_numbers: trimmed });
+    setShowNumbers(trimmedToggles);
+    setNumberNames(trimmedNames);
+    syncJsonFields({
+      contact_phone: normalized,
+      show_numbers: trimmedToggles,
+      number_names: trimmedNames.some((n) => n.trim() !== "") ? trimmedNames : [],
+    });
+    await autoPatch({
+      contact_phone: normalized,
+      show_numbers: trimmedToggles,
+      number_names: trimmedNames.some((n) => n.trim() !== "") ? trimmedNames : [],
+    });
   }
 
   async function toggleShowNumber(idx: number) {
@@ -94,6 +106,14 @@ export default function EditCouplePage() {
     setShowNumbers(next);
     syncJsonFields({ show_numbers: next });
     await autoPatch({ show_numbers: next });
+  }
+
+  async function saveNumberName(idx: number, value: string) {
+    const next = parsedPhones.map((_, i) => (i === idx ? value : numberNames[i] ?? ""));
+    setNumberNames(next);
+    const payload = next.some((n) => n.trim() !== "") ? next : [];
+    syncJsonFields({ number_names: payload });
+    await autoPatch({ number_names: payload });
   }
 
   async function handleSave() {
@@ -430,25 +450,45 @@ export default function EditCouplePage() {
               </p>
               {parsedPhones.map((phone, idx) => {
                 const enabled = showNumbers[idx] ?? false;
+                const name = numberNames[idx] ?? "";
                 return (
                   <div
                     key={`${phone}-${idx}`}
-                    className="flex items-center justify-between px-3 py-2 bg-white/5 rounded-md"
+                    className="px-3 py-2 bg-white/5 rounded-md space-y-2"
                   >
-                    <span className="text-sm text-white/80 font-mono">{phone}</span>
-                    <button
-                      onClick={() => toggleShowNumber(idx)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        enabled ? "bg-[#AE343F]" : "bg-white/20"
-                      }`}
-                      aria-label={`Prikaži ${phone}`}
-                    >
-                      <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                          enabled ? "translate-x-5" : "translate-x-0.5"
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm text-white/80 font-mono">{phone}</span>
+                      <button
+                        onClick={() => toggleShowNumber(idx)}
+                        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                          enabled ? "bg-[#AE343F]" : "bg-white/20"
                         }`}
-                      />
-                    </button>
+                        aria-label={`Prikaži ${phone}`}
+                      >
+                        <span
+                          className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                            enabled ? "translate-x-5" : "translate-x-0.5"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setNumberNames((prev) => {
+                          const next = parsedPhones.map((_, i) =>
+                            i === idx ? v : prev[i] ?? "",
+                          );
+                          return next;
+                        });
+                      }}
+                      onBlur={(e) => saveNumberName(idx, e.target.value)}
+                      placeholder="Ime (npr. Mama mlade)"
+                      className="w-full px-2.5 py-1.5 bg-white/5 border border-white/10 rounded text-white text-xs focus:outline-none focus:border-[#AE343F] placeholder:text-white/30"
+                      spellCheck={false}
+                    />
                   </div>
                 );
               })}

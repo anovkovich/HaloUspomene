@@ -46,6 +46,7 @@ export interface ThemeInvitationProps {
   full_display: string;
   formattedDate: string;
   formattedDateShort: string;
+  formattedSubmitUntil: string;
   isPastDeadline: boolean;
   /** True once the envelope loader has finished and the invitation is on
    *  screen. Themes can gate heavy / time-locked animations (e.g. the
@@ -89,6 +90,16 @@ export default function PremiumInvitationClient({
     return `${day}. ${month}. ${d.getFullYear()}.`;
   }, [data.event_date]);
 
+  const formattedSubmitUntil = useMemo(() => {
+    if (!data.submit_until) return "";
+    const d = new Date(data.submit_until + "T00:00:00");
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString(
+      data.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
+      { day: "numeric", month: "long", year: "numeric" },
+    );
+  }, [data.submit_until, data.useCyrillic]);
+
   const handleEnvelopeComplete = useCallback(() => {
     setIsLoading(false);
     setTimeout(() => setIsRevealed(true), 100);
@@ -117,6 +128,7 @@ export default function PremiumInvitationClient({
     full_display,
     formattedDate,
     formattedDateShort,
+    formattedSubmitUntil,
     isPastDeadline,
     isRevealed,
   };

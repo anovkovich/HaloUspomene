@@ -634,8 +634,8 @@ export default function LineArtInvitation({
   bride,
   groom,
   full_display,
-  formattedDate,
   formattedDateShort,
+  formattedSubmitUntil,
   isPastDeadline,
 }: ThemeInvitationProps) {
   // Window-level scroll for page parallax
@@ -830,15 +830,17 @@ export default function LineArtInvitation({
                 Rok za potvrdu dolaska je istekao.
               </p>
             ) : (
-              <LineArtRSVPForm slug={slug} submitUntil={data.submit_until} formattedDeadline={formattedDate} />
+              <LineArtRSVPForm slug={slug} submitUntil={data.submit_until} formattedDeadline={formattedSubmitUntil} />
             )}
             <PremiumCallCTA
               contactPhone={data.contact_phone}
               showNumbers={data.show_numbers}
+              numberNames={data.number_names}
               useCyrillic={data.useCyrillic}
               labelClassName="text-[#8B7355]/70"
               numberClassName="text-[#d4af37]"
               separatorClassName="text-[#8B7355]/40"
+              nameClassName="text-[#8B7355]/70"
               wrapperClassName="mt-5"
             />
           </GlassCard>
