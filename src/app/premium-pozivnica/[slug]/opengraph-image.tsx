@@ -100,6 +100,7 @@ export default async function PremiumOGImage({
     data.couple_names?.full_display ||
     (bride && groom ? `${bride} & ${groom}` : bride || groom || "Naše Venčanje");
   const isLineArt = data.premium_theme === "line_art";
+  const isFountain = data.premium_theme === "fountain";
 
   // ─────────────────── LINE ART (gold-on-ivory, matches live invitation) ──────
   if (isLineArt) {
@@ -253,6 +254,191 @@ export default async function PremiumOGImage({
               color: GOLD_DEEP,
               opacity: 0.55,
               letterSpacing: "0.4em",
+            }}
+          >
+            HALOUSPOMENE
+          </span>
+        </div>
+      ),
+      { ...size, fonts: fontsConfig },
+    );
+  }
+
+  // ─────────────────── FOUNTAIN (burgundy royal) ───────────────────
+  if (isFountain) {
+    const BURGUNDY = "#6B0E1E";
+    const BURGUNDY_DEEP = "#4A0813";
+    const BURGUNDY_LIGHT = "#8B1428";
+    const CREAM = "#fdfaf3";
+
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            height: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+            background: `radial-gradient(ellipse 95% 80% at 50% 50%, ${BURGUNDY_LIGHT} 0%, ${BURGUNDY} 55%, ${BURGUNDY_DEEP} 100%)`,
+            position: "relative",
+          }}
+        >
+          {/* Double cream frame */}
+          <div
+            style={{
+              display: "flex",
+              position: "absolute",
+              top: 34,
+              left: 34,
+              right: 34,
+              bottom: 34,
+              border: `1px solid ${CREAM}`,
+              opacity: 0.55,
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              position: "absolute",
+              top: 44,
+              left: 44,
+              right: 44,
+              bottom: 44,
+              border: `1px solid ${CREAM}`,
+              opacity: 0.22,
+            }}
+          />
+
+          {/* Top wordmark — cream */}
+          <div
+            style={{
+              display: "flex",
+              position: "absolute",
+              top: 82,
+              alignItems: "center",
+              gap: 18,
+              fontFamily: "Josefin Sans",
+              fontSize: 14,
+              letterSpacing: "0.45em",
+              color: CREAM,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                width: 56,
+                height: 1,
+                background: CREAM,
+                opacity: 0.7,
+              }}
+            />
+            <span>PREMIUM POZIVNICA</span>
+            <div
+              style={{
+                display: "flex",
+                width: 56,
+                height: 1,
+                background: CREAM,
+                opacity: 0.7,
+              }}
+            />
+          </div>
+
+          {/* Cream diamond ornament above names */}
+          <div
+            style={{
+              display: "flex",
+              width: 14,
+              height: 14,
+              background: CREAM,
+              opacity: 0.95,
+              transform: "rotate(45deg)",
+              marginBottom: 18,
+            }}
+          />
+
+          {/* Couple names — cream script with soft shadow */}
+          <span
+            style={{
+              fontFamily: "Script",
+              fontSize: 120,
+              color: CREAM,
+              lineHeight: 1,
+              textAlign: "center",
+              maxWidth: 1000,
+              padding: "0 80px",
+              textShadow: "0 3px 10px rgba(0,0,0,0.55)",
+            }}
+          >
+            {fullName}
+          </span>
+
+          {/* Cream divider with diamond */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 22,
+              marginTop: 30,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                width: 200,
+                height: 1,
+                background: CREAM,
+                opacity: 0.6,
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                width: 12,
+                height: 12,
+                background: CREAM,
+                opacity: 0.95,
+                transform: "rotate(45deg)",
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                width: 200,
+                height: 1,
+                background: CREAM,
+                opacity: 0.6,
+              }}
+            />
+          </div>
+
+          {/* Date — cream italic serif */}
+          <span
+            style={{
+              fontFamily: "Cormorant Garamond",
+              fontStyle: "italic",
+              fontSize: 60,
+              color: CREAM,
+              opacity: 0.92,
+              marginTop: 22,
+              letterSpacing: "0.05em",
+            }}
+          >
+            {dateStr}
+          </span>
+
+          {/* Bottom wordmark — subtle */}
+          <span
+            style={{
+              position: "absolute",
+              bottom: 86,
+              fontFamily: "Josefin Sans",
+              fontSize: 12,
+              color: CREAM,
+              opacity: 0.5,
+              letterSpacing: "0.45em",
             }}
           >
             HALOUSPOMENE

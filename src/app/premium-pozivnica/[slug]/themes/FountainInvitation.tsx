@@ -22,10 +22,11 @@ const ASSETS = {
   bgLandscape: "/images/premium/fountain/bg-landscape.webp",
   fountain1: "/images/premium/fountain/fountain-1.webp",
   fountain2: "/images/premium/fountain/fountain-2.webp",
-  // VP9 with alpha channel — built from dove.mp4 via ffmpeg chromakey filter.
-  // Browser plays it natively with transparent bg, GPU-decoded, no runtime
-  // chroma-key shader needed. ~520KB at 800×450, 2× speed flap.
-  dove: "/images/premium/fountain/dove.webm",
+  // Animated WebP with native alpha channel — built from dove.mp4 via ffmpeg
+  // chromakey filter. Works in ALL modern browsers including iOS Safari
+  // (VP9 WebM with alpha isn't supported on Safari, hence WebP). Just an
+  // <img> tag, no <video> element, no JS chroma-key. ~470KB.
+  dove: "/images/premium/fountain/dove.webp",
   frame: "/images/premium/fountain/frame.webp",
   paper: "/images/premium/fountain/paper.webp",
   roseRed: "/images/premium/fountain/rose-red.webp",
@@ -532,11 +533,11 @@ function ScheduleTimeline({
   );
 }
 
-/** Native transparent-WebM dove. The source dove.mp4 was pre-processed once
- *  with ffmpeg (chromakey + despill + downscale + 2× speed → VP9 with
- *  alpha). The browser decodes it on the GPU and composites it
- *  transparently — no canvas, no shader, no per-frame JS. ~380KB total.
- *  `mirror` flips horizontally for the second dove. */
+/** Animated transparent WebP dove. The source dove.mp4 was pre-processed
+ *  once with ffmpeg (chromakey + downscale + 2× speed → animated WebP with
+ *  alpha channel). Works in ALL modern browsers including iOS Safari, which
+ *  doesn't support VP9 alpha in WebM. Just an <img> — the browser decodes
+ *  it natively, no JS chroma keying, no <video> element. ~470KB. */
 function DoveVideo({
   size = 140,
   mirror = false,
@@ -545,19 +546,17 @@ function DoveVideo({
   mirror?: boolean;
 }) {
   return (
-    <video
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={ASSETS.dove}
-      autoPlay
-      loop
-      muted
-      playsInline
-      preload="auto"
+      alt=""
       style={{
         width: size,
         height: "auto",
         display: "block",
         transform: mirror ? "scaleX(-1)" : undefined,
       }}
+      draggable={false}
     />
   );
 }
@@ -737,7 +736,7 @@ export default function FountainInvitation({
       <section
         ref={heroRef}
         className="relative w-full overflow-hidden"
-        style={{ height: "90vh", minHeight: 580 }}
+        style={{ height: "92vh", minHeight: 580 }}
       >
         {/* Background image — portrait on mobile, landscape on desktop.
             Wrapped in motion.div so it parallax-scrolls slower than page. */}
