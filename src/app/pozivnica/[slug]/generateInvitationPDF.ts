@@ -75,6 +75,13 @@ function formatDeadline(iso: string, cyrillic: boolean): string {
   return `${d.getDate().toString().padStart(2, "0")}. ${months[d.getMonth()]} ${d.getFullYear()}.`;
 }
 
+// +381638261775 → "+381 63 826 1775"
+function formatPhone(raw: string): string {
+  const match = raw.replace(/\s+/g, "").match(/^\+381(\d{2})(\d{3})(\d+)$/);
+  if (match) return `+381 ${match[1]} ${match[2]} ${match[3]}`;
+  return raw;
+}
+
 async function svgToDataUrl(
   svgUrl: string,
   tintColor: string,
@@ -114,12 +121,21 @@ async function loadFont(path: string): Promise<string> {
   return btoa(binary);
 }
 
+export interface InvitationPDFOptions {
+  /** Render the RSVP QR code. Defaults to true. */
+  includeQR?: boolean;
+  /** Render the enabled contact phone numbers (with optional names). Defaults to false. */
+  includePhones?: boolean;
+}
+
 export async function generateInvitationPDF(
   data: WeddingData,
   slug: string,
   isPaid: boolean,
   useCyrillic: boolean,
+  options: InvitationPDFOptions = {},
 ): Promise<void> {
+  const { includeQR = true, includePhones = false } = options;
   const theme = THEME_CONFIGS[data.theme] ?? THEME_CONFIGS.classic_rose;
   const primary = hexToRgb(theme.colors.primary);
   const primaryLight = blendColor(primary, 0.15);
@@ -341,40 +357,80 @@ export async function generateInvitationPDF(
   );
   y += 10;
 
+  // Contact phones (opt-in via includePhones; only renders if at least one phone is enabled)
+  if (includePhones && data.contact_phone) {
+    const allPhones = data.contact_phone
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    const enabled = allPhones
+      .map((num, i) => ({
+        num,
+        name: (data.number_names?.[i] ?? "").trim(),
+      }))
+      .filter((_, i) => data.show_numbers?.[i] === true);
+
+    if (enabled.length > 0) {
+      const anyHasName = enabled.some((p) => p.name !== "");
+      const colW = (W - margin * 2 - 10) / enabled.length;
+      const startX = margin + 5 + colW / 2;
+      enabled.forEach(({ num, name }, i) => {
+        const colX = startX + i * colW;
+        let blockY = y;
+        if (anyHasName) {
+          if (name) {
+            doc.setFont(bodyFont);
+            doc.setFontSize(9);
+            doc.setTextColor(...textLight);
+            doc.text(name, colX, blockY, { align: "center" });
+          }
+          blockY += 4;
+        }
+        doc.setFont("Serif");
+        doc.setFontSize(12);
+        doc.setTextColor(...text);
+        doc.text(formatPhone(num), colX, blockY, { align: "center" });
+      });
+      y += (anyHasName ? 4 : 0) + 5.5 + 3;
+    }
+  }
+
   // QR Code — try page 1 (large then small), else defer to page 2
   const qrLarge = 24;
   const qrSmall = 16;
   let qrDataUrl: string | null = null;
   let qrDeferred = false;
 
-  try {
-    const qrUrl = `https://halouspomene.rs/pozivnica/${slug}`;
-    qrDataUrl = await QRCode.toDataURL(qrUrl, {
-      width: 300,
-      margin: 1,
-      color: { dark: theme.colors.text, light: "#00000000" },
-    });
+  if (includeQR) {
+    try {
+      const qrUrl = `https://halouspomene.rs/rsvp/pozivnica-${slug}`;
+      qrDataUrl = await QRCode.toDataURL(qrUrl, {
+        width: 300,
+        margin: 1,
+        color: { dark: theme.colors.text, light: "#00000000" },
+      });
 
-    const scanLabel = useCyrillic
-      ? "Скенирајте за потврду"
-      : "Skenirajte za potvrdu";
+      const scanLabel = useCyrillic
+        ? "Скенирајте за потврду"
+        : "Skenirajte za potvrdu";
 
-    if (y + qrLarge + 8 <= H - 14) {
-      // Large QR fits on page 1
-      doc.addImage(qrDataUrl, "PNG", cx - qrLarge / 2, y, qrLarge, qrLarge);
-      y += qrLarge + 3.5;
-      centerText(scanLabel, y, 9, bodyFont, textLight);
-    } else if (y + qrSmall + 8 <= H - 14) {
-      // Small QR fits on page 1
-      doc.addImage(qrDataUrl, "PNG", cx - qrSmall / 2, y, qrSmall, qrSmall);
-      y += qrSmall + 3.5;
-      centerText(scanLabel, y, 8, bodyFont, textLight);
-    } else {
-      // Defer to page 2
-      qrDeferred = true;
+      if (y + qrLarge + 8 <= H - 14) {
+        // Large QR fits on page 1
+        doc.addImage(qrDataUrl, "PNG", cx - qrLarge / 2, y, qrLarge, qrLarge);
+        y += qrLarge + 3.5;
+        centerText(scanLabel, y, 9, bodyFont, textLight);
+      } else if (y + qrSmall + 8 <= H - 14) {
+        // Small QR fits on page 1
+        doc.addImage(qrDataUrl, "PNG", cx - qrSmall / 2, y, qrSmall, qrSmall);
+        y += qrSmall + 3.5;
+        centerText(scanLabel, y, 8, bodyFont, textLight);
+      } else {
+        // Defer to page 2
+        qrDeferred = true;
+      }
+    } catch {
+      // QR generation failed, skip
     }
-  } catch {
-    // QR generation failed, skip
   }
 
   // Watermark (free version only)
@@ -434,6 +490,13 @@ export async function generateInvitationPDF(
       // Time badge
       centerText(item.time, ty, 12, bodyFont, primary);
       ty += 6;
+
+      // What (e.g. "Polazak po mladu") — small uppercase between time and title
+      if (item.what) {
+        const whatTint = blendColor(primary, 0.6);
+        centerText(item.what.toUpperCase(), ty, 8, bodyFont, whatTint);
+        ty += 5;
+      }
 
       // Title
       centerText(item.title, ty, 14, "Serif", text);

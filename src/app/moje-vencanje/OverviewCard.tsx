@@ -27,6 +27,7 @@ import {
 } from "./actions";
 import type { ActiveView } from "./Sidebar";
 import type { ChecklistItem, PortalBudget } from "./types";
+import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 
 interface Props {
   coupleInfo: {
@@ -102,6 +103,15 @@ export default function OverviewCard({
     slug: string;
   } | null>(null);
   const [seatingLoading, setSeatingLoading] = useState(false);
+  const [pdfModal, setPdfModal] = useState<{
+    weddingData: WeddingData;
+    slug: string;
+    hasEnabledPhones: boolean;
+  } | null>(null);
+  const [pdfIncludeQR, setPdfIncludeQR] = useState(true);
+  const [pdfIncludePhones, setPdfIncludePhones] = useState(true);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
 
   useEffect(() => {
     loadOverviewAction().then((result) => {
@@ -123,17 +133,48 @@ export default function OverviewCard({
   }, [coupleInfo.slug]);
 
   const handleDownloadPDF = useCallback(async () => {
+    setPdfLoading(true);
     const result = await getWeddingDataForPDF();
+    setPdfLoading(false);
     if (!result) return;
-    const { generateInvitationPDF } =
-      await import("@/app/pozivnica/[slug]/generateInvitationPDF");
-    generateInvitationPDF(
-      result.weddingData,
-      result.slug,
-      result.weddingData.paid_for_pdf ?? false,
-      result.weddingData.useCyrillic ?? false,
+    const phones = (result.weddingData.contact_phone ?? "")
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    const hasEnabledPhones = phones.some(
+      (_, i) => result.weddingData.show_numbers?.[i] === true,
     );
+    setPdfIncludeQR(true);
+    setPdfIncludePhones(hasEnabledPhones);
+    setPdfModal({
+      weddingData: result.weddingData,
+      slug: result.slug,
+      hasEnabledPhones,
+    });
   }, []);
+
+  const handleConfirmPdfDownload = useCallback(async () => {
+    if (!pdfModal) return;
+    setPdfDownloading(true);
+    try {
+      const { generateInvitationPDF } = await import(
+        "@/app/pozivnica/[slug]/generateInvitationPDF"
+      );
+      await generateInvitationPDF(
+        pdfModal.weddingData,
+        pdfModal.slug,
+        pdfModal.weddingData.paid_for_pdf ?? false,
+        pdfModal.weddingData.useCyrillic ?? false,
+        {
+          includeQR: pdfIncludeQR,
+          includePhones: pdfModal.hasEnabledPhones && pdfIncludePhones,
+        },
+      );
+      setPdfModal(null);
+    } finally {
+      setPdfDownloading(false);
+    }
+  }, [pdfModal, pdfIncludeQR, pdfIncludePhones]);
 
   const handleDownloadFlyer = useCallback(async () => {
     const { generateAudioFlyerPDF } =
@@ -472,10 +513,11 @@ export default function OverviewCard({
               </button>
               <button
                 onClick={handleDownloadPDF}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/85 hover:border-[#AE343F]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
+                disabled={pdfLoading}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium bg-[#F5F4DC]/50 border border-[#232323]/15 text-[#232323]/85 hover:border-[#AE343F]/40 hover:text-[#AE343F] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait"
               >
                 <Download size={12} />
-                PDF pozivnica
+                {pdfLoading ? "Učitavanje..." : "PDF pozivnica"}
               </button>
               <button
                 onClick={() => {
@@ -632,6 +674,81 @@ export default function OverviewCard({
                 </Link>
               </>
             ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* PDF download options modal */}
+      {pdfModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !pdfDownloading && setPdfModal(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setPdfModal(null)}
+              disabled={pdfDownloading}
+              className="absolute top-4 right-4 text-[#232323]/60 hover:text-[#232323] transition-colors cursor-pointer disabled:opacity-40"
+            >
+              <X size={18} />
+            </button>
+
+            <h3 className="font-serif text-lg text-[#232323] mb-1">
+              Preuzmi PDF pozivnicu
+            </h3>
+            <p className="text-xs text-[#232323]/55 mb-5">
+              Izaberi šta da uključimo u pozivnicu.
+            </p>
+
+            <div className="space-y-2 mb-6">
+              <label className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-[#F5F4DC]/50 border border-[#232323]/15 cursor-pointer hover:border-[#AE343F]/40 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={pdfIncludeQR}
+                  onChange={(e) => setPdfIncludeQR(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-[#AE343F] cursor-pointer"
+                />
+                <span className="flex-1">
+                  <span className="block text-sm font-medium text-[#232323]">
+                    QR kod za potvrdu dolaska
+                  </span>
+                  <span className="block text-[11px] text-[#232323]/55 mt-0.5">
+                    Skeniranjem gosti idu direktno na RSVP formu.
+                  </span>
+                </span>
+              </label>
+
+              {pdfModal.hasEnabledPhones && (
+                <label className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-[#F5F4DC]/50 border border-[#232323]/15 cursor-pointer hover:border-[#AE343F]/40 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={pdfIncludePhones}
+                    onChange={(e) => setPdfIncludePhones(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-[#AE343F] cursor-pointer"
+                  />
+                  <span className="flex-1">
+                    <span className="block text-sm font-medium text-[#232323]">
+                      Brojevi telefona
+                    </span>
+                    <span className="block text-[11px] text-[#232323]/55 mt-0.5">
+                      Prikazuje brojeve koji su uključeni u admin panelu.
+                    </span>
+                  </span>
+                </label>
+              )}
+            </div>
+
+            <button
+              onClick={handleConfirmPdfDownload}
+              disabled={pdfDownloading}
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-[#AE343F] text-white text-sm font-medium hover:bg-[#962d36] transition-colors disabled:opacity-60 disabled:cursor-wait"
+            >
+              <Download size={15} />
+              {pdfDownloading ? "Generisanje..." : "Preuzmi PDF"}
+            </button>
           </div>
         </div>
       )}
