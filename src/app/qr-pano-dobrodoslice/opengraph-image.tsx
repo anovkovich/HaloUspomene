@@ -120,13 +120,13 @@ export default async function OGImage() {
               style={{
                 fontFamily: "Josefin Sans",
                 fontSize: 10,
-                letterSpacing: "0.35em",
+                letterSpacing: "0.2em",
                 textTransform: "uppercase",
                 color: "#a8a29e",
                 marginBottom: 6,
               }}
             >
-              Dobrodošli
+              Dobrodošli na venčanje
             </span>
             <span
               style={{
@@ -148,7 +148,7 @@ export default async function OGImage() {
                 marginBottom: 18,
               }}
             >
-              gde sedim?
+              pronađi svoje mesto sedenja
             </span>
             {/* QR mock */}
             <div

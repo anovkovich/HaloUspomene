@@ -13,14 +13,14 @@ function getSocialProofText(): string {
   const isPeakSeason = month >= 5 && month <= 8;
 
   if (day <= 7) {
-    return isPeakSeason ? "4 rezervacije" : "2 rezervacije";
+    return isPeakSeason ? "2 rezervacije" : "1 rezervacija";
   }
 
   if (day <= 22) {
-    return isPeakSeason ? "9 rezervacija" : "5 rezervacija";
+    return isPeakSeason ? "3 rezervacije" : "2 rezervacije";
   }
 
-  return isPeakSeason ? "10+ rezervacija" : "9+ rezervacija";
+  return isPeakSeason ? "5 rezervacija" : "4 rezervacije";
 }
 
 const Hero: React.FC = () => {

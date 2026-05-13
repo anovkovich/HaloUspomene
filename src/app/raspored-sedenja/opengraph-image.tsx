@@ -150,18 +150,14 @@ export default async function OGImage() {
                     strokeWidth="2"
                     opacity={isMladenacki ? 0.95 : 0.85}
                   />
-                  {/* Table number */}
-                  <text
-                    x={t.cx}
-                    y={t.cy + 5}
-                    fontFamily="Josefin Sans"
-                    fontSize="14"
-                    fontWeight="700"
-                    textAnchor="middle"
+                  {/* Inner dot accent (replaces text label — Satori doesn't support <text>) */}
+                  <circle
+                    cx={t.cx}
+                    cy={t.cy}
+                    r={isMladenacki ? 10 : 6}
                     fill={isMladenacki ? "#F5F4DC" : "#AE343F"}
-                  >
-                    {isMladenacki ? "♥" : i + 1}
-                  </text>
+                    opacity={isMladenacki ? 0.95 : 0.5}
+                  />
                 </g>
               );
             })}
@@ -242,20 +238,13 @@ export default async function OGImage() {
                 <span
                   style={{
                     display: "flex",
-                    width: 18,
-                    height: 18,
-                    borderRadius: 9,
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
                     background: "#AE343F",
-                    color: "#F5F4DC",
-                    fontFamily: "Josefin Sans",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    alignItems: "center",
-                    justifyContent: "center",
+                    flexShrink: 0,
                   }}
-                >
-                  ✓
-                </span>
+                />
                 <span
                   style={{
                     fontFamily: "Josefin Sans",
