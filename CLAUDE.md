@@ -32,25 +32,25 @@
 
 ## Tech Stack
 
-| Layer | Tech |
-|-------|------|
-| Framework | Next.js 16.0.10 (App Router, Turbopack) |
-| Runtime | React 19.2 |
-| Styling | Tailwind CSS v4 + DaisyUI 5 (light theme) |
-| Animation | Framer Motion 12 |
-| Icons | Lucide React |
-| Database | MongoDB Atlas (`halouspomene` DB) |
-| File Storage | Vercel Blob (`@vercel/blob`) — audio messages, premium images, custom uploads |
-| Error Tracking | Sentry (`@sentry/nextjs`, free tier, replay on errors) |
-| Forms (lead-gen) | Web3Forms |
-| Analytics | GA4 + Microsoft Clarity + Vercel Analytics + Vercel Speed Insights |
-| Auth | `jose` JWT library |
-| PDF | jsPDF (invitations, seating charts, audio flyers) |
-| QR | qrcode |
-| Drag & drop | react-draggable (seating editor) |
-| Toasts | sonner |
-| Blog | MDX via `next-mdx-remote` + `remark-gfm` |
-| AI image gen | Pollinations.ai (text→image), fal.ai birefnet (background removal) |
+| Layer            | Tech                                                                          |
+| ---------------- | ----------------------------------------------------------------------------- |
+| Framework        | Next.js 16.0.10 (App Router, Turbopack)                                       |
+| Runtime          | React 19.2                                                                    |
+| Styling          | Tailwind CSS v4 + DaisyUI 5 (light theme)                                     |
+| Animation        | Framer Motion 12                                                              |
+| Icons            | Lucide React                                                                  |
+| Database         | MongoDB Atlas (`halouspomene` DB)                                             |
+| File Storage     | Vercel Blob (`@vercel/blob`) — audio messages, premium images, custom uploads |
+| Error Tracking   | Sentry (`@sentry/nextjs`, free tier, replay on errors)                        |
+| Forms (lead-gen) | Web3Forms                                                                     |
+| Analytics        | GA4 + Microsoft Clarity + Vercel Analytics + Vercel Speed Insights            |
+| Auth             | `jose` JWT library                                                            |
+| PDF              | jsPDF (invitations, seating charts, audio flyers)                             |
+| QR               | qrcode                                                                        |
+| Drag & drop      | react-draggable (seating editor)                                              |
+| Toasts           | sonner                                                                        |
+| Blog             | MDX via `next-mdx-remote` + `remark-gfm`                                      |
+| AI image gen     | Pollinations.ai (text→image), fal.ai birefnet (background removal)            |
 
 ## Brand / Design Tokens
 
@@ -136,7 +136,7 @@ src/
 │   │   ├── portal/                   # → redirects to /moje-vencanje
 │   │   ├── audio-knjiga/             # Guest-facing audio recorder (event day only)
 │   │   ├── gde-sedim/                # Public seat lookup tool
-│   │   └── raspored-sedenja/         # Drag-and-drop seating editor
+│   │   └── raspored-sedenja/         # Seating editor
 │   │       ├── actions.ts            # saveRaspored, loadRaspored, checkPaidStatus
 │   │       ├── RasporedClient.tsx    # Editor with paid_for_raspored re-check
 │   │       ├── GuestSidebar.tsx / Toolbar.tsx
@@ -210,10 +210,12 @@ src/
 ## Key Patterns
 
 ### Shared UI Components
+
 - **DatePicker** (`src/components/ui/DatePicker.tsx`) — branded calendar with portal-rendered dropdown. **Always use this instead of `<input type="date">`.** Accepts `value`/`onChange` (ISO `YYYY-MM-DD`), `variant: "dark" | "light"`, `accentColor`, optional `minDate`, `placeholder`, `showQuickActions` (Danas / Za nedelju dana). Default accent is `#AE343F`.
 - Other reusable UI: `Breadcrumbs`, `ScrollReveal`.
 
 ### Rendering Strategy
+
 - **Server components** by default for all `page.tsx` files
 - `"use client"` only on the smallest interactive components
 - `"use server"` actions in `moje-vencanje/actions.ts` and `pozivnica/[slug]/raspored-sedenja/actions.ts`
@@ -223,6 +225,7 @@ src/
 - Invitation pages revalidate every 10s to pick up admin changes quickly
 
 ### MongoDB Data Layer
+
 - **Database**: `halouspomene`
 - **Collections**:
   - `couples` — wedding couple records (the main domain object)
@@ -238,11 +241,13 @@ src/
 - Deleting a couple cascades across `couples`, `rsvp_responses`, `seating_layouts`, `audio_messages` (with blob cleanup), and `wedding_portal`
 
 ### Couple Data Shape (`WeddingData`)
+
 Lives at `src/app/pozivnica/[slug]/types.ts`. Selected fields:
 
 **Core:** `theme`, `scriptFont`, `useCyrillic`, `couple_names`, `event_date`, `submit_until`, `potvrde_password` (auto-generated as `${groom}${4 random digits}` by `/api/pozivnica/create` and `/api/premium-pozivnica/create`; admin-typed via `/admin/nova` Quick Start; user-typed via `/planiranje-vencanja` signup. Older couples created before 2026-04-18 may have legacy `${groom}${DDMM}` format from the deprecated lead-gen JSON generator).
 
 **Paid features (admin toggles):**
+
 - `paid_for_raspored` — unlocks seating editor + `/gde-sedim` lookup
 - `paid_for_audio` — unlocks audio guest book recording
 - `paid_for_audio_USB`: `"" | "kaseta" | "bocica"` — physical souvenir type
@@ -255,6 +260,7 @@ Lives at `src/app/pozivnica/[slug]/types.ts`. Selected fields:
 **Receipt/billing:** `receipt_valid`, `receipt_created`, `custom_discount`, bank account selector (Erste / UniCredit).
 
 ### Premium Invitation System
+
 - Created via `POST /api/premium-pozivnica/create` (rate-limited 5 / IP / hour); auto-generates password as `{Groom}DDMM`, sets `premium: true, premium_paid: false`.
 - AI couple illustration via `POST /api/premium-pozivnica/generate` → Pollinations.ai (text-to-image, paper-craft prompt).
 - Background removal via `POST /api/premium-pozivnica/whiten-bg` → fal.ai birefnet queue API (requires `FAL_KEY`), polls up to 60s.
@@ -266,6 +272,7 @@ Lives at `src/app/pozivnica/[slug]/types.ts`. Selected fields:
 - All client themes use `dynamic(..., { ssr: false })` for animation-heavy components.
 
 ### Seating Editor Access Control
+
 - `paid_for_raspored` boolean gates the full editor.
 - Client-side `recheckPaid()` calls server when hitting a gate (adding a table at the limit, assigning a 2nd+ seat).
 - Server-side `saveRaspored()` re-verifies `paid_for_raspored` before persisting.
@@ -273,12 +280,13 @@ Lives at `src/app/pozivnica/[slug]/types.ts`. Selected fields:
 - Only checks the DB at gate boundaries (not on every action) for performance.
 
 ### Auth
-| Surface | Cookie | TTL | Source |
-|---------|--------|-----|--------|
-| Admin panel | `admin_token` | 24h | `ADMIN_PASSWORD` env var |
-| Couple invitation dashboards (potvrde, raspored) | `auth_${slug}` | 8h | `potvrde_password` field |
-| Moje Venčanje portal | `moje_vencanje_auth` (JWT) + `moje_vencanje_slug` (JS-readable) | 480 days | `potvrde_password` field |
-| Birthday dashboard | `auth_birthday_${slug}` | 8h | birthday password field |
+
+| Surface                                          | Cookie                                                          | TTL      | Source                   |
+| ------------------------------------------------ | --------------------------------------------------------------- | -------- | ------------------------ |
+| Admin panel                                      | `admin_token`                                                   | 24h      | `ADMIN_PASSWORD` env var |
+| Couple invitation dashboards (potvrde, raspored) | `auth_${slug}`                                                  | 8h       | `potvrde_password` field |
+| Moje Venčanje portal                             | `moje_vencanje_auth` (JWT) + `moje_vencanje_slug` (JS-readable) | 480 days | `potvrde_password` field |
+| Birthday dashboard                               | `auth_birthday_${slug}`                                         | 8h       | birthday password field  |
 
 - All JWTs use `jose` and `JWT_SECRET`
 - `src/middleware.ts` enforces admin/couple/birthday route protection
@@ -287,7 +295,9 @@ Lives at `src/app/pozivnica/[slug]/types.ts`. Selected fields:
 - Delete-couple in admin requires re-entering the admin password and typing the slug
 
 ### Moje Venčanje Portal Views
+
 The dashboard has 6 views routed via `?tab=` query param: `overview`, `checklist`, `budget`, `vendors`, `audio`, `guests`.
+
 - **Checklist:** 9 time-based groups (`12+`, `9-12`, ..., `wedding-day`, `custom`), drag-drop reorder, per-item completion
 - **Budget:** 12 default categories, custom additions, per-category planned vs spent, RSD/EUR toggle (via `pricing.ts`)
 - **Guests:** RSVP filter (attending / not attending), 3-way categorization (`Mladini`, `Mladoženjini`, `Zajednički`), manual guest entry, edit/delete
@@ -298,6 +308,7 @@ The dashboard has 6 views routed via `?tab=` query param: `overview`, `checklist
 PWA install prompt detects `beforeinstallprompt` (Android/Chrome) with iOS instructions fallback. Bottom tab bar appears in standalone mode. URL query params persist tab navigation. No service worker file currently shipped — Vercel handles caching.
 
 ### Audio Guest Book
+
 - Gated by `paid_for_audio` on couple
 - Recording window: **event day + 1 day after only** (enforced server-side)
 - Max 100 recordings per slug
@@ -306,7 +317,9 @@ PWA install prompt detects `beforeinstallprompt` (Android/Chrome) with iOS instr
 - Admin can download all messages or merge into a single WAV via portal Audio view
 
 ### OG Images
+
 Dynamic OG images via `opengraph-image.tsx` files using the Next.js Image Generation API:
+
 - Per-couple (theme-aware, uses couple's `scriptFont`): `/pozivnica/[slug]/opengraph-image.tsx`
 - City pages: `/lokacije/[city]/opengraph-image.tsx`
 - Blog: post-level + index OG images
@@ -314,9 +327,11 @@ Dynamic OG images via `opengraph-image.tsx` files using the Next.js Image Genera
 - 10 font .ttf files stored at `src/app/pozivnica/[slug]/fonts/` for runtime rendering
 
 ### Translations
+
 Invitation pages support both **Latin** and **Cyrillic** Serbian scripts. `translations.ts` exports `latin` and `cyrillic` translation objects. Selection driven by the `useCyrillic` flag on the couple record, which also picks the appropriate script font. Three of the script fonts have Cyrillic variants: Marck Script, Caveat, Bad Script.
 
 ### Routing & Redirects
+
 - Navbar uses hash links (`#section`) for the homepage, `next/link` for `/blog`, `/lokacije`, etc.
 - All `/pozivnica/[slug]/*` routes wrapped by `EventPassedGuard` in `layout.tsx` — bypassed for management routes (`/portal`, `/potvrde`, `/prijava`, `/raspored-sedenja`, `/audio-knjiga`)
 - `/pozivnica/[slug]/potvrde` → redirect to `/moje-vencanje?tab=guests`
@@ -324,6 +339,7 @@ Invitation pages support both **Latin** and **Cyrillic** Serbian scripts. `trans
 - `/admin/*` protected by middleware
 
 ### Error Handling & Observability
+
 - `src/app/error.tsx` — page-level boundary, reports to Sentry, retry + home buttons
 - `src/app/global-error.tsx` — root layout error boundary (last resort)
 - Sentry: client + server + edge configs, session replay on errors (`replaysOnErrorSampleRate: 1.0`), ~10% performance trace sample
@@ -335,54 +351,59 @@ Invitation pages support both **Latin** and **Cyrillic** Serbian scripts. `trans
 All under `src/app/api/`. Cache header for `/api/*` is `no-store`.
 
 ### Admin
-| Route | Methods | Purpose |
-|-------|---------|---------|
-| `/api/admin/auth` | POST | Verify admin password, issue 24h JWT |
-| `/api/admin/couples` | GET, POST | List / create couples |
-| `/api/admin/couples/[slug]` | PUT, PATCH, DELETE | Update / cascade-delete couple |
-| `/api/admin/couples/[slug]/images` | POST | Upload couple images |
-| `/api/admin/stats` | GET | RSVP / seating / audio aggregate stats |
-| `/api/admin/birthday-stats` | GET | Birthday event stats |
-| `/api/admin/birthdays` | GET, POST | Birthday CRUD |
-| `/api/admin/birthdays/[slug]` | GET, PATCH | Individual birthday |
-| `/api/admin/vendors` | GET, POST | List / create vendor |
-| `/api/admin/vendors/[id]` | GET, PATCH, DELETE | Vendor edit |
-| `/api/admin/vendors/dump` | GET | Export vendors as seed data |
-| `/api/admin/vendors/seed` | POST | Bulk seed vendors |
-| `/api/admin/phone-rentals` | GET, POST | Phone rental list / create |
-| `/api/admin/phone-rentals/[id]` | GET, PATCH, DELETE | Individual rental |
-| `/api/admin/phone-rentals/by-contact` | PATCH | Update by contact name |
+
+| Route                                 | Methods            | Purpose                                |
+| ------------------------------------- | ------------------ | -------------------------------------- |
+| `/api/admin/auth`                     | POST               | Verify admin password, issue 24h JWT   |
+| `/api/admin/couples`                  | GET, POST          | List / create couples                  |
+| `/api/admin/couples/[slug]`           | PUT, PATCH, DELETE | Update / cascade-delete couple         |
+| `/api/admin/couples/[slug]/images`    | POST               | Upload couple images                   |
+| `/api/admin/stats`                    | GET                | RSVP / seating / audio aggregate stats |
+| `/api/admin/birthday-stats`           | GET                | Birthday event stats                   |
+| `/api/admin/birthdays`                | GET, POST          | Birthday CRUD                          |
+| `/api/admin/birthdays/[slug]`         | GET, PATCH         | Individual birthday                    |
+| `/api/admin/vendors`                  | GET, POST          | List / create vendor                   |
+| `/api/admin/vendors/[id]`             | GET, PATCH, DELETE | Vendor edit                            |
+| `/api/admin/vendors/dump`             | GET                | Export vendors as seed data            |
+| `/api/admin/vendors/seed`             | POST               | Bulk seed vendors                      |
+| `/api/admin/phone-rentals`            | GET, POST          | Phone rental list / create             |
+| `/api/admin/phone-rentals/[id]`       | GET, PATCH, DELETE | Individual rental                      |
+| `/api/admin/phone-rentals/by-contact` | PATCH              | Update by contact name                 |
 
 ### Pozivnica (classic invitation)
-| Route | Methods | Purpose |
-|-------|---------|---------|
-| `/api/pozivnica/[slug]/rsvp` | POST | Submit guest RSVP (deadline-gated) |
-| `/api/pozivnica/[slug]/audio` | POST | Guest records audio (event-day window, ≤100/slug) |
-| `/api/pozivnica/[slug]/audio` | GET | Admin lists/downloads audio (admin JWT) |
+
+| Route                         | Methods | Purpose                                           |
+| ----------------------------- | ------- | ------------------------------------------------- |
+| `/api/pozivnica/[slug]/rsvp`  | POST    | Submit guest RSVP (deadline-gated)                |
+| `/api/pozivnica/[slug]/audio` | POST    | Guest records audio (event-day window, ≤100/slug) |
+| `/api/pozivnica/[slug]/audio` | GET     | Admin lists/downloads audio (admin JWT)           |
 
 ### Premium Pozivnica
-| Route | Methods | Purpose |
-|-------|---------|---------|
-| `/api/premium-pozivnica/create` | POST | Create premium couple, auto-password, rate-limited 5/IP/hour |
-| `/api/premium-pozivnica/generate` | POST | AI couple illustration via Pollinations.ai |
-| `/api/premium-pozivnica/whiten-bg` | POST | Background removal via fal.ai birefnet |
-| `/api/premium-pozivnica/upload` | POST | Image upload to Vercel Blob (5MB cap) |
-| `/api/premium-pozivnica/cleanup` | POST | Delete draft generation blobs post-submit |
+
+| Route                              | Methods | Purpose                                                      |
+| ---------------------------------- | ------- | ------------------------------------------------------------ |
+| `/api/premium-pozivnica/create`    | POST    | Create premium couple, auto-password, rate-limited 5/IP/hour |
+| `/api/premium-pozivnica/generate`  | POST    | AI couple illustration via Pollinations.ai                   |
+| `/api/premium-pozivnica/whiten-bg` | POST    | Background removal via fal.ai birefnet                       |
+| `/api/premium-pozivnica/upload`    | POST    | Image upload to Vercel Blob (5MB cap)                        |
+| `/api/premium-pozivnica/cleanup`   | POST    | Delete draft generation blobs post-submit                    |
 
 ### Auth & Portal
-| Route | Methods | Purpose |
-|-------|---------|---------|
-| `/api/auth/[slug]` | POST | Couple potvrde/raspored login |
-| `/api/moje-vencanje/auth/[slug]` | POST | Portal login (issues both portal + pozivnica cookies) |
-| `/api/deciji-rodjendan/auth/[slug]` | POST | Birthday dashboard login |
-| `/api/portal/[slug]` | GET | Read-only portal data (cached `public, max-age=60, stale=300`) |
+
+| Route                               | Methods | Purpose                                                        |
+| ----------------------------------- | ------- | -------------------------------------------------------------- |
+| `/api/auth/[slug]`                  | POST    | Couple potvrde/raspored login                                  |
+| `/api/moje-vencanje/auth/[slug]`    | POST    | Portal login (issues both portal + pozivnica cookies)          |
+| `/api/deciji-rodjendan/auth/[slug]` | POST    | Birthday dashboard login                                       |
+| `/api/portal/[slug]`                | GET     | Read-only portal data (cached `public, max-age=60, stale=300`) |
 
 ### Other
-| Route | Methods | Purpose |
-|-------|---------|---------|
-| `/api/qr` | GET | QR code generation |
-| `/api/racun/[slug]` | GET | Receipt / invoice endpoint |
-| `/api/deciji-rodjendan/[slug]/rsvp` | POST | Birthday RSVP submission |
+
+| Route                               | Methods | Purpose                    |
+| ----------------------------------- | ------- | -------------------------- |
+| `/api/qr`                           | GET     | QR code generation         |
+| `/api/racun/[slug]`                 | GET     | Receipt / invoice endpoint |
+| `/api/deciji-rodjendan/[slug]/rsvp` | POST    | Birthday RSVP submission   |
 
 ## Environment Variables
 
@@ -406,12 +427,12 @@ CONTACT_EMAIL="halouspomene@gmail.com"
 
 Configured per-route in `next.config.ts`:
 
-| Route | Strategy |
-|-------|----------|
-| `/api/*` | `no-store` |
+| Route                                                         | Strategy                                             |
+| ------------------------------------------------------------- | ---------------------------------------------------- |
+| `/api/*`                                                      | `no-store`                                           |
 | `/pozivnica/*`, `/premium-pozivnica/*`, `/deciji-rodjendan/*` | `no-cache, must-revalidate` (live RSVP/seating data) |
-| `/`, `/blog/*`, `/lokacije/*`, `/napravi-pozivnicu/*`, etc. | `public, max-age=3600, stale-while-revalidate=86400` |
-| `/api/portal/[slug]` | `public, max-age=60, stale-while-revalidate=300` |
+| `/`, `/blog/*`, `/lokacije/*`, `/napravi-pozivnicu/*`, etc.   | `public, max-age=3600, stale-while-revalidate=86400` |
+| `/api/portal/[slug]`                                          | `public, max-age=60, stale-while-revalidate=300`     |
 
 ## Blog System
 

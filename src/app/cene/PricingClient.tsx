@@ -65,7 +65,7 @@ const FEATURES: Feature[] = [
     id: "raspored",
     label: "Raspored sedenja",
     description:
-      "Drag-and-drop editor za raspored stolova i raspored gostiju. Gosti mogu da pronađu sebe putem QR koda ili linka.",
+      "Alat za raspored stolova i raspored gostiju. Gosti mogu da pronađu sebe putem QR koda ili linka.",
     price: pricing.pozivnica.raspored.price,
     icon: <LayoutDashboard size={20} />,
   },
@@ -98,7 +98,10 @@ const FEATURES: Feature[] = [
           border: "1px solid rgba(var(--cene-accent-rgb),0.12)",
         }}
       >
-        <Phone size={16} className="text-[var(--cene-accent)] flex-shrink-0 mt-0.5" />
+        <Phone
+          size={16}
+          className="text-[var(--cene-accent)] flex-shrink-0 mt-0.5"
+        />
         <div>
           <span className="font-semibold text-[var(--cene-accent)]">
             Želite pravi retro telefon?
@@ -360,7 +363,9 @@ export default function PricingClient() {
                           isCheckable ? "checkbox-pulse" : ""
                         }`}
                         style={{
-                          backgroundColor: isOn ? "var(--cene-accent)" : "transparent",
+                          backgroundColor: isOn
+                            ? "var(--cene-accent)"
+                            : "transparent",
                           border: isOn
                             ? "none"
                             : "2px solid rgba(var(--cene-accent-rgb),0.3)",
@@ -372,7 +377,9 @@ export default function PricingClient() {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="text-[var(--cene-accent)]">{feature.icon}</span>
+                          <span className="text-[var(--cene-accent)]">
+                            {feature.icon}
+                          </span>
                           <span className="font-semibold text-[#232323] text-base">
                             {feature.label}
                           </span>
@@ -494,8 +501,9 @@ export default function PricingClient() {
                   size={16}
                   className="inline-block mr-2 -mt-0.5 align-middle"
                 />
-                Izaberite sve i uštedite {formatPrice(FULL_PRICE - BUNDLE_PRICE)}{" "}
-                — kompletni paket za samo {formatPrice(BUNDLE_PRICE)}
+                Izaberite sve i uštedite{" "}
+                {formatPrice(FULL_PRICE - BUNDLE_PRICE)} — kompletni paket za
+                samo {formatPrice(BUNDLE_PRICE)}
               </p>
             </div>
           )}
@@ -587,12 +595,17 @@ export default function PricingClient() {
               <span className="text-center">Napravi svoju pozivnicu</span>
               <Heart size={14} fill="currentColor" className="shrink-0" />
             </Link>
-
           </div>
 
           <p className="mt-4 text-center text-xs text-[#232323]/45 leading-relaxed">
             Želite galeriju fotografija? Iskomunicirajte sa našim timom{" "}
-            <span className="text-[#232323]/60 font-medium">(+{formatPrice(pricing.addons.find((a) => a.id === "images")!.price)})</span>
+            <span className="text-[#232323]/60 font-medium">
+              (+
+              {formatPrice(
+                pricing.addons.find((a) => a.id === "images")!.price,
+              )}
+              )
+            </span>
           </p>
 
           {/* Example links */}
@@ -626,7 +639,10 @@ export default function PricingClient() {
                   className="group relative rounded-xl px-4 py-3 text-center transition-all border border-[rgba(var(--cene-accent-rgb),0.1)] sm:border-transparent sm:hover:border-[rgba(var(--cene-accent-rgb),0.1)] sm:hover:bg-white/80"
                 >
                   <div className="peer flex items-center justify-center gap-1.5 mb-1">
-                    <Info size={14} className="text-[rgba(var(--cene-accent-rgb),0.4)] cursor-help" />
+                    <Info
+                      size={14}
+                      className="text-[rgba(var(--cene-accent-rgb),0.4)] cursor-help"
+                    />
                     <Link
                       href={link.href}
                       target="_blank"

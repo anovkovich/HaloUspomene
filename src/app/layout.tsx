@@ -167,7 +167,7 @@ export const metadata: Metadata = {
     "digitalni raspored sedenja",
     "QR kod za salu",
     "pametan raspored sedenja",
-    "drag and drop raspored sedenja",
+    "vizuelni alat za raspored sedenja",
 
     // Audio uspomene / Audio Guest Book
     "audio guest book",
@@ -449,7 +449,7 @@ export default function RootLayout({
               "@type": "Service",
               name: "QR Pano Dobrodošlice",
               description:
-                "Pametan raspored sedenja za venčanja kroz štampani QR pano za ulaz u salu. Gosti sami pronalaze svoje mesto skeniranjem koda — bez hostesa i spiskova. Drag and drop editor za stolove uključen.",
+                "Pametan raspored sedenja za venčanja kroz štampani QR pano za ulaz u salu. Gosti sami pronalaze svoje mesto skeniranjem koda — bez hostesa i spiskova. Vizuelni editor za stolove uključen.",
             },
           },
         ],
@@ -504,7 +504,7 @@ export default function RootLayout({
       "QR Pano dobrodošlice",
       "Raspored sedenja",
       "Digitalni raspored sedenja",
-      "Drag and drop raspored sedenja",
+      "Vizuelni alat za raspored sedenja",
       "Pametan raspored sedenja",
 
       // Audio guest book

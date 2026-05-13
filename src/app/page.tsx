@@ -87,11 +87,11 @@ export default function Home() {
             rođendane, punoletstva i sve druge proslave.
           </p>
           <p>
-            QR Pano dobrodošlice — pametan raspored sedenja za svadbu. Drag
-            and drop editor za stolove, štampani QR pano za ulaz u salu, gosti
-            sami pronalaze svoje mesto skeniranjem koda. Bez hostesa, bez
-            spiskova, bez gužve na ulazu. Idealna alternativa klasičnim
-            sedećim kartama. Cena rasporeda sedenja: 2.500 din uz pozivnicu.
+            QR Pano dobrodošlice — pametan raspored sedenja za svadbu. Vizuelni
+            editor za stolove, štampani QR pano za ulaz u salu, gosti sami
+            pronalaze svoje mesto skeniranjem koda. Bez hostesa, bez spiskova,
+            bez gužve na ulazu. Idealna alternativa klasičnim sedećim kartama.
+            Cena rasporeda sedenja: 2.500 din uz pozivnicu.
           </p>
           <p>
             Audio guest book (audio knjiga uspomena, audio knjiga utisaka,

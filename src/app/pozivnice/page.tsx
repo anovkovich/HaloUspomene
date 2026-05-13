@@ -28,8 +28,16 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import BirthdayTypeButton from "@/components/landing/BirthdayTypeButton";
-import { pricing, formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
-import { THEME_CONFIGS, WEDDING_THEME_KEYS } from "@/app/pozivnica/[slug]/constants";
+import {
+  pricing,
+  formatPrice,
+  getAudioPrice,
+  isAudioDiscountActive,
+} from "@/data/pricing";
+import {
+  THEME_CONFIGS,
+  WEDDING_THEME_KEYS,
+} from "@/app/pozivnica/[slug]/constants";
 import type { ThemeType, ThemeConfig } from "@/app/pozivnica/[slug]/types";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
@@ -237,7 +245,7 @@ const faqItems = [
   },
   {
     q: "Šta je uključeno u raspored sedenja?",
-    a: `Raspored sedenja (${formatPrice(pricing.pozivnica.raspored.price)}) je drag-and-drop editor gde raspoređujete goste po stolovima. Na dan venčanja, gosti otvaraju link "Gde sedim?" i za 2 sekunde pronalaze svoj sto.`,
+    a: `Raspored sedenja (${formatPrice(pricing.pozivnica.raspored.price)}) je alat gde raspoređujete goste po stolovima. Na dan venčanja, gosti otvaraju link "Gde sedim?" i za 2 sekunde pronalaze svoj sto.`,
   },
   {
     q: "Da li pozivnica radi na svim uređajima?",
@@ -819,7 +827,7 @@ export default function PozivnicePage() {
                   Raspored sedenja
                 </p>
                 <p className="text-xs text-[#232323]/40 mb-2">
-                  Drag-and-drop editor, gosti nalaze sto sami
+                  Alat za raspored sedenja, gosti nalaze sto sami
                 </p>
                 <span className="text-xs font-bold text-[#AE343F]">
                   {formatPrice(pricing.pozivnica.raspored.price)}
@@ -994,7 +1002,8 @@ export default function PozivnicePage() {
                   Tražite pozivnicu za rođendan?
                 </p>
                 <p className="text-sm text-[#232323]/50">
-                  Pravimo i rođendanske pozivnice — dečiji rođendan ili punoletstvo — sa istim funkcijama: RSVP, mapa, odbrojavanje.
+                  Pravimo i rođendanske pozivnice — dečiji rođendan ili
+                  punoletstvo — sa istim funkcijama: RSVP, mapa, odbrojavanje.
                 </p>
               </div>
               <BirthdayTypeButton

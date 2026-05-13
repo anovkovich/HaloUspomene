@@ -20,7 +20,11 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import QuickStartForm from "./QuickStartForm";
-import { formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
+import {
+  formatPrice,
+  getAudioPrice,
+  isAudioDiscountActive,
+} from "@/data/pricing";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
@@ -75,7 +79,7 @@ const features = [
     desc: "Organizovana po mesecima pre venčanja — od rezervacije sale do poslednjeg detalja. Dodajte, obrišite ili prilagodite zadatke po potrebi.",
     highlights: [
       "Grupisano po periodima (12, 9, 6, 3 meseca...)",
-      "Drag-and-drop za preraspoređivanje",
+      "Editor za preraspoređivanje",
       "Praćenje napretka u procentima",
     ],
   },
@@ -471,7 +475,9 @@ export default function PlaniranjeVencanjaPage() {
                 </p>
                 <span className="text-xs text-[#AE343F] font-medium inline-flex items-center gap-1">
                   {formatPrice(getAudioPrice())}
-                  {isAudioDiscountActive() && <span className="text-[10px] ml-1">(sniženo)</span>}
+                  {isAudioDiscountActive() && (
+                    <span className="text-[10px] ml-1">(sniženo)</span>
+                  )}
                   <ArrowRight size={12} />
                 </span>
               </Link>
@@ -483,7 +489,7 @@ export default function PlaniranjeVencanjaPage() {
                   Raspored Sedenja
                 </p>
                 <p className="text-xs text-[#232323]/40 mb-3">
-                  Drag-and-drop editor, gosti nalaze sto sami
+                  Editor, gosti nalaze sto sami
                 </p>
                 <span className="text-xs text-[#AE343F] font-medium inline-flex items-center gap-1">
                   2.500 din <ArrowRight size={12} />
@@ -567,8 +573,7 @@ export default function PlaniranjeVencanjaPage() {
           </p>
           <p>
             Planer za venčanje uključen uz pozivnicu. Registracija za 10
-            sekundi. Pogledajte i naše{" "}
-            <Link href="/cene">cene pozivnica</Link>,{" "}
+            sekundi. Pogledajte i naše <Link href="/cene">cene pozivnica</Link>,{" "}
             <Link href="/vendori">pregled vendora</Link>,{" "}
             <Link href="/telefon-uspomena">telefon uspomena</Link> i{" "}
             <Link href="/lokacije">dostupne gradove</Link>.

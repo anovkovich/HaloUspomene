@@ -660,23 +660,33 @@ function PhotoFrame({ src, idx }: { src: string; idx: number }) {
   // Final resting tilt — slight, alternates direction for organic feel.
   const restRotations = [-4, 3.5, -3];
   const rot = restRotations[idx % restRotations.length];
-  // Initial swing offset — small, just enough to feel like the frame
-  // gently nudges into place. Was ±32° (with low damping → 3 visible
-  // oscillations); now ±8° + overdamped spring → ONE smooth tilt-and-
-  // settle with no bounce.
-  const swingFrom = idx % 2 === 0 ? -8 : 8;
+  // Initial swing — bigger, bouncier so the frame visibly oscillates a few
+  // times as it enters. Tap swing is intentionally subtler.
+  const initialSwingFrom = idx % 2 === 0 ? -22 : 22;
+  const tapSwingFrom = idx % 2 === 0 ? -8 : 8;
   // Inner-opening inset (% of frame outer dimensions) — measured against the
   // ornate gold border in frame.webp. Photo gets clipped to this rectangle.
   const INSET = { top: 14, bottom: 14, left: 20, right: 20 };
 
   const controls = useAnimation();
 
-  const playSwing = () => {
+  const playInitialSwing = () => {
     controls.start({
       rotate: rot,
       opacity: 1,
-      // Overdamped spring: damping ratio ≈ 1.4 (damping=22 / 2√(stiff·mass)),
-      // so it monotonically approaches the rest angle with no overshoot.
+      // Underdamped spring (ratio ≈ 0.37) → 2–3 visible oscillations before settling.
+      transition: {
+        rotate: { type: "spring", stiffness: 90, damping: 7, mass: 1 },
+        opacity: { duration: 0.4 },
+      },
+    });
+  };
+
+  const playTapSwing = () => {
+    controls.start({
+      rotate: rot,
+      opacity: 1,
+      // Overdamped: smooth tilt back to rest with no bounce.
       transition: {
         rotate: { type: "spring", stiffness: 60, damping: 22, mass: 1 },
         opacity: { duration: 0.35 },
@@ -686,15 +696,15 @@ function PhotoFrame({ src, idx }: { src: string; idx: number }) {
 
   const handleTap = () => {
     // Snap to swing-out angle (instant), then spring back to rest.
-    controls.set({ rotate: swingFrom });
-    playSwing();
+    controls.set({ rotate: tapSwingFrom });
+    playTapSwing();
   };
 
   return (
     <motion.div
-      initial={{ rotate: swingFrom, opacity: 0 }}
+      initial={{ rotate: initialSwingFrom, opacity: 0 }}
       animate={controls}
-      onViewportEnter={playSwing}
+      onViewportEnter={playInitialSwing}
       viewport={{ once: true, margin: "-80px" }}
       onClick={handleTap}
       className="relative cursor-pointer"
@@ -703,7 +713,6 @@ function PhotoFrame({ src, idx }: { src: string; idx: number }) {
         maxWidth: "85vw",
         aspectRatio: "1 / 1",
         transformOrigin: "50% 0%",
-        filter: "drop-shadow(0 18px 35px rgba(0,0,0,0.45))",
       }}
     >
       {/* Photo clipped to the frame's inner opening */}
@@ -753,7 +762,25 @@ export default function FountainInvitation({
   // Parallax for the hero background — scrolls slower than the rest of the
   // page so the chateau/sky "sticks" while the fountain (in normal flow)
   // continues at page speed.
+  //
+  // Two paths: where the browser supports CSS scroll-driven animations
+  // (Chrome 115+, Edge 115+, Safari 18+, Firefox 134+), we drive the parallax
+  // 100% on the compositor thread via `animation-timeline: view(...)` — zero
+  // JS per frame, no scroll listeners. Older browsers fall back to the
+  // framer-motion path below.
   const heroRef = useRef<HTMLElement>(null);
+  const [cssScrollTimeline, setCssScrollTimeline] = useState(false);
+  useEffect(() => {
+    if (
+      typeof CSS !== "undefined" &&
+      typeof CSS.supports === "function" &&
+      (CSS.supports("animation-timeline", "scroll()") ||
+        CSS.supports("animation-timeline", "view()"))
+    ) {
+      setCssScrollTimeline(true);
+    }
+  }, []);
+
   const { scrollYProgress: heroScrollProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -788,18 +815,38 @@ export default function FountainInvitation({
     >
       {/* Sprite wing flap. Each DoveVideo sets `--fountain-dove-end` to the
           negative sheet width in pixels, and steps(N) jumps one cell per
-          step — perfectly aligned at any rendered size. */}
-      <style>{`@keyframes fountain-dove-flap{to{background-position:var(--fountain-dove-end) 0}}`}</style>
+          step — perfectly aligned at any rendered size.
+
+          The @supports block below sets up CSS scroll-driven hero parallax —
+          this runs entirely on the browser's compositor thread, replacing the
+          framer-motion JS-per-frame path for browsers that support it. The
+          translate3d keyframes guarantee a dedicated GPU layer. */}
+      <style>{`
+        @keyframes fountain-dove-flap{to{background-position:var(--fountain-dove-end) 0}}
+        @keyframes fountain-hero-bg-flow{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,35vh,0)}}
+        @keyframes fountain-hero-water-flow{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,15vh,0)}}
+        @supports (animation-timeline: scroll()) or (animation-timeline: view()) {
+          .fountain-hero-section{view-timeline-name:--fountain-hero;view-timeline-axis:block}
+          .fountain-hero-bg-parallax{animation:fountain-hero-bg-flow linear both;animation-timeline:--fountain-hero;animation-range:exit 0% exit 100%;will-change:transform;backface-visibility:hidden}
+          .fountain-hero-water-parallax{animation:fountain-hero-water-flow linear both;animation-timeline:--fountain-hero;animation-range:exit 0% exit 100%;will-change:transform;backface-visibility:hidden}
+        }
+      `}</style>
 
       {/* ──────────────────  HERO  ────────────────── */}
       <section
         ref={heroRef}
-        className="relative w-full overflow-hidden"
+        className={`relative w-full overflow-hidden ${cssScrollTimeline ? "fountain-hero-section" : ""}`}
         style={{ height: "92vh", minHeight: 580 }}
       >
         {/* Background image — portrait on mobile, landscape on desktop.
-            Wrapped in motion.div so it parallax-scrolls slower than page. */}
-        <motion.div className="absolute inset-0" style={{ y: bgParallaxY }}>
+            CSS scroll-timeline path (modern browsers) runs the parallax on
+            the compositor thread; motion.div's `y` is left unset to avoid
+            duplicate transform writes. Older browsers fall back to the
+            framer-motion JS path. */}
+        <motion.div
+          className={`absolute inset-0 ${cssScrollTimeline ? "fountain-hero-bg-parallax" : ""}`}
+          style={cssScrollTimeline ? undefined : { y: bgParallaxY }}
+        >
           <picture>
             <source media="(min-width: 768px)" srcSet={ASSETS.bgLandscape} />
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -907,8 +954,8 @@ export default function FountainInvitation({
             hero's bottom edge). Wrapped in motion.div for a LIGHT parallax —
             lags a bit behind the page, but much less than the bg behind it. */}
         <motion.div
-          className="absolute inset-0 pointer-events-none select-none z-10"
-          style={{ y: fountainParallaxY }}
+          className={`absolute inset-0 pointer-events-none select-none z-10 ${cssScrollTimeline ? "fountain-hero-water-parallax" : ""}`}
+          style={cssScrollTimeline ? undefined : { y: fountainParallaxY }}
         >
           <div
             className="absolute bottom-0 left-1/2"

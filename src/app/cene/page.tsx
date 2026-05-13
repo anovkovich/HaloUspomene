@@ -64,8 +64,18 @@ function PricingStructuredData() {
     },
     deliveryTime: {
       "@type": "ShippingDeliveryTime",
-      handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 1, unitCode: "DAY" },
-      transitTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" },
+      handlingTime: {
+        "@type": "QuantitativeValue",
+        minValue: 0,
+        maxValue: 1,
+        unitCode: "DAY",
+      },
+      transitTime: {
+        "@type": "QuantitativeValue",
+        minValue: 0,
+        maxValue: 0,
+        unitCode: "DAY",
+      },
     },
   };
 
@@ -109,7 +119,7 @@ function PricingStructuredData() {
         name: "Raspored Sedenja",
         price: "2000",
         description:
-          "Drag-and-drop editor za raspored stolova. Gosti pronalaze svoje mesto putem linka.",
+          "Alat za raspored stolova. Gosti pronalaze svoje mesto putem linka.",
         ...offerDefaults,
       },
       {
@@ -198,15 +208,21 @@ export default function CenePage() {
 
       {/* Hidden SEO content — server-rendered, visible to crawlers */}
       <div className="sr-only" aria-hidden="true">
-        <h2>Cene website pozivnice za venčanje — besplatna PDF pozivnica za štampu</h2>
+        <h2>
+          Cene website pozivnice za venčanje — besplatna PDF pozivnica za štampu
+        </h2>
         <p>
-          HALO Uspomene nudi digitalne website pozivnice za venčanja u Srbiji po ceni od 5.000
-          dinara. Svaka pozivnica uključuje besplatnu PDF verziju za štampu sa QR kodom za
-          potvrdu dolaska gostiju — bez telefonskih poziva, bez komplikacija.
+          HALO Uspomene nudi digitalne website pozivnice za venčanja u Srbiji po
+          ceni od 5.000 dinara. Svaka pozivnica uključuje besplatnu PDF verziju
+          za štampu sa QR kodom za potvrdu dolaska gostiju — bez telefonskih
+          poziva, bez komplikacija.
         </p>
         <h3>Šta je uključeno u website pozivnicu za venčanje?</h3>
         <ul>
-          <li>Personalizovana web stranica sa animacijama i odbrojavanjem do venčanja</li>
+          <li>
+            Personalizovana web stranica sa animacijama i odbrojavanjem do
+            venčanja
+          </li>
           <li>RSVP forma za online potvrdu dolaska gostiju</li>
           <li>Besplatna PDF pozivnica za štampu u A5 formatu sa QR kodom</li>
           <li>Program dana venčanja sa lokacijom na mapi</li>
@@ -215,33 +231,38 @@ export default function CenePage() {
         </ul>
         <h3>Dodatne usluge i cene</h3>
         <p>
-          Raspored sedenja za venčanje: 2.500 dinara — drag-and-drop editor za stolove,
-          gosti pronalaze svoje mesto putem linka. Digitalna audio knjiga utisaka: 3.000 dinara
-          — gosti skeniraju QR kod i snimaju audio poruke za mladence direktno sa telefona.
-          Kompletni paket (pozivnica + raspored + audio knjiga): 8.500 dinara umesto 10.500 dinara.
-          Premium AI pozivnica sa animiranim kovertom, parallax scenama i AI ilustracijama mladenaca:
-          12.000 dinara (PROMO 10.000 dinara) — uključuje raspored sedenja i audio knjigu po sniženoj ceni od 1.000 dinara svako.
+          Raspored sedenja za venčanje: 2.500 dinara — editor za stolove, gosti
+          pronalaze svoje mesto putem linka. Digitalna audio knjiga utisaka:
+          3.000 dinara — gosti skeniraju QR kod i snimaju audio poruke za
+          mladence direktno sa telefona. Kompletni paket (pozivnica + raspored +
+          audio knjiga): 8.500 dinara umesto 10.500 dinara. Premium AI pozivnica
+          sa animiranim kovertom, parallax scenama i AI ilustracijama mladenaca:
+          12.000 dinara (PROMO 10.000 dinara) — uključuje raspored sedenja i
+          audio knjigu po sniženoj ceni od 1.000 dinara svako.
         </p>
         <h3>Pozivnice za venčanje — gradovi u Srbiji</h3>
         <p>
-          Pozivnica za venčanje Beograd, pozivnica za venčanje Novi Sad, pozivnica za svadbu Niš,
-          pozivnica za venčanje Kragujevac, Subotica, Zrenjanin, Pančevo, Čačak, Kraljevo,
-          Leskovac, Vranje, Valjevo, Šabac, Sombor, Kikinda. Pozivnice za sva venčanja u Srbiji.
+          Pozivnica za venčanje Beograd, pozivnica za venčanje Novi Sad,
+          pozivnica za svadbu Niš, pozivnica za venčanje Kragujevac, Subotica,
+          Zrenjanin, Pančevo, Čačak, Kraljevo, Leskovac, Vranje, Valjevo, Šabac,
+          Sombor, Kikinda. Pozivnice za sva venčanja u Srbiji.
         </p>
         <h3>Besplatna pozivnica za venčanje za štampu</h3>
         <p>
-          Uz svaku digitalnu pozivnicu dobijate besplatnu elegantnu pozivnicu u PDF formatu
-          koju možete odštampati. PDF pozivnica sadrži imena mladenaca, datum i mesto venčanja,
-          program dana i QR kod koji gosti mogu skenirati da potvrde dolazak online.
-          Nikad lakše — bez poziva, bez papirnih formulara.
+          Uz svaku digitalnu pozivnicu dobijate besplatnu elegantnu pozivnicu u
+          PDF formatu koju možete odštampati. PDF pozivnica sadrži imena
+          mladenaca, datum i mesto venčanja, program dana i QR kod koji gosti
+          mogu skenirati da potvrde dolazak online. Nikad lakše — bez poziva,
+          bez papirnih formulara.
         </p>
         <h3>Digitalna audio knjiga utisaka za venčanje</h3>
         <p>
-          Audio knjiga utisaka je moderna alternativa tradicionalnoj knjizi utisaka.
-          Gosti skeniraju QR kod na venčanju i snimaju audio poruke direktno sa svog telefona
-          — bez aplikacije, bez registracije. Dostupna je i opcija sa fizičkim retro telefonom
-          za potpuno autentično iskustvo. USB retro kaseta (2.500 din) i USB u bočici (2.000 din)
-          su dostupni kao fizički suveniri sa svim snimljenim porukama.
+          Audio knjiga utisaka je moderna alternativa tradicionalnoj knjizi
+          utisaka. Gosti skeniraju QR kod na venčanju i snimaju audio poruke
+          direktno sa svog telefona — bez aplikacije, bez registracije. Dostupna
+          je i opcija sa fizičkim retro telefonom za potpuno autentično
+          iskustvo. USB retro kaseta (2.500 din) i USB u bočici (2.000 din) su
+          dostupni kao fizički suveniri sa svim snimljenim porukama.
         </p>
       </div>
     </>

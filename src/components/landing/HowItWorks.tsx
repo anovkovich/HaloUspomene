@@ -11,7 +11,11 @@ import {
   Award,
 } from "lucide-react";
 import Link from "next/link";
-import { formatPrice, getAudioPrice, isAudioDiscountActive } from "@/data/pricing";
+import {
+  formatPrice,
+  getAudioPrice,
+  isAudioDiscountActive,
+} from "@/data/pricing";
 
 const HowItWorks: React.FC = () => {
   return (
@@ -66,15 +70,18 @@ const HowItWorks: React.FC = () => {
             </p>
             <p className="text-[#F5F4DC]/60 text-sm sm:text-base leading-relaxed max-w-lg mb-6">
               Personalizovana web stranica sa RSVP formom, odbrojavanjem,
-              programom dana i interaktivnom mapom. Gosti potvrde dolazak
-              jednim klikom — bez poziva, nikad lakše.
+              programom dana i interaktivnom mapom. Gosti potvrde dolazak jednim
+              klikom — bez poziva, nikad lakše.
             </p>
 
             {/* Feature pills */}
             <div className="grid grid-cols-2 gap-2 max-w-md">
               {[
                 { icon: <Globe size={13} />, label: "6 dizajnerskih tema" },
-                { icon: <FileDown size={13} />, label: "PDF za štampu — besplatno" },
+                {
+                  icon: <FileDown size={13} />,
+                  label: "PDF za štampu — besplatno",
+                },
                 { icon: <Check size={13} />, label: "RSVP potvrda dolaska" },
                 { icon: <Check size={13} />, label: "Latinica i ćirilica" },
               ].map((f) => (
@@ -146,7 +153,8 @@ const HowItWorks: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-[#F5F4DC]/40 text-xs mt-0.5">
-                    Elegantna PDF pozivnica u A5 formatu sa QR kodom za potvrdu dolaska
+                    Elegantna PDF pozivnica u A5 formatu sa QR kodom za potvrdu
+                    dolaska
                   </p>
                 </div>
               </div>
@@ -167,7 +175,8 @@ const HowItWorks: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-[#F5F4DC]/40 text-xs mt-0.5">
-                    Drag-and-drop editor za stolove, gosti pronalaze svoje mesto putem linka
+                    Editor za raspored stolova, gosti pronalaze svoje mesto
+                    putem linka
                   </p>
                 </div>
               </div>
@@ -252,9 +261,8 @@ const HowItWorks: React.FC = () => {
                 <span className="text-[#F5F4DC]/50"> — zauvek</span>
               </h3>
               <p className="text-[#F5F4DC]/50 text-sm leading-relaxed mb-4">
-                Gosti podižu slušalicu i ostavljaju glasovnu poruku.
-                Autentični retro doživljaj koji postaje centralni detalj
-                Vašeg venčanja.
+                Gosti podižu slušalicu i ostavljaju glasovnu poruku. Autentični
+                retro doživljaj koji postaje centralni detalj Vašeg venčanja.
               </p>
               <div className="flex flex-wrap gap-2 mb-4">
                 {["Lična dostava — Novi Sad"].map((tag) => (

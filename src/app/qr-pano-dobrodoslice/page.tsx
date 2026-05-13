@@ -22,27 +22,34 @@ import { formatPrice, pricing } from "@/data/pricing";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
-  title: "QR Pano Dobrodošlice — Pametan Raspored Sedenja | HALO Uspomene",
+  title:
+    "QR Pano Dobrodošlice — Pametan Raspored Sedenja za Svadbu | HALO Uspomene",
   description:
-    "QR Pano dobrodošlice za venčanje — gosti skeniraju kod na ulazu u salu, ukucaju ime i telefon ih vodi do njihovog stola. Drag-and-drop editor za raspored sedenja. Bez gužve na ulazu.",
+    "QR Pano dobrodošlice za venčanje, svadbu ili drugi događaj — gosti skeniraju QR kod na ulazu u salu, ukucaju ime i telefon ih vodi do njihovog stola. Alat za raspored sedenja, B1 pano spreman za štampu. Bez gužve, bez spiskova, bez hostese.",
   keywords: [
     "qr pano dobrodošlice",
     "qr pano za venčanje",
+    "qr pano za svadbu",
+    "qr pano za salu",
     "raspored sedenja",
+    "raspored sedenja za svadbu",
     "raspored sedenja za venčanje",
     "raspored sedenja online",
     "digitalni raspored sedenja",
     "raspored stolova svadba",
     "QR kod za sedenje",
     "pametno sedenje venčanje",
-    "drag drop raspored",
+    "vizuelni raspored stolova",
     "gde sedim svadba",
     "pano za salu",
+    "pano dobrodošlice za štampu",
     "ulaz u salu venčanje",
     "moderna svadba srbija",
+    "qr pano cena",
+    "kako napraviti qr pano",
   ],
   openGraph: {
-    title: "QR Pano Dobrodošlice | HALO Uspomene",
+    title: "QR Pano Dobrodošlice — Pametan raspored sedenja | HALO Uspomene",
     description:
       "Pametan raspored sedenja za svadbu — gosti skeniraju QR pano i pronalaze svoj sto u 2 sekunde.",
     type: "website",
@@ -53,7 +60,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "QR Pano Dobrodošlice | HALO Uspomene",
     description:
-      "Pametan raspored sedenja — drag-and-drop editor i QR pano za ulaz u salu.",
+      "Pametan raspored sedenja — alat za upravljanje rasporedom i QR pano za ulaz u salu.",
   },
   alternates: {
     canonical: `${siteUrl}/qr-pano-dobrodoslice`,
@@ -104,9 +111,127 @@ const benefits = [
   },
 ];
 
+const faqs = [
+  {
+    q: "Šta je QR pano dobrodošlice na venčanju?",
+    a: "QR Pano dobrodošlice je elegantan grafički pano, najčešće u B1 formatu (700x1000mm), koji se postavlja na ulazu u salu na dan venčanja. Sadrži imena para, dobrodošlicu i QR kod koji vodi do stranice za pretragu mesta sedenja. Gost skenira kamerom kod, ukuca svoje ime i odmah vidi za koji je sto raspoređen — bez haosa oko štampanih spiskova.",
+  },
+  {
+    q: "Kako napraviti QR pano za svadbu?",
+    a: "Prvo dobijete pristup alatu — bilo da uzmete raspored sedenja uz našu website pozivnicu, ili se prijavite samo za korišćenje alata (link u podnožju ove stranice). Zatim u tri koraka: 1) Napravite raspored sedenja u alatu — uvezete listu gostiju iz Excel-a, iscrtate šemu sale sa stolovima i prevlačenjem rasporedite goste. 2) Jednim klikom generišete PDF panoa u visokoj rezoluciji, spreman za štampu. 3) Odštampate u bilo kojoj štampariji (B1 format, mat ili sjajni papir) i postavite na ulaz u salu pre dolaska gostiju.",
+  },
+  {
+    q: "Koliko košta QR pano dobrodošlice?",
+    a: "QR pano je deo paketa „raspored sedenja” — košta 2.500 RSD uz website pozivnicu, ili još povoljnije u kombinaciji sa premium pozivnicom. Cena uključuje pristup alatu za pravljenje rasporeda, generisanje PDF panoa, QR koda i personalizovan link „gde sedim?” za goste. Sama štampa kod štamparije nije uračunata (obično 1.000–2.500 RSD za B1 format u Srbiji).",
+  },
+  {
+    q: "Mogu li gosti da pronađu svoj sto bez QR panoa?",
+    a: "Da. Možete im poslati direktan link „gde sedim?” pre venčanja (uz pozivnicu, SMS-om ili u WhatsApp grupi), ili tradicionalno postaviti domaćina/hostesu na ulazu sa tabletom ili telefonom — umesto haosa sa papirima i spiskovima, jednostavno otvore isti taj link i pronađu mesto svakom gostu za par sekundi.",
+  },
+  {
+    q: "Da li QR pano radi i bez interneta?",
+    a: "Sam QR kod se skenira bez interneta — kamera telefona prepoznaje kod u sekundi. Ali da bi gost video za koji je sto raspoređen, potrebna mu je internet konekcija (mobilni podaci ili Wi-Fi sale). Naša „gde sedim?” stranica je optimizovana za brzo učitavanje (manje od 500 KB) i radi i na slabom signalu.",
+  },
+  {
+    q: "U kom formatu se štampa QR pano?",
+    a: "Generišemo PDF u B1 formatu (700x1000 mm), što je najčešći format panoa na venčanjima. Možete štampati i u manjim formatima (B2 ili A0) — PDF je vektorski tako da nema gubitka kvaliteta. Preporučujemo mat papir 250+ gsm sa kaširanjem na karton peni ili pleksiglasu za stabilnost na štafelaju.",
+  },
+  {
+    q: "Mogu li da menjam raspored ako neko otkaže dan-dva pre venčanja?",
+    a: "Da. Editor je dostupan do samog dana venčanja — bilo kakvu promenu napravite i sačuvajte, link i QR kod ostaju isti, samo se ažurira ono što gost vidi kad skenira. Možete ažurirati raspored čak i tokom samog događaja, sa telefona, ukoliko bude potrebno.",
+  },
+  {
+    q: "Da li je QR pano samo za svadbe ili i za druge događaje?",
+    a: "Iako je QR pano najpopularniji na svadbama, koristi se i na korporativnim eventima, gala večerama, godišnjicama firme, konferencijama i većim privatnim proslavama (punoletstva, jubileji). Za korporativne i konferencijske evente pogledajte našu stranicu Raspored sedenja za organizatore do koje vodi link naveden ispod ove sekcije sa pitanjima.",
+  },
+  {
+    q: "Da li pretraga prepoznaje srpske dijakritike (š, č, ž, ć)?",
+    a: "Da. Pretraga gostiju zanemaruje dijakritike — ako se gost preziva „Petrović”, može da ukuca „Petrovic” i naći će se u listi. Isto važi za sva slova sa kvačicama (š, č, ž, ć) i njihove latinične varijante.",
+  },
+  {
+    q: "Da li dobijam i QR kod za potvrdu dolaska (RSVP)?",
+    a: "Da, uz QR pano za sedenje dobijate i drugi QR kod koji vodi na stranicu za online potvrdu dolaska. Možete ga štampati na klasičnim koverat-pozivnicama — gost skenira, ukuca ime i potvrdi dolazak, a potvrda automatski upada u vašu listu gostiju",
+  },
+];
+
 export default function QRPanoLandingPage() {
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: "QR Pano Dobrodošlice — Pametan raspored sedenja",
+    description:
+      "Elegantan QR pano za ulaz u salu — gosti skeniraju kod, ukucaju ime i telefon ih vodi do njihovog stola. Uz alat za raspored sedenja i personalizovan link „gde sedim?”. Format B1, spreman za štampu.",
+    image: `${siteUrl}/images/pano.webp`,
+    brand: {
+      "@type": "Brand",
+      name: "HALO Uspomene",
+    },
+    category: "Wedding Stationery / Event Signage",
+    url: `${siteUrl}/qr-pano-dobrodoslice`,
+    offers: {
+      "@type": "Offer",
+      price: String(pricing.pozivnica.raspored.price),
+      priceCurrency: "RSD",
+      url: `${siteUrl}/qr-pano-dobrodoslice`,
+      availability: "https://schema.org/InStock",
+      priceValidUntil: `${new Date().getFullYear()}-12-31`,
+      seller: {
+        "@type": "Organization",
+        name: "HALO Uspomene",
+        url: siteUrl,
+      },
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "5.0",
+      reviewCount: "20",
+      bestRating: "5",
+    },
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Početna",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "QR Pano dobrodošlice",
+        item: `${siteUrl}/qr-pano-dobrodoslice`,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Header />
       <main>
         {/* Hero */}
@@ -361,6 +486,45 @@ export default function QRPanoLandingPage() {
           </div>
         </section>
 
+        {/* FAQ */}
+        <section className="py-16 sm:py-24 md:py-32 bg-gradient-to-t from-[#faf9f6] to-[#AE343F]/10 border-t-4 border-b-4 border-[#AE343F]/20 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#AE343F]/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
+
+          <div className="container mx-auto px-4 max-w-4xl relative z-10">
+            <div className="text-center mb-12 sm:mb-16">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
+                Česta pitanja
+              </p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-6">
+                Sve o QR Panou dobrodošlice
+              </h2>
+              <p className="text-lg text-[#232323]/50 max-w-2xl mx-auto">
+                Odgovori na najčešća pitanja o panou, ceni, štampi i tome kako
+                gosti pronalaze svoj sto u sali.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {faqs.map((faq, idx) => (
+                <div
+                  key={idx}
+                  className="collapse collapse-arrow bg-[#faf9f6] rounded-2xl border border-stone-200"
+                >
+                  <input type="checkbox" />
+                  <div className="collapse-title text-base sm:text-lg font-medium text-[#232323] pr-12">
+                    {faq.q}
+                  </div>
+                  <div className="collapse-content">
+                    <p className="text-[#232323]/60 leading-relaxed pt-2">
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* SEO hidden */}
         <section className="sr-only">
           <h2>
@@ -369,24 +533,41 @@ export default function QRPanoLandingPage() {
           <p>
             QR Pano dobrodošlice je moderno rešenje za raspored sedenja na
             venčanjima i svadbama. Umesto štampanih spiskova ili sedećih
-            kartica, gosti skeniraju QR kod na panu postavljenom na ulazu u
+            kartica, gosti skeniraju QR kod na panou postavljenom na ulazu u
             salu, ukucaju svoje ime, i telefon ih vodi pravo do njihovog stola.
             Sistem radi u svim gradovima Srbije: Beograd, Novi Sad, Niš,
             Kragujevac, Subotica, Čačak. Kompatibilno sa svim modernim Android i
             iPhone uređajima — bez instalacije aplikacije.
           </p>
           <p>
-            Drag-and-drop editor za raspored stolova omogućava jednostavno
-            pomeranje gostiju, dodavanje novih stolova različitih oblika
-            (okrugli, pravougaoni, mladenački sto) i promene do poslednjeg
-            trenutka. Cena rasporeda sedenja: 2.500 din uz pozivnicu, ili 8.500
-            din za kompletni paket (pozivnica + raspored + digitalna audio
-            knjiga). Pogledajte <Link href="/cene">cene HALO Uspomene</Link> ili{" "}
+            Alat za raspored stolova omogućava jednostavno pomeranje gostiju,
+            dodavanje novih stolova različitih oblika (okrugli, pravougaoni,
+            mladenački sto) i promene do poslednjeg trenutka. Cena rasporeda
+            sedenja: 2.500 din uz pozivnicu, ili 8.500 din za kompletni paket
+            (pozivnica + raspored + digitalna audio knjiga). Pogledajte{" "}
+            <Link href="/cene">cene HALO Uspomene</Link> ili{" "}
             <Link href="/napravi-pozivnicu">
               napravite pozivnicu sa rasporedom
             </Link>
             .
           </p>
+        </section>
+
+        {/* Bottom note: standalone seating access */}
+        <section className="py-10 sm:py-12 bg-white border-t border-stone-200">
+          <div className="container mx-auto px-4 text-center">
+            <p className="text-sm sm:text-base text-[#232323]/60 leading-relaxed max-w-2xl mx-auto">
+              Organizujete event ili ne želite website pozivnicu? Alat za
+              raspored sedenja i QR pano možete uzeti i samostalno —{" "}
+              <Link
+                href="/raspored-sedenja#kontakt-raspored"
+                className="text-[#AE343F] font-medium hover:underline underline-offset-4"
+              >
+                prijavite se ovde
+              </Link>
+              .
+            </p>
+          </div>
         </section>
       </main>
       <Footer />

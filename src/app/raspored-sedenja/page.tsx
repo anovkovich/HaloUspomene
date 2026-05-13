@@ -31,34 +31,42 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
   title:
-    "Raspored sedenja za organizatore — Online alat sa QR Panoom | HALO Uspomene",
+    "Raspored sedenja za svadbu ili događaj — Online alat sa QR Panoom | HALO Uspomene",
   description:
-    "Online raspored sedenja za konferencije, korporativne evente i proslave. Drag-and-drop editor stolova, Excel/CSV uvoz gostiju, QR Pano dobrodošlice za ulaz u salu. Pristup po dogovoru.",
+    "Raspored sedenja online — alat za raspoređivanje stolova i gostiju za svadbu, konferenciju, korporativni event ili veću proslavu. Excel/CSV uvoz gostiju, QR Pano dobrodošlice, lično „gde sedim?” pretraga. Cena, demo i pristup po upitu.",
   keywords: [
+    "raspored sedenja",
     "raspored sedenja online",
+    "raspored sedenja za svadbu",
+    "raspored sedenja za venčanje",
+    "raspored sedenja za događaj",
     "raspored stolova alat",
     "online raspored sedenja",
-    "seating chart alat",
+    "seating chart srpski",
     "raspored sedenja za konferenciju",
     "raspored sedenja za korporativni event",
     "raspored sedenja za organizatore",
+    "raspored sedenja za 100 gostiju",
     "QR pano za event",
-    "drag and drop raspored stolova",
+    "vizuelni alat za raspored stolova",
     "import gostiju iz Excel-a",
     "raspored sedenja Beograd",
+    "raspored sedenja Novi Sad",
     "raspored sedenja Srbija",
+    "kako napraviti raspored sedenja",
+    "alat za raspored sedenja",
   ],
   openGraph: {
-    title: "Raspored sedenja za organizatore | HALO Uspomene",
+    title: "Raspored sedenja za svadbu ili događaj | HALO Uspomene",
     description:
-      "Online alat za raspored stolova + QR Pano dobrodošlice. Za konferencije, korporativne evente i veće proslave.",
+      "Online alat za raspored stolova + QR Pano dobrodošlice. Za svadbe, konferencije, korporativne evente i veće proslave.",
     type: "website",
     url: `${siteUrl}/raspored-sedenja`,
     siteName: "Halo Uspomene",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Raspored sedenja za organizatore | HALO Uspomene",
+    title: "Raspored sedenja za svadbu ili događaj | HALO Uspomene",
     description:
       "Online alat za raspored stolova + QR Pano dobrodošlice za vaš event.",
   },
@@ -113,9 +121,14 @@ const benefits = [
 
 const useCases = [
   {
+    icon: <PartyPopper size={26} />,
+    title: "Svadbe i venčanja",
+    desc: "Najčešća upotreba — 80–250 gostiju, mladenački sto, raspoređivanje po porodicama, mogućnost sedenja gosta na dva stola istovremeno.",
+  },
+  {
     icon: <Briefcase size={26} />,
     title: "Korporativni eventi",
-    desc: "Gala večere, godišnjice firme, team building — lako razvrstavanje gostiju po timovima ili nivoima rukovodstva.",
+    desc: "Gala večere, godišnjice firme, team building — lako razvrstavanje gostiju po timovima, sektorima ili nivoima rukovodstva.",
   },
   {
     icon: <Building2 size={26} />,
@@ -129,12 +142,146 @@ const useCases = [
   },
 ];
 
+const faqs = [
+  {
+    q: "Šta je raspored sedenja online i kako funkcioniše?",
+    a: "Raspored sedenja online je digitalni alat koji zamenjuje papirne spiskove i haos sa Word/Excel tabelama. Vi unosite listu gostiju (ili importujete vaš spisak iz Excel/CSV tabele), iscrtate šemu sale sa stolovima koje koristite i rasporedite goste na njihova mesta. Sistem automatski generiše QR kod na jedan klik ili kompletan pano dobrodošlice za štampu — gosti na ulazu u salu skeniraju kod, ukucaju svoje ime i telefon im pokaže za koji sto su raspoređeni.",
+  },
+  {
+    q: "Koliko košta raspored sedenja za svadbu?",
+    a: "Raspored sedenja na HALO Uspomene platformi košta 2.500 RSD ako ga uzimate uz website pozivnicu, ili samostalno kao zaseban proizvod po ceni iz cenovnika ove stranice. Cena uključuje pristup alatu, neograničen broj izmena do dana događaja, generisanje QR koda i PDF panoa B1 formata spremnog za štampu.",
+  },
+  {
+    q: "Kako da napravim raspored sedenja za 100 gostiju?",
+    a: "Za 100 gostiju realno vam treba 10–14 okruglih stolova po 8–10 ljudi, plus mladenački/glavni sto. Koraci: 1) U alat uvezite listu gostiju — ime, broj osoba, kategorija. 2) Iscrtajte šemu sale prema rasporedu koji ćete imati u objektu. 3) Grupišite goste po porodicama, prijateljima i kategorijama (mladini, mladoženjini, kolege) i postavite ih na stolove. 4) Generišite QR pano za ulaz u salu.",
+  },
+  {
+    q: "Mogu li da menjam raspored u poslednji čas ako neko otkaže?",
+    a: "Da. Sve promene koje napravite u editoru se ažuriraju u realnom vremenu — i QR kod i link „gde sedim?” ostaju isti, samo se ažurira ono što gost vidi kada skenira. Možete da menjate raspored čak i tokom samog događaja sa telefona.",
+  },
+  {
+    q: "Da li mogu da uvezem goste iz Excel-a ili Google Sheets-a?",
+    a: "Da. Alat podržava .xlsx, .xls i .csv format. Dovoljno je da imate kolone za ime gosta, broj osoba u njegovoj grupi i opciono kategoriju (npr. „Mladini” ili „Kolege sa posla”). Alat sve automatski procesuira u listu spremnu za raspoređivanje.",
+  },
+  {
+    q: "Šta je QR Pano dobrodošlice i kako se uklapa u raspored sedenja?",
+    a: "QR Pano dobrodošlice je elegantan grafički pano (B1 format, spreman za štampu) sa QR kodom koji vodi do personalizovane stranice „gde sedim?”. Postavlja se na ulazu u salu — gost skenira telefonom, ukuca ime i odmah vidi za koji je sto raspoređen. Eliminiše gužvu na ulazu, štampane spiskove i potrebu za hostesom. Više detalja na našoj stranici QR Pano dobrodošlice.",
+  },
+  {
+    q: "Koje oblike stolova podržava alat?",
+    a: "Alat podržava okrugle stolove (klasično za svadbe i gala večere), pravougaone (za korporativne evente i konferencije) i jednostrane stolove (idealni za mladenačke ili govornički sto na konferenciji). Za svaki sto definišete broj mesta i poziciju u sali.",
+  },
+  {
+    q: "Da li alat radi i za konferencije i korporativne evente, ne samo za svadbe?",
+    a: "Da. Iako se najčešće koristi za svadbe, alat je u potpunosti prilagodljiv za konferencije, panel diskusije, gala večere, godišnjice firme, jubileje i veće privatne proslave (50+ gostiju). Gosti mogu da budu označeni kategorijama (VIP, Govornici, Studenti, Tim A/B), što olakšava raspoređivanje.",
+  },
+  {
+    q: "Kako gosti pronalaze svoj sto na dan događaja?",
+    a: "Tri opcije: 1) Skeniraju QR kod sa panoa na ulazu u salu i pretraže svoje ime. 2) Otvore link „gde sedim?” koji ste im poslali pre događaja (npr. u sklopu pozivnice). 3) Pitaju hostesu koja koristi isti taj link na svom telefonu. Pretraga zanemaruje dijakritike (š, č, ž, ć) — gost se nalazi i ako ukuca „Petrovic” umesto „Petrović”.",
+  },
+  {
+    q: "Da li je raspored sedenja online dostupan i u Beogradu, Novom Sadu i drugim gradovima?",
+    a: "Da. Alat je 100% online i radi u celoj Srbiji — Beograd, Novi Sad, Niš, Kragujevac, Subotica, Čačak i svim ostalim mestima. Nema fizičke dostave, sve se odvija digitalno. PDF pano spreman za štampu možete odštampati u bilo kojoj lokalnoj štampariji.",
+  },
+];
+
 export default function RasporedSedenjaLanding() {
   const standalonePrice = getStandaloneSeatingPrice();
   const standaloneRegular = getStandaloneSeatingRegularPrice();
   const standalonePromoActive = isStandaloneSeatingPromoActive();
+
+  const softwareSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "HALO Uspomene — Raspored sedenja online",
+    description:
+      "Online alat za raspoređivanje stolova i gostiju na svadbi, konferenciji, korporativnom eventu ili većoj proslavi. Editor, Excel/CSV uvoz gostiju, QR pano dobrodošlice za ulaz u salu, lično „gde sedim?” pretraga.",
+    applicationCategory: "BusinessApplication",
+    applicationSubCategory: "Event Planning",
+    operatingSystem: "Web (browser-based)",
+    url: `${siteUrl}/raspored-sedenja`,
+    inLanguage: "sr-RS",
+    featureList: [
+      "Alat za raspored stolova",
+      "Okrugli, pravougaoni i jednostrani stolovi",
+      "Excel/CSV uvoz gostiju",
+      "Ručno dodavanje i izmena gostiju",
+      "Filtriranje po kategorijama (VIP, Govornici, kolege)",
+      "QR pano dobrodošlice (PDF, B1 format)",
+      "Personalizovan link „Gde sedim?” za goste",
+      "Promene moguće u realnom vremenu do dana događaja",
+      "Pretraga sa prepoznavanjem dijakritike",
+    ],
+    offers: {
+      "@type": "Offer",
+      price: String(standalonePrice),
+      priceCurrency: "RSD",
+      url: `${siteUrl}/raspored-sedenja`,
+      availability: "https://schema.org/InStock",
+      priceValidUntil: `${new Date().getFullYear()}-12-31`,
+      seller: {
+        "@type": "Organization",
+        name: "HALO Uspomene",
+        url: siteUrl,
+      },
+    },
+    provider: {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "HALO Uspomene",
+      url: siteUrl,
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "5.0",
+      reviewCount: "20",
+      bestRating: "5",
+    },
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Početna",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Raspored sedenja",
+        item: `${siteUrl}/raspored-sedenja`,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Header />
       <main>
         {/* Hero */}
@@ -159,13 +306,23 @@ export default function RasporedSedenjaLanding() {
               </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#232323] leading-tight mb-5">
                 Raspored sedenja{" "}
-                <span className="italic text-[#AE343F]">za vaš event</span>
+                <span className="italic text-[#AE343F]">
+                  za svadbu ili događaj
+                </span>
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-[#232323]/65 leading-relaxed mb-8 max-w-2xl">
-                Online alat za raspoređivanje stolova i gostiju + QR pano
-                dobrodošlice za ulaz u salu. Idealan za konferencije, forume,
-                godišnjice, korporativne događaje i veće proslave gde imate
-                listu gostiju i želite da svako odmah zna gde sedi.
+              <p className="text-base sm:text-lg md:text-xl text-[#232323]/65 leading-relaxed mb-4 max-w-2xl">
+                <strong className="text-[#232323]">
+                  Raspored sedenja online
+                </strong>{" "}
+                — Alat za raspoređivanje stolova i gostiju za svadbu,
+                konferenciju, korporativni event ili veću proslavu. Sa Excel
+                uvozom gostiju, QR Panoom dobrodošlice za ulaz u salu i ličnom
+                „gde sedim?” pretragom za svakog gosta.
+              </p>
+              <p className="text-sm sm:text-base text-[#232323]/55 leading-relaxed mb-8 max-w-2xl">
+                Idealan za sve događaje gde imate listu zvanica i želite da
+                svako odmah zna gde sedi — bez štampanih spiskova, bez gužve na
+                ulazu, bez improvizacije.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3">
@@ -230,7 +387,7 @@ export default function RasporedSedenjaLanding() {
               </h2>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
               {useCases.map((u) => (
                 <div
                   key={u.title}
@@ -394,6 +551,46 @@ export default function RasporedSedenjaLanding() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="py-16 sm:py-24 md:py-32 bg-gradient-to-t from-[#faf9f6] to-[#AE343F]/10 border-t-4 border-b-4 border-[#AE343F]/20 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#AE343F]/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
+
+          <div className="container mx-auto px-4 max-w-4xl relative z-10">
+            <div className="text-center mb-12 sm:mb-16">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
+                Česta pitanja
+              </p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-6">
+                Sve o rasporedu sedenja online
+              </h2>
+              <p className="text-lg text-[#232323]/50 max-w-2xl mx-auto">
+                Odgovori na najčešća pitanja o alatu, ceni, QR Panou,
+                raspoređivanju gostiju i razlikama u odnosu na štampane
+                spiskove.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {faqs.map((faq, idx) => (
+                <div
+                  key={idx}
+                  className="collapse collapse-arrow bg-[#faf9f6] rounded-2xl border border-stone-200"
+                >
+                  <input type="checkbox" />
+                  <div className="collapse-title text-base sm:text-lg font-medium text-[#232323] pr-12">
+                    {faq.q}
+                  </div>
+                  <div className="collapse-content">
+                    <p className="text-[#232323]/60 leading-relaxed pt-2">
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>

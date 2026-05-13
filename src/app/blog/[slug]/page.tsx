@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Clock, ArrowLeft, ArrowRight, Tag } from "lucide-react";
+import { Clock, ArrowLeft, ArrowRight, Tag, Sparkles } from "lucide-react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { blogPosts, getBlogPost, getRelatedPosts } from "@/data/blog/posts";
@@ -191,6 +191,20 @@ export default async function BlogPostPage({
 
           {/* Post Content */}
           <div className="prose-custom">{content}</div>
+
+          {/* AI-generated content disclaimer */}
+          <div className="mt-12 sm:mt-14 p-4 sm:p-5 bg-[#F5F4DC]/60 border border-stone-200 rounded-xl flex items-start gap-3">
+            <Sparkles
+              size={18}
+              className="text-[#AE343F] mt-0.5 shrink-0"
+              aria-hidden="true"
+            />
+            <p className="text-sm text-[#232323]/70 leading-relaxed italic">
+              AI generisan sadržaj! Ispravnost informacija proverite direktno sa
+              timom HaloUspomene — kontakt se nalazi u podnožju sajta (u
+              footeru).
+            </p>
+          </div>
 
           {/* Related Posts */}
           {relatedPosts.length > 0 && (

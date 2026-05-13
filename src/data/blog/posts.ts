@@ -241,6 +241,98 @@ const allBlogPosts: BlogPost[] = [
     featured: true,
     content: loadContent("srpske-svadbene-tradicije-moderni-trendovi"),
   },
+  {
+    slug: "raspored-sedenja-za-svadbu-vodic",
+    title: "Raspored Sedenja za Svadbu — Kompletan Vodič 2026",
+    description:
+      "Kako napraviti raspored sedenja za svadbu — od konačne liste gostiju i šeme sale do QR Panoa dobrodošlice za ulaz. Korak po korak vodič, česte greške, cene i saveti iz prakse u Srbiji 2026.",
+    category: "Vodič",
+    tags: [
+      "raspored sedenja",
+      "raspored sedenja za svadbu",
+      "raspored sedenja online",
+      "raspored sedenja za venčanje",
+      "QR pano dobrodošlice",
+      "kako napraviti raspored sedenja",
+      "alat za raspored sedenja",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-05-08",
+    readTime: 12,
+    featured: true,
+    content: loadContent("raspored-sedenja-za-svadbu-vodic"),
+  },
+  {
+    slug: "qr-pano-dobrodoslice-trend",
+    title:
+      "QR Pano Dobrodošlice — Najbrže Rastući Svadbeni Trend u Srbiji 2026",
+    description:
+      "Šta je QR Pano dobrodošlice, kako funkcioniše, zašto je najbrže rastući svadbeni trend u Srbiji 2026 i koliko košta. Estetika, štampa, stilski saveti i pravila postavljanja u sali.",
+    category: "Trendovi",
+    tags: [
+      "QR pano dobrodošlice",
+      "qr pano za venčanje",
+      "qr pano za svadbu",
+      "pano za salu",
+      "raspored sedenja online",
+      "moderna svadba",
+      "trendovi venčanja 2026",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-05-09",
+    readTime: 10,
+    featured: true,
+    content: loadContent("qr-pano-dobrodoslice-trend"),
+  },
+  {
+    slug: "moje-vencanje-planer",
+    title:
+      "Moje Venčanje — Besplatan Online Planer Venčanja sa Checklistom, Budžetom i Vendorima",
+    description:
+      "Online planer venčanja koji objedinjuje checklistu, budžet, listu gostiju, vendor direktorijum i audio guest book na jednom mestu. Besplatno uz HALO Uspomene pozivnicu, lokalizovano za Srbiju.",
+    category: "Vodič",
+    tags: [
+      "planer venčanja",
+      "online planer venčanja",
+      "moje venčanje",
+      "planiranje venčanja Srbija",
+      "checklista venčanje",
+      "budžet venčanje",
+      "vendor direktorijum",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-05-10",
+    readTime: 11,
+    featured: true,
+    content: loadContent("moje-vencanje-planer"),
+  },
+  {
+    slug: "premium-ai-pozivnice",
+    title:
+      "Premium Pozivnice za Venčanje 2026/2027 — Luksuzne Digitalne Pozivnice",
+    description:
+      "Premium digitalne pozivnice za venčanje sa parallax hero animacijama, animiranim kovertom i tri tematska doživljaja: akvarelna pozadina vašeg venčanog mesta, papirni svet sa AI ilustracijom para, ili scena sa animiranim parom belih golubova. Lokalizovano za Srbiju.",
+    category: "Trendovi",
+    tags: [
+      "premium pozivnica",
+      "luksuzne pozivnice",
+      "premium pozivnice za venčanje",
+      "moderne pozivnice 2026",
+      "parallax pozivnica",
+      "akvarel pozivnica",
+      "watercolor pozivnica",
+      "fountain pozivnica",
+      "burgundy pozivnica",
+      "pozivnica sa golubovima",
+      "animirana pozivnica",
+      "AI ilustracija para",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-05-11",
+    readTime: 12,
+    featured: true,
+    content: loadContent("premium-ai-pozivnice"),
+  },
 ];
 
 // Published posts: only those with publishDate <= current build date
