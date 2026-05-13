@@ -201,16 +201,16 @@ const Footer: React.FC = () => {
           <ul className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3 items-baseline">
             <li>
               <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/80">
-                Alati
+                Alati:
               </h4>
             </li>
             {[
-              { name: "Planer za Venčanje", href: "/planiranje-vencanja" },
               {
-                name: "Raspored sedenja za organizatore",
+                name: "Raspored sedenja",
                 href: "/raspored-sedenja",
               },
-              { name: "Vendori", href: "/vendori" },
+              { name: "Planer za Venčanje", href: "/planiranje-vencanja" },
+              { name: "Direktorijum Vendora", href: "/vendori" },
             ].map((link) => (
               <li key={link.name}>
                 <Link
@@ -227,7 +227,7 @@ const Footer: React.FC = () => {
         {/* Vendori po kategorijama */}
         <div className="border-t border-white/5 pt-10 sm:pt-12 mb-12 sm:mb-16">
           <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/80 mb-6">
-            Vendori po kategorijama
+            Vendori po kategorijama:
           </h4>
           <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-3">
             {vendorCategoryLinks.map((link) => (
@@ -255,8 +255,12 @@ const Footer: React.FC = () => {
         {/* Cancellation policy */}
         <div className="border-t border-white/5 pt-8 pb-6">
           <p className="text-[11px] text-[#F5F4DC]/25 leading-relaxed max-w-3xl">
-            <span className="text-[#F5F4DC]/40 font-semibold uppercase tracking-widest text-[10px]">Politika odustanka — </span>
-            U slučaju odustanka nakon popunjenog i poslatog formulara, korisnik je dužan da uplati 50% od ukupne vrednosti usluge na ime naknade za obavljeni posao. Slanjem formulara prihvatate ove uslove.
+            <span className="text-[#F5F4DC]/40 font-semibold uppercase tracking-widest text-[10px]">
+              Politika odustanka —{" "}
+            </span>
+            U slučaju odustanka nakon popunjenog i poslatog formulara, korisnik
+            je dužan da uplati 50% od ukupne vrednosti usluge na ime naknade za
+            obavljeni posao. Slanjem formulara prihvatate ove uslove.
           </p>
         </div>
 
