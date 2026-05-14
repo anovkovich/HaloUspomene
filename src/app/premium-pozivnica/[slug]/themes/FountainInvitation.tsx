@@ -69,7 +69,7 @@ const FOUNTAIN_DURATION_S = 0.6;
 // Wrapper height in vh — shared between the JSX wrapper and the
 // FountainSprite component so the sprite's vh-based sheet math lines up
 // with the wrapper's rendered size.
-const FOUNTAIN_HERO_VH = 60;
+const FOUNTAIN_HERO_VH = 50;
 
 const T = {
   latin: {
