@@ -129,6 +129,12 @@ export interface WeddingData {
   show_numbers?: boolean[];
   /** Optional per-number labels rendered above each phone in the call-CTA (e.g. "Mama mlade"). Parallel to `contact_phone`. */
   number_names?: string[];
+  /** ISO country code for the primary contact phone (RS/BA/HR/ME). Defaults to RS for legacy/Serbian submissions. */
+  phone_country?: "RS" | "BA" | "HR" | "ME";
+  /** True when the primary phone passed SMS verification; false for couples created via a foreign-customer bypass link. Absent on pre-bypass records. */
+  phone_verified?: boolean;
+  /** UUID of the bypass token that authorized this submission. Audit-only; absent for normal SMS-verified submissions. */
+  bypass_token_id?: string;
 }
 
 // Comprehensive theme configuration

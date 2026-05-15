@@ -42,6 +42,8 @@ import type {
 import { getThemeClasses } from "./premium-theme";
 import dynamic from "next/dynamic";
 import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
+import { BypassPhoneInput } from "@/components/verification/BypassPhoneInput";
+import type { BypassInfo } from "./FormPageWrapper";
 import {
   useRecaptcha,
   RecaptchaDisclosure,
@@ -1021,12 +1023,18 @@ function PhoneTagInput({
 function Step2({
   formData,
   updateField,
+  bypassInfo,
 }: {
   formData: FormData;
   updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+  bypassInfo?: BypassInfo;
 }) {
   const [showSecondaryPhone, setShowSecondaryPhone] = useState(
     !!formData.contact_phone_secondary,
+  );
+  const secondaryPrefix = bypassInfo?.callingCode || "+381";
+  const secondaryStripRegex = new RegExp(
+    `^\\+?${secondaryPrefix.replace(/^\+/, "")}`,
   );
   const handleWeddingDateChange = (dateOnly: string) => {
     updateField("event_date_only", dateOnly);
@@ -1110,18 +1118,27 @@ function Step2({
               </div>
             </div>
           </div>
-          <PhoneVerificationField
-            value={formData.contact_phone}
-            onChange={(v) => {
-              updateField("contact_phone", v);
-              if (formData.phone_trust_token) {
-                updateField("phone_trust_token", "");
-              }
-            }}
-            onVerified={(token) => updateField("phone_trust_token", token)}
-            onUnverified={() => updateField("phone_trust_token", "")}
-          />
-          {formData.phone_trust_token ? (
+          {bypassInfo ? (
+            <BypassPhoneInput
+              value={formData.contact_phone}
+              onChange={(v) => updateField("contact_phone", v)}
+              callingCode={bypassInfo.callingCode}
+              countryLabel={bypassInfo.countryLabel}
+            />
+          ) : (
+            <PhoneVerificationField
+              value={formData.contact_phone}
+              onChange={(v) => {
+                updateField("contact_phone", v);
+                if (formData.phone_trust_token) {
+                  updateField("phone_trust_token", "");
+                }
+              }}
+              onVerified={(token) => updateField("phone_trust_token", token)}
+              onUnverified={() => updateField("phone_trust_token", "")}
+            />
+          )}
+          {bypassInfo || formData.phone_trust_token ? (
             showSecondaryPhone ? (
               <div className="mt-3 space-y-1">
                 <div className="flex items-center justify-between">
@@ -1141,7 +1158,7 @@ function Step2({
                 </div>
                 <div className="flex items-center border-b border-stone-200 focus-within:border-[var(--accent,#AE343F)] transition-colors">
                   <span className="py-1.5 pl-1 pr-2 text-stone-400 text-base select-none">
-                    +381
+                    {secondaryPrefix}
                   </span>
                   <input
                     type="tel"
@@ -1153,7 +1170,7 @@ function Step2({
                       updateField(
                         "contact_phone_secondary",
                         e.target.value
-                          .replace(/^\+?381/, "")
+                          .replace(secondaryStripRegex, "")
                           .replace(/\D/g, "")
                           .replace(/^0+/, ""),
                       )
@@ -1879,11 +1896,13 @@ export default function QuestionnaireForm({
   upgradeSlug,
   lockPremiumToggle,
   initialFormData,
+  bypassInfo,
 }: {
   onPremiumChange?: (isPremium: boolean) => void;
   upgradeSlug?: string;
   lockPremiumToggle?: boolean;
   initialFormData?: Partial<FormData>;
+  bypassInfo?: BypassInfo;
 }) {
   const isUpgrade = !!upgradeSlug;
   const { execute: executeRecaptcha } = useRecaptcha();
@@ -2109,7 +2128,7 @@ export default function QuestionnaireForm({
         setStepError("Unesite vaš kontakt telefon.");
         return;
       }
-      if (!formData.phone_trust_token) {
+      if (!bypassInfo && !formData.phone_trust_token) {
         setStepError(
           "Verifikujte kontakt telefon putem SMS koda pre nego što nastavite.",
         );
@@ -2280,10 +2299,11 @@ export default function QuestionnaireForm({
       return;
     }
 
+    const phonePrefix = bypassInfo?.callingCode || "+381";
     const combinedPhone = [
-      formData.contact_phone ? `+381${formData.contact_phone}` : "",
+      formData.contact_phone ? `${phonePrefix}${formData.contact_phone}` : "",
       formData.contact_phone_secondary
-        ? `+381${formData.contact_phone_secondary}`
+        ? `${phonePrefix}${formData.contact_phone_secondary}`
         : "",
     ]
       .filter(Boolean)
@@ -2320,6 +2340,7 @@ export default function QuestionnaireForm({
           custom_background_color: formData.custom_background_color,
           contact_phone: combinedPhone,
           phone_trust_token: formData.phone_trust_token,
+          ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
           recaptcha_token: recaptchaToken,
           locations: formData.locations
             .filter(
@@ -2449,6 +2470,7 @@ export default function QuestionnaireForm({
         custom_background_color: formData.custom_background_color || undefined,
         contact_phone: combinedPhone,
         phone_trust_token: formData.phone_trust_token,
+        ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
         recaptcha_token: recaptchaToken,
         locations: formData.locations
           .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
@@ -2604,7 +2626,13 @@ export default function QuestionnaireForm({
           />
         );
       case "date_rsvp":
-        return <Step2 formData={formData} updateField={updateField} />;
+        return (
+          <Step2
+            formData={formData}
+            updateField={updateField}
+            bypassInfo={bypassInfo}
+          />
+        );
       case "design":
         return <Step3 formData={formData} updateField={updateField} />;
       case "locations":
@@ -2737,7 +2765,9 @@ export default function QuestionnaireForm({
               type="button"
               onClick={goNext}
               disabled={
-                currentStepKey === "date_rsvp" && !formData.phone_trust_token
+                currentStepKey === "date_rsvp" &&
+                !bypassInfo &&
+                !formData.phone_trust_token
               }
               className={`flex items-center gap-2 px-8 py-3 rounded-2xl transition-all font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed ${tc.buttonPrimary}`}
             >

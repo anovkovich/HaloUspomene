@@ -4,6 +4,7 @@ import { generateUniqueSlug, InvalidSlugInputError } from "@/lib/slug";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
 import { ensurePhoneVerified, normalizePhone } from "@/lib/phone-verification";
+import { verifyBypassToken } from "@/lib/bypass-token";
 
 // Simple IP-based rate limiting (5 per IP per hour)
 const ipMap = new Map<string, { count: number; resetAt: number }>();
@@ -54,22 +55,56 @@ export async function POST(request: NextRequest) {
     }
 
     // Phone verification: contact_phone arrives as comma-separated E.164 strings.
-    // We require the trust token to match the FIRST (primary) number only.
+    // Two authorization paths:
+    //   1. SMS trust token (default, Serbian numbers) — must match the primary
+    //      number on the submission.
+    //   2. Bypass token (foreign-customer link issued by admin) — skips SMS
+    //      verification entirely; we trust the signed token to attest the
+    //      country and accept whatever phone the user typed.
     const primaryRaw = String(body.contact_phone || "").split(",")[0]?.trim();
-    const phoneE164 = normalizePhone(primaryRaw);
+    let bypassCountry: "RS" | "BA" | "HR" | "ME" | null = null;
+    let bypassTokenId: string | null = null;
+
+    if (body.bypass_token) {
+      try {
+        const payload = await verifyBypassToken(body.bypass_token);
+        bypassCountry = payload.country;
+        bypassTokenId = payload.tokenId;
+      } catch {
+        return NextResponse.json(
+          { error: "Bypass link nije važeći ili je istekao." },
+          { status: 403 },
+        );
+      }
+    }
+
+    let phoneE164 = normalizePhone(primaryRaw, bypassCountry || "RS");
+    // Bypass mode: admin pre-authorized the submission, so don't gate on the
+    // strict country-aware length check libphonenumber-js applies. Accept the
+    // typed value with a soft "at least 6 digits" sanity check; admin can fix
+    // the number manually if it looks off.
+    if (!phoneE164 && bypassTokenId && primaryRaw) {
+      const digits = primaryRaw.replace(/\D/g, "");
+      if (digits.length >= 6) {
+        phoneE164 = primaryRaw.startsWith("+") ? primaryRaw : `+${digits}`;
+      }
+    }
     if (!phoneE164) {
       return NextResponse.json(
         { error: "Unesite važeći kontakt telefon." },
         { status: 400 },
       );
     }
-    try {
-      await ensurePhoneVerified(body.phone_trust_token, phoneE164);
-    } catch {
-      return NextResponse.json(
-        { error: "Verifikujte broj telefona pre slanja." },
-        { status: 403 },
-      );
+
+    if (!bypassTokenId) {
+      try {
+        await ensurePhoneVerified(body.phone_trust_token, phoneE164);
+      } catch {
+        return NextResponse.json(
+          { error: "Verifikujte broj telefona pre slanja." },
+          { status: 403 },
+        );
+      }
     }
 
     let slug: string;
@@ -128,10 +163,13 @@ export async function POST(request: NextRequest) {
       draft: true,
     };
 
-    const weddingDataWithContact = {
+    const weddingDataWithContact: WeddingData = {
       ...weddingData,
       contact_phone: String(body.contact_phone || ""),
-    } as WeddingData;
+      phone_country: bypassCountry || "RS",
+      phone_verified: !bypassTokenId,
+      ...(bypassTokenId ? { bypass_token_id: bypassTokenId } : {}),
+    };
 
     await upsertCouple(slug, weddingDataWithContact);
 

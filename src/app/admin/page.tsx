@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
 import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
@@ -11,6 +11,7 @@ import VendorAdminTab from "./VendorAdminTab";
 import SeatingAdminTab from "./SeatingAdminTab";
 import PhoneRentalModal from "./PhoneRentalModal";
 import AdminCalendar from "./AdminCalendar";
+import BypassLinkModal from "./BypassLinkModal";
 
 type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja";
 
@@ -70,6 +71,7 @@ export default function AdminPage() {
   const [bankAccountIdx, setBankAccountIdx] = useState(0);
   const [showPhoneRental, setShowPhoneRental] = useState(false);
   const [showCustomReceipt, setShowCustomReceipt] = useState(false);
+  const [showBypassLink, setShowBypassLink] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const sortMenuRef = useRef<HTMLDivElement>(null);
@@ -377,7 +379,19 @@ export default function AdminPage() {
         >
           <Receipt size={12} /> Prilagođeni račun
         </button>
+        <button
+          onClick={() => setShowBypassLink(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors cursor-pointer"
+          title="Generiši link za inostranog klijenta — preskače SMS verifikaciju"
+        >
+          <Globe size={12} /> Bypass link
+        </button>
       </div>
+
+      <BypassLinkModal
+        open={showBypassLink}
+        onClose={() => setShowBypassLink(false)}
+      />
 
       {/* Custom receipts list */}
       {customReceipts.length > 0 && (

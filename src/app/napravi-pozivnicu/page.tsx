@@ -2,8 +2,15 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
-import FormPageWrapper, { type UpgradeInitialFormData } from "./FormPageWrapper";
+import FormPageWrapper, {
+  type UpgradeInitialFormData,
+  type BypassInfo,
+} from "./FormPageWrapper";
 import { getWeddingData } from "@/lib/couples";
+import {
+  verifyBypassToken,
+  COUNTRY_CONFIGS,
+} from "@/lib/bypass-token";
 
 export const metadata: Metadata = {
   title: "Napravi Website Pozivnicu za Venčanje | Personalizovana Online Pozivnica",
@@ -35,11 +42,34 @@ export const metadata: Metadata = {
 export default async function NapraviPozivnicuPage({
   searchParams,
 }: {
-  searchParams: Promise<{ upgrade?: string; premium?: string }>;
+  searchParams: Promise<{
+    upgrade?: string;
+    premium?: string;
+    bypass?: string;
+  }>;
 }) {
   const params = await searchParams;
   const upgradeSlug = params.upgrade?.trim();
   const forcePremium = params.premium === "true";
+
+  // Foreign-customer bypass: admin-issued signed link that disables SMS
+  // verification and pre-sets the phone country prefix. Verified server-side.
+  let bypassInfo: BypassInfo | undefined;
+  if (params.bypass) {
+    try {
+      const payload = await verifyBypassToken(params.bypass);
+      const cfg = COUNTRY_CONFIGS[payload.country];
+      bypassInfo = {
+        token: params.bypass,
+        country: payload.country,
+        callingCode: cfg.callingCode,
+        countryLabel: cfg.label,
+      };
+    } catch {
+      // Invalid/expired bypass — render the normal form as if no token was passed.
+      // The foreign-customer notice will still be visible.
+    }
+  }
 
   let initialFormData: UpgradeInitialFormData | undefined;
 
@@ -106,6 +136,7 @@ export default async function NapraviPozivnicuPage({
         upgradeSlug={upgradeSlug}
         forcePremium={forcePremium}
         initialFormData={initialFormData}
+        bypassInfo={bypassInfo}
       />
       <Footer />
     </>

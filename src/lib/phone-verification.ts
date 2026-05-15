@@ -10,7 +10,7 @@
  */
 
 import { SignJWT, jwtVerify } from "jose";
-import { parsePhoneNumberFromString } from "libphonenumber-js";
+import { parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import clientPromise from "./mongodb";
 
 const TRUST_SECRET_RAW =
@@ -47,6 +47,16 @@ export interface VerifiedPhone {
 
 // ---------- Phone normalization ----------
 
+// Per-country calling-code prefix for local-number fallback. Used when input
+// arrives without a leading "+" — we assume the user typed it in the format
+// they're used to (e.g. "061..." for RS, "061..." for BA).
+const COUNTRY_CALLING_CODE: Record<CountryCode, string> = {
+  RS: "381",
+  BA: "387",
+  HR: "385",
+  ME: "382",
+} as Partial<Record<CountryCode, string>> as Record<CountryCode, string>;
+
 /**
  * Normalize a user-entered phone (e.g. "61 234 5678", "061234567", "+38161234567")
  * into E.164 (e.g. "+38161234567"). Returns null if the number is not a
@@ -60,23 +70,26 @@ export interface VerifiedPhone {
  */
 export function normalizePhone(
   input: string | undefined | null,
-  defaultCountry: "RS" = "RS",
+  defaultCountry: CountryCode = "RS",
 ): string | null {
   if (!input) return null;
   const trimmed = input.trim();
   if (!trimmed) return null;
 
+  const callingCode = COUNTRY_CALLING_CODE[defaultCountry] || "381";
+
   let candidate: string;
   if (trimmed.startsWith("+")) {
     candidate = trimmed;
   } else {
-    // Tolerate user-entered local prefixes: "381...", "00381...", "0XX..."
+    // Tolerate user-entered local prefixes for the chosen country: bare digits,
+    // "00<cc>...", "<cc>...", or leading "0XX" (national trunk prefix).
     const localDigits = trimmed
       .replace(/\D/g, "")
-      .replace(/^00381/, "")
-      .replace(/^381/, "")
+      .replace(new RegExp(`^00${callingCode}`), "")
+      .replace(new RegExp(`^${callingCode}`), "")
       .replace(/^0+/, "");
-    candidate = `+381${localDigits}`;
+    candidate = `+${callingCode}${localDigits}`;
   }
   const parsed = parsePhoneNumberFromString(candidate, defaultCountry);
   if (!parsed || !parsed.isPossible()) return null;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { upsertCouple } from "@/lib/couples";
 import { generateUniqueSlug, InvalidSlugInputError } from "@/lib/slug";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
+import { verifyBypassToken } from "@/lib/bypass-token";
 
 // Simple IP-based rate limiting
 const ipMap = new Map<string, { count: number; resetAt: number }>();
@@ -37,6 +38,22 @@ export async function POST(request: NextRequest) {
         { error: "Bride and groom names are required" },
         { status: 400 },
       );
+    }
+
+    // Optional foreign-customer bypass token — same shape as classic create.
+    let bypassCountry: "RS" | "BA" | "HR" | "ME" | null = null;
+    let bypassTokenId: string | null = null;
+    if (body.bypass_token) {
+      try {
+        const payload = await verifyBypassToken(body.bypass_token);
+        bypassCountry = payload.country;
+        bypassTokenId = payload.tokenId;
+      } catch {
+        return NextResponse.json(
+          { error: "Bypass link nije važeći ili je istekao." },
+          { status: 403 },
+        );
+      }
     }
 
     // Generate unique slug
@@ -94,6 +111,9 @@ export async function POST(request: NextRequest) {
       premium_car: body.premium_car || undefined,
       couple_description: body.couple_description || undefined,
       draft: true,
+      phone_country: bypassCountry || "RS",
+      phone_verified: !bypassTokenId,
+      ...(bypassTokenId ? { bypass_token_id: bypassTokenId } : {}),
     };
 
     // Persist the contact_phone the couple submitted (comma-separated E.164).

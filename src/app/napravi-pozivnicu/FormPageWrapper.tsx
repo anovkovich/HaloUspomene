@@ -30,16 +30,25 @@ export interface UpgradeInitialFormData {
   extra_usb_bocica: boolean;
 }
 
+export interface BypassInfo {
+  token: string;
+  country: "BA" | "HR" | "ME" | "RS";
+  callingCode: string;
+  countryLabel: string;
+}
+
 interface Props {
   upgradeSlug?: string;
   forcePremium?: boolean;
   initialFormData?: UpgradeInitialFormData;
+  bypassInfo?: BypassInfo;
 }
 
 export default function FormPageWrapper({
   upgradeSlug,
   forcePremium,
   initialFormData,
+  bypassInfo,
 }: Props) {
   // In upgrade mode the premium choice is locked to the value chosen from the
   // portal — user picked "Premium" or "Klasik" before entering the stepper, and
@@ -108,7 +117,23 @@ export default function FormPageWrapper({
           upgradeSlug={upgradeSlug}
           lockPremiumToggle={isUpgrade}
           initialFormData={initialFormData}
+          bypassInfo={bypassInfo}
         />
+
+        {!isUpgrade && !bypassInfo && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="mt-10 max-w-xl mx-auto text-center text-xs text-stone-400 leading-relaxed flex items-center justify-center gap-2 px-4"
+          >
+            <span>
+              Popunjavate iz Crne Gore, BiH ili Hrvatske? Javite nam se preko
+              kontakata koji se nalaze u podnožju stranice (footer) — šaljemo
+              vam personalni link za pristup iz vaše zemlje.
+            </span>
+          </motion.p>
+        )}
       </div>
 
       {/* Hidden SEO content — visible to crawlers, not to users */}
@@ -161,8 +186,8 @@ export default function FormPageWrapper({
         <h3>Oblasti koje pokrivamo</h3>
         <p>
           Website pozivnica za venčanje Beograd, website pozivnica Novi Sad,
-          online venčana pozivnica Niš, pozivnica za svadbu Kragujevac, Subotica,
-          kao i za sva venčanja u Srbiji i regionu.
+          online venčana pozivnica Niš, pozivnica za svadbu Kragujevac,
+          Subotica, kao i za sva venčanja u Srbiji i regionu.
         </p>
       </div>
 
