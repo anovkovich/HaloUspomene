@@ -223,7 +223,7 @@ function NbsQrCode({
 const BANK_ACCOUNTS = [
   { raw: "340000003258405791", display: "340-0000032584057-91" },
   { raw: "170001040456500004", display: "170-0010404565000-04" },
-  { raw: "000000000000000000", display: "TODO" },
+  { raw: "160600000143665585", display: "160-6000001436655-85" },
 ];
 
 interface ReceiptPayload {

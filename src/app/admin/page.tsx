@@ -12,6 +12,7 @@ import SeatingAdminTab from "./SeatingAdminTab";
 import PhoneRentalModal from "./PhoneRentalModal";
 import AdminCalendar from "./AdminCalendar";
 import BypassLinkModal from "./BypassLinkModal";
+import DatePicker from "@/components/ui/DatePicker";
 
 type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja";
 
@@ -30,7 +31,7 @@ const TABS: ReadonlyArray<{
 const BANK_ACCOUNTS = [
   { raw: "340000003258405791", display: "340-0000032584057-91", label: "Erste (340)" },
   { raw: "170001040456500004", display: "170-0010404565000-04", label: "UniCredit (170)" },
-  { raw: "000000000000000000", display: "TODO", label: "TODO" },
+  { raw: "160600000143665585", display: "160-6000001436655-85", label: "Intesa (160)" },
 ];
 
 interface Couple {
@@ -68,7 +69,7 @@ export default function AdminPage() {
   const [needsLogin, setNeedsLogin] = useState(false);
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
-  const [bankAccountIdx, setBankAccountIdx] = useState(0);
+  const [bankAccountIdx, setBankAccountIdx] = useState(2);
   const [showPhoneRental, setShowPhoneRental] = useState(false);
   const [showCustomReceipt, setShowCustomReceipt] = useState(false);
   const [showBypassLink, setShowBypassLink] = useState(false);
@@ -1044,11 +1045,14 @@ function CustomReceiptModal({
         {/* Date (optional) */}
         <div className="space-y-1.5">
           <label className="text-[11px] text-white/40 uppercase tracking-wider">Datum (opciono)</label>
-          <input
-            type="date"
+          <DatePicker
             value={datum}
-            onChange={(e) => setDatum(e.target.value)}
-            className="w-full text-sm text-white/60 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/25"
+            onChange={setDatum}
+            variant="dark"
+            accentColor="#facc15"
+            placeholder="Izaberite datum"
+            minDate="2020-01-01"
+            showQuickActions={false}
           />
         </div>
 
