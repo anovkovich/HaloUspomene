@@ -16,9 +16,11 @@ import {
   BadgePercent,
   Info,
   ExternalLink,
+  HelpCircle,
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
+import FeatureInfoModal, { type FeatureInfoKey } from "./FeatureInfoModal";
 import {
   pricing,
   formatPrice,
@@ -140,6 +142,9 @@ export default function PricingClient() {
     usb_kaseta: false,
     usb_bocica: false,
   });
+  const [infoOpen, setInfoOpen] = useState<FeatureInfoKey>(null);
+
+  const openInfo = (id: "raspored" | "audio") => setInfoOpen(id);
 
   const toggle = (id: string) => {
     if (id === "website" || id === "pdf") return;
@@ -383,6 +388,37 @@ export default function PricingClient() {
                           <span className="font-semibold text-[#232323] text-base">
                             {feature.label}
                           </span>
+                          {(feature.id === "raspored" ||
+                            feature.id === "audio") && (
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              aria-label={`Saznajte više o ${feature.label}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openInfo(feature.id as "raspored" | "audio");
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  openInfo(
+                                    feature.id as "raspored" | "audio",
+                                  );
+                                }
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide cursor-pointer transition-colors text-[var(--cene-accent)] hover:bg-[rgba(var(--cene-accent-rgb),0.1)]"
+                              style={{
+                                backgroundColor:
+                                  "rgba(var(--cene-accent-rgb),0.06)",
+                                border:
+                                  "1px solid rgba(var(--cene-accent-rgb),0.15)",
+                              }}
+                            >
+                              <HelpCircle size={11} />
+                              Šta je ovo?
+                            </span>
+                          )}
                           {isCheckable && (
                             <span className="text-[10px] font-medium uppercase tracking-wide text-[rgba(var(--cene-accent-rgb),0.5)] bg-[rgba(var(--cene-accent-rgb),0.05)] px-2 py-0.5 rounded-full">
                               Dodaj
@@ -664,6 +700,11 @@ export default function PricingClient() {
             </div>
           </div>
         </div>
+
+        <FeatureInfoModal
+          feature={infoOpen}
+          onClose={() => setInfoOpen(null)}
+        />
       </div>
       <Footer />
     </>
