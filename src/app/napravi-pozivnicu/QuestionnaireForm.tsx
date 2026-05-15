@@ -17,6 +17,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
+import FeatureInfoModal, {
+  type FeatureInfoKey,
+} from "@/components/ui/FeatureInfoModal";
 import {
   pricing,
   formatPrice,
@@ -400,78 +403,165 @@ function ExtrasAccordion({
   ];
 
   const count = extras.filter(({ key }) => formData[key]).length;
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => count > 0);
+  const [infoOpen, setInfoOpen] = useState<FeatureInfoKey>(null);
+
+  const accentHex = isPremium ? "#d4af37" : "#AE343F";
+  const accentRgb = isPremium ? "212,175,55" : "174,52,63";
+
+  const openInfo = (
+    e: React.MouseEvent | React.KeyboardEvent,
+    key: "raspored" | "audio",
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setInfoOpen(key);
+  };
+
+  const infoKeyFor = (key: string): "raspored" | "audio" | null => {
+    if (key === "extra_raspored") return "raspored";
+    if (key === "extra_audio") return "audio";
+    return null;
+  };
 
   return (
     <div
-      className={`mt-8 pt-5 border-t ${isPremium ? "border-[#d4af37]/15" : "border-stone-100"}`}
+      className="mt-8 rounded-2xl overflow-hidden"
+      style={{
+        backgroundColor: `rgba(${accentRgb}, 0.04)`,
+        border: `1px solid rgba(${accentRgb}, 0.18)`,
+      }}
     >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between cursor-pointer group"
+        className="w-full flex items-center justify-between cursor-pointer group px-4 sm:px-5 py-3.5 text-left"
       >
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-stone-300 group-hover:text-stone-400 transition-colors">
-            {isPremium ? "Premium dodaci" : "Dodatne usluge (opciono)"}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <Sparkles
+            size={14}
+            style={{ color: accentHex }}
+            className="shrink-0"
+          />
+          <span
+            className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em]"
+            style={{ color: accentHex }}
+          >
+            {isPremium ? "Premium dodaci" : "Dodatne usluge"}
           </span>
-          {count > 0 && (
-            <span className="w-4 h-4 rounded-full bg-[var(--accent,#AE343F)] text-white text-[9px] font-bold flex items-center justify-center">
-              {count}
+          {count > 0 ? (
+            <span
+              className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-white text-[10px] font-bold"
+              style={{ backgroundColor: accentHex }}
+            >
+              {count} izabrano
+            </span>
+          ) : (
+            <span className="text-[10px] text-stone-500 font-medium uppercase tracking-wider">
+              · opciono
             </span>
           )}
         </div>
         <svg
-          width="14"
-          height="14"
+          width="16"
+          height="16"
           viewBox="0 0 16 16"
           fill="none"
-          className={`text-stone-300 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          style={{ color: accentHex }}
         >
           <path
             d="M4 6l4 4 4-4"
             stroke="currentColor"
-            strokeWidth="1.5"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
         </svg>
       </button>
 
+      {!open && (
+        <div className="px-4 sm:px-5 pb-3 -mt-1.5 text-[12px] text-stone-600 leading-relaxed">
+          Raspored sedenja, audio knjiga utisaka i USB suveniri —{" "}
+          <span
+            className="font-medium"
+            style={{ color: accentHex }}
+          >
+            kliknite za detalje
+          </span>
+          .
+        </div>
+      )}
+
       {open && (
-        <div className="mt-3 space-y-2">
+        <div className="px-4 sm:px-5 pb-4 space-y-2.5">
           {extras
             .filter(
               ({ key }) =>
                 key !== "extra_usb_kaseta" && key !== "extra_usb_bocica",
             )
-            .map(({ key, label, price, originalPrice }) => (
-              <label
-                key={key}
-                className="flex items-center gap-2.5 py-0.5 cursor-pointer group"
-              >
-                <input
-                  type="checkbox"
-                  checked={formData[key]}
-                  onChange={(e) => updateField(key, e.target.checked)}
-                  className="w-3.5 h-3.5 accent-[var(--accent,#AE343F)] cursor-pointer shrink-0 opacity-60"
-                />
-                <span className="text-xs text-stone-400 group-hover:text-stone-500 transition-colors">
-                  {label}
-                </span>
-                <span className="ml-auto flex items-baseline gap-1.5 shrink-0">
-                  {originalPrice != null && (
-                    <span className="text-[10px] text-stone-300 line-through">
-                      {formatPrice(originalPrice)}
+            .map(({ key, label, price, originalPrice }) => {
+              const info = infoKeyFor(key);
+              const isOn = formData[key];
+              return (
+                <label
+                  key={key}
+                  className="flex items-center gap-3 py-1.5 px-2.5 rounded-lg cursor-pointer group bg-white/60 hover:bg-white transition-colors"
+                  style={{
+                    border: `1px solid rgba(${accentRgb}, ${isOn ? 0.25 : 0.1})`,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isOn}
+                    onChange={(e) => updateField(key, e.target.checked)}
+                    className="w-4 h-4 cursor-pointer shrink-0"
+                    style={{ accentColor: accentHex }}
+                  />
+                  <span className="text-sm text-stone-700 font-medium">
+                    {label}
+                  </span>
+                  {info && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Saznajte više o ${label}`}
+                      onClick={(e) => openInfo(e, info)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          openInfo(e, info);
+                        }
+                      }}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide cursor-pointer transition-colors"
+                      style={{
+                        color: accentHex,
+                        backgroundColor: `rgba(${accentRgb}, 0.08)`,
+                        border: `1px solid rgba(${accentRgb}, 0.2)`,
+                      }}
+                    >
+                      <HelpCircle size={10} />
+                      Šta je ovo?
                     </span>
                   )}
-                  <span className="text-[10px] text-stone-300">{price}</span>
-                </span>
-              </label>
-            ))}
+                  <span className="ml-auto flex items-baseline gap-1.5 shrink-0">
+                    {originalPrice != null && (
+                      <span className="text-[11px] text-stone-400 line-through">
+                        {formatPrice(originalPrice)}
+                      </span>
+                    )}
+                    <span
+                      className="text-xs font-semibold"
+                      style={{ color: accentHex }}
+                    >
+                      {price}
+                    </span>
+                  </span>
+                </label>
+              );
+            })}
           {/* USB options — nested under audio, mutually exclusive */}
           <div
-            className={`ml-5 space-y-2 ${!formData.extra_audio ? "opacity-50 pointer-events-none" : ""}`}
+            className={`ml-5 space-y-2 ${!formData.extra_audio ? "opacity-40 pointer-events-none" : ""}`}
           >
             {[
               {
@@ -489,7 +579,7 @@ function ExtrasAccordion({
             ].map(({ key, other, label, price }) => (
               <label
                 key={key}
-                className="flex items-center gap-2.5 py-0.5 cursor-pointer group"
+                className="flex items-center gap-3 py-1 px-2 cursor-pointer group"
               >
                 <input
                   type="checkbox"
@@ -498,14 +588,14 @@ function ExtrasAccordion({
                     updateField(key, e.target.checked);
                     if (e.target.checked) updateField(other, false);
                   }}
-                  className="w-3.5 h-3.5 accent-[var(--accent,#AE343F)] cursor-pointer shrink-0 opacity-60"
+                  className="w-3.5 h-3.5 cursor-pointer shrink-0"
+                  style={{ accentColor: accentHex }}
                 />
+                <span className="text-xs text-stone-600">{label}</span>
                 <span
-                  className={`text-xs transition-colors ${!formData.extra_audio ? "text-stone-300" : "text-stone-400 group-hover:text-stone-500"}`}
+                  className="text-[11px] ml-auto shrink-0 font-medium"
+                  style={{ color: accentHex }}
                 >
-                  {label}
-                </span>
-                <span className="text-[10px] text-stone-300 ml-auto shrink-0">
                   {price}
                 </span>
               </label>
@@ -560,13 +650,31 @@ function ExtrasAccordion({
               </div>
             );
           })()}
-          <p className="text-[10px] text-stone-300 mt-2">
-            <a href="/cene" className="text-[var(--accent,#AE343F)]/60 hover:underline">
-              Pogledajte detaljne cene
+          <p className="text-[11px] text-stone-500 mt-2.5">
+            <a
+              href="/cene"
+              className="hover:underline font-medium"
+              style={{ color: accentHex }}
+            >
+              Pogledajte detaljne cene →
             </a>
           </p>
         </div>
       )}
+
+      <div
+        style={
+          {
+            "--cene-accent": accentHex,
+            "--cene-accent-rgb": accentRgb,
+          } as React.CSSProperties
+        }
+      >
+        <FeatureInfoModal
+          feature={infoOpen}
+          onClose={() => setInfoOpen(null)}
+        />
+      </div>
     </div>
   );
 }

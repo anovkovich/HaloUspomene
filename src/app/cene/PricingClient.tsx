@@ -20,7 +20,9 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
-import FeatureInfoModal, { type FeatureInfoKey } from "./FeatureInfoModal";
+import FeatureInfoModal, {
+  type FeatureInfoKey,
+} from "@/components/ui/FeatureInfoModal";
 import {
   pricing,
   formatPrice,
