@@ -110,6 +110,13 @@ export async function POST(request: NextRequest) {
       premium_city: body.premium_city || undefined,
       premium_car: body.premium_car || undefined,
       couple_description: body.couple_description || undefined,
+      // Fountain theme bundles a 2-photo gallery into the premium price; the
+      // form sets paid_for_images: true whenever the user has queued any files
+      // on the Fountain step. Other premium themes never set this.
+      paid_for_images: body.paid_for_images ?? false,
+      images: [],
+      // Background music is a flat 1000 din add-on across both tiers.
+      paid_for_music: body.paid_for_music ?? false,
       draft: true,
       phone_country: bypassCountry || "RS",
       phone_verified: !bypassTokenId,
@@ -122,6 +129,14 @@ export async function POST(request: NextRequest) {
     if (body.contact_phone?.trim()) {
       (weddingData as WeddingData & { contact_phone?: string }).contact_phone =
         String(body.contact_phone).trim();
+    }
+    // Per-number toggle + label arrays, parallel to the comma-split
+    // contact_phone. Only persisted when the user opted in (typed a label).
+    if (Array.isArray(body.show_numbers)) {
+      (weddingData as WeddingData).show_numbers = body.show_numbers;
+    }
+    if (Array.isArray(body.number_names)) {
+      (weddingData as WeddingData).number_names = body.number_names;
     }
 
     // Save to MongoDB

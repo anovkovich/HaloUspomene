@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { createPortal } from "react-dom";
+import * as Sentry from "@sentry/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -15,6 +17,8 @@ import {
   Plus,
   Trash2,
   Sparkles,
+  Music,
+  Info,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
 import FeatureInfoModal, {
@@ -52,10 +56,9 @@ import {
   RecaptchaDisclosure,
 } from "@/components/forms/RecaptchaProvider";
 
-const PremiumStepAIPhoto = dynamic(
-  () => import("./steps/PremiumStepAIPhoto"),
-  { ssr: false },
-);
+const PremiumStepAIPhoto = dynamic(() => import("./steps/PremiumStepAIPhoto"), {
+  ssr: false,
+});
 const PremiumStepEnvelopeLab = dynamic(
   () => import("./steps/PremiumStepEnvelopeLab"),
   { ssr: false },
@@ -168,6 +171,19 @@ interface FormData {
   extra_audio: boolean;
   extra_usb_kaseta: boolean;
   extra_usb_bocica: boolean;
+  extra_images: boolean;
+  // File handles for user-uploaded gallery photos. Held in memory only;
+  // pushed to Vercel Blob in handleSubmit after the couple is created.
+  pendingImages: File[];
+  extra_music: boolean;
+  // Audio blob fetched from YouTube via /api/pozivnica/music-fetch. Same
+  // pattern as pendingImages — kept in memory, uploaded on final submit.
+  pendingMusic: {
+    blob: Blob;
+    title: string;
+    sourceUrl: string;
+    mime: string;
+  } | null;
   // Step 2
   event_date: string; // combined "YYYY-MM-DDTHH:MM"
   event_date_only: string; // "YYYY-MM-DD" for DatePicker
@@ -176,6 +192,11 @@ interface FormData {
   submit_until_date: string; // "YYYY-MM-DD" for DatePicker
   contact_phone: string;
   contact_phone_secondary: string;
+  /** Optional label shown next to the primary phone on the invitation.
+   *  Empty = don't show the phone on the invitation. */
+  contact_phone_name: string;
+  /** Optional label shown next to the secondary phone on the invitation. */
+  contact_phone_secondary_name: string;
   phone_trust_token: string;
   // Step 3
   theme: ThemeType;
@@ -251,6 +272,10 @@ const defaultFormData: FormData = {
   extra_audio: false,
   extra_usb_kaseta: false,
   extra_usb_bocica: false,
+  extra_images: false,
+  pendingImages: [],
+  extra_music: false,
+  pendingMusic: null,
   event_date: "",
   event_date_only: "",
   event_time: "18:00",
@@ -258,6 +283,8 @@ const defaultFormData: FormData = {
   submit_until_date: "",
   contact_phone: "",
   contact_phone_secondary: "",
+  contact_phone_name: "",
+  contact_phone_secondary_name: "",
   phone_trust_token: "",
   theme: "classic_rose",
   scriptFont: "great-vibes",
@@ -351,6 +378,437 @@ function Toggle({
   );
 }
 
+// Reusable inline file picker for the user-facing gallery feature.
+// Used by ExtrasAccordion (classic, max 3, paid 600 din) and PremiumStepAIPhoto
+// (Fountain theme, max 2, included in price). Files stay in client state until
+// the form's final submit, where they get pushed to Vercel Blob.
+export function ImagePicker({
+  files,
+  onChange,
+  max,
+  accentHex,
+  accentRgb,
+}: {
+  files: File[];
+  onChange: (files: File[]) => void;
+  max: number;
+  accentHex: string;
+  accentRgb: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  // Object URLs are revoked when the file list changes so the browser doesn't
+  // leak memory across re-renders.
+  const [previews, setPreviews] = useState<string[]>([]);
+
+  React.useEffect(() => {
+    const urls = files.map((f) => URL.createObjectURL(f));
+    setPreviews(urls);
+    return () => {
+      urls.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [files]);
+
+  const handlePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null);
+    const picked = Array.from(e.target.files ?? []);
+    e.target.value = ""; // allow re-selecting the same file after removal
+    if (picked.length === 0) return;
+
+    const accepted: File[] = [];
+    for (const f of picked) {
+      if (!f.type.startsWith("image/")) {
+        setError("Samo slike su dozvoljene.");
+        continue;
+      }
+      if (f.size > 5 * 1024 * 1024) {
+        setError("Slika je veća od 5MB.");
+        continue;
+      }
+      accepted.push(f);
+    }
+    const next = [...files, ...accepted].slice(0, max);
+    onChange(next);
+  };
+
+  const removeAt = (i: number) => {
+    setError(null);
+    onChange(files.filter((_, idx) => idx !== i));
+  };
+
+  const canAdd = files.length < max;
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-3 gap-2">
+        {previews.map((src, i) => (
+          <div
+            key={i}
+            className="relative aspect-square rounded-lg overflow-hidden border bg-stone-50"
+            style={{ borderColor: `rgba(${accentRgb}, 0.25)` }}
+          >
+            <img
+              src={src}
+              alt={`Slika ${i + 1}`}
+              className="w-full h-full object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => removeAt(i)}
+              aria-label="Ukloni sliku"
+              className="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/95 shadow flex items-center justify-center hover:bg-white"
+            >
+              <X size={12} className="text-stone-700" />
+            </button>
+          </div>
+        ))}
+        {canAdd && (
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="aspect-square rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors hover:bg-white/60"
+            style={{
+              borderColor: `rgba(${accentRgb}, 0.4)`,
+              color: accentHex,
+            }}
+          >
+            <Plus size={20} />
+            <span className="text-[10px] font-semibold uppercase tracking-wider">
+              Dodaj
+            </span>
+          </button>
+        )}
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handlePick}
+        className="hidden"
+      />
+      <p className="text-[11px] text-stone-500">
+        {files.length}/{max} slika · do 5MB po slici · JPG, PNG, WebP
+      </p>
+      {error && <p className="text-[11px] text-red-500">{error}</p>}
+    </div>
+  );
+}
+
+// Subtle click-to-toggle info tooltip. Hover-only tooltips don't work on
+// touch devices — most of our visitors are on mobile, so we wire it to a
+// real button + click state and let CSS group-hover layer on as a
+// desktop convenience.
+function InfoTooltip({ text, ariaLabel }: { text: string; ariaLabel: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
+        onBlur={() => setTimeout(() => setOpen(false), 120)}
+        aria-label={ariaLabel}
+        className="inline-flex items-center justify-center w-5 h-5 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+      >
+        <HelpCircle size={14} />
+      </button>
+      {open && (
+        <span
+          role="tooltip"
+          className="absolute left-1/2 top-full mt-1.5 -translate-x-1/2 z-20 w-60 rounded-md bg-stone-800 text-white text-[11px] leading-relaxed px-2.5 py-2 shadow-lg pointer-events-none"
+        >
+          {text}
+          <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-stone-800 rotate-45" />
+        </span>
+      )}
+    </span>
+  );
+}
+
+// Tiny optional "label for this phone" input shown directly under each
+// phone field. When the user fills it in, the matching phone shows up on
+// the invitation with this label (e.g. "Mama mlade — +381..."). Empty
+// label = phone stays hidden on the invitation (admin can flip later).
+function PhoneNameInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="mt-2 space-y-1">
+      <label className="block text-[11px] uppercase tracking-wider text-stone-400">
+        Ime za prikaz na pozivnici (opciono)
+      </label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-transparent border-b border-stone-200 focus:border-[var(--accent,#AE343F)] py-1.5 px-1 text-sm text-stone-800 outline-none placeholder:text-stone-300 transition-colors"
+        maxLength={40}
+      />
+      <p className="text-[10px] text-stone-400 italic leading-relaxed">
+        Ako popunite, broj će se prikazati na pozivnici ispod RSVP forme.
+      </p>
+    </div>
+  );
+}
+
+// Pastes a YouTube link, fetches the audio via /api/pozivnica/music-fetch
+// (which streams it back as audio/mp4 with the title in an X-Music-Title
+// Base64 header), and stashes the resulting Blob in form state for the
+// final-step upload. Idempotent: the input is cleared once the audio is
+// ready, and the user can hit "Ukloni" to start over.
+export function MusicPicker({
+  pending,
+  onReady,
+  onClear,
+  accentHex,
+  accentRgb,
+}: {
+  pending: FormData["pendingMusic"];
+  onReady: (m: NonNullable<FormData["pendingMusic"]>) => void;
+  onClear: () => void;
+  accentHex: string;
+  accentRgb: string;
+}) {
+  const [url, setUrl] = useState("");
+  const [state, setState] = useState<"idle" | "fetching" | "error">("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [isRetry, setIsRetry] = useState(false);
+
+  // Re-derive the preview src from the in-memory Blob. Revoked on cleanup so
+  // we don't leak object URLs each time the user re-picks a song.
+  React.useEffect(() => {
+    if (!pending) {
+      setPreviewSrc(null);
+      return;
+    }
+    const u = URL.createObjectURL(pending.blob);
+    setPreviewSrc(u);
+    return () => URL.revokeObjectURL(u);
+  }, [pending]);
+
+  // Single user-facing copy for every failure mode. We deliberately do
+  // not surface raw browser/API error text on this page — users find it
+  // confusing (often English, often technical).
+  const FRIENDLY_ERROR =
+    "Preuzimanje nije uspelo. Pokušajte još jednom ili probajte drugu pesmu.";
+
+  // Carries a retry hint up out of the inner attempt so handleFetch can
+  // decide whether to make a second attempt. 5xx + network = retriable,
+  // 4xx = permanent (video itself is broken/forbidden, or rate limit).
+  class FetchError extends Error {
+    retriable: boolean;
+    constructor(retriable: boolean) {
+      super(FRIENDLY_ERROR);
+      this.retriable = retriable;
+    }
+  }
+
+  const attemptFetch = async (trimmed: string) => {
+    let res: Response;
+    try {
+      res = await fetch("/api/pozivnica/music-fetch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: trimmed }),
+      });
+    } catch {
+      throw new FetchError(true);
+    }
+    if (!res.ok) {
+      // Drain the body so the connection can be reused, but ignore
+      // whatever the server said — we always show our friendly copy.
+      await res.json().catch(() => ({}));
+      throw new FetchError(res.status >= 500);
+    }
+    const titleB64 = res.headers.get("X-Music-Title") || "";
+    let title = "Nepoznata pesma";
+    try {
+      // atob decodes Base64 → binary string; decodeURIComponent + escape
+      // round-trips through UTF-8 so Cyrillic / emoji titles survive.
+      title = decodeURIComponent(escape(atob(titleB64))) || title;
+    } catch {
+      /* keep default */
+    }
+    const mime = res.headers.get("Content-Type") || "audio/mp4";
+    const blob = await res.blob();
+    onReady({ blob, title, sourceUrl: trimmed, mime });
+  };
+
+  const handleFetch = async () => {
+    const trimmed = url.trim();
+    if (!trimmed) {
+      setError("Nalepi YouTube link.");
+      setState("error");
+      return;
+    }
+    setError(null);
+    setIsRetry(false);
+    setState("fetching");
+    try {
+      await attemptFetch(trimmed);
+      setUrl("");
+      setState("idle");
+      setIsRetry(false);
+    } catch (err) {
+      if (err instanceof FetchError && err.retriable) {
+        // Brief pause so the failing yt-dlp / loader.to backend has a
+        // moment to recover (cold-start, transient CDN drop, etc.) —
+        // then one silent retry. The overlay copy switches to
+        // "Ponovni pokušaj..." so the user knows we're still working.
+        setIsRetry(true);
+        await new Promise((r) => setTimeout(r, 1200));
+        try {
+          await attemptFetch(trimmed);
+          setUrl("");
+          setState("idle");
+          setIsRetry(false);
+          return;
+        } catch {
+          setError(FRIENDLY_ERROR);
+          setState("error");
+          setIsRetry(false);
+          return;
+        }
+      }
+      setError(FRIENDLY_ERROR);
+      setState("error");
+      setIsRetry(false);
+    }
+  };
+
+  if (pending && previewSrc) {
+    return (
+      <div className="space-y-2">
+        <div
+          className="flex items-start gap-3 p-3 rounded-lg bg-white/70"
+          style={{ border: `1px solid rgba(${accentRgb}, 0.25)` }}
+        >
+          <Music
+            size={18}
+            style={{ color: accentHex }}
+            className="shrink-0 mt-0.5"
+          />
+          <div className="flex-1 min-w-0">
+            <p
+              className="text-xs font-semibold truncate"
+              style={{ color: accentHex }}
+              title={pending.title}
+            >
+              {pending.title}
+            </p>
+            <audio
+              controls
+              src={previewSrc}
+              className="w-full mt-2 h-9"
+              preload="metadata"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={onClear}
+            aria-label="Ukloni pesmu"
+            className="shrink-0 w-7 h-7 rounded-full bg-white shadow flex items-center justify-center hover:bg-stone-50 mt-0.5"
+          >
+            <X size={14} className="text-stone-600" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const isFetching = state === "fetching";
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          type="url"
+          value={url}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            if (state === "error") setState("idle");
+          }}
+          placeholder="https://www.youtube.com/watch?v=..."
+          disabled={isFetching}
+          className="flex-1 min-w-0 bg-white border rounded-lg px-3 py-2 text-sm outline-none transition-colors disabled:opacity-50"
+          style={{
+            borderColor: `rgba(${accentRgb}, ${state === "error" ? 0.5 : 0.25})`,
+          }}
+        />
+        <button
+          type="button"
+          onClick={handleFetch}
+          disabled={isFetching || !url.trim()}
+          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ backgroundColor: accentHex }}
+        >
+          {isFetching ? (
+            <>
+              <Loader2 size={12} className="animate-spin" />
+              Preuzimamo...
+            </>
+          ) : (
+            "Pripremi"
+          )}
+        </button>
+      </div>
+      {error && state === "error" && (
+        <p className="text-[11px] text-red-500">{error}</p>
+      )}
+      {isFetching &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 backdrop-blur-sm"
+            // role=alertdialog + aria-busy so screen readers announce the wait
+            role="alertdialog"
+            aria-busy="true"
+            aria-live="polite"
+            // pointer-events: auto (default on this div) catches every click
+            // / tap on the page beneath while the fetch is in flight.
+            style={{ cursor: "wait" }}
+          >
+            <div
+              className="flex flex-col items-center gap-4 rounded-2xl bg-white px-7 py-7 shadow-2xl max-w-[320px] mx-4 text-center"
+              style={{ border: `1px solid rgba(${accentRgb}, 0.25)` }}
+            >
+              <Loader2
+                size={36}
+                className="animate-spin"
+                style={{ color: accentHex }}
+              />
+              <div className="space-y-1.5">
+                <p
+                  className="text-sm font-semibold"
+                  style={{ color: accentHex }}
+                >
+                  {isRetry ? "Ponovni pokušaj..." : "Preuzimanje pesme..."}
+                </p>
+                <p className="text-[12px] text-stone-600 leading-relaxed">
+                  {isRetry
+                    ? "Prvi pokušaj nije uspeo — pokušavamo još jednom."
+                    : "Može trajati 20–45 sekundi. Molimo sačekajte."}
+                </p>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+    </div>
+  );
+}
+
 function ExtrasAccordion({
   formData,
   updateField,
@@ -367,9 +825,35 @@ function ExtrasAccordion({
     ? getPremiumAudioPrice()
     : pricing.pozivnica.audio.price;
 
+  const imagesAddonPrice = pricing.addons.find((a) => a.id === "images")!.price;
+  const musicAddonPrice = pricing.addons.find(
+    (a) => a.id === "background_music",
+  )!.price;
+
   // In premium mode, raspored/audio show the premium-bundled price with the
   // original classic price struck through; USBs keep their regular pricing.
+  // extra_images is classic-only — premium Fountain offers a free 2-photo
+  // gallery rendered in the Fountain step, other premium themes have none.
+  // Galerija + Music render first so USBs (nested-rendered after the map)
+  // stay directly under Audio knjiga. Music is available for both tiers;
+  // Galerija stays classic-only.
   const extras = [
+    ...(!isPremium
+      ? [
+          {
+            key: "extra_images" as const,
+            label: "Galerija fotografija",
+            price: `+${formatPrice(imagesAddonPrice)}`,
+            originalPrice: undefined,
+          },
+        ]
+      : []),
+    {
+      key: "extra_music" as const,
+      label: "Muzika u pozadini",
+      price: `+${formatPrice(musicAddonPrice)}`,
+      originalPrice: undefined,
+    },
     {
       key: "extra_raspored" as const,
       label: "Raspored sedenja",
@@ -405,6 +889,7 @@ function ExtrasAccordion({
   const count = extras.filter(({ key }) => formData[key]).length;
   const [open, setOpen] = useState(() => count > 0);
   const [infoOpen, setInfoOpen] = useState<FeatureInfoKey>(null);
+  const [musicTipOpen, setMusicTipOpen] = useState(false);
 
   const accentHex = isPremium ? "#d4af37" : "#AE343F";
   const accentRgb = isPremium ? "212,175,55" : "174,52,63";
@@ -483,10 +968,7 @@ function ExtrasAccordion({
       {!open && (
         <div className="px-4 sm:px-5 pb-3 -mt-1.5 text-[12px] text-stone-600 leading-relaxed">
           Raspored sedenja, audio knjiga utisaka i USB suveniri —{" "}
-          <span
-            className="font-medium"
-            style={{ color: accentHex }}
-          >
+          <span className="font-medium" style={{ color: accentHex }}>
             kliknite za detalje
           </span>
           .
@@ -504,59 +986,113 @@ function ExtrasAccordion({
               const info = infoKeyFor(key);
               const isOn = formData[key];
               return (
-                <label
-                  key={key}
-                  className="flex items-center gap-3 py-1.5 px-2.5 rounded-lg cursor-pointer group bg-white/60 hover:bg-white transition-colors"
-                  style={{
-                    border: `1px solid rgba(${accentRgb}, ${isOn ? 0.25 : 0.1})`,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isOn}
-                    onChange={(e) => updateField(key, e.target.checked)}
-                    className="w-4 h-4 cursor-pointer shrink-0"
-                    style={{ accentColor: accentHex }}
-                  />
-                  <span className="text-sm text-stone-700 font-medium">
-                    {label}
-                  </span>
-                  {info && (
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`Saznajte više o ${label}`}
-                      onClick={(e) => openInfo(e, info)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          openInfo(e, info);
-                        }
-                      }}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide cursor-pointer transition-colors"
-                      style={{
-                        color: accentHex,
-                        backgroundColor: `rgba(${accentRgb}, 0.08)`,
-                        border: `1px solid rgba(${accentRgb}, 0.2)`,
-                      }}
-                    >
-                      <HelpCircle size={10} />
-                      Šta je ovo?
+                <React.Fragment key={key}>
+                  <label
+                    className="flex items-center gap-3 py-1.5 px-2.5 rounded-lg cursor-pointer group bg-white/60 hover:bg-white transition-colors"
+                    style={{
+                      border: `1px solid rgba(${accentRgb}, ${isOn ? 0.25 : 0.1})`,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isOn}
+                      onChange={(e) => updateField(key, e.target.checked)}
+                      className="w-4 h-4 cursor-pointer shrink-0"
+                      style={{ accentColor: accentHex }}
+                    />
+                    <span className="text-sm text-stone-700 font-medium">
+                      {label}
                     </span>
-                  )}
-                  <span className="ml-auto flex items-baseline gap-1.5 shrink-0">
-                    {originalPrice != null && (
-                      <span className="text-[11px] text-stone-400 line-through">
-                        {formatPrice(originalPrice)}
+                    {key === "extra_music" && (
+                      <span className="relative inline-flex">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setMusicTipOpen((v) => !v);
+                          }}
+                          onBlur={() =>
+                            setTimeout(() => setMusicTipOpen(false), 120)
+                          }
+                          aria-label="Više informacija o muzici u pozadini"
+                          className="inline-flex items-center justify-center w-5 h-5 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+                        >
+                          <Info size={13} />
+                        </button>
+                        {musicTipOpen && (
+                          <span
+                            role="tooltip"
+                            className="absolute left-1/2 top-full mt-1.5 -translate-x-1/2 z-20 w-60 rounded-md bg-stone-800 text-white text-[11px] leading-relaxed px-2.5 py-2 shadow-lg pointer-events-none"
+                          >
+                            Maksimalno 6 minuta. Vlasništvo i autorska prava nad
+                            muzikom su vaša odgovornost.
+                            <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-stone-800 rotate-45" />
+                          </span>
+                        )}
                       </span>
                     )}
-                    <span
-                      className="text-xs font-semibold"
-                      style={{ color: accentHex }}
-                    >
-                      {price}
+                    {info && (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Saznajte više o ${label}`}
+                        onClick={(e) => openInfo(e, info)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            openInfo(e, info);
+                          }
+                        }}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide cursor-pointer transition-colors"
+                        style={{
+                          color: accentHex,
+                          backgroundColor: `rgba(${accentRgb}, 0.08)`,
+                          border: `1px solid rgba(${accentRgb}, 0.2)`,
+                        }}
+                      >
+                        <HelpCircle size={10} />
+                        Šta je ovo?
+                      </span>
+                    )}
+                    <span className="ml-auto flex items-baseline gap-1.5 shrink-0">
+                      {originalPrice != null && (
+                        <span className="text-[11px] text-stone-400 line-through">
+                          {formatPrice(originalPrice)}
+                        </span>
+                      )}
+                      <span
+                        className="text-xs font-semibold"
+                        style={{ color: accentHex }}
+                      >
+                        {price}
+                      </span>
                     </span>
-                  </span>
-                </label>
+                  </label>
+                  {key === "extra_images" && isOn && (
+                    <div className="ml-5 mr-1 mt-1 mb-2">
+                      <ImagePicker
+                        files={formData.pendingImages}
+                        onChange={(files) =>
+                          updateField("pendingImages", files)
+                        }
+                        max={3}
+                        accentHex={accentHex}
+                        accentRgb={accentRgb}
+                      />
+                    </div>
+                  )}
+                  {key === "extra_music" && isOn && (
+                    <div className="ml-5 mr-1 mt-1 mb-2">
+                      <MusicPicker
+                        pending={formData.pendingMusic}
+                        onReady={(m) => updateField("pendingMusic", m)}
+                        onClear={() => updateField("pendingMusic", null)}
+                        accentHex={accentHex}
+                        accentRgb={accentRgb}
+                      />
+                    </div>
+                  )}
+                </React.Fragment>
               );
             })}
           {/* USB options — nested under audio, mutually exclusive */}
@@ -612,11 +1148,14 @@ function ExtrasAccordion({
               sum += pricing.addons.find((a) => a.id === "usb_kaseta")!.price;
             if (formData.extra_usb_bocica)
               sum += pricing.addons.find((a) => a.id === "usb_bocica")!.price;
+            // Galerija fotografija — classic-only add-on. Premium Fountain
+            // bundles it free; other premium themes don't offer it.
+            if (!isPremium && formData.extra_images) sum += imagesAddonPrice;
+            // Muzika u pozadini — flat add-on for both tiers.
+            if (formData.extra_music) sum += musicAddonPrice;
             // Classic bundle discount only — Premium prices already encode it.
             const isFullBundle =
-              !isPremium &&
-              formData.extra_raspored &&
-              formData.extra_audio;
+              !isPremium && formData.extra_raspored && formData.extra_audio;
             const discount = isFullBundle
               ? pricing.pozivnica.bundleFullPrice -
                 pricing.pozivnica.bundlePrice
@@ -817,7 +1356,6 @@ function InvitationPreview({
 }
 
 // ─── Step 1 ───────────────────────────────────────────────────────────────────
-
 
 function Step1({
   formData,
@@ -1216,15 +1754,10 @@ function Step2({
         <div className="space-y-1">
           <div className="flex items-center gap-1.5">
             <label className={labelCls + " !mb-0"}>Vaš kontakt telefon</label>
-            <div className="group relative">
-              <HelpCircle size={14} className="text-stone-400 cursor-help" />
-              <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-lg bg-stone-800 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10">
-                Da vas kontaktiramo ukoliko nešto zatreba. Međutim, možete uneti
-                i dva broja razdvojena zarezom i staviti napomenu ako ih želite
-                na PDF pozivnici!
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-800" />
-              </div>
-            </div>
+            <InfoTooltip
+              ariaLabel="Više informacija o kontakt telefonu"
+              text="Koristimo ga da Vas kontaktiramo ukoliko nešto zatreba. Možete dodati još jedan broj i imena koja će se prikazati na pozivnici."
+            />
           </div>
           {bypassInfo ? (
             <BypassPhoneInput
@@ -1246,6 +1779,14 @@ function Step2({
               onUnverified={() => updateField("phone_trust_token", "")}
             />
           )}
+          {formData.contact_phone &&
+            (bypassInfo || formData.phone_trust_token) && (
+              <PhoneNameInput
+                value={formData.contact_phone_name}
+                onChange={(v) => updateField("contact_phone_name", v)}
+                placeholder="Ime čiji je broj ..."
+              />
+            )}
           {bypassInfo || formData.phone_trust_token ? (
             showSecondaryPhone ? (
               <div className="mt-3 space-y-1">
@@ -1285,6 +1826,15 @@ function Step2({
                     }
                   />
                 </div>
+                {formData.contact_phone_secondary && (
+                  <PhoneNameInput
+                    value={formData.contact_phone_secondary_name}
+                    onChange={(v) =>
+                      updateField("contact_phone_secondary_name", v)
+                    }
+                    placeholder="Ime čiji je broj ..."
+                  />
+                )}
               </div>
             ) : (
               <button
@@ -1324,10 +1874,11 @@ function Step3({
   const bgInputRef = React.useRef<HTMLInputElement>(null);
 
   const themes = WEDDING_THEME_KEYS.map(
-    (key) => [key, THEME_CONFIGS[key]] as [
-      ThemeType,
-      (typeof THEME_CONFIGS)[ThemeType],
-    ],
+    (key) =>
+      [key, THEME_CONFIGS[key]] as [
+        ThemeType,
+        (typeof THEME_CONFIGS)[ThemeType],
+      ],
   );
   const fonts = Object.entries(SCRIPT_FONT_CONFIGS) as [
     ScriptFontType,
@@ -1755,7 +2306,9 @@ function Step4({
             <div
               key={`${loc.type}-${idx}`}
               className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
-                active ? "border-[var(--accent,#AE343F)]/30 shadow-sm" : "border-stone-100"
+                active
+                  ? "border-[var(--accent,#AE343F)]/30 shadow-sm"
+                  : "border-stone-100"
               }`}
             >
               {/* Header row */}
@@ -1876,8 +2429,8 @@ function Step4({
           {firstHomeEnabled && homeCount < 2 && (
             <p className="text-xs text-stone-400 mt-3 text-center">
               Imate dva polaska? Kliknite{" "}
-              <Plus size={10} className="inline -mt-0.5" /> pored &ldquo;Polazak od
-              kuće&rdquo;.
+              <Plus size={10} className="inline -mt-0.5" /> pored &ldquo;Polazak
+              od kuće&rdquo;.
             </p>
           )}
 
@@ -1954,15 +2507,16 @@ function Step6({
         {/* Info box */}
         <div>
           <p className="text-[11px] text-stone-400 leading-relaxed text-center mb-0">
-            Slanjem zahteva prihvatate politiku odustanka navedenu u podnožju sajta.
+            Slanjem zahteva prihvatate politiku odustanka navedenu u podnožju
+            sajta.
           </p>
           <div className="bg-[var(--accent,#AE343F)]/5 border border-[var(--accent,#AE343F)]/15 rounded-2xl px-5 py-4 text-sm text-[#8B2833] leading-relaxed">
             <p className="font-semibold mb-1">🎉 Skoro sve je spremno!</p>
             <p>
-              Nakon kreiranja pozivnice, na portalu <strong>Moje Venčanje</strong>{" "}
-              možete pratiti potvrde gostiju, organizovati raspored sedenja,
-              planirati budžet i još mnogo toga. Kredencijale za prijavu ćete
-              dobiti zajedno sa pozivnicom.
+              Nakon kreiranja pozivnice, na portalu{" "}
+              <strong>Moje Venčanje</strong> možete pratiti potvrde gostiju,
+              organizovati raspored sedenja, planirati budžet i još mnogo toga.
+              Kredencijale za prijavu ćete dobiti zajedno sa pozivnicom.
             </p>
           </div>
         </div>
@@ -1991,7 +2545,6 @@ function Step6({
             placeholder="Ovde napišite ukoliko imate posebne zahteve ili napomene..."
           />
         </Field>
-
       </div>
     </div>
   );
@@ -2023,6 +2576,31 @@ export default function QuestionnaireForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Drives the dynamic spinner copy on the submit button so the user knows
+  // *what* we're doing during the multi-stage submit
+  // (create → upload images → upload music).
+  const [submitPhase, setSubmitPhase] = useState<
+    null | "creating" | "uploading-images" | "uploading-music"
+  >(null);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+  }>({ current: 0, total: 0 });
+
+  // Warn the user if they try to close the tab / hit back while the multi-stage
+  // submit is mid-flight. The image upload loop runs *after* the create call
+  // succeeds, and a couple created without its photos still works but is harder
+  // to recover (admin has to upload manually); guarding here makes accidental
+  // close less likely.
+  React.useEffect(() => {
+    if (!isSubmitting) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isSubmitting]);
   // Tracks whether the line_art background-whitening fire-and-forget is still
   // running. Submit is blocked while this is true so users can't ship a raw
   // (white-bg) Pollinations URL into a transparent-bg theme.
@@ -2114,6 +2692,13 @@ export default function QuestionnaireForm({
         updated.extra_usb_bocica = false;
       }
 
+      // Drop the buffered audio Blob when the user un-checks Music. Keeps
+      // the form state honest so the submit flow doesn't try to upload an
+      // orphaned song the user backed out of.
+      if (key === "extra_music" && !value) {
+        updated.pendingMusic = null;
+      }
+
       // Auto-switch font when language changes
       if (key === "useCyrillic") {
         const toCyrillic = value as boolean;
@@ -2130,7 +2715,6 @@ export default function QuestionnaireForm({
 
   const [stepError, setStepError] = useState("");
 
-
   const handlePremiumToggle = () => {
     if (!formData.premium) {
       updateField("premium", true);
@@ -2139,7 +2723,10 @@ export default function QuestionnaireForm({
       updateField("premium", false);
     }
     setTimeout(() => {
-      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 50);
   };
 
@@ -2174,9 +2761,7 @@ export default function QuestionnaireForm({
         formData.premium_theme === "line_art" &&
         !formData.ai_couple_image_url
       ) {
-        setStepError(
-          "Generišite ilustraciju para pre nego što nastavite.",
-        );
+        setStepError("Generišite ilustraciju para pre nego što nastavite.");
         return;
       }
       // watercolor (Luxury Romance) renders a city background + a vintage car —
@@ -2205,7 +2790,11 @@ export default function QuestionnaireForm({
         fetch("/api/premium-pozivnica/whiten-bg", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageUrl: sourceUrl, bride: formData.bride, groom: formData.groom }),
+          body: JSON.stringify({
+            imageUrl: sourceUrl,
+            bride: formData.bride,
+            groom: formData.groom,
+          }),
         })
           .then((r) => r.json())
           .then((d) => {
@@ -2260,7 +2849,10 @@ export default function QuestionnaireForm({
     setDirection(1);
     setStep((s) => Math.min(s + 1, totalSteps));
     setTimeout(() => {
-      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 50);
   };
   const goPrev = () => {
@@ -2268,7 +2860,10 @@ export default function QuestionnaireForm({
     setDirection(-1);
     setStep((s) => Math.max(s - 1, 1));
     setTimeout(() => {
-      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      formTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 50);
   };
 
@@ -2330,7 +2925,6 @@ export default function QuestionnaireForm({
       return { ...prev, locations };
     });
 
-
   const handleSubmit = async () => {
     // line_art needs an AI illustration at all
     if (
@@ -2338,9 +2932,7 @@ export default function QuestionnaireForm({
       formData.premium_theme === "line_art" &&
       !formData.ai_couple_image_url
     ) {
-      setError(
-        "Generišite ilustraciju para pre nego što pošaljete zahtev.",
-      );
+      setError("Generišite ilustraciju para pre nego što pošaljete zahtev.");
       return;
     }
     // If background whitening is in flight, wait it out
@@ -2356,6 +2948,7 @@ export default function QuestionnaireForm({
     }
     setError(null);
     setIsSubmitting(true);
+    setSubmitPhase("creating");
 
     // Hard gate: for line_art, ai_couple_image_url MUST point at the
     // whitened blob path before we persist. The fire-and-forget whiten
@@ -2408,14 +3001,122 @@ export default function QuestionnaireForm({
     }
 
     const phonePrefix = bypassInfo?.callingCode || "+381";
-    const combinedPhone = [
-      formData.contact_phone ? `${phonePrefix}${formData.contact_phone}` : "",
-      formData.contact_phone_secondary
-        ? `${phonePrefix}${formData.contact_phone_secondary}`
-        : "",
-    ]
-      .filter(Boolean)
-      .join(",");
+    // Build the phone list + parallel name/show arrays. A blank name means
+    // the user didn't opt in to displaying that phone on the invitation,
+    // so show_numbers[i] stays false (admin can flip it later). Arrays
+    // stay aligned with the comma-split contact_phone string so the
+    // pozivnica page can zip them by index.
+    const phoneEntries: Array<{
+      phone: string;
+      name: string;
+    }> = [];
+    if (formData.contact_phone) {
+      phoneEntries.push({
+        phone: `${phonePrefix}${formData.contact_phone}`,
+        name: formData.contact_phone_name.trim(),
+      });
+    }
+    if (formData.contact_phone_secondary) {
+      phoneEntries.push({
+        phone: `${phonePrefix}${formData.contact_phone_secondary}`,
+        name: formData.contact_phone_secondary_name.trim(),
+      });
+    }
+    const combinedPhone = phoneEntries.map((e) => e.phone).join(",");
+    const anyName = phoneEntries.some((e) => e.name !== "");
+    // Only send the arrays when at least one name is present — otherwise
+    // we'd be overwriting the couple's stored defaults with empty arrays.
+    const phoneShowNumbers = anyName
+      ? phoneEntries.map((e) => e.name !== "")
+      : undefined;
+    const phoneNumberNames = anyName
+      ? phoneEntries.map((e) => e.name)
+      : undefined;
+
+    // Photo gallery gating + per-tier cap. Classic = 3 (paid add-on, gated by
+    // the extras checkbox); Premium Fountain = 2 (bundled, gated only by the
+    // user having queued at least one file); other premium themes = none.
+    const isFountainGallery =
+      formData.premium &&
+      formData.premium_theme === "fountain" &&
+      formData.pendingImages.length > 0;
+    const isClassicGallery = !formData.premium && formData.extra_images;
+    const imagesCap = formData.premium ? 2 : 3;
+    const imagesToUpload =
+      isClassicGallery || isFountainGallery
+        ? formData.pendingImages.slice(0, imagesCap)
+        : [];
+
+    // Sequential upload helper. Runs *after* couple creation succeeds. Each
+    // failure logs to Sentry and continues — couple link is fine without the
+    // photo, admin can upload missing ones via the admin panel.
+    const uploadPendingImages = async (slug: string) => {
+      if (imagesToUpload.length === 0) return;
+      setSubmitPhase("uploading-images");
+      setUploadProgress({ current: 0, total: imagesToUpload.length });
+      for (let i = 0; i < imagesToUpload.length; i++) {
+        setUploadProgress({ current: i, total: imagesToUpload.length });
+        const fd = new FormData();
+        fd.append("image", imagesToUpload[i]);
+        try {
+          const r = await fetch(
+            `/api/pozivnica/${encodeURIComponent(slug)}/images-upload`,
+            { method: "POST", body: fd },
+          );
+          if (!r.ok) {
+            const j = await r.json().catch(() => ({}));
+            throw new Error(j.error || `Upload failed (${r.status})`);
+          }
+        } catch (err) {
+          Sentry.captureException(err, {
+            tags: { feature: "images-upload" },
+            extra: { slug, idx: i, total: imagesToUpload.length },
+          });
+        }
+      }
+      setUploadProgress({
+        current: imagesToUpload.length,
+        total: imagesToUpload.length,
+      });
+    };
+
+    // Background music upload. Same best-effort posture as images: on failure
+    // log to Sentry, don't block the success screen. Admin can re-upload via
+    // the admin panel using either a file or another YouTube link.
+    const paidForMusic = formData.extra_music && formData.pendingMusic !== null;
+    const uploadPendingMusic = async (slug: string) => {
+      if (!paidForMusic || !formData.pendingMusic) return;
+      setSubmitPhase("uploading-music");
+      const fd = new FormData();
+      // Filename here is purely informational — the server derives the
+      // pathname from the slug and MIME type.
+      const ext = formData.pendingMusic.mime.includes("mp4")
+        ? "m4a"
+        : formData.pendingMusic.mime.includes("mpeg")
+          ? "mp3"
+          : "audio";
+      const file = new File([formData.pendingMusic.blob], `song.${ext}`, {
+        type: formData.pendingMusic.mime,
+      });
+      fd.append("audio", file);
+      fd.append("title", formData.pendingMusic.title);
+      fd.append("source_url", formData.pendingMusic.sourceUrl);
+      try {
+        const r = await fetch(
+          `/api/pozivnica/${encodeURIComponent(slug)}/music-upload`,
+          { method: "POST", body: fd },
+        );
+        if (!r.ok) {
+          const j = await r.json().catch(() => ({}));
+          throw new Error(j.error || `Music upload failed (${r.status})`);
+        }
+      } catch (err) {
+        Sentry.captureException(err, {
+          tags: { feature: "music-upload" },
+          extra: { slug },
+        });
+      }
+    };
 
     try {
       if (formData.premium) {
@@ -2448,12 +3149,15 @@ export default function QuestionnaireForm({
           custom_background_color: formData.custom_background_color,
           contact_phone: combinedPhone,
           phone_trust_token: formData.phone_trust_token,
+          ...(phoneShowNumbers ? { show_numbers: phoneShowNumbers } : {}),
+          ...(phoneNumberNames ? { number_names: phoneNumberNames } : {}),
+          paid_for_images: isFountainGallery,
+          paid_for_music: formData.extra_music,
           ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
           recaptcha_token: recaptchaToken,
           locations: formData.locations
             .filter(
-              (l) =>
-                l.enabled && (l.type === "hall" || l.type === "church"),
+              (l) => l.enabled && (l.type === "hall" || l.type === "church"),
             )
             .map((l) => ({
               name: l.name,
@@ -2494,9 +3198,10 @@ export default function QuestionnaireForm({
         const data = await res.json();
         if (!res.ok)
           throw new Error(data.error || "Greška pri kreiranju pozivnice");
-        setIsSubmitted(true);
 
-        // Send admin notification from client (Web3Forms blocks server-side requests)
+        // Send admin notification from client (Web3Forms blocks server-side requests).
+        // Fire-and-forget *before* the upload loop so admin gets notified even
+        // if a photo upload hangs at the very end.
         if (WEB3FORMS_ACCESS_KEY) {
           const subject = isUpgrade
             ? `🌟 NADOGRADNJA u PREMIUM - ${formData.bride} & ${formData.groom}`
@@ -2514,9 +3219,21 @@ export default function QuestionnaireForm({
                 ? "Upgrade postojećeg draft-a (planiranje-vencanja)"
                 : "Novo kreiranje",
               "AI Tema": formData.premium_theme || "(nije izabrana)",
+              "Galerija (Fountain)": isFountainGallery
+                ? `✅ ${imagesToUpload.length} slika`
+                : "❌ Ne",
+              "Muzika u pozadini": paidForMusic
+                ? `✅ "${formData.pendingMusic?.title || ""}"`
+                : formData.extra_music
+                  ? "✅ (bez pesme — admin da uploaduje)"
+                  : "❌ Ne",
               "Preview URL": `https://halouspomene.rs/premium-pozivnica/${data.slug}`,
               "Admin link": `https://halouspomene.rs/admin/${data.slug}`,
-              "JSON podaci": JSON.stringify(premiumPayload, (k, v) => k === "recaptcha_token" ? undefined : v, 2),
+              "JSON podaci": JSON.stringify(
+                premiumPayload,
+                (k, v) => (k === "recaptcha_token" ? undefined : v),
+                2,
+              ),
             }),
           }).catch(() => {});
         }
@@ -2539,16 +3256,28 @@ export default function QuestionnaireForm({
           localStorage.removeItem(cacheKey);
         } catch {}
 
+        // Push Fountain gallery files to Vercel Blob. User waits on the
+        // spinner through this phase.
+        await uploadPendingImages(data.slug);
+        // Then push background music (if any). Single-file, similar pattern.
+        await uploadPendingMusic(data.slug);
+
+        setIsSubmitted(true);
         return;
       }
 
       // Classic flow: save to MongoDB, notify admin via Web3Forms
       const typeToIcon: Record<string, string> = {
-        home: "HouseHeart", church: "Church", ceremony: "Heart", hall: "Utensils",
+        home: "HouseHeart",
+        church: "Church",
+        ceremony: "Heart",
+        hall: "Utensils",
       };
       const typeToWhat: Record<string, string> = {
-        home: "Polazak od kuće", church: "Crkveno venčanje",
-        ceremony: "Građansko venčanje", hall: "Skup u svečanoj sali",
+        home: "Polazak od kuće",
+        church: "Crkveno venčanje",
+        ceremony: "Građansko venčanje",
+        hall: "Skup u svečanoj sali",
       };
 
       const classicUrl = isUpgrade
@@ -2572,16 +3301,22 @@ export default function QuestionnaireForm({
         paid_for_audio_USB: formData.extra_usb_kaseta
           ? "kaseta"
           : formData.extra_usb_bocica
-          ? "bocica"
-          : "",
+            ? "bocica"
+            : "",
+        paid_for_images: isClassicGallery,
+        paid_for_music: formData.extra_music,
         custom_primary_color: formData.custom_primary_color || undefined,
         custom_background_color: formData.custom_background_color || undefined,
         contact_phone: combinedPhone,
         phone_trust_token: formData.phone_trust_token,
+        ...(phoneShowNumbers ? { show_numbers: phoneShowNumbers } : {}),
+        ...(phoneNumberNames ? { number_names: phoneNumberNames } : {}),
         ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
         recaptcha_token: recaptchaToken,
         locations: formData.locations
-          .filter((l) => l.enabled && (l.type === "hall" || l.type === "church"))
+          .filter(
+            (l) => l.enabled && (l.type === "hall" || l.type === "church"),
+          )
           .map((l) => ({ name: l.name, address: l.address, type: l.type })),
         timeline: [...formData.locations]
           .filter((l) => l.enabled)
@@ -2601,11 +3336,11 @@ export default function QuestionnaireForm({
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Greška pri kreiranju pozivnice");
+      if (!res.ok)
+        throw new Error(data.error || "Greška pri kreiranju pozivnice");
 
-      setIsSubmitted(true);
-
-      // Notify admin (fire-and-forget from client — Web3Forms blocks server requests)
+      // Notify admin (fire-and-forget from client — Web3Forms blocks server requests).
+      // Fires before the upload loop so admin gets notified even if an upload hangs.
       if (WEB3FORMS_ACCESS_KEY) {
         const subject = isUpgrade
           ? `📬 NADOGRADNJA Pozivnice - ${formData.full_display}`
@@ -2628,14 +3363,33 @@ export default function QuestionnaireForm({
             "USB suvenir": formData.extra_usb_kaseta
               ? "USB retro kaseta"
               : formData.extra_usb_bocica
-              ? "USB u bočici"
+                ? "USB u bočici"
+                : "❌ Ne",
+            "Galerija fotografija": isClassicGallery
+              ? `✅ DA (${imagesToUpload.length} slika)`
               : "❌ Ne",
-            "Napomena": formData.wishes || "(nema)",
+            "Muzika u pozadini": paidForMusic
+              ? `✅ "${formData.pendingMusic?.title || ""}"`
+              : formData.extra_music
+                ? "✅ (bez pesme — admin da uploaduje)"
+                : "❌ Ne",
+            Napomena: formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/${data.slug}`,
-            "JSON podaci": JSON.stringify(classicApiPayload, (k, v) => k === "recaptcha_token" ? undefined : v, 2),
+            "JSON podaci": JSON.stringify(
+              classicApiPayload,
+              (k, v) => (k === "recaptcha_token" ? undefined : v),
+              2,
+            ),
           }),
         }).catch(() => {});
       }
+
+      // Push gallery files to Vercel Blob. User waits on the spinner.
+      await uploadPendingImages(data.slug);
+      // Then push background music (if any).
+      await uploadPendingMusic(data.slug);
+
+      setIsSubmitted(true);
     } catch (err) {
       setError(
         err instanceof Error
@@ -2644,6 +3398,7 @@ export default function QuestionnaireForm({
       );
     } finally {
       setIsSubmitting(false);
+      setSubmitPhase(null);
     }
   };
 
@@ -2652,10 +3407,15 @@ export default function QuestionnaireForm({
     const successAccent = formData.premium ? "#d4af37" : "#AE343F";
     const successTextMuted = formData.premium ? "#8B7355" : "#8B2833";
     return (
-      <div className={`p-12 text-center max-w-2xl mx-auto ${getThemeClasses(formData.premium).card}`}>
+      <div
+        className={`p-12 text-center max-w-2xl mx-auto ${getThemeClasses(formData.premium).card}`}
+      >
         <div
           className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg"
-          style={{ backgroundColor: successAccent, boxShadow: `0 10px 25px ${successAccent}40` }}
+          style={{
+            backgroundColor: successAccent,
+            boxShadow: `0 10px 25px ${successAccent}40`,
+          }}
         >
           {formData.premium ? (
             <Sparkles size={40} className="text-white" />
@@ -2717,11 +3477,17 @@ export default function QuestionnaireForm({
             aiCoupleImageUrl={formData.ai_couple_image_url}
             bride={formData.bride}
             groom={formData.groom}
+            pendingImages={formData.pendingImages}
             onThemeChange={(theme) => updateField("premium_theme", theme)}
             onCityChange={(city) => updateField("premium_city", city)}
             onCarChange={(car) => updateField("premium_car", car)}
-            onDescriptionChange={(desc) => updateField("couple_description", desc)}
+            onDescriptionChange={(desc) =>
+              updateField("couple_description", desc)
+            }
             onImageGenerated={(url) => updateField("ai_couple_image_url", url)}
+            onPendingImagesChange={(files) =>
+              updateField("pendingImages", files)
+            }
           />
         );
       case "envelope_lab":
@@ -2770,7 +3536,12 @@ export default function QuestionnaireForm({
     <div
       ref={formTopRef}
       className="max-w-2xl mx-auto scroll-mt-4"
-      style={{ "--accent": accent, "--accent-dark": accentDark } as React.CSSProperties}
+      style={
+        {
+          "--accent": accent,
+          "--accent-dark": accentDark,
+        } as React.CSSProperties
+      }
     >
       {/* Progress indicator */}
       <div className="mb-8">
@@ -2841,7 +3612,9 @@ export default function QuestionnaireForm({
                 title="Tip pozivnice je zaključan za nadogradnju"
               >
                 <Sparkles size={14} />
-                {formData.premium ? "Nadogradnja u Premium" : "Nadogradnja u Klasik"}
+                {formData.premium
+                  ? "Nadogradnja u Premium"
+                  : "Nadogradnja u Klasik"}
               </div>
             ) : (
               <button
@@ -2853,7 +3626,11 @@ export default function QuestionnaireForm({
                     : "border-[#d4af37]/40 text-[#d4af37] hover:border-[#d4af37] hover:bg-[#d4af37]/5 animate-[premiumGlow_2s_ease-in-out_infinite]"
                 }`}
               >
-                <Sparkles size={14} className={formData.premium ? "" : "animate-spin"} style={formData.premium ? {} : { animationDuration: "3s" }} />
+                <Sparkles
+                  size={14}
+                  className={formData.premium ? "" : "animate-spin"}
+                  style={formData.premium ? {} : { animationDuration: "3s" }}
+                />
                 Premium
               </button>
             )
@@ -2901,7 +3678,16 @@ export default function QuestionnaireForm({
                   {isSubmitting ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
-                      Slanje...
+                      {submitPhase === "uploading-images"
+                        ? `Otpremamo slike (${Math.min(
+                            uploadProgress.current + 1,
+                            uploadProgress.total,
+                          )}/${uploadProgress.total})...`
+                        : submitPhase === "uploading-music"
+                          ? "Otpremamo muziku..."
+                          : submitPhase === "creating"
+                            ? "Kreiramo pozivnicu..."
+                            : "Slanje..."}
                     </>
                   ) : waitingForAiImage ? (
                     <>
@@ -2920,14 +3706,25 @@ export default function QuestionnaireForm({
           )}
         </div>
         {stepError && (
-          <p className={`text-xs text-center px-4 pb-4 sm:px-8 sm:pb-6 ${tc.errorText}`}>{stepError}</p>
+          <p
+            className={`text-xs text-center px-4 pb-4 sm:px-8 sm:pb-6 ${tc.errorText}`}
+          >
+            {stepError}
+          </p>
+        )}
+        {isSubmitting && (
+          <p className="text-xs text-center px-4 pb-4 sm:px-8 sm:pb-6 text-stone-500">
+            Molimo ne zatvarajte stranicu — slanje je u toku.
+          </p>
         )}
         {step === totalSteps &&
+          !isSubmitting &&
           formData.premium &&
           formData.premium_theme === "line_art" &&
           (!formData.ai_couple_image_url || isWhitening) && (
             <p className="text-xs text-center px-4 pb-4 sm:px-8 sm:pb-6 text-[#8B7355]">
-              Sačekajte još malo dok se slika u pozadini obradi i pripremi za pozivnicu.
+              Sačekajte još malo dok se slika u pozadini obradi i pripremi za
+              pozivnicu.
             </p>
           )}
       </div>

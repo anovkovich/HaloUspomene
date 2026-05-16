@@ -154,6 +154,9 @@ export async function POST(request: NextRequest) {
       paid_for_audio: body.paid_for_audio ?? false,
       paid_for_audio_USB: body.paid_for_audio_USB || "",
       paid_for_pdf: false,
+      paid_for_images: body.paid_for_images ?? false,
+      images: [],
+      paid_for_music: body.paid_for_music ?? false,
       ...(body.custom_primary_color
         ? { custom_primary_color: body.custom_primary_color }
         : {}),
@@ -169,6 +172,11 @@ export async function POST(request: NextRequest) {
       phone_country: bypassCountry || "RS",
       phone_verified: !bypassTokenId,
       ...(bypassTokenId ? { bypass_token_id: bypassTokenId } : {}),
+      // Per-number toggle + label, parallel to the comma-split contact_phone.
+      // Only persisted when the user opted in (they typed a label) — admin
+      // can always flip later via the panel.
+      ...(Array.isArray(body.show_numbers) ? { show_numbers: body.show_numbers } : {}),
+      ...(Array.isArray(body.number_names) ? { number_names: body.number_names } : {}),
     };
 
     await upsertCouple(slug, weddingDataWithContact);
