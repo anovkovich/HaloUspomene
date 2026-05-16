@@ -13,7 +13,7 @@ export interface SeatAssignment {
 export interface TableData {
   id: string;
   type: TableType;
-  /** rectangular/single-sided: 4–20 (step 2) | circle: 8–12 (step 1) | decoration: 0 */
+  /** rectangular/single-sided: 4–20 (step 2) | circle: 8–14 (step 1) | decoration: 0 */
   seats: number;
   x: number;
   y: number;

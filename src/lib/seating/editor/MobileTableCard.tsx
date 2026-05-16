@@ -87,7 +87,7 @@ export default function MobileTableCard({
   const changeSeats = (delta: 1 | -1) => {
     let next: number;
     if (table.type === "circle") {
-      next = Math.max(8, Math.min(12, table.seats + delta));
+      next = Math.max(8, Math.min(14, table.seats + delta));
     } else if (table.type === "single-sided") {
       next = Math.max(2, Math.min(12, table.seats + delta));
     } else {
