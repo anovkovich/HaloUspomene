@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 import dynamic from "next/dynamic";
+import BackgroundMusicPlayer from "@/components/BackgroundMusicPlayer";
 
 const PremiumEnvelopeLoader = dynamic(
   () => import("./components/PremiumEnvelopeLoader"),
@@ -117,6 +118,7 @@ export default function PremiumInvitationClient({
     eventDate: formattedDate,
     envelopeItems: data.envelope_items,
     theme: data.premium_theme,
+    requireTap: !!(data.paid_for_music && data.music_url),
   };
 
   // Shared props for theme components
@@ -179,6 +181,13 @@ export default function PremiumInvitationClient({
         ) : (
           <PremiumEnvelopeLoader {...envelopeProps} />
         )
+      )}
+
+      {/* Background music — gold accent on premium. Hidden behind the envelope
+          (the loader has its own much higher z-index) so it doesn't peek out
+          before the reveal. */}
+      {!isLoading && data.paid_for_music && data.music_url && (
+        <BackgroundMusicPlayer src={data.music_url} accentHex="#d4af37" />
       )}
     </>
   );

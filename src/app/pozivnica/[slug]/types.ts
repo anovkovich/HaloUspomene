@@ -105,6 +105,11 @@ export interface WeddingData {
   paid_for_images?: boolean; // Unlocks photo gallery add-on
   images?: Array<{ url: string; pathname: string }>; // Up to 3 uploaded photos
   image_layout?: "line" | "triangle"; // Gallery layout: "line" (default) or "triangle"
+  paid_for_music?: boolean; // Unlocks background music add-on (1000 din)
+  music_url?: string; // Vercel Blob URL of the audio file (.m4a/.mp3)
+  music_pathname?: string; // Blob pathname — required for cleanup on delete
+  music_title?: string; // YouTube title at fetch time, for admin reference
+  music_source_url?: string; // Original YouTube link, for admin reference
   custom_primary_color?: string; // Custom primary color in hex (e.g. "#A23B8C"), overrides theme
   custom_background_color?: string; // Custom background color in hex, overrides theme background
   stamp_color?: string; // Custom wax seal color in hex (e.g. "#8B2252"), overrides theme waxSeal

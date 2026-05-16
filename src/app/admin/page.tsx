@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
 import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
@@ -12,6 +12,7 @@ import SeatingAdminTab from "./SeatingAdminTab";
 import PhoneRentalModal from "./PhoneRentalModal";
 import AdminCalendar from "./AdminCalendar";
 import BypassLinkModal from "./BypassLinkModal";
+import ShareLinkButton from "./ShareLinkButton";
 import DatePicker from "@/components/ui/DatePicker";
 
 type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja";
@@ -42,6 +43,7 @@ interface Couple {
   paid_for_raspored?: boolean;
   paid_for_audio?: boolean;
   paid_for_images?: boolean;
+  paid_for_music?: boolean;
   paid_for_audio_USB?: "" | "kaseta" | "bocica";
   premium?: boolean;
   premium_paid?: boolean;
@@ -65,6 +67,7 @@ export default function AdminPage() {
   const tabInitializedRef = useRef(false);
   const [couples, setCouples] = useState<Couple[]>([]);
   const [stats, setStats] = useState<Record<string, CoupleStats>>({});
+  const [shareStats, setShareStats] = useState<Record<string, { visit_count: number; last_visited_at?: string }>>({});
   const [loading, setLoading] = useState(true);
   const [needsLogin, setNeedsLogin] = useState(false);
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
@@ -158,6 +161,13 @@ export default function AdminPage() {
           fetch("/api/admin/custom-receipts")
             .then((r) => r.json())
             .then((d) => { if (Array.isArray(d)) setCustomReceipts(d); })
+            .catch(() => {});
+          // Load share-link visit stats
+          fetch("/api/admin/share-links?kind=couple")
+            .then((r) => r.json())
+            .then((m) => {
+              if (m && typeof m === "object") setShareStats(m);
+            })
             .catch(() => {});
         }
         setLoading(false);
@@ -256,6 +266,7 @@ export default function AdminPage() {
       pd: extras?.dobrodoslica ? 1 : 0,
       cc: (c as any).custom_primary_color || (c as any).custom_background_color ? 1 : 0,
       ig: (c as any).paid_for_images ? 1 : 0,
+      mu: c.paid_for_music ? 1 : 0,
       p: c.premium ? 1 : 0,
       d: c.custom_discount ?? 0,
       ba: bankAccountIdx,
@@ -342,9 +353,14 @@ export default function AdminPage() {
   }
 
   function daysUntil(dateStr: string) {
-    const diff = Math.ceil(
-      (new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    );
+    // Compare local calendar days (ignore time-of-day) so an event at 22:00
+    // doesn't show "za 1 dan" when it's already today. Math.round absorbs
+    // sub-millisecond drift from DST transitions.
+    const target = new Date(dateStr);
+    target.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diff = Math.round((target.getTime() - today.getTime()) / 86_400_000);
     if (diff > 0) return `za ${diff} dana`;
     if (diff === 0) return "danas!";
     return `pre ${Math.abs(diff)} dana`;
@@ -608,20 +624,19 @@ export default function AdminPage() {
                         month: "short",
                         year: "numeric",
                       })}</> : null}
+                      {shareStats[c.slug]?.visit_count ? (
+                        <span className="ml-2 inline-flex items-center gap-1 text-green-400/70" title="Klijent je otvorio share link">
+                          <Eye size={10} /> {shareStats[c.slug].visit_count}×
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(`https://halouspomene.rs/${c.premium ? 'premium-pozivnica' : 'pozivnica'}/${c.slug}`);
-                        setCopiedSlug(c.slug);
-                        setTimeout(() => setCopiedSlug(null), 2000);
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white cursor-pointer"
-                      title="Kopiraj link pozivnice"
-                    >
-                      {copiedSlug === c.slug ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-                    </button>
+                    <ShareLinkButton
+                      productKind="couple"
+                      slug={c.slug}
+                      directUrl={`https://halouspomene.rs/${c.premium ? 'premium-pozivnica' : 'pozivnica'}/${c.slug}/`}
+                    />
                     <button
                       onClick={() => router.push(`/admin/${c.slug}`)}
                       className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white"

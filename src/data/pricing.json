@@ -60,6 +60,12 @@
       "label": "Galerija fotografija",
       "price": 600,
       "note": "Do 3 fotografije u polaroid stilu na vašoj pozivnici."
+    },
+    {
+      "id": "background_music",
+      "label": "Muzika u pozadini",
+      "price": 1000,
+      "note": "Vaša pesma kao muzika u pozadini pozivnice (do 6 min)."
     }
   ],
   "premium": {

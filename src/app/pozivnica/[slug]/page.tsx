@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import InvitationClient from "./InvitationClient";
+import BackgroundMusicPlayer from "@/components/BackgroundMusicPlayer";
 
 // Allow slugs not in generateStaticParams (new couples added via admin)
 export const dynamicParams = true;
@@ -54,5 +55,12 @@ export default async function InvitationPage({ params }: PageProps) {
   if (weddingData.premium) notFound();
   if (weddingData.draft && process.env.NODE_ENV === "production") notFound();
 
-  return <InvitationClient data={weddingData} slug={slug} />;
+  return (
+    <>
+      <InvitationClient data={weddingData} slug={slug} />
+      {weddingData.paid_for_music && weddingData.music_url && (
+        <BackgroundMusicPlayer src={weddingData.music_url} />
+      )}
+    </>
+  );
 }

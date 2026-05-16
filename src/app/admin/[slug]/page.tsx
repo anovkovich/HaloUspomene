@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, Trash2, MapPin, ChevronDown, Phone } from "lucide-react";
+import { ArrowLeft, Save, Trash2, MapPin, ChevronDown, Phone, Music } from "lucide-react";
 import Link from "next/link";
 import DeleteModal from "../DeleteModal";
 import PlannerStatsSection from "@/app/pozivnica/[slug]/PlannerStatsSection";
@@ -26,6 +26,15 @@ export default function EditCouplePage() {
   const [contactPhone, setContactPhone] = useState("");
   const [showNumbers, setShowNumbers] = useState<boolean[]>([]);
   const [numberNames, setNumberNames] = useState<string[]>([]);
+  const [paidForMusic, setPaidForMusic] = useState(false);
+  const [musicUrl, setMusicUrl] = useState<string | undefined>(undefined);
+  const [musicTitle, setMusicTitle] = useState<string | undefined>(undefined);
+  const [musicSourceUrl, setMusicSourceUrl] = useState<string | undefined>(
+    undefined,
+  );
+  const [musicInputUrl, setMusicInputUrl] = useState("");
+  const [musicLoading, setMusicLoading] = useState(false);
+  const [musicError, setMusicError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/couples")
@@ -43,6 +52,10 @@ export default function EditCouplePage() {
           setContactPhone(data.contact_phone ?? "");
           setShowNumbers(Array.isArray(data.show_numbers) ? data.show_numbers : []);
           setNumberNames(Array.isArray(data.number_names) ? data.number_names : []);
+          setPaidForMusic(data.paid_for_music ?? false);
+          setMusicUrl(data.music_url);
+          setMusicTitle(data.music_title);
+          setMusicSourceUrl(data.music_source_url);
         } else {
           toast.error("Pozivnica nije pronađena");
         }
@@ -204,6 +217,107 @@ export default function EditCouplePage() {
     }
     // Reset file input
     e.target.value = "";
+  }
+
+  async function handleMusicFromYouTube() {
+    const url = musicInputUrl.trim();
+    if (!url) {
+      setMusicError("Nalepi YouTube link.");
+      return;
+    }
+    setMusicError(null);
+    setMusicLoading(true);
+    try {
+      const res = await fetch(`/api/admin/couples/${slug}/music`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          detail?: string;
+        };
+        const main = j.error || `Greška (${res.status})`;
+        throw new Error(j.detail ? `${main} — ${j.detail}` : main);
+      }
+      const data = await res.json();
+      setMusicUrl(data.url);
+      setMusicTitle(data.title || undefined);
+      setMusicSourceUrl(url);
+      setMusicInputUrl("");
+      syncJsonFields({
+        music_url: data.url,
+        music_pathname: data.pathname,
+        music_title: data.title || undefined,
+        music_source_url: url,
+      });
+      toast.success("Muzika dodata");
+    } catch (err) {
+      setMusicError(err instanceof Error ? err.message : "Greška");
+    } finally {
+      setMusicLoading(false);
+    }
+  }
+
+  async function handleMusicFileUpload(
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setMusicError(null);
+    setMusicLoading(true);
+    const form = new FormData();
+    form.append("audio", file);
+    try {
+      const res = await fetch(`/api/admin/couples/${slug}/music`, {
+        method: "POST",
+        body: form,
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || `Greška (${res.status})`);
+      }
+      const data = await res.json();
+      setMusicUrl(data.url);
+      setMusicTitle(file.name);
+      setMusicSourceUrl(undefined);
+      syncJsonFields({
+        music_url: data.url,
+        music_pathname: data.pathname,
+        music_title: file.name,
+        music_source_url: undefined,
+      });
+      toast.success("Muzika uplodovana");
+    } catch (err) {
+      setMusicError(err instanceof Error ? err.message : "Greška");
+    } finally {
+      setMusicLoading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleMusicDelete() {
+    if (!confirm("Obriši muziku?")) return;
+    setMusicError(null);
+    const res = await fetch(`/api/admin/couples/${slug}/music`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setMusicError(j.error || "Greška pri brisanju");
+      return;
+    }
+    setMusicUrl(undefined);
+    setMusicTitle(undefined);
+    setMusicSourceUrl(undefined);
+    syncJsonFields({
+      music_url: undefined,
+      music_pathname: undefined,
+      music_title: undefined,
+      music_source_url: undefined,
+    });
+    toast.success("Muzika obrisana");
   }
 
   async function handleImageDelete(img: { url: string; pathname: string }) {
@@ -408,6 +522,125 @@ export default function EditCouplePage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Muzika u pozadini toggle */}
+        <div className="flex items-center justify-between px-4 py-3 bg-white/5 border border-white/10 rounded-lg">
+          <span className="flex items-center gap-2 text-sm font-medium text-white/70">
+            <Music size={14} /> Muzika u pozadini
+          </span>
+          <button
+            onClick={() => {
+              try {
+                const parsed = JSON.parse(json);
+                const newVal = !paidForMusic;
+                parsed.paid_for_music = newVal;
+                setJson(JSON.stringify(parsed, null, 2));
+                setPaidForMusic(newVal);
+                autoPatch({ paid_for_music: newVal });
+              } catch {
+                toast.error("Neispravan JSON");
+              }
+            }}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              paidForMusic ? "bg-[#AE343F]" : "bg-white/20"
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                paidForMusic ? "translate-x-5" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+        </div>
+
+        {paidForMusic && (
+          <div className="border border-white/10 rounded-lg p-4 space-y-3">
+            {musicUrl ? (
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <Music size={18} className="text-[#AE343F] mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate" title={musicTitle}>
+                      {musicTitle || "Bez naslova"}
+                    </p>
+                    {musicSourceUrl && (
+                      <a
+                        href={musicSourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] text-white/40 hover:text-white/70 truncate block"
+                      >
+                        {musicSourceUrl}
+                      </a>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleMusicDelete}
+                    className="shrink-0 w-7 h-7 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center"
+                    title="Obriši muziku"
+                  >
+                    <Trash2 size={12} className="text-white" />
+                  </button>
+                </div>
+                <audio
+                  controls
+                  src={musicUrl}
+                  className="w-full h-9"
+                  preload="metadata"
+                />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wider text-white/40 mb-1.5">
+                    YouTube link
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={musicInputUrl}
+                      onChange={(e) => setMusicInputUrl(e.target.value)}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      disabled={musicLoading}
+                      className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-md text-white text-sm focus:outline-none focus:border-[#AE343F] disabled:opacity-50"
+                    />
+                    <button
+                      onClick={handleMusicFromYouTube}
+                      disabled={musicLoading || !musicInputUrl.trim()}
+                      className="px-3 py-2 rounded-md bg-[#AE343F] hover:bg-[#8A2A32] disabled:opacity-40 text-white text-xs font-medium transition-colors"
+                    >
+                      {musicLoading ? "Preuzima..." : "Preuzmi"}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-white/10" />
+                  <span className="text-[10px] uppercase tracking-wider text-white/30">
+                    Ili
+                  </span>
+                  <div className="flex-1 h-px bg-white/10" />
+                </div>
+                <label
+                  className={`flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                    musicLoading
+                      ? "bg-white/5 text-white/30"
+                      : "bg-white/10 hover:bg-white/15 text-white/70"
+                  }`}
+                >
+                  {musicLoading ? "Otpremanje..." : "+ Direktan upload (.mp3/.m4a)"}
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    className="hidden"
+                    disabled={musicLoading}
+                    onChange={handleMusicFileUpload}
+                  />
+                </label>
+              </div>
+            )}
+            {musicError && <p className="text-red-400 text-xs">{musicError}</p>}
           </div>
         )}
 
