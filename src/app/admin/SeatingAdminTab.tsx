@@ -19,6 +19,7 @@ import {
 import type { StandaloneSeating } from "@/lib/standalone-seating";
 import { encodeToBase64 } from "@/lib/encoding";
 import DatePicker from "@/components/ui/DatePicker";
+import ShareLinkButton from "./ShareLinkButton";
 
 interface Props {
   onNeedsLogin: () => void;
@@ -43,6 +44,9 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
   const [receiptCopiedSlug, setReceiptCopiedSlug] = useState<string | null>(
     null,
   );
+  const [shareStats, setShareStats] = useState<
+    Record<string, { visit_count: number; last_visited_at?: string }>
+  >({});
 
   // Create form state
   const [createOwnerName, setCreateOwnerName] = useState("");
@@ -72,6 +76,13 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
     const data = await res.json();
     setSeatings(Array.isArray(data) ? data : []);
     setLoading(false);
+    // Load share-link visit stats (non-blocking).
+    fetch("/api/admin/share-links?kind=seating")
+      .then((r) => r.json())
+      .then((m) => {
+        if (m && typeof m === "object") setShareStats(m);
+      })
+      .catch(() => {});
   }
 
   async function handleCreate(e: React.FormEvent) {
@@ -354,23 +365,12 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
 
               {/* Credentials block — wraps top→bottom on narrow viewports */}
               <div className="mt-3 pt-3 border-t border-white/5 flex flex-wrap items-center gap-2">
-                {/* URL */}
+                {/* URL — display only (Share button below copies link za deljenje) */}
                 <div className="flex items-center gap-1.5 bg-white/[0.04] rounded-lg px-3 py-1.5 flex-1 basis-full sm:basis-[260px] min-w-0">
                   <ExternalLink size={11} className="text-white/40 shrink-0" />
                   <code className="text-[11px] text-white/70 truncate flex-1 min-w-0">
                     {url}
                   </code>
-                  <button
-                    onClick={() => copyToClipboard(url, `url-${s.slug}`)}
-                    className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white transition-colors cursor-pointer shrink-0"
-                    title="Kopiraj URL"
-                  >
-                    {copied === `url-${s.slug}` ? (
-                      <Check size={11} className="text-emerald-400" />
-                    ) : (
-                      <Copy size={11} />
-                    )}
-                  </button>
                 </div>
 
                 {/* Password */}
@@ -403,20 +403,22 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                   </button>
                 </div>
 
-                {/* Combined copy (URL + PIN block for sharing) */}
-                <button
-                  onClick={() =>
-                    copyToClipboard(
-                      `Pristup za raspored sedenja:\n${url}\nPIN: ${s.password}`,
-                      `combo-${s.slug}`,
-                    )
-                  }
-                  className="text-[11px] px-3 py-1.5 rounded bg-[#2563eb]/15 text-[#60a5fa] hover:bg-[#2563eb]/25 transition-colors cursor-pointer shrink-0"
-                >
-                  {copied === `combo-${s.slug}`
-                    ? "Kopirano!"
-                    : "Kopiraj za slanje"}
-                </button>
+                {/* Share link — replaces old URL-copy + "Kopiraj za slanje" combo.
+                    Share page surfaces URL + PIN to the client cleanly. */}
+                <ShareLinkButton
+                  productKind="seating"
+                  slug={s.slug}
+                  directUrl={url}
+                />
+
+                {shareStats[s.slug]?.visit_count ? (
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] text-green-400/70 shrink-0"
+                    title="Klijent je otvorio share link"
+                  >
+                    <Eye size={10} /> {shareStats[s.slug].visit_count}×
+                  </span>
+                ) : null}
               </div>
 
               <SeatingReceiptDropdown

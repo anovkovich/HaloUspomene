@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import clientPromise from "./mongodb";
 import { deleteSeatingLayout } from "./seating";
+import { deleteShareLinksForProduct } from "./share-links";
 
 export interface StandaloneGuest {
   id: string;
@@ -284,10 +285,14 @@ export async function patchStandaloneReceipt(
   await c.updateOne({ slug }, { $set: setOps });
 }
 
-/** Cascade deletes the seating record AND any saved layout in seating_layouts.
- *  Used when the event has passed and the admin is cleaning up. */
+/** Cascade deletes the seating record AND any saved layout in seating_layouts
+ *  plus any share-link entries pointing at it. Used when the event has
+ *  passed and the admin is cleaning up. */
 export async function deleteStandaloneSeating(slug: string): Promise<void> {
   const c = await col();
   await c.deleteOne({ slug });
-  await deleteSeatingLayout(slug);
+  await Promise.all([
+    deleteSeatingLayout(slug),
+    deleteShareLinksForProduct("seating", slug),
+  ]);
 }

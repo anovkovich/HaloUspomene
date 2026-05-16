@@ -102,6 +102,8 @@ export async function POST(
       paid_for_audio: body.paid_for_audio ?? false,
       paid_for_audio_USB: body.paid_for_audio_USB || "",
       paid_for_pdf: false,
+      paid_for_images: body.paid_for_images ?? false,
+      paid_for_music: body.paid_for_music ?? false,
       // Stay in draft — admin manually flips it after billing.
       draft: true,
       // Defensive clear of premium fields in case of misuse.

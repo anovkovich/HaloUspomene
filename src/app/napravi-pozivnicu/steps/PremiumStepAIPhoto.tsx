@@ -9,8 +9,10 @@ import {
   ChevronRight,
   Loader2,
   RefreshCw,
+  Image as ImageIcon,
 } from "lucide-react";
 import type { PremiumThemeType } from "@/app/pozivnica/[slug]/types";
+import { ImagePicker } from "../QuestionnaireForm";
 
 interface PremiumStepAIPhotoProps {
   premiumTheme: PremiumThemeType | "";
@@ -20,11 +22,13 @@ interface PremiumStepAIPhotoProps {
   aiCoupleImageUrl: string;
   bride: string;
   groom: string;
+  pendingImages: File[];
   onThemeChange: (theme: PremiumThemeType) => void;
   onCityChange: (city: string) => void;
   onCarChange: (car: string) => void;
   onDescriptionChange: (desc: string) => void;
   onImageGenerated: (url: string) => void;
+  onPendingImagesChange: (files: File[]) => void;
 }
 
 const LOADING_MESSAGES = [
@@ -40,6 +44,12 @@ const THEMES: {
   subtitle: string;
   features: string[];
   preview: string;
+  /** "cover" (default) crops to fill the card; "contain" preserves the full
+   *  image — used for transparent overlays where `previewBg` shows through. */
+  previewMode?: "cover" | "contain";
+  /** Solid background behind the preview image. Defaults to bg-stone-100 set
+   *  on the wrapper. Use when the preview is a transparent PNG. */
+  previewBg?: string;
 }[] = [
   {
     id: "watercolor",
@@ -53,14 +63,19 @@ const THEMES: {
     name: "Modern Parallax",
     subtitle: "Vaša AI ilustracija u prelepom parallax svetu",
     features: ["AI portret para", "Line art stil", "Paper parallax"],
-    preview: "/images/premium/line-art-invitation/Starry-night.webp",
+    // Transparent PNG of the couple illustration; the seed script copies
+    // katarina-marko's whitened AI illustration here on run. Matches the
+    // paper-cream background used as html/body bg in LineArtInvitation.
+    preview: "https://26nmrlihm68dns7z.public.blob.vercel-storage.com/admin-data/theme-previews/modern-parallax-couple.png",
+    previewMode: "contain",
+    previewBg: "#fffdf5",
   },
   {
     id: "fountain",
     name: "Royal Fountain",
     subtitle: "Burgundy elegancija sa fontanom, golubovima i ružama",
     features: ["Cinematska pozadina", "Animirani golubovi", "Pocepani papir"],
-    preview: "/images/premium/fountain/bg-portrait.png",
+    preview: "/images/premium/fountain/bg-landscape.webp",
   },
 ];
 
@@ -413,11 +428,13 @@ export default function PremiumStepAIPhoto({
   aiCoupleImageUrl,
   bride,
   groom,
+  pendingImages,
   onThemeChange,
   onCityChange,
   onCarChange,
   onDescriptionChange,
   onImageGenerated,
+  onPendingImagesChange,
 }: PremiumStepAIPhotoProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState("");
@@ -588,8 +605,8 @@ export default function PremiumStepAIPhoto({
         </p>
       </div>
 
-      {/* Theme selection */}
-      <div className="grid grid-cols-2 gap-3 mb-2">
+      {/* Theme selection — 1 column on mobile (stacked), 3 across on md+ */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-2">
         {THEMES.map((theme) => {
           const isSelected = premiumTheme === theme.id;
           return (
@@ -604,11 +621,14 @@ export default function PremiumStepAIPhoto({
               }`}
             >
               {/* Preview image */}
-              <div className="relative w-full aspect-[5/3] overflow-hidden bg-stone-100 flex-shrink-0">
+              <div
+                className="relative w-full aspect-[5/3] overflow-hidden bg-stone-100 flex-shrink-0"
+                style={theme.previewBg ? { backgroundColor: theme.previewBg } : undefined}
+              >
                 <img
                   src={theme.preview}
                   alt={theme.name}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className={`absolute inset-0 w-full h-full ${theme.previewMode === "contain" ? "object-contain" : "object-cover"}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
                 {isSelected && (
@@ -788,6 +808,36 @@ export default function PremiumStepAIPhoto({
               )}
             </motion.div>
           )}
+        </motion.div>
+      )}
+
+      {premiumTheme === "fountain" && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="h-px bg-gradient-to-r from-transparent via-[#d4af37]/20 to-transparent mb-6" />
+          <div className="mb-3 flex items-center gap-2">
+            <ImageIcon size={16} className="text-[#d4af37]" />
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B7355]">
+              Vaše fotografije
+            </p>
+            <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20">
+              Uključeno
+            </span>
+          </div>
+          <p className="text-[11px] text-[#8B7355] mb-3 leading-relaxed">
+            Dodajte do 2 fotografije koje će biti prikazane u burgundy galeriji
+            pozivnice.
+          </p>
+          <ImagePicker
+            files={pendingImages}
+            onChange={onPendingImagesChange}
+            max={2}
+            accentHex="#d4af37"
+            accentRgb="212,175,55"
+          />
         </motion.div>
       )}
     </div>

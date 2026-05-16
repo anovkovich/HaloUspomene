@@ -69,3 +69,17 @@ export async function patchCouple(
   const c = await col();
   await c.updateOne({ slug }, { $set: updates });
 }
+
+/** Removes the listed fields from the couple document.
+ *  Use this when you want to clear an optional field — `patchCouple` with
+ *  `undefined` is a no-op in MongoDB because BSON drops undefined values. */
+export async function unsetCoupleFields(
+  slug: string,
+  fields: Array<keyof WeddingData>
+): Promise<void> {
+  if (fields.length === 0) return;
+  const c = await col();
+  const unset: Record<string, "">  = {};
+  for (const f of fields) unset[f as string] = "";
+  await c.updateOne({ slug }, { $unset: unset });
+}

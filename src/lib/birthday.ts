@@ -1,5 +1,6 @@
 import clientPromise from "./mongodb";
 import { BirthdayData } from "@/app/deciji-rodjendan/[slug]/types";
+import { deleteShareLinksForProduct } from "./share-links";
 
 export type BirthdayDocument = BirthdayData & { slug: string };
 
@@ -51,9 +52,12 @@ export async function deleteBirthday(slug: string): Promise<void> {
   const c = await col();
   await c.deleteOne({ slug });
 
-  // Cascade: delete RSVP responses
+  // Cascade: RSVP responses + share links
   const client = await clientPromise;
-  await client.db("halouspomene").collection("birthday_rsvp").deleteMany({ slug });
+  await Promise.all([
+    client.db("halouspomene").collection("birthday_rsvp").deleteMany({ slug }),
+    deleteShareLinksForProduct("birthday", slug),
+  ]);
 }
 
 export async function patchBirthday(

@@ -636,7 +636,8 @@ export default function PricingClient() {
           </div>
 
           <p className="mt-4 text-center text-xs text-[#232323]/45 leading-relaxed">
-            Želite galeriju fotografija? Iskomunicirajte sa našim timom{" "}
+            Galeriju fotografija (do 3 slike) možete dodati tokom kreiranja
+            pozivnice{" "}
             <span className="text-[#232323]/60 font-medium">
               (+
               {formatPrice(

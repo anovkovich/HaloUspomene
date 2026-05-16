@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
         source: "/deciji-rodjendan/(.*)",
         headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }],
       },
+      // Share-link landing pages — per-customer, password-bearing; never cache
+      {
+        source: "/pristup/(.*)",
+        headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }],
+      },
       // Static pages — cache 1 hour, revalidate in background
       {
         source: "/(blog|lokacije|napravi-pozivnicu|napravi-deciju-pozivnicu|telefon-uspomena|planiranje-vencanja|pozivnice|cene)(.*)",

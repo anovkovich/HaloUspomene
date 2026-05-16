@@ -6,6 +6,7 @@ import { deleteRSVPResponses } from "@/lib/rsvp";
 import { deleteSeatingLayout } from "@/lib/seating";
 import { deletePortalData } from "@/lib/portal";
 import { getAudioMessages, deleteAllAudioMessages } from "@/lib/audio";
+import { deleteShareLinksForProduct } from "@/lib/share-links";
 import { del } from "@vercel/blob";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
@@ -80,13 +81,16 @@ export async function DELETE(
     // Continue with deletion even if blob cleanup fails
   }
 
-  // Delete image blobs from Vercel Blob
+  // Delete image + music blobs from Vercel Blob
   try {
     const coupleData = await getWeddingData(slug);
+    const blobUrls: string[] = [];
     if (coupleData?.images && coupleData.images.length > 0) {
-      await Promise.allSettled(
-        coupleData.images.map((img) => del(img.url))
-      );
+      for (const img of coupleData.images) blobUrls.push(img.url);
+    }
+    if (coupleData?.music_url) blobUrls.push(coupleData.music_url);
+    if (blobUrls.length > 0) {
+      await Promise.allSettled(blobUrls.map((u) => del(u)));
     }
   } catch {
     // Continue with deletion even if blob cleanup fails
@@ -98,6 +102,7 @@ export async function DELETE(
     deleteSeatingLayout(slug),
     deletePortalData(slug),
     deleteAllAudioMessages(slug),
+    deleteShareLinksForProduct("couple", slug),
   ]);
   revalidateCouplePaths(slug);
   return NextResponse.json({ ok: true });

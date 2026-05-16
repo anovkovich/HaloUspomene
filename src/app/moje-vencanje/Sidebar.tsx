@@ -32,8 +32,12 @@ interface SidebarProps {
 }
 
 function daysUntil(dateStr: string): number {
-  const diff = new Date(dateStr).getTime() - Date.now();
-  return Math.max(0, Math.ceil(diff / 86_400_000));
+  // Calendar-day comparison: an event later today returns 0 ("danas"), not 1.
+  const target = new Date(dateStr);
+  target.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.round((target.getTime() - today.getTime()) / 86_400_000));
 }
 
 const NAV_ITEMS: {

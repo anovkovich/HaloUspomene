@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Copy, Check, Pencil, Users, Cake, Armchair, Receipt } from "lucide-react";
+import { Plus, Trash2, Copy, Check, Pencil, Users, Cake, Armchair, Receipt, Eye } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
+import ShareLinkButton from "./ShareLinkButton";
 
 interface Birthday {
   slug: string;
@@ -34,11 +35,11 @@ interface Props {
 export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Props) {
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
   const [stats, setStats] = useState<Record<string, BirthdayStats>>({});
+  const [shareStats, setShareStats] = useState<Record<string, { visit_count: number; last_visited_at?: string }>>({});
   const [loading, setLoading] = useState(true);
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
-  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [receiptCopiedSlug, setReceiptCopiedSlug] = useState<string | null>(null);
   const router = useRouter();
 
@@ -58,6 +59,12 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
           fetch("/api/admin/birthday-stats")
             .then((r) => r.json())
             .then((s) => setStats(s))
+            .catch(() => {});
+          fetch("/api/admin/share-links?kind=birthday")
+            .then((r) => r.json())
+            .then((m) => {
+              if (m && typeof m === "object") setShareStats(m);
+            })
             .catch(() => {});
         }
         setLoading(false);
@@ -107,9 +114,12 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
   }
 
   function daysUntil(dateStr: string) {
-    const diff = Math.ceil(
-      (new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-    );
+    // Calendar-day comparison so events later today don't show "za 1 dan".
+    const target = new Date(dateStr);
+    target.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diff = Math.round((target.getTime() - today.getTime()) / 86_400_000);
     if (diff > 0) return `za ${diff} dana`;
     if (diff === 0) return "danas!";
     return `pre ${Math.abs(diff)} dana`;
@@ -259,30 +269,19 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
                         month: "short",
                         year: "numeric",
                       })}
+                      {shareStats[b.slug]?.visit_count ? (
+                        <span className="ml-2 inline-flex items-center gap-1 text-green-400/70" title="Klijent je otvorio share link">
+                          <Eye size={10} /> {shareStats[b.slug].visit_count}×
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => {
-                        const prefix =
-                          b.type === "eighteenth"
-                            ? "punoletstvo"
-                            : "deciji-rodjendan";
-                        navigator.clipboard.writeText(
-                          `https://halouspomene.rs/${prefix}/${b.slug}`,
-                        );
-                        setCopiedSlug(b.slug);
-                        setTimeout(() => setCopiedSlug(null), 2000);
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white cursor-pointer"
-                      title="Kopiraj link pozivnice"
-                    >
-                      {copiedSlug === b.slug ? (
-                        <Check size={14} className="text-green-400" />
-                      ) : (
-                        <Copy size={14} />
-                      )}
-                    </button>
+                    <ShareLinkButton
+                      productKind="birthday"
+                      slug={b.slug}
+                      directUrl={`https://halouspomene.rs/${b.type === "eighteenth" ? "punoletstvo" : "deciji-rodjendan"}/${b.slug}/`}
+                    />
                     <button
                       onClick={() => router.push(`/admin/rodjendan/${b.slug}`)}
                       className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white cursor-pointer"

@@ -109,6 +109,9 @@ export async function POST(
       premium_city: body.premium_city || undefined,
       premium_car: body.premium_car || undefined,
       couple_description: body.couple_description || undefined,
+      // Fountain bundles a 2-photo gallery; other premium themes leave this off.
+      paid_for_images: body.paid_for_images ?? false,
+      paid_for_music: body.paid_for_music ?? false,
       // Stay in draft — admin manually flips it (and sets premium_paid) after billing.
       draft: true,
     };

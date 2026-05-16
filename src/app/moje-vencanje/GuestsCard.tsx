@@ -344,8 +344,13 @@ export default function GuestsCard({ slug, draft }: Props) {
     if (now <= ed) return null;
     const expiryDate = new Date(ed);
     expiryDate.setDate(expiryDate.getDate() + 5);
-    const daysLeft = Math.ceil(
-      (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+    // Calendar-day comparison: expiry day itself shows "0" until midnight.
+    const expiryMidnight = new Date(expiryDate);
+    expiryMidnight.setHours(0, 0, 0, 0);
+    const todayMidnight = new Date(now);
+    todayMidnight.setHours(0, 0, 0, 0);
+    const daysLeft = Math.round(
+      (expiryMidnight.getTime() - todayMidnight.getTime()) / 86_400_000,
     );
     const expiryStr = expiryDate.toLocaleDateString("sr-RS", {
       day: "numeric",
