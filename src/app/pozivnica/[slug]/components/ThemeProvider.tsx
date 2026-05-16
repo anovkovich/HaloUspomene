@@ -39,6 +39,9 @@ interface ThemeProviderProps {
    *  compatibility (true → "sr-Cyrl", false → "sr-Latn"). The German mirror
    *  route passes "de" so children read German translations from context. */
   lang?: Lang;
+  /** When true, swap Latin strings to the BA/HR/ME ijekavica variant.
+   *  Only meaningful when lang is "sr-Latn"; ignored otherwise. */
+  useIjekavica?: boolean;
   customPrimaryColor?: string;
   customBackgroundColor?: string;
   children: React.ReactNode;
@@ -49,6 +52,7 @@ export function ThemeProvider({
   scriptFont = "great-vibes",
   useCyrillic = false,
   lang: langProp,
+  useIjekavica = false,
   customPrimaryColor,
   customBackgroundColor,
   children,
@@ -85,7 +89,7 @@ export function ThemeProvider({
 
   const scriptFontConfig = getScriptFontConfig(scriptFont);
   const lang: Lang = langProp ?? (useCyrillic ? "sr-Cyrl" : "sr-Latn");
-  const translations = getTranslations(lang);
+  const translations = getTranslations(lang, useIjekavica);
 
   return (
     <ThemeContext.Provider

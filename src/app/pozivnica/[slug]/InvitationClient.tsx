@@ -33,6 +33,7 @@ function formatEventDate(
   dateStr: string,
   months: string[],
   days: string[],
+  numericShort = false,
 ): {
   display: string;
   short: string;
@@ -42,12 +43,17 @@ function formatEventDate(
 
   const day = date.getDate().toString().padStart(2, "0");
   const month = date.getMonth();
+  const monthNum = (month + 1).toString().padStart(2, "0");
   const year = date.getFullYear();
   const dayName = days[date.getDay()];
 
   return {
-    display: `${day} . ${(month + 1).toString().padStart(2, "0")} . ${year} .`,
-    short: `${day}. ${months[month]} ${year}.`,
+    display: `${day} . ${monthNum} . ${year} .`,
+    // BA/HR/ME couples prefer numeric months ("26. 07. 2026.") instead of
+    // Serbian month names; numericShort flips us into that format.
+    short: numericShort
+      ? `${day}. ${monthNum}. ${year}.`
+      : `${day}. ${months[month]} ${year}.`,
     dayName,
   };
 }
@@ -226,12 +232,20 @@ export default function InvitationClient({
   const lang: Lang =
     langProp ?? (data.useCyrillic ? "sr-Cyrl" : "sr-Latn");
   const useCyrillic = lang === "sr-Cyrl"; // legacy flag kept for sub-components / fonts
-  const t = useMemo(() => getTranslations(lang), [lang]);
+  // Auto-detect non-Serbian couples by phone_country and switch the Latin
+  // translations to ijekavica + numeric month rendering. Defaults to RS
+  // for legacy records that don't have phone_country set.
+  const useIjekavica =
+    !useCyrillic && !!data.phone_country && data.phone_country !== "RS";
+  const t = useMemo(
+    () => getTranslations(lang, useIjekavica),
+    [lang, useIjekavica],
+  );
 
   const themeConfig = useMemo(() => getThemeConfig(data.theme), [data.theme]);
   const formattedDate = useMemo(
-    () => formatEventDate(data.event_date, t.months, t.days_week),
-    [data.event_date, t.months, t.days_week],
+    () => formatEventDate(data.event_date, t.months, t.days_week, useIjekavica),
+    [data.event_date, t.months, t.days_week, useIjekavica],
   );
   const mainLocation = useMemo(
     () => data.locations.find((l) => l.type === "hall"),
@@ -265,18 +279,22 @@ export default function InvitationClient({
       const dayAfterEnd = new Date(eventStart);
       dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
       dayAfterEnd.setHours(23, 59, 59, 999);
-      // Format submit_until as "DD. MMMM YYYY."
+      // Format submit_until as "DD. MMMM YYYY." (or "DD. MM. YYYY." for
+      // ijekavica/non-RS couples that prefer numeric months).
       const d = new Date(data.submit_until);
       const day = d.getDate().toString().padStart(2, "0");
+      const monthNum = (d.getMonth() + 1).toString().padStart(2, "0");
       const month = t.months_genitive[d.getMonth()];
       const year = d.getFullYear();
       return {
         isPastDeadline: now > deadline,
         showGdeSedimLink: now >= dayBefore,
         isWeddingDay: now >= eventStart && now <= dayAfterEnd,
-        submitUntilDisplay: `${day}. ${month} ${year}.`,
+        submitUntilDisplay: useIjekavica
+          ? `${day}. ${monthNum}. ${year}.`
+          : `${day}. ${month} ${year}.`,
       };
-    }, [data.submit_until, data.event_date, t.months_genitive]);
+    }, [data.submit_until, data.event_date, t.months_genitive, useIjekavica]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -401,6 +419,7 @@ export default function InvitationClient({
         scriptFont={data.scriptFont}
         useCyrillic={useCyrillic}
         lang={lang}
+        useIjekavica={useIjekavica}
         customPrimaryColor={data.custom_primary_color}
         customBackgroundColor={data.custom_background_color}
       >

@@ -74,14 +74,24 @@ export default function PremiumInvitationClient({
     window.scrollTo(0, 0);
   }, []);
 
+  // Non-Serbian couples (phone_country != RS) get numeric month rendering
+  // so the date reads as native in BA/HR/ME formatting conventions.
+  const useNumericMonths =
+    !data.useCyrillic && !!data.phone_country && data.phone_country !== "RS";
+
   const formattedDate = useMemo(() => {
     if (!data.event_date) return "";
     const d = new Date(data.event_date);
+    if (useNumericMonths) {
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      return `${day}. ${month}. ${d.getFullYear()}.`;
+    }
     return d.toLocaleDateString(
       data.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
       { day: "numeric", month: "long", year: "numeric" },
     );
-  }, [data.event_date, data.useCyrillic]);
+  }, [data.event_date, data.useCyrillic, useNumericMonths]);
 
   const formattedDateShort = useMemo(() => {
     if (!data.event_date) return "";
@@ -95,11 +105,16 @@ export default function PremiumInvitationClient({
     if (!data.submit_until) return "";
     const d = new Date(data.submit_until + "T00:00:00");
     if (isNaN(d.getTime())) return "";
+    if (useNumericMonths) {
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      return `${day}. ${month}. ${d.getFullYear()}.`;
+    }
     return d.toLocaleDateString(
       data.useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS",
       { day: "numeric", month: "long", year: "numeric" },
     );
-  }, [data.submit_until, data.useCyrillic]);
+  }, [data.submit_until, data.useCyrillic, useNumericMonths]);
 
   const handleEnvelopeComplete = useCallback(() => {
     setIsLoading(false);

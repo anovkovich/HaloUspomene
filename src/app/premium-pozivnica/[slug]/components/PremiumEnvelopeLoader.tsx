@@ -65,7 +65,9 @@ const MONTH_ABBR: Record<string, string> = {
 
 function parseDateParts(dateStr?: string) {
   if (!dateStr) return null;
-  const match = dateStr.match(/(\d{1,2})\.\s*(\w+)\s+(\d{4})/);
+  // Matches both "26. jul 2026" and the numeric "26. 07. 2026." variant
+  // (latter used for BA/HR/ME couples).
+  const match = dateStr.match(/(\d{1,2})\.\s*(\w+)\.?\s+(\d{4})/);
   if (!match) return null;
   return {
     day: match[1],

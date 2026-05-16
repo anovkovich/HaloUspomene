@@ -504,12 +504,53 @@ export const germanTranslations: Translations = {
   ],
 };
 
+// Ijekavica variant of the Latin translations — applied to invitations
+// whose contact phone is NOT Serbian (phone_country !== "RS"). Only the
+// words that differ from ekavica are swapped (vjenčanje, vidjeti, mjesto,
+// najljepše, prije, gdje, sjedenje, dio, srijeda, etc.). For BA/HR/ME
+// couples this reads as native; for the rare Cyrillic ijekavica case we
+// don't add a separate object — ME/BA Cyrillic is an edge case.
+export const latinIjekavicaTranslations: Translations = {
+  ...latinTranslations,
+  where: "Gdje",
+  attendingNoSub: "Sve najljepše!",
+  notesPlaceholder: "Posebni zahtjevi ili poruka mladencima...",
+  confirmationRecorded: "Vaša potvrda je uspješno zabilježena.",
+  lookingForward: "Radujemo se što ćemo Vas vidjeti na proslavi!",
+  hopeToSee: "Nadamo se da ćemo se vidjeti nekom drugom prilikom.",
+  rsvpRecaptchaFailed:
+    "Provjera neuspješna. Osvježite stranicu i pokušajte ponovo.",
+  findSeating: "✦ Pronađite mjesto sjedenja ✦",
+  seatingAvailableNote:
+    "Dan prije proslave biće dostupna provjera gdje ste raspoređeni sa sjedenjem.",
+  thankYouFooter: "Hvala Vam što ste dio naše sreće",
+  inviteYou: "Pozivaju Vas na vjenčanje",
+  audioNotAvailableYet:
+    "Audio knjiga utisaka biće dostupna na dan vjenčanja",
+  audioNoMessages: "Još uvijek nema audio poruka",
+  days_week: [
+    "Nedjelja",
+    "Ponedjeljak",
+    "Utorak",
+    "Srijeda",
+    "Četvrtak",
+    "Petak",
+    "Subota",
+  ],
+};
+
 /** Returns translations for the given language. Accepts the legacy boolean
  *  signature (true → Cyrillic, false → Latin) for backward compatibility
- *  with existing call sites in the audio/PDF/sub-routes. */
-export function getTranslations(langOrUseCyrillic: Lang | boolean): Translations {
+ *  with existing call sites in the audio/PDF/sub-routes. Pass
+ *  `ijekavica: true` to swap Latin to the BA/HR/ME variant — ignored for
+ *  Cyrillic and German. */
+export function getTranslations(
+  langOrUseCyrillic: Lang | boolean,
+  ijekavica = false,
+): Translations {
   if (typeof langOrUseCyrillic === "boolean") {
-    return langOrUseCyrillic ? cyrillicTranslations : latinTranslations;
+    if (langOrUseCyrillic) return cyrillicTranslations;
+    return ijekavica ? latinIjekavicaTranslations : latinTranslations;
   }
   switch (langOrUseCyrillic) {
     case "sr-Cyrl":
@@ -518,6 +559,6 @@ export function getTranslations(langOrUseCyrillic: Lang | boolean): Translations
       return germanTranslations;
     case "sr-Latn":
     default:
-      return latinTranslations;
+      return ijekavica ? latinIjekavicaTranslations : latinTranslations;
   }
 }
