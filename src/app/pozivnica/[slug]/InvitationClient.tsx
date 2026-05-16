@@ -232,11 +232,18 @@ export default function InvitationClient({
   const lang: Lang =
     langProp ?? (data.useCyrillic ? "sr-Cyrl" : "sr-Latn");
   const useCyrillic = lang === "sr-Cyrl"; // legacy flag kept for sub-components / fonts
-  // Auto-detect non-Serbian couples by phone_country and switch the Latin
-  // translations to ijekavica + numeric month rendering. Defaults to RS
-  // for legacy records that don't have phone_country set.
-  const useIjekavica =
-    !useCyrillic && !!data.phone_country && data.phone_country !== "RS";
+  // Auto-detect non-Serbian couples and switch the Latin translations to
+  // ijekavica + numeric month rendering. We prefer `phone_country` when
+  // it's set, but fall back to the phone-number prefix so legacy records
+  // (created before the bypass-token feature added `phone_country`) are
+  // also covered. BA = +387, HR = +385, ME = +382. RS = +381.
+  const useIjekavica = (() => {
+    if (useCyrillic) return false;
+    if (data.phone_country && data.phone_country !== "RS") return true;
+    if (data.phone_country === "RS") return false;
+    const primaryPhone = (data.contact_phone || "").split(",")[0]?.trim() ?? "";
+    return /^\+(387|385|382)/.test(primaryPhone);
+  })();
   const t = useMemo(
     () => getTranslations(lang, useIjekavica),
     [lang, useIjekavica],

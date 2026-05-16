@@ -75,9 +75,17 @@ export default function PremiumInvitationClient({
   }, []);
 
   // Non-Serbian couples (phone_country != RS) get numeric month rendering
-  // so the date reads as native in BA/HR/ME formatting conventions.
-  const useNumericMonths =
-    !data.useCyrillic && !!data.phone_country && data.phone_country !== "RS";
+  // so the date reads as native in BA/HR/ME formatting conventions. We
+  // prefer the explicit `phone_country` flag but fall back to the phone
+  // prefix so legacy records (pre-bypass-token feature) still detect
+  // correctly. BA = +387, HR = +385, ME = +382.
+  const useNumericMonths = (() => {
+    if (data.useCyrillic) return false;
+    if (data.phone_country && data.phone_country !== "RS") return true;
+    if (data.phone_country === "RS") return false;
+    const primaryPhone = (data.contact_phone || "").split(",")[0]?.trim() ?? "";
+    return /^\+(387|385|382)/.test(primaryPhone);
+  })();
 
   const formattedDate = useMemo(() => {
     if (!data.event_date) return "";
