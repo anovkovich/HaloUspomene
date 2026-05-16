@@ -10,6 +10,9 @@ import HallMap from "./HallMap";
 interface Props {
   guestLookup: GuestLookupEntry[];
   tables: TableData[];
+  /** When true, render the BA/HR/ME ijekavica variant of all copy
+   *  ("mjesto" instead of "mesto", etc.). */
+  ijekavica?: boolean;
 }
 
 const normalize = (s: string) =>
@@ -18,7 +21,32 @@ const normalize = (s: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 
-export default function GdeSedimClient({ guestLookup, tables }: Props) {
+export default function GdeSedimClient({
+  guestLookup,
+  tables,
+  ijekavica = false,
+}: Props) {
+  // All BA/HR/ME-aware copy in one place \u2014 keeps the JSX below readable
+  // and avoids 6+ inline ternaries. Named `tr` not `t` to avoid shadowing
+  // the existing iterator variable in `.map((t: GuestTableEntry) => ...)`.
+  const tr = ijekavica
+    ? {
+        enterYourName: "Unesite va\u0161e ime",
+        yourSeatSingular: "Va\u0161e mjesto",
+        yourSeatPlural: "Va\u0161a mjesta",
+        seatsOccupied: (occupied: number, total: number) =>
+          `${occupied} od ${total} mjesta popunjeno`,
+        seatUnit: (n: number) => (n === 1 ? "mjesto" : "mjesta"),
+      }
+    : {
+        enterYourName: "Unesite va\u0161e ime",
+        yourSeatSingular: "Va\u0161e mesto",
+        yourSeatPlural: "Va\u0161a mesta",
+        seatsOccupied: (occupied: number, total: number) =>
+          `${occupied} od ${total} mesta popunjeno`,
+        seatUnit: (n: number) => (n === 1 ? "mesto" : "mesta"),
+      };
+
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<GuestLookupEntry | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -96,7 +124,7 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
           className="block font-raleway text-[11px] uppercase tracking-[0.2em] mb-3 text-center"
           style={{ color: "var(--theme-text-light)" }}
         >
-          Unesite vaše ime
+          {tr.enterYourName}
         </label>
 
         <div className="relative">
@@ -261,8 +289,8 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
                 style={{ color: "var(--theme-text-light)" }}
               >
                 {selected.tables.length === 1
-                  ? "Vaše mesto"
-                  : "Vaša mesta"}
+                  ? tr.yourSeatSingular
+                  : tr.yourSeatPlural}
               </p>
 
               {selected.tables.length === 1 ? (
@@ -277,8 +305,10 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
                     className="font-raleway text-xs pt-2"
                     style={{ color: "var(--theme-text-muted)" }}
                   >
-                    {selected.tables[0].occupiedCount} od{" "}
-                    {selected.tables[0].seatCount} mesta popunjeno
+                    {tr.seatsOccupied(
+                      selected.tables[0].occupiedCount,
+                      selected.tables[0].seatCount,
+                    )}
                   </p>
                 </>
               ) : (
@@ -298,8 +328,7 @@ export default function GdeSedimClient({ guestLookup, tables }: Props) {
                         className="font-raleway text-xs"
                         style={{ color: "var(--theme-text-muted)" }}
                       >
-                        ({t.assignedSeats}{" "}
-                        {t.assignedSeats === 1 ? "mesto" : "mesta"})
+                        ({t.assignedSeats} {tr.seatUnit(t.assignedSeats)})
                       </span>
                     </div>
                   ))}

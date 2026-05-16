@@ -18,12 +18,29 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+// BA/HR/ME couples (phone_country != RS, or phone prefix in +387/+385/+382)
+// get the ijekavica variant — same detection as the main invitation page.
+function inferUseIjekavica(data: {
+  useCyrillic?: boolean;
+  phone_country?: "RS" | "BA" | "HR" | "ME";
+  contact_phone?: string;
+}): boolean {
+  if (data.useCyrillic) return false;
+  if (data.phone_country && data.phone_country !== "RS") return true;
+  if (data.phone_country === "RS") return false;
+  const primaryPhone = (data.contact_phone || "").split(",")[0]?.trim() ?? "";
+  return /^\+(387|385|382)/.test(primaryPhone);
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const weddingData = await getWeddingData(slug);
   if (!weddingData) return {};
-  const title = `${weddingData.couple_names.full_display} - Gde sedim?`;
-  const description = `Pronađite svoje mesto sedenja za venčanje - ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`;
+  const ijekavica = inferUseIjekavica(weddingData);
+  const title = `${weddingData.couple_names.full_display} - ${ijekavica ? "Gdje sjedim?" : "Gde sedim?"}`;
+  const description = ijekavica
+    ? `Pronađite svoje mjesto sjedenja za vjenčanje - ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`
+    : `Pronađite svoje mesto sedenja za venčanje - ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`;
   return {
     title,
     description,
@@ -63,6 +80,7 @@ export default async function GdeSedimPage({ params }: PageProps) {
   if (!weddingData.paid_for_raspored) notFound();
 
   const cssVars = getThemeCSSVariables(weddingData.theme, weddingData.scriptFont);
+  const ijekavica = inferUseIjekavica(weddingData);
 
   // ── Load seating data from MongoDB ──────────────────────────────────────
   let tables: TableData[] = [];
@@ -158,7 +176,7 @@ export default async function GdeSedimPage({ params }: PageProps) {
               className="font-raleway text-xs uppercase tracking-widest"
               style={{ color: "var(--theme-text-light)" }}
             >
-              Gde sedim?
+              {ijekavica ? "Gdje sjedim?" : "Gde sedim?"}
             </p>
           </div>
 
@@ -185,6 +203,7 @@ export default async function GdeSedimPage({ params }: PageProps) {
             <GdeSedimClient
               guestLookup={guestLookup}
               tables={tables}
+              ijekavica={ijekavica}
             />
           )}
 

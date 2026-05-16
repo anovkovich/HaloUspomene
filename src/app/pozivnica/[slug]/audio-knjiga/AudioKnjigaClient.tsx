@@ -33,6 +33,8 @@ interface Props {
   paidForAudio: boolean;
   eventDate: string;
   useCyrillic: boolean;
+  /** BA/HR/ME couples — swap Latin strings to ijekavica. */
+  useIjekavica?: boolean;
   recentMessages: RecentMessage[];
 }
 
@@ -42,9 +44,13 @@ export default function AudioKnjigaClient({
   paidForAudio,
   eventDate,
   useCyrillic,
+  useIjekavica = false,
   recentMessages,
 }: Props) {
-  const t = useMemo(() => getTranslations(useCyrillic), [useCyrillic]);
+  const t = useMemo(
+    () => getTranslations(useCyrillic, useIjekavica),
+    [useCyrillic, useIjekavica],
+  );
 
   const [state, setState] = useState<RecordingState>("idle");
   const [messages, setMessages] = useState(recentMessages);

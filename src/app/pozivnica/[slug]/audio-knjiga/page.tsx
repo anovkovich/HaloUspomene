@@ -11,6 +11,21 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+// Same auto-detection used on the main invitation + gde-sedim: BA/HR/ME
+// couples get the ijekavica variant. Falls back to phone-number prefix
+// for legacy records without `phone_country` set.
+function inferUseIjekavica(data: {
+  useCyrillic?: boolean;
+  phone_country?: "RS" | "BA" | "HR" | "ME";
+  contact_phone?: string;
+}): boolean {
+  if (data.useCyrillic) return false;
+  if (data.phone_country && data.phone_country !== "RS") return true;
+  if (data.phone_country === "RS") return false;
+  const primaryPhone = (data.contact_phone || "").split(",")[0]?.trim() ?? "";
+  return /^\+(387|385|382)/.test(primaryPhone);
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -67,6 +82,7 @@ export default async function AudioKnjigaPage({ params }: PageProps) {
         paidForAudio={paidForAudio}
         eventDate={weddingData.event_date}
         useCyrillic={weddingData.useCyrillic ?? false}
+        useIjekavica={inferUseIjekavica(weddingData)}
         recentMessages={recentMessages}
       />
     </div>
