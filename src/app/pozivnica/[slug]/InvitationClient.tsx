@@ -15,6 +15,7 @@ import { Timeline } from "./components/Timeline";
 import { RSVPForm } from "./components/RSVPFrom";
 import { generateInvitationPDF } from "./generateInvitationPDF";
 import PolaroidGallery from "./PolaroidGallery";
+import CallCTA from "@/components/CallCTA";
 import Link from "next/link";
 import { Download } from "lucide-react";
 
@@ -799,6 +800,15 @@ export default function InvitationClient({
           ) : (
             <RSVPForm slug={slug} />
           )}
+
+          {/* Optional per-couple call-CTA below the RSVP form. Renders
+              nothing when no phone has show_numbers[i] = true. */}
+          <CallCTA
+            contactPhone={data.contact_phone}
+            showNumbers={data.show_numbers}
+            numberNames={data.number_names}
+            useCyrillic={data.useCyrillic}
+          />
 
           {/* Seating lookup note / link — only shown when paid_for_raspored */}
           {data.paid_for_raspored && (
