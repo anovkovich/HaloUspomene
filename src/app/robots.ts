@@ -76,7 +76,12 @@ export default function robots(): MetadataRoute.Robots {
           "/_next/",
           "/private/",
           "/admin/",
-          "/racun/",
+          // `/racun/` intentionally NOT disallowed — social-media preview
+          // scrapers (facebookexternalhit, Twitterbot, Slackbot, etc.)
+          // honor robots.txt and would otherwise skip the page entirely,
+          // killing OG previews on Instagram/Messenger/Slack. The page
+          // itself sets robots: { index: false } via layout.tsx so search
+          // engines still won't index per-receipt URLs.
           "/pristup/",
           "/pozivnica/*/portal",
           "/pozivnica/*/raspored-sedenja",
