@@ -26,6 +26,11 @@ interface EnvelopeLoaderProps {
    * elegant, hand-lettered feel.
    */
   initialsFontFamily?: string;
+  /**
+   * When true, hold the open animation behind a tap. The tap is also the
+   * user gesture that unlocks background-music autoplay on mobile/Safari.
+   */
+  requireTap?: boolean;
 }
 
 function darkenHex(hex: string, factor = 0.72): string {
@@ -53,18 +58,23 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
   inviteLabel,
   waxImageSrc,
   initialsFontFamily,
+  requireTap = false,
 }) => {
   const { config, t } = useTheme();
   const [stage, setStage] = useState<
     "sealed" | "opening" | "extracted" | "fadeout"
   >("sealed");
+  // When tap-gated, we hold at "sealed" until the visitor taps. The tap
+  // is the same gesture that unlocks BackgroundMusicPlayer's autoplay.
+  const [tapped, setTapped] = useState(!requireTap);
 
   const initials = initialsOverride ?? getInitials(names);
   const labelText = inviteLabel ?? t.inviteYou;
 
   useEffect(() => {
+    if (!tapped) return;
     const sequence = async () => {
-      await new Promise((r) => setTimeout(r, 800));
+      await new Promise((r) => setTimeout(r, requireTap ? 100 : 800));
       setStage("opening");
       await new Promise((r) => setTimeout(r, 1200));
       setStage("extracted");
@@ -74,7 +84,7 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
       onComplete();
     };
     sequence();
-  }, [onComplete]);
+  }, [tapped, requireTap, onComplete]);
 
   // Use theme colors
   const primaryColor = config.colors.primary;
@@ -90,12 +100,15 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-[1200ms] cubic-bezier(0.4, 0, 0.2, 1) ${stage === "fadeout" ? "opacity-0 scale-110 blur-xl pointer-events-none" : "opacity-100"}`}
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center transition-all duration-[1200ms] cubic-bezier(0.4, 0, 0.2, 1) ${stage === "fadeout" ? "opacity-0 scale-110 blur-xl pointer-events-none" : "opacity-100"} ${!tapped ? "cursor-pointer" : ""}`}
       style={{ backgroundColor: "#ffffff" }}
+      onClick={!tapped ? () => setTapped(true) : undefined}
     >
 
       {/* 3D Scene - moved down slightly so card doesn't go off screen */}
-      <div className="relative w-[300px] h-[200px] sm:w-[480px] sm:h-[310px] perspective-[1500px] mt-8 sm:mt-0">
+      <div
+        className={`relative w-[300px] h-[200px] sm:w-[480px] sm:h-[310px] perspective-[1500px] mt-8 sm:mt-0 ${!tapped ? "animate-envelope-pulse" : ""}`}
+      >
         {/* ENVELOPE ASSEMBLY */}
         <div
           className={`relative w-full h-full preserve-3d transition-all duration-[1500ms] will-change-transform
@@ -301,6 +314,45 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Tap-to-open hint (only when music gating is active) */}
+      {requireTap && (
+        <p
+          className={`mt-8 sm:mt-12 font-elegant uppercase tracking-[0.3em] text-[10px] sm:text-xs transition-opacity duration-500 select-none ${
+            tapped ? "opacity-0" : "opacity-100 animate-hint-pulse"
+          }`}
+          style={{ color: primaryColor }}
+        >
+          {t.tapToOpen}
+        </p>
+      )}
+
+      <style jsx>{`
+        @keyframes envelope-pulse {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.03);
+          }
+        }
+        .animate-envelope-pulse {
+          animation: envelope-pulse 2s ease-in-out infinite;
+        }
+        @keyframes hint-pulse {
+          0%,
+          100% {
+            opacity: 0.55;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+        .animate-hint-pulse {
+          animation: hint-pulse 1.8s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };

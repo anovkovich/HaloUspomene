@@ -408,6 +408,7 @@ export default function InvitationClient({
           eventDate={formattedDate.short}
           onComplete={() => setIsLoading(false)}
           stampColor={data.stamp_color}
+          requireTap={!!(data.paid_for_music && data.music_url)}
         />
       </ThemeProvider>
     );

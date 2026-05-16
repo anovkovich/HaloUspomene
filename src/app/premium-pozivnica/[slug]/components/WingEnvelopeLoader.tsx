@@ -15,6 +15,11 @@ interface WingEnvelopeLoaderProps {
   envelopeItems?: EnvelopeItem[];
   /** Invitation theme — unknown values fall back to watercolor. */
   theme?: string;
+  /**
+   * When true, hold the open animation behind a tap. The tap is also the
+   * user gesture that unlocks background-music autoplay on mobile/Safari.
+   */
+  requireTap?: boolean;
 }
 
 const ITEM_SRCS: Record<string, string> = {
@@ -73,9 +78,11 @@ export default function WingEnvelopeLoader({
   eventDate,
   envelopeItems = [],
   theme = "watercolor",
+  requireTap = false,
 }: WingEnvelopeLoaderProps) {
   const [stage, setStage] = useState<Stage>("sealed");
   const [isMobile, setIsMobile] = useState(false);
+  const [tapped, setTapped] = useState(!requireTap);
   const initials = getInitials(names);
   const dateParts = parseDateParts(eventDate);
   const t = getLoaderTheme(theme);
@@ -87,8 +94,9 @@ export default function WingEnvelopeLoader({
   const BURST_OFFSETS = isMobile ? BURST_OFFSETS_SM : BURST_OFFSETS_LG;
 
   useEffect(() => {
+    if (!tapped) return;
     const sequence = async () => {
-      await new Promise((r) => setTimeout(r, 800));
+      await new Promise((r) => setTimeout(r, requireTap ? 100 : 800));
       setStage("untying"); // bow unties
       await new Promise((r) => setTimeout(r, 800));
       setStage("opening"); // wings open
@@ -100,7 +108,7 @@ export default function WingEnvelopeLoader({
       onComplete();
     };
     sequence();
-  }, [onComplete]);
+  }, [tapped, requireTap, onComplete]);
 
   const isUntied = stage !== "sealed";
   const isOpen = stage === "opening" || stage === "extracted" || stage === "fadeout";
@@ -108,11 +116,11 @@ export default function WingEnvelopeLoader({
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center ${
         stage === "fadeout"
           ? "opacity-0 scale-110 pointer-events-none"
           : "opacity-100"
-      }`}
+      } ${!tapped ? "cursor-pointer" : ""}`}
       style={{
         background:
           stage === "fadeout"
@@ -124,9 +132,12 @@ export default function WingEnvelopeLoader({
           stage === "fadeout" ? "none" : isOpen ? t.overlay.backdropFilterOpen : "none",
         transition: "all 1.5s ease",
       }}
+      onClick={!tapped ? () => setTapped(true) : undefined}
     >
       {/* Square envelope container */}
-      <div className="relative w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] mt-4 sm:mt-0">
+      <div
+        className={`relative w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] mt-4 sm:mt-0 ${!tapped ? "animate-envelope-pulse" : ""}`}
+      >
 
         {/* Background / base */}
         <div
@@ -357,6 +368,44 @@ export default function WingEnvelopeLoader({
           )}
         </motion.div>
       </div>
+
+      {requireTap && (
+        <p
+          className={`mt-8 sm:mt-12 uppercase tracking-[0.3em] text-[10px] sm:text-xs transition-opacity duration-500 select-none ${
+            tapped ? "opacity-0" : "opacity-100 animate-hint-pulse"
+          }`}
+          style={{ color: t.seal?.textColor ?? "#d4af37" }}
+        >
+          Tapnite na kovertu
+        </p>
+      )}
+
+      <style jsx>{`
+        @keyframes envelope-pulse {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.03);
+          }
+        }
+        .animate-envelope-pulse {
+          animation: envelope-pulse 2s ease-in-out infinite;
+        }
+        @keyframes hint-pulse {
+          0%,
+          100% {
+            opacity: 0.55;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+        .animate-hint-pulse {
+          animation: hint-pulse 1.8s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }

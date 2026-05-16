@@ -75,6 +75,7 @@ export interface Translations {
 
   // Envelope
   inviteYou: string;
+  tapToOpen: string;
 
   // Audio guest book
   audioGuestBook: string;
@@ -173,6 +174,7 @@ export const latinTranslations: Translations = {
 
   // Envelope
   inviteYou: "Pozivaju Vas na venčanje",
+  tapToOpen: "Tapnite na kovertu",
 
   // Audio guest book
   audioGuestBook: "Audio knjiga utisaka",
@@ -305,6 +307,7 @@ export const cyrillicTranslations: Translations = {
 
   // Envelope
   inviteYou: "Позивају Вас на венчање",
+  tapToOpen: "Тапните на коверту",
 
   // Audio guest book
   audioGuestBook: "Audio knjiga utisaka",
@@ -441,6 +444,7 @@ export const germanTranslations: Translations = {
 
   // Envelope
   inviteYou: "Laden Euch ein zur Hochzeit",
+  tapToOpen: "Tippen Sie auf den Umschlag",
 
   // Audio guest book
   audioGuestBook: "Audio-Gästebuch",

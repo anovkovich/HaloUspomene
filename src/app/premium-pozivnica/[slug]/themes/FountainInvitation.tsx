@@ -2,14 +2,15 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
+  AnimatePresence,
   motion,
   useAnimation,
   useScroll,
   useSpring,
   useTransform,
 } from "framer-motion";
-import Link from "next/link";
-import { Clock } from "lucide-react";
+import { Clock, Heart, Send } from "lucide-react";
+import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import TornPaperDivider from "../components/TornPaperDivider";
 import type { ThemeInvitationProps } from "../PremiumInvitationClient";
 
@@ -798,6 +799,217 @@ function PhotoFrame({ src, idx }: { src: string; idx: number }) {
   );
 }
 
+// Inline RSVP form for the Fountain theme. Cream/white pills on the
+// burgundy section background — matches the original CTA's aesthetic
+// (white-pill + burgundy text) so it reads as native to the theme.
+function FountainRSVPForm({
+  slug,
+  formattedDeadline,
+  rsvpByLabel,
+}: {
+  slug: string;
+  formattedDeadline: string;
+  rsvpByLabel: string;
+}) {
+  const { execute: executeRecaptcha } = useRecaptcha();
+  const [name, setName] = useState("");
+  const [attending, setAttending] = useState<"Da" | "Ne">("Da");
+  const [guestCount, setGuestCount] = useState(1);
+  const [details, setDetails] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setError("Molimo unesite Vaše ime.");
+      return;
+    }
+    setError("");
+    setIsSubmitting(true);
+    try {
+      let recaptchaToken = "";
+      try {
+        recaptchaToken = await executeRecaptcha("rsvp");
+      } catch {
+        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setIsSubmitting(false);
+        return;
+      }
+      const res = await fetch(`/api/pozivnica/${slug}/rsvp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          attending,
+          guestCount,
+          details,
+          recaptcha_token: recaptchaToken,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Greška pri slanju.");
+      }
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Greška pri slanju.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const inputBase =
+    "w-full bg-white/10 border border-white/30 rounded-full px-5 py-3 text-sm text-white placeholder:text-white/55 focus:outline-none focus:border-white/60 focus:ring-2 focus:ring-white/20 transition-all";
+
+  if (isSubmitted) {
+    return (
+      <motion.div
+        className="text-center py-6"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
+        <div className="w-14 h-14 rounded-full bg-white/15 border border-white/30 flex items-center justify-center mx-auto mb-5">
+          <Heart size={24} className="text-white" fill="currentColor" />
+        </div>
+        <p className="text-lg text-white/95 mb-1.5" style={{ fontFamily: "var(--body-font, serif)" }}>
+          Hvala, {name}!
+        </p>
+        <p className="text-sm text-white/65" style={{ fontFamily: "var(--body-font, serif)" }}>
+          {attending === "Da"
+            ? `Radujemo se vašem dolasku! (${guestCount} ${guestCount === 1 ? "osoba" : "osobe"})`
+            : "Žao nam je što nećete moći da dođete."}
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setIsSubmitted(false);
+            setName("");
+            setDetails("");
+          }}
+          className="mt-5 text-xs text-white/45 underline hover:text-white/70 transition-colors"
+        >
+          Pošalji još jednu potvrdu
+        </button>
+      </motion.div>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 text-left"
+      style={{ fontFamily: "var(--body-font, serif)", color: BURGUNDY_DEEP }}
+    >
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Vaše ime i prezime"
+        className={inputBase}
+      />
+      <div className="flex gap-3">
+        {(["Da", "Ne"] as const).map((val) => (
+          <button
+            key={val}
+            type="button"
+            onClick={() => setAttending(val)}
+            className={`flex-1 py-3 rounded-full text-sm uppercase tracking-[0.18em] transition-all ${
+              attending === val
+                ? "bg-white shadow-lg"
+                : "bg-white/10 text-white/85 border border-white/30 hover:bg-white/20"
+            }`}
+            style={attending === val ? { color: BURGUNDY_DEEP, fontWeight: 500 } : undefined}
+          >
+            {val === "Da" ? "Dolazim" : "Ne dolazim"}
+          </button>
+        ))}
+      </div>
+      <AnimatePresence>
+        {attending === "Da" && (
+          <motion.div
+            key="guest-fields"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="overflow-hidden space-y-4"
+          >
+            <div
+              className="flex items-center justify-between bg-white/10 border border-white/30 rounded-full pl-5 pr-2 py-2"
+              style={{ color: "#fff" }}
+            >
+              <span className="text-sm">Broj osoba</span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
+                  className="w-9 h-9 rounded-full bg-white/20 border border-white/40 text-white hover:bg-white/30 text-xl font-bold leading-none transition-colors inline-flex items-center justify-center pb-0.5"
+                >
+                  −
+                </button>
+                <span className="font-semibold text-base w-6 text-center">
+                  {guestCount}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setGuestCount(guestCount + 1)}
+                  className="w-9 h-9 rounded-full bg-white/20 border border-white/40 text-white hover:bg-white/30 text-xl font-bold leading-none transition-colors inline-flex items-center justify-center pb-0.5"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <textarea
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              placeholder="Napomena (opciono)"
+              rows={2}
+              className="w-full bg-white/10 border border-white/30 rounded-2xl px-5 py-3 text-sm text-white placeholder:text-white/55 focus:outline-none focus:border-white/60 focus:ring-2 focus:ring-white/20 resize-none transition-all"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {error && (
+        <p className="text-xs text-white/95 text-center bg-black/20 rounded-full py-2">
+          {error}
+        </p>
+      )}
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full flex items-center justify-center gap-2 px-12 py-3.5 rounded-full text-sm uppercase tracking-[0.25em] transition-all hover:scale-[1.02] hover:shadow-2xl disabled:opacity-60 disabled:hover:scale-100"
+        style={{
+          background: "#fff",
+          color: BURGUNDY_DEEP,
+          fontWeight: 500,
+          boxShadow:
+            "0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.2)",
+        }}
+      >
+        {isSubmitting ? (
+          "Slanje..."
+        ) : attending === "Da" ? (
+          <>
+            <Heart size={14} fill="currentColor" /> Potvrdi{" "}
+            <Heart size={14} fill="currentColor" />
+          </>
+        ) : (
+          <>
+            <Send size={14} /> Pošalji
+          </>
+        )}
+      </button>
+      {formattedDeadline && (
+        <p className="text-xs sm:text-sm text-white/65 italic text-center pt-1">
+          {rsvpByLabel} {formattedDeadline}.
+        </p>
+      )}
+    </form>
+  );
+}
+
 export default function FountainInvitation({
   data,
   slug,
@@ -805,6 +1017,8 @@ export default function FountainInvitation({
   groom,
   full_display,
   formattedDate,
+  isPastDeadline,
+  isRevealed,
 }: ThemeInvitationProps) {
   const lang = data.useCyrillic ? T.cyrillic : T.latin;
   // Once a dove finishes its flight off-screen, unmount the GreenScreenVideo
@@ -961,20 +1175,20 @@ export default function FountainInvitation({
           </h1>
         </motion.div>
 
-        {/* Doves — start animating IMMEDIATELY on mount (before isRevealed)
-            so by the time the envelope is fully out of the way they're
-            mid-flight, and one trails the other by ~1.6s so they read as a
-            pair rather than synchronized copies. Each unmounts as soon as
-            it crosses off the viewport. */}
-        {!doveADone && (
+        {/* Doves — gated on isRevealed so they only spawn AFTER the
+            envelope is gone. This matters most when the envelope is
+            tap-gated (music enabled) — otherwise the user might tap
+            after 10s and miss the doves entirely.
+            Each unmounts as soon as it crosses off the viewport. */}
+        {isRevealed && !doveADone && (
           <motion.div
             initial={{ x: "0vw", y: "0vh", opacity: 0 }}
             animate={{ x: "100vw", y: "-65vh", opacity: 1 }}
             transition={{
               duration: 4.5,
-              delay: 4.3,
+              delay: 1.0,
               ease: "linear",
-              opacity: { duration: 0.6, delay: 4.3, ease: "easeOut" },
+              opacity: { duration: 0.6, delay: 1.0, ease: "easeOut" },
             }}
             onAnimationComplete={() => setDoveADone(true)}
             className="absolute pointer-events-none z-30"
@@ -983,15 +1197,15 @@ export default function FountainInvitation({
             <DoveVideo size={240} />
           </motion.div>
         )}
-        {!doveBDone && (
+        {isRevealed && !doveBDone && (
           <motion.div
             initial={{ x: "0vw", y: "0vh", opacity: 0 }}
             animate={{ x: "95vw", y: "-55vh", opacity: 1 }}
             transition={{
               duration: 5.5,
-              delay: 3.8,
+              delay: 0.4,
               ease: "linear",
-              opacity: { duration: 0.6, delay: 3.8, ease: "easeOut" },
+              opacity: { duration: 0.6, delay: 0.4, ease: "easeOut" },
             }}
             onAnimationComplete={() => setDoveBDone(true)}
             className="absolute pointer-events-none z-30"
@@ -1233,7 +1447,7 @@ export default function FountainInvitation({
             style={{ background: BURGUNDY }}
           >
             <div className="max-w-2xl mx-auto space-y-6 sm:space-y-10">
-              {data.images.slice(0, 3).map((img, i) => (
+              {data.images.slice(0, 2).map((img, i) => (
                 <div
                   key={img.pathname}
                   className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}
@@ -1267,37 +1481,35 @@ export default function FountainInvitation({
           >
             {lang.confirmAttendance}
           </h3>
-          <Link
-            href={`/rsvp/pozivnica-${slug}`}
-            className="inline-flex items-center justify-center px-12 py-3.5 rounded-full text-sm uppercase tracking-[0.25em] transition-all hover:scale-105 hover:shadow-2xl"
-            style={{
-              background: "#fff",
-              color: BURGUNDY_DEEP,
-              fontWeight: 500,
-              boxShadow:
-                "0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.2)",
-              fontFamily: "var(--body-font, serif)",
-            }}
-          >
-            {lang.confirmCta}
-          </Link>
-
-          {data.submit_until &&
-            (() => {
+          {(() => {
+            const deadlineGenitive = (() => {
+              if (!data.submit_until) return "";
               const d = new Date(data.submit_until + "T00:00:00");
-              if (isNaN(d.getTime())) return null;
-              const day = d.getDate();
-              const month = lang.monthsGenitive[d.getMonth()];
-              const year = d.getFullYear();
+              if (isNaN(d.getTime())) return "";
+              return `${d.getDate()}. ${lang.monthsGenitive[d.getMonth()]} ${d.getFullYear()}`;
+            })();
+
+            if (isPastDeadline) {
               return (
                 <p
-                  className="text-xs sm:text-sm mt-4 text-white/65 italic"
+                  className="text-sm text-white/65 italic mt-2"
                   style={{ fontFamily: "var(--body-font, serif)" }}
                 >
-                  {lang.rsvpBy} {day}. {month} {year}.
+                  Rok za potvrdu dolaska je istekao.
                 </p>
               );
-            })()}
+            }
+
+            return (
+              <div className="max-w-sm mx-auto mt-2">
+                <FountainRSVPForm
+                  slug={slug}
+                  formattedDeadline={deadlineGenitive}
+                  rsvpByLabel={lang.rsvpBy}
+                />
+              </div>
+            );
+          })()}
 
           {data.thankYouFooter && (
             <p
