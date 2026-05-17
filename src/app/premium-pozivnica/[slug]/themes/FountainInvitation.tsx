@@ -1021,6 +1021,13 @@ export default function FountainInvitation({
   isRevealed,
 }: ThemeInvitationProps) {
   const lang = data.useCyrillic ? T.cyrillic : T.latin;
+  // True when the envelope holds for a tap (music is enabled). For these
+  // we have to gate the doves on `isRevealed`, otherwise they fly off
+  // while the user is still looking at the sealed envelope. For everyone
+  // else, the envelope auto-opens on a known timer and the doves can use
+  // their original mount-time delays so they're visible during fade-out.
+  const tapGated = !!(data.paid_for_music && data.music_url);
+  const doveSpawn = !tapGated || isRevealed;
   // Once a dove finishes its flight off-screen, unmount the GreenScreenVideo
   // entirely so the chroma-key canvas/video pipeline stops eating RAM.
   const [doveADone, setDoveADone] = useState(false);
@@ -1175,20 +1182,26 @@ export default function FountainInvitation({
           </h1>
         </motion.div>
 
-        {/* Doves — gated on isRevealed so they only spawn AFTER the
-            envelope is gone. This matters most when the envelope is
-            tap-gated (music enabled) — otherwise the user might tap
-            after 10s and miss the doves entirely.
+        {/* Doves — when the envelope auto-opens (no music) the doves
+            spawn on mount with the original delays so they fly across
+            the screen during the envelope fade-out. When the envelope
+            is tap-gated (music enabled), we hold the doves until
+            `isRevealed` and use shorter delays — otherwise they'd fly
+            off while the user is still staring at the sealed envelope.
             Each unmounts as soon as it crosses off the viewport. */}
-        {isRevealed && !doveADone && (
+        {doveSpawn && !doveADone && (
           <motion.div
             initial={{ x: "0vw", y: "0vh", opacity: 0 }}
             animate={{ x: "100vw", y: "-65vh", opacity: 1 }}
             transition={{
               duration: 4.5,
-              delay: 1.0,
+              delay: tapGated ? 1.0 : 4.3,
               ease: "linear",
-              opacity: { duration: 0.6, delay: 1.0, ease: "easeOut" },
+              opacity: {
+                duration: 0.6,
+                delay: tapGated ? 1.0 : 4.3,
+                ease: "easeOut",
+              },
             }}
             onAnimationComplete={() => setDoveADone(true)}
             className="absolute pointer-events-none z-30"
@@ -1197,15 +1210,19 @@ export default function FountainInvitation({
             <DoveVideo size={240} />
           </motion.div>
         )}
-        {isRevealed && !doveBDone && (
+        {doveSpawn && !doveBDone && (
           <motion.div
             initial={{ x: "0vw", y: "0vh", opacity: 0 }}
             animate={{ x: "95vw", y: "-55vh", opacity: 1 }}
             transition={{
               duration: 5.5,
-              delay: 0.4,
+              delay: tapGated ? 0.4 : 3.8,
               ease: "linear",
-              opacity: { duration: 0.6, delay: 0.4, ease: "easeOut" },
+              opacity: {
+                duration: 0.6,
+                delay: tapGated ? 0.4 : 3.8,
+                ease: "easeOut",
+              },
             }}
             onAnimationComplete={() => setDoveBDone(true)}
             className="absolute pointer-events-none z-30"
