@@ -7,9 +7,12 @@ import path from "node:path";
 
 const execFileAsync = promisify(execFile);
 
-// Platform-specific binary name and download URL
+// Platform-specific binary name and download URL.
+// Use a unique cache filename so a previously cached broken binary (e.g. the
+// Python-script flavor of "yt-dlp" downloaded before we switched to
+// yt-dlp_linux) doesn't get reused on a warm Lambda.
 const IS_WINDOWS = process.platform === "win32";
-const BINARY_NAME = IS_WINDOWS ? "yt-dlp.exe" : "yt-dlp";
+const BINARY_NAME = IS_WINDOWS ? "yt-dlp.exe" : "yt-dlp-bin";
 const YTDLP_PATH = path.join(tmpdir(), BINARY_NAME);
 
 function getDownloadUrl(): string {
@@ -19,7 +22,9 @@ function getDownloadUrl(): string {
     case "darwin":
       return "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos";
     default:
-      return "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp";
+      // yt-dlp_linux is a standalone PyInstaller binary;
+      // plain "yt-dlp" is a Python script and Vercel has no python3.
+      return "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux";
   }
 }
 
