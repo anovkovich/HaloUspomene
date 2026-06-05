@@ -146,7 +146,12 @@ export async function generateInvitationPDF(
   // A5: 148 x 210 mm
   const W = 148;
   const H = 210;
-  const doc = new jsPDF({ format: "a5", orientation: "portrait", unit: "mm" });
+  const doc = new jsPDF({
+    format: "a5",
+    orientation: "portrait",
+    unit: "mm",
+    compress: true,
+  });
   const cx = W / 2;
 
   // Load fonts

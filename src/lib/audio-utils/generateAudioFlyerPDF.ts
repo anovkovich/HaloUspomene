@@ -59,6 +59,7 @@ export async function generateAudioFlyerPDF(
     format: [W, H],
     orientation: "portrait",
     unit: "mm",
+    compress: true,
   });
   const cx = W / 2;
 

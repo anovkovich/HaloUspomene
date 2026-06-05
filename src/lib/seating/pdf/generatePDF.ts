@@ -196,14 +196,15 @@ export async function generateAndDownloadPDF(
     img.onload = () => {
       ctx.drawImage(img, 0, 0, svgW, svgH);
       URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/png"));
+      // JPEG (white bg, high quality) keeps the file tiny vs. lossless PNG
+      resolve(canvas.toDataURL("image/jpeg", 0.92));
     };
     img.src = url;
   });
 
   // ── Build PDF ──────────────────────────────────────────────────────────────
   const { jsPDF } = await import("jspdf");
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
 
   // Load fonts for Cyrillic support
   const [serifB64, sansB64] = await Promise.all([
@@ -249,7 +250,7 @@ export async function generateAndDownloadPDF(
   const fitScale = Math.min(CW / imgWmm, maxH / imgHmm, 1);
   const fW = imgWmm * fitScale,
     fH = imgHmm * fitScale;
-  doc.addImage(svgImgData, "PNG", MARGIN + (CW - fW) / 2, y, fW, fH);
+  doc.addImage(svgImgData, "JPEG", MARGIN + (CW - fW) / 2, y, fW, fH);
   y += fH + 8;
 
   // ── QR code for /gde-sedim ─────────────────────────────────────────────────
@@ -335,7 +336,7 @@ export async function generateAndDownloadPDF(
       img.onload = () => {
         ctx.drawImage(img, 0, 0, w, h);
         URL.revokeObjectURL(url);
-        resolve(c.toDataURL("image/png"));
+        resolve(c.toDataURL("image/jpeg", 0.92));
       };
       img.src = url;
     });
@@ -399,7 +400,7 @@ export async function generateAndDownloadPDF(
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${GW}" height="${svgH}">${inner}</svg>`;
     const gImgData = await svgImg(svg, GW, svgH);
     doc.addPage();
-    doc.addImage(gImgData, "PNG", MARGIN, MARGIN, CW, svgH / GSCALE);
+    doc.addImage(gImgData, "JPEG", MARGIN, MARGIN, CW, svgH / GSCALE);
   }
 
   // ── Alphabetical guest index page ──────────────────────────────────────────
@@ -461,7 +462,7 @@ export async function generateAndDownloadPDF(
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${GW}" height="${svgH}">${inner}</svg>`;
       const aImgData = await svgImg(svg, GW, svgH);
       doc.addPage();
-      doc.addImage(aImgData, "PNG", MARGIN, MARGIN, CW, svgH / GSCALE);
+      doc.addImage(aImgData, "JPEG", MARGIN, MARGIN, CW, svgH / GSCALE);
     }
   }
 

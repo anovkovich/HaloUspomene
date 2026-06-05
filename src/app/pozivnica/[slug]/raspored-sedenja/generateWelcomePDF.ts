@@ -89,6 +89,7 @@ export async function generateWelcomePDF(
     orientation: "portrait",
     unit: "mm",
     format: [W, H],
+    compress: true,
   });
   const cx = W / 2;
 
