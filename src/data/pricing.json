@@ -45,7 +45,7 @@
     {
       "id": "personalizovana_dobrodoslica",
       "label": "Audio dobrodošlica",
-      "price": 1000,
+      "price": 0,
       "note": "Vaša lična poruka dobrodošlice",
       "for_retro_phone": true
     },

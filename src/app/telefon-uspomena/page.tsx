@@ -29,6 +29,9 @@ import RelatedPosts from "./RelatedPosts";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
+/** Price label that renders free items as "GRATIS" instead of "0 din". */
+const priceLabel = (n: number) => (n === 0 ? "GRATIS" : formatPrice(n));
+
 export const metadata: Metadata = {
   title:
     "Telefon Uspomena za Venčanje — Retro Telefon za Audio Poruke | HALO Uspomene",
@@ -128,7 +131,7 @@ const faqItems = [
   },
   {
     q: "Koliko košta iznajmljivanje telefona uspomena?",
-    a: `Audio Guest Book paket košta ${formatPrice(pricing.packages.essential.price)}. Cena uključuje vintage telefon, kurirsku dostavu i povrat u celoj Srbiji, elegantno uputstvo i dekoraciju, i sve audio snimke u digitalnom formatu. Dodaci: Personalizovana audio dobrodošlica (${formatPrice(pricing.addons.find((a) => a.id === "personalizovana_dobrodoslica")!.price)}), Retro kaseta USB (${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}), Uspomene u boci USB (${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}).`,
+    a: `Audio Guest Book paket košta ${formatPrice(pricing.packages.essential.price)}. Cena uključuje vintage telefon, kurirsku dostavu i povrat u celoj Srbiji, elegantno uputstvo i dekoraciju, i sve audio snimke u digitalnom formatu. Dodaci: Personalizovana audio dobrodošlica (${priceLabel(pricing.addons.find((a) => a.id === "personalizovana_dobrodoslica")!.price)}), Retro kaseta USB (${formatPrice(pricing.addons.find((a) => a.id === "usb_kaseta")!.price)}), Uspomene u boci USB (${formatPrice(pricing.addons.find((a) => a.id === "usb_bocica")!.price)}).`,
   },
   {
     q: "Da li dostavljate telefon uspomena u Beograd i Novi Sad?",
@@ -607,7 +610,7 @@ export default function TelefonUspomenaPage() {
                       {addon.note}
                     </p>
                     <p className="text-sm font-bold text-[#d4af37]">
-                      {formatPrice(addon.price)}
+                      {priceLabel(addon.price)}
                     </p>
                   </div>
                 ))}
@@ -903,7 +906,7 @@ export default function TelefonUspomenaPage() {
             Telefon uspomena cena: Audio Guest Book paket košta {formatPrice(getAudioPrice())}
             {isAudioDiscountActive() && ` (snižena cena, redovna ${formatPrice(pricing.packages.essential.price)})`} sa
             besplatnom dostavom i povratom. Dodaci: USB retro kaseta 2.500 din,
-            USB bočica 2.000 din, personalizovana audio dobrodošlica 1.000 din.
+            USB bočica 2.000 din, personalizovana audio dobrodošlica GRATIS.
             Telefon uspomena Beograd — kurirska dostava. Telefon uspomena Novi
             Sad — lična dostava i montaža.
           </p>
