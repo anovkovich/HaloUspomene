@@ -296,69 +296,42 @@ export async function generateAndDownloadPDF(
     // QR generation is non-critical — skip silently
   }
 
-  // ── Guest list pages via SVG rendering ────────────────────────────────────
-  // SVG→canvas→PNG so the browser font engine handles all Unicode (diacritics)
-  const escXml = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  // ── Guest list + index pages, rendered as NATIVE PDF TEXT ──────────────────
+  // No rasterization: the Serif font (Cormorant Garamond) covers Serbian Latin
+  // diacritics AND Cyrillic, so guest names of either script render correctly
+  // while keeping the file tiny (vector text instead of full-page bitmaps).
+  const COL_GAP = 6; // mm between the two columns
+  const COL_W = (CW - COL_GAP) / 2;
+  const ROW_H = 6; // mm per guest row
+  const LABEL_H = 9; // mm for a table label + its divider
+  const BLOCK_GAP = 4; // mm after each table block
+  const TITLE_H = 10; // mm reserved for a page title
+  const USABLE_H = 297 - MARGIN * 2; // content height available per page
+  const colX = (c: number) => MARGIN + (c === 0 ? 0 : COL_W + COL_GAP);
 
-  const GW = 1160; // SVG px width, maps to CW mm in PDF
-  const GSCALE = GW / CW; // px per mm
-  const gmm = (n: number) => Math.round(n * GSCALE);
-  const gpt = (n: number) => Math.round(n * GSCALE * 0.353); // pt → SVG px
-
-  const G_colGap = gmm(5);
-  const G = {
-    rowH: gmm(6),
-    labelH: gmm(8.5),
-    gap: gmm(3),
-    colGap: G_colGap,
-    colW: Math.floor((GW - G_colGap) / 2),
-    pageH: gmm(267),
-    titleH: gmm(10),
-    fsTitle: gpt(9),
-    fsLabel: gpt(11),
-    fsGuest: gpt(10),
+  const pageTitle = (label: string) => {
+    doc.setFont("Sans");
+    doc.setFontSize(9);
+    doc.setTextColor(170, 170, 170);
+    doc.text(label, MARGIN, MARGIN + 6, { charSpace: 0.8 });
   };
 
-  const svgImg = (svg: string, w: number, h: number): Promise<string> =>
-    new Promise((resolve) => {
-      const c = document.createElement("canvas");
-      c.width = w * 2;
-      c.height = h * 2;
-      const ctx = c.getContext("2d")!;
-      ctx.scale(2, 2);
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, w, h);
-      const img = new Image();
-      const url = URL.createObjectURL(
-        new Blob([svg], { type: "image/svg+xml;charset=utf-8" }),
-      );
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0, w, h);
-        URL.revokeObjectURL(url);
-        resolve(c.toDataURL("image/jpeg", 0.92));
-      };
-      img.src = url;
-    });
-
+  // ── Per-table guest lists ──────────────────────────────────────────────────
   type GBlock = {
-    x: number;
+    c: number;
     y: number;
-    t: {
-      label: string;
-      guests: { name: string; here: number; total: number }[];
-    };
+    t: { label: string; guests: { name: string; here: number; total: number }[] };
   };
   const gPages: GBlock[][] = [];
   let gPage: GBlock[] = [];
-  let gColY = [G.titleH, G.titleH];
+  let gColY = [TITLE_H, TITLE_H];
 
   for (const t of seatingTables) {
-    const bh = G.labelH + t.guests.length * G.rowH + G.gap;
+    const bh = LABEL_H + t.guests.length * ROW_H + BLOCK_GAP;
     let c = gColY[0] <= gColY[1] ? 0 : 1;
-    if (gColY[c] + bh > G.pageH) {
+    if (gColY[c] + bh > USABLE_H) {
       const oc = 1 - c;
-      if (gColY[oc] + bh <= G.pageH) {
+      if (gColY[oc] + bh <= USABLE_H) {
         c = oc;
       } else {
         gPages.push(gPage);
@@ -367,44 +340,45 @@ export async function generateAndDownloadPDF(
         c = 0;
       }
     }
-    gPage.push({ x: c === 0 ? 0 : G.colW + G.colGap, y: gColY[c], t });
+    gPage.push({ c, y: gColY[c], t });
     gColY[c] += bh;
   }
   if (gPage.length) gPages.push(gPage);
 
   for (let pi = 0; pi < gPages.length; pi++) {
-    const blocks = gPages[pi];
-    const maxY = Math.max(
-      ...blocks.map((b) => b.y + G.labelH + b.t.guests.length * G.rowH + G.gap),
-    );
-    const svgH = Math.max(100, maxY);
+    doc.addPage();
+    if (pi === 0) pageTitle("RASPORED GOSTIJU PO STOLOVIMA");
 
-    let inner = "";
-    if (pi === 0) {
-      inner += `<text x="0" y="${Math.round(G.titleH * 0.72)}" font-size="${G.fsTitle}" font-family="Arial,sans-serif" fill="#aaa" letter-spacing="3">${escXml("RASPORED GOSTIJU PO STOLOVIMA")}</text>`;
-    }
-
-    for (const { x, y: by, t } of blocks) {
-      inner += `<text x="${x}" y="${by + Math.round(G.labelH * 0.72)}" font-size="${G.fsLabel}" font-family="Arial,sans-serif" fill="#232323" font-weight="700">${escXml(t.label.toUpperCase())}</text>`;
-      inner += `<line x1="${x}" y1="${by + G.labelH}" x2="${x + G.colW}" y2="${by + G.labelH}" stroke="#ddd" stroke-width="1.5"/>`;
-      let gy = by + G.labelH;
+    for (const { c, y: by, t } of gPages[pi]) {
+      const x = colX(c);
+      const top = MARGIN + by;
+      // Table label
+      doc.setFont("Serif");
+      doc.setFontSize(13);
+      doc.setTextColor(35, 35, 35);
+      doc.text(t.label.toUpperCase(), x, top + LABEL_H * 0.62);
+      // Divider under label
+      doc.setDrawColor(221, 221, 221);
+      doc.setLineWidth(0.4);
+      doc.line(x, top + LABEL_H, x + COL_W, top + LABEL_H);
+      // Guest rows
+      doc.setFontSize(10.5);
+      let gy = top + LABEL_H;
       for (const g of t.guests) {
-        const ty = gy + Math.round(G.rowH * 0.68);
-        inner += `<text x="${x + 3}" y="${ty}" font-size="${G.fsGuest}" font-family="Arial,sans-serif" fill="#232323">${escXml(g.name)}</text>`;
-        inner += `<text x="${x + G.colW - 3}" y="${ty}" font-size="${G.fsGuest}" font-family="Arial,sans-serif" fill="#aaa" text-anchor="end">${g.here}/${g.total}</text>`;
-        gy += G.rowH;
-        inner += `<line x1="${x}" y1="${gy}" x2="${x + G.colW}" y2="${gy}" stroke="#f0f0f0" stroke-width="1"/>`;
+        const ty = gy + ROW_H * 0.68;
+        doc.setTextColor(35, 35, 35);
+        doc.text(g.name, x + 1, ty);
+        doc.setTextColor(170, 170, 170);
+        doc.text(`${g.here}/${g.total}`, x + COL_W - 1, ty, { align: "right" });
+        gy += ROW_H;
+        doc.setDrawColor(240, 240, 240);
+        doc.setLineWidth(0.2);
+        doc.line(x, gy, x + COL_W, gy);
       }
     }
-
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${GW}" height="${svgH}">${inner}</svg>`;
-    const gImgData = await svgImg(svg, GW, svgH);
-    doc.addPage();
-    doc.addImage(gImgData, "JPEG", MARGIN, MARGIN, CW, svgH / GSCALE);
   }
 
-  // ── Alphabetical guest index page ──────────────────────────────────────────
-  // Build flat list: guest name → table label(s)
+  // ── Alphabetical guest index ───────────────────────────────────────────────
   const guestTableMap: Record<string, Set<string>> = {};
   for (const t of seatingTables) {
     for (const g of t.guests) {
@@ -417,18 +391,16 @@ export async function generateAndDownloadPDF(
     .sort((a, b) => a.name.localeCompare(b.name, "sr"));
 
   if (allGuests.length > 0) {
-    // Reuse same SVG helpers (GW, GSCALE, gmm, gpt, G, svgImg, escXml)
-    type ABlock = { x: number; y: number; g: { name: string; tables: string } };
+    type ABlock = { c: number; y: number; g: { name: string; tables: string } };
     const aPages: ABlock[][] = [];
     let aPage: ABlock[] = [];
-    let aColY = [G.titleH, G.titleH];
-    let aCol = 0; // always fill col 0 first, then col 1
+    let aColY = [TITLE_H, TITLE_H];
+    let aCol = 0; // fill column 0, then column 1, then a new page
 
     for (const g of allGuests) {
-      const bh = G.rowH;
-      if (aColY[aCol] + bh > G.pageH) {
+      if (aColY[aCol] + ROW_H > USABLE_H) {
         if (aCol === 0) {
-          aCol = 1; // switch to second column
+          aCol = 1;
         } else {
           aPages.push(aPage);
           aPage = [];
@@ -436,33 +408,28 @@ export async function generateAndDownloadPDF(
           aCol = 0;
         }
       }
-      const c = aCol;
-      aPage.push({ x: c === 0 ? 0 : G.colW + G.colGap, y: aColY[c], g });
-      aColY[c] += bh;
+      aPage.push({ c: aCol, y: aColY[aCol], g });
+      aColY[aCol] += ROW_H;
     }
     if (aPage.length) aPages.push(aPage);
 
     for (let pi = 0; pi < aPages.length; pi++) {
-      const blocks = aPages[pi];
-      const maxY = Math.max(...blocks.map((b) => b.y + G.rowH));
-      const svgH = Math.max(100, maxY);
-
-      let inner = "";
-      if (pi === 0) {
-        inner += `<text x="0" y="${Math.round(G.titleH * 0.72)}" font-size="${G.fsTitle}" font-family="Arial,sans-serif" fill="#aaa" letter-spacing="3">${escXml("ABECEDNI SPISAK GOSTIJU")}</text>`;
-      }
-
-      for (const { x, y: by, g } of blocks) {
-        const ty = by + Math.round(G.rowH * 0.68);
-        inner += `<text x="${x + 3}" y="${ty}" font-size="${G.fsGuest}" font-family="Arial,sans-serif" fill="#232323">${escXml(g.name)}</text>`;
-        inner += `<text x="${x + G.colW - 3}" y="${ty}" font-size="${G.fsGuest}" font-family="Arial,sans-serif" fill="#aaa" text-anchor="end">${escXml(g.tables)}</text>`;
-        inner += `<line x1="${x}" y1="${by + G.rowH}" x2="${x + G.colW}" y2="${by + G.rowH}" stroke="#f0f0f0" stroke-width="1"/>`;
-      }
-
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${GW}" height="${svgH}">${inner}</svg>`;
-      const aImgData = await svgImg(svg, GW, svgH);
       doc.addPage();
-      doc.addImage(aImgData, "JPEG", MARGIN, MARGIN, CW, svgH / GSCALE);
+      if (pi === 0) pageTitle("ABECEDNI SPISAK GOSTIJU");
+
+      doc.setFont("Serif");
+      doc.setFontSize(10.5);
+      for (const { c, y: by, g } of aPages[pi]) {
+        const x = colX(c);
+        const ty = MARGIN + by + ROW_H * 0.68;
+        doc.setTextColor(35, 35, 35);
+        doc.text(g.name, x + 1, ty);
+        doc.setTextColor(170, 170, 170);
+        doc.text(g.tables, x + COL_W - 1, ty, { align: "right" });
+        doc.setDrawColor(240, 240, 240);
+        doc.setLineWidth(0.2);
+        doc.line(x, MARGIN + by + ROW_H, x + COL_W, MARGIN + by + ROW_H);
+      }
     }
   }
 
