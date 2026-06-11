@@ -32,11 +32,43 @@ export interface PortalBudget {
   categories: BudgetCategory[];
 }
 
+/* ── Guest List (private planning list of invitees) ─────────── */
+
+export type InviteeStatus =
+  | "not-invited" // Nije pozvan (default)
+  | "invited" // Pozvan
+  | "confirmed" // Potvrdio
+  | "declined"; // Otkazao
+
+export type InviteeCategory = "" | "Mladini" | "Mladozenjini" | "Zajednicki";
+
+export interface GuestSection {
+  id: string;
+  name: string;
+}
+
+export interface Invitee {
+  id: string;
+  name: string;
+  count: number; // expected number of people in this party
+  sectionId: string; // "" = ungrouped ("Bez celine")
+  category: InviteeCategory;
+  status: InviteeStatus;
+  linkedRsvpId?: string; // id of a matched rsvp_responses entry (manual link)
+  note?: string;
+}
+
+export interface GuestList {
+  sections: GuestSection[];
+  invitees: Invitee[];
+}
+
 export interface PortalData {
   slug: string;
   checklist: ChecklistItem[];
   budget: PortalBudget;
   vendorFavorites: string[];
+  guestList?: GuestList;
   updatedAt: Date;
   createdAt: Date;
 }

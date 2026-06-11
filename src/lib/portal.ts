@@ -1,5 +1,5 @@
 import clientPromise from "./mongodb";
-import type { PortalData, ChecklistItem, PortalBudget } from "@/app/moje-vencanje/types";
+import type { PortalData, ChecklistItem, PortalBudget, GuestList } from "@/app/moje-vencanje/types";
 
 import { getDefaultChecklist, getDefaultBudgetCategories } from "@/app/moje-vencanje/defaults";
 
@@ -19,6 +19,7 @@ export async function loadPortalData(slug: string): Promise<PortalData> {
         checklist: getDefaultChecklist(),
         budget: { totalBudget: 0, categories: getDefaultBudgetCategories() },
         vendorFavorites: [],
+        guestList: { sections: [], invitees: [] },
         createdAt: now,
         updatedAt: now,
       },
@@ -58,6 +59,17 @@ export async function saveVendorFavorites(
   await c.updateOne(
     { slug },
     { $set: { vendorFavorites, updatedAt: new Date() } }
+  );
+}
+
+export async function saveGuestList(
+  slug: string,
+  guestList: GuestList
+): Promise<void> {
+  const c = await col();
+  await c.updateOne(
+    { slug },
+    { $set: { guestList, updatedAt: new Date() } }
   );
 }
 

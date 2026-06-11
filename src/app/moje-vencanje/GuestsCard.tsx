@@ -29,6 +29,7 @@ import {
   updateGuestCountAction,
   deleteGuestAction,
 } from "./actions";
+import InviteeListCard from "./InviteeListCard";
 
 function getPersonLabel(count: number): string {
   if (count === 1) return "osoba";
@@ -321,6 +322,7 @@ export default function GuestsCard({ slug, draft }: Props) {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEntry, setEditingEntry] = useState<RSVPEntry | null>(null);
+  const [subView, setSubView] = useState<"potvrde" | "lista">("potvrde");
 
   useEffect(() => {
     loadGuestsAction().then((result) => {
@@ -500,22 +502,51 @@ export default function GuestsCard({ slug, draft }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-serif text-lg text-[#232323]">Gosti</h3>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="p-2 rounded-lg transition-colors hover:bg-[#232323]/10 cursor-pointer disabled:opacity-40"
-          >
-            <RefreshCw
-              size={14}
-              className={`text-[#232323]/65 ${isRefreshing ? "animate-spin" : ""}`}
-            />
-          </button>
-        </div>
+    <div>
+      {/* Sub-tab switcher: Potvrde (RSVP) vs Lista zvanica (planning) */}
+      <div className="flex gap-1.5 mb-4">
+        {(
+          [
+            { key: "potvrde", label: "Potvrde gostiju" },
+            { key: "lista", label: "Lista zvanica" },
+          ] as const
+        ).map((t) => {
+          const active = subView === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setSubView(t.key)}
+              className={`flex-1 text-sm font-medium px-3 py-2.5 rounded-xl border transition-all cursor-pointer ${
+                active
+                  ? "bg-[#AE343F] text-white border-[#AE343F]"
+                  : "bg-white text-[#232323]/75 border-[#232323]/15 hover:border-[#232323]/30"
+              }`}
+            >
+              {t.label}
+            </button>
+          );
+        })}
       </div>
+
+      {subView === "lista" ? (
+        <InviteeListCard responses={[...attending, ...notAttending]} />
+      ) : (
+        <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-serif text-lg text-[#232323]">Gosti</h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="p-2 rounded-lg transition-colors hover:bg-[#232323]/10 cursor-pointer disabled:opacity-40"
+              >
+                <RefreshCw
+                  size={14}
+                  className={`text-[#232323]/65 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+              </button>
+            </div>
+          </div>
 
       {/* Expiry banner */}
       {expiryBanner && !bannerDismissed && (
@@ -791,13 +822,15 @@ export default function GuestsCard({ slug, draft }: Props) {
         </div>
       )}
 
-      {editingEntry && (
-        <EditGuestModal
-          entry={editingEntry}
-          onClose={() => setEditingEntry(null)}
-          onSave={handleEditSave}
-          onDelete={handleEditDelete}
-        />
+          {editingEntry && (
+            <EditGuestModal
+              entry={editingEntry}
+              onClose={() => setEditingEntry(null)}
+              onSave={handleEditSave}
+              onDelete={handleEditDelete}
+            />
+          )}
+        </div>
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import {
   saveChecklist as dbSaveChecklist,
   saveBudget as dbSaveBudget,
   saveVendorFavorites as dbSaveVendorFavorites,
+  saveGuestList as dbSaveGuestList,
   getHighlightedVendors as dbGetHighlighted,
   setHighlightedVendors as dbSetHighlighted,
 } from "@/lib/portal";
@@ -25,6 +26,7 @@ import { del } from "@vercel/blob";
 import type {
   ChecklistItem,
   PortalBudget,
+  GuestList,
   Vendor,
   VendorCategoryMeta,
   VendorTrackKind,
@@ -113,6 +115,24 @@ export async function saveVendorFavoritesAction(vendorFavorites: string[]) {
   const slug = await getAuthSlug();
   if (!slug) return { error: "Niste prijavljeni" };
   await dbSaveVendorFavorites(slug, vendorFavorites);
+  return { ok: true };
+}
+
+/* ── Guest List (private planning list of invitees) ────────── */
+
+export async function loadGuestListAction(): Promise<GuestList | null> {
+  const slug = await getAuthSlug();
+  if (!slug) return null;
+  const data = await dbLoadPortal(slug);
+  return data.guestList ?? { sections: [], invitees: [] };
+}
+
+export async function saveGuestListAction(
+  guestList: GuestList,
+): Promise<{ ok: boolean }> {
+  const slug = await getAuthSlug();
+  if (!slug) return { ok: false };
+  await dbSaveGuestList(slug, guestList);
   return { ok: true };
 }
 
@@ -368,7 +388,7 @@ export async function loadOverviewAction(): Promise<{
   } catch { /* ignore */ }
 
   // Audio
-  let audioStats = { count: 0, totalDurationMs: 0, paidForAudio: data.paid_for_audio ?? false };
+  const audioStats = { count: 0, totalDurationMs: 0, paidForAudio: data.paid_for_audio ?? false };
   if (audioStats.paidForAudio) {
     try {
       const msgs = await getAudioMessages(slug);
