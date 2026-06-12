@@ -23,6 +23,7 @@ import {
   UserPlus,
   FolderPlus,
   Users,
+  Star,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { RSVPEntry } from "@/lib/rsvp";
@@ -32,6 +33,7 @@ import type {
   Invitee,
   InviteeStatus,
   InviteeCategory,
+  KeyRole,
 } from "./types";
 import { loadGuestListAction, saveGuestListAction } from "./actions";
 
@@ -81,6 +83,31 @@ const CATEGORIES: { value: Exclude<InviteeCategory, "">; label: string }[] = [
 ];
 
 const UNGROUPED = "__ungrouped__";
+const KEYROLES_KEY = "__keyroles__";
+
+// Predefined wedding-role placeholders (album-style). Stable ids so seeding is
+// idempotent; once the user edits roles, the list is persisted and replaces these.
+const DEFAULT_KEY_ROLES: KeyRole[] = [
+  { id: "kr-kum", group: "kum", label: "Kum (crkveni)", name: "" },
+  { id: "kr-kuma", group: "kuma", label: "Kuma / Stari svat (crkveni)", name: "" },
+  { id: "kr-barjaktar", group: "barjaktar", label: "Barjaktar", name: "" },
+  { id: "kr-dever", group: "dever", label: "Dever", name: "" },
+  { id: "kr-deverusa", group: "deverusa", label: "Deveruša", name: "" },
+  { id: "kr-caus", group: "caus", label: "Čauš (vođa veselja)", name: "" },
+  { id: "kr-buklijas", group: "buklijas", label: "Buklijaš (poziva goste)", name: "" },
+  { id: "kr-blagajnik", group: "blagajnik", label: "Blagajnik (poklon-kutija)", name: "" },
+  { id: "kr-domacin", group: "domacin", label: "Domaćin / Hostesa", name: "" },
+  { id: "kr-kicenje", group: "kicenje", label: "Kićenje svatova", name: "" },
+];
+
+// Groups whose "+" appends another slot — with the label of the added slot.
+// kum/kuma add the civil-ceremony variant; domacin/kicenje add more of the same.
+const ROLE_ADD: Record<string, string> = {
+  kum: "Kum (građanski)",
+  kuma: "Kuma (građanski)",
+  domacin: "Domaćin / Hostesa",
+  kicenje: "Kićenje svatova",
+};
 
 /* ── Helpers ────────────────────────────────────────────────── */
 
@@ -241,6 +268,128 @@ function LinkModal({
               </button>
             );
           })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Role assignment picker (search invitees OR type a new name) ─── */
+
+function RolePickerModal({
+  roleLabel,
+  invitees,
+  onClose,
+  onAssign,
+}: {
+  roleLabel: string;
+  invitees: Invitee[];
+  onClose: () => void;
+  onAssign: (name: string, inviteeId?: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const q = normalizeName(query);
+  const trimmed = query.trim();
+
+  const matches = useMemo(() => {
+    const named = invitees.filter((i) => i.name.trim());
+    const list = q
+      ? named.filter((i) => normalizeName(i.name).includes(q))
+      : named;
+    return list.slice(0, 60);
+  }, [invitees, q]);
+
+  const exact = invitees.some((i) => normalizeName(i.name) === q);
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <div className="min-w-0">
+            <h3 className="font-serif text-lg text-[#232323]">Dodeli osobu</h3>
+            <p className="text-xs text-[#232323]/60 truncate">
+              uloga: {roleLabel}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-[#232323]/60 hover:text-[#232323] transition-colors cursor-pointer shrink-0"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="px-5 pb-3">
+          <div className="relative">
+            <Search
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#232323]/55"
+            />
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && trimmed) {
+                  e.preventDefault();
+                  onAssign(trimmed);
+                }
+              }}
+              placeholder="Pretraži zvanice ili upiši novo ime..."
+              className="w-full bg-white pl-10 pr-3 py-2.5 text-sm rounded-lg border border-[#232323]/20 placeholder:text-[#232323]/50 outline-none focus:border-[#AE343F] transition-colors"
+            />
+          </div>
+        </div>
+
+        <div className="px-5 pb-5 overflow-y-auto space-y-2">
+          {/* New (free-text) name — for people not in the list (e.g. a guest's child) */}
+          {trimmed && !exact && (
+            <button
+              onClick={() => onAssign(trimmed)}
+              className="w-full text-left p-3 rounded-xl border border-[#AE343F]/40 bg-[#AE343F]/[0.04] hover:bg-[#AE343F]/[0.08] transition-colors cursor-pointer"
+            >
+              <span className="text-sm font-medium text-[#AE343F] flex items-center gap-2">
+                <UserPlus size={14} /> Dodaj novo ime: „{trimmed}"
+              </span>
+              <span className="text-[11px] text-[#232323]/55">
+                osoba koja nije na listi zvanica
+              </span>
+            </button>
+          )}
+          {matches.length === 0 && !trimmed && (
+            <p className="text-center text-sm text-[#232323]/60 py-8">
+              Lista zvanica je prazna — upiši ime gore.
+            </p>
+          )}
+          {matches.map((inv) => (
+            <button
+              key={inv.id}
+              onClick={() => onAssign(inv.name, inv.id)}
+              className="w-full text-left p-3 rounded-xl border border-[#232323]/15 hover:border-[#232323]/30 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium text-[#232323] truncate">
+                  {inv.name}
+                </span>
+                {inv.category && (
+                  <span className="shrink-0 text-[10px] font-medium text-[#232323]/55 bg-[#F5F4DC] border border-[#232323]/12 rounded px-1.5 py-0.5">
+                    {inv.category === "Mladozenjini"
+                      ? "Mladoženjini"
+                      : inv.category === "Zajednicki"
+                        ? "Zajednički"
+                        : inv.category}
+                  </span>
+                )}
+              </div>
+            </button>
+          ))}
         </div>
       </div>
     </div>
@@ -723,6 +872,7 @@ export default function InviteeListCard({ responses }: Props) {
   const [showAddSection, setShowAddSection] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [linkingId, setLinkingId] = useState<string | null>(null);
+  const [rolePickerId, setRolePickerId] = useState<string | null>(null);
 
   // Drag state
   const [dragId, setDragId] = useState<string | null>(null);
@@ -896,6 +1046,55 @@ export default function InviteeListCard({ responses }: Props) {
     }));
   };
 
+  /* ── Key roles (reference album — does not affect totals) ── */
+
+  const setKeyRoles = useCallback(
+    (fn: (rs: KeyRole[]) => KeyRole[]) => {
+      mutate((gl) => ({
+        ...gl,
+        keyRoles: fn(gl.keyRoles ?? DEFAULT_KEY_ROLES),
+      }));
+    },
+    [mutate],
+  );
+
+  const assignRole = (id: string, name: string, inviteeId?: string) =>
+    setKeyRoles((rs) =>
+      rs.map((r) => (r.id === id ? { ...r, name: name.trim(), inviteeId } : r)),
+    );
+
+  const clearRole = (id: string) =>
+    setKeyRoles((rs) =>
+      rs.map((r) => (r.id === id ? { ...r, name: "", inviteeId: undefined } : r)),
+    );
+
+  const addRoleSlot = (group: string) =>
+    setKeyRoles((rs) => {
+      const label = ROLE_ADD[group] ?? "Nova uloga";
+      let lastIdx = -1;
+      rs.forEach((r, i) => {
+        if (r.group === group) lastIdx = i;
+      });
+      const slot: KeyRole = { id: uid("kr"), group, label, name: "" };
+      if (lastIdx === -1) return [...rs, slot];
+      const next = [...rs];
+      next.splice(lastIdx + 1, 0, slot);
+      return next;
+    });
+
+  const removeRoleSlot = (id: string) =>
+    setKeyRoles((rs) => rs.filter((r) => r.id !== id));
+
+  const addCustomRole = () => {
+    const label = window.prompt("Naziv uloge:");
+    if (label && label.trim()) {
+      setKeyRoles((rs) => [
+        ...rs,
+        { id: uid("kr"), group: "custom", label: label.trim(), name: "" },
+      ]);
+    }
+  };
+
   // Reorder within the same section (array-order preserving, like ChecklistCard)
   const reorderWithinSection = (
     sectionKey: string,
@@ -999,6 +1198,14 @@ export default function InviteeListCard({ responses }: Props) {
   const linkingInvitee =
     linkingId != null
       ? guestList.invitees.find((i) => i.id === linkingId) ?? null
+      : null;
+
+  const keyRoles = guestList.keyRoles ?? DEFAULT_KEY_ROLES;
+  const rolesCollapsed = collapsed[KEYROLES_KEY] ?? false;
+  const filledRoles = keyRoles.filter((r) => r.name.trim()).length;
+  const rolePickerRole =
+    rolePickerId != null
+      ? keyRoles.find((r) => r.id === rolePickerId) ?? null
       : null;
 
   // Build render groups: each section, then ungrouped
@@ -1127,6 +1334,108 @@ export default function InviteeListCard({ responses }: Props) {
           </p>
         </div>
       )}
+
+      {/* Posebne uloge (key wedding roles) — reference album, not counted in totals */}
+      <div className="mb-4 border border-[#d4af37]/40 rounded-xl bg-[#F5F4DC]/40 overflow-hidden">
+        <button
+          onClick={() =>
+            setCollapsed((c) => ({ ...c, [KEYROLES_KEY]: !rolesCollapsed }))
+          }
+          className="w-full flex items-center gap-2 px-3 py-2.5 text-left cursor-pointer"
+        >
+          <ChevronDown
+            size={15}
+            className={`text-[#232323]/55 transition-transform shrink-0 ${
+              rolesCollapsed ? "-rotate-90" : ""
+            }`}
+          />
+          <Star size={14} className="text-[#d4af37] shrink-0" fill="currentColor" />
+          <span className="text-sm font-semibold text-[#232323]">
+            Posebne uloge na svadbi
+          </span>
+          <span className="text-xs text-[#232323]/55 ml-auto shrink-0 tabular-nums">
+            popunjeno {filledRoles}/{keyRoles.length}
+          </span>
+        </button>
+
+        {!rolesCollapsed && (
+          <div className="px-3 pb-3">
+            <p className="text-[11px] text-[#232323]/50 leading-relaxed pb-2">
+              Predefinisana mesta za bitne uloge. Klikni da dodeliš osobu (iz
+              liste zvanica ili upiši novo ime). Ne ulazi u broj gostiju.
+            </p>
+            {/* Album-style placeholder grid — multiple columns on wider screens */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {keyRoles.map((role) => {
+                const addable = !!ROLE_ADD[role.group];
+                return (
+                  <div
+                    key={role.id}
+                    className={`rounded-lg border px-3 py-2 ${
+                      role.name
+                        ? "border-[#232323]/12 bg-white"
+                        : "border-dashed border-[#232323]/25 bg-[#F5F4DC]/40"
+                    }`}
+                  >
+                    <div className="text-[10px] uppercase tracking-[0.14em] text-[#232323]/50 truncate">
+                      {role.label}
+                    </div>
+                    <div className="flex items-center justify-between gap-1 mt-0.5">
+                      <button
+                        onClick={() => setRolePickerId(role.id)}
+                        className="text-left flex-1 min-w-0 cursor-pointer"
+                      >
+                        {role.name ? (
+                          <span className="text-sm font-medium text-[#232323] truncate block">
+                            {role.name}
+                          </span>
+                        ) : (
+                          <span className="text-sm italic text-[#232323]/40">
+                            dodeli osobu…
+                          </span>
+                        )}
+                      </button>
+                      <div className="flex items-center gap-0 shrink-0">
+                        {role.name && (
+                          <button
+                            onClick={() => clearRole(role.id)}
+                            title="Ukloni ime"
+                            className="text-[#232323]/45 hover:text-[#AE343F] p-1 cursor-pointer transition-colors"
+                          >
+                            <X size={13} />
+                          </button>
+                        )}
+                        {addable && (
+                          <button
+                            onClick={() => addRoleSlot(role.group)}
+                            title="Dodaj još jedno mesto"
+                            className="text-[#232323]/45 hover:text-[#AE343F] p-1 cursor-pointer transition-colors"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => removeRoleSlot(role.id)}
+                          title="Ukloni ulogu"
+                          className="text-[#232323]/40 hover:text-red-500 p-1 cursor-pointer transition-colors"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              onClick={addCustomRole}
+              className="flex items-center gap-1.5 text-xs font-medium text-[#232323]/70 hover:text-[#AE343F] transition-colors cursor-pointer pt-3"
+            >
+              <Plus size={14} /> Dodaj ulogu
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Add section */}
       <div className="mb-4">
@@ -1362,6 +1671,19 @@ export default function InviteeListCard({ responses }: Props) {
           onLink={(rsvp) => {
             linkInvitee(linkingInvitee.id, rsvp);
             setLinkingId(null);
+          }}
+        />
+      )}
+
+      {/* Role assignment picker */}
+      {rolePickerRole && (
+        <RolePickerModal
+          roleLabel={rolePickerRole.label}
+          invitees={guestList.invitees}
+          onClose={() => setRolePickerId(null)}
+          onAssign={(name, inviteeId) => {
+            assignRole(rolePickerRole.id, name, inviteeId);
+            setRolePickerId(null);
           }}
         />
       )}

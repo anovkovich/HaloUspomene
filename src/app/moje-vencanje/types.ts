@@ -58,9 +58,22 @@ export interface Invitee {
   note?: string;
 }
 
+/** A predefined "key role" slot (kum, barjaktar, …) — a reference album of
+ *  important wedding roles. Does NOT count toward the guest/headcount totals.
+ *  `name` empty = unfilled placeholder; `inviteeId` set when picked from the
+ *  invitee list (free-text names are allowed too). */
+export interface KeyRole {
+  id: string;
+  group: string; // role family: kum, kuma, barjaktar, domacin, kicenje, … or "custom"
+  label: string; // display label, e.g. "Kum (crkveni)"
+  name: string;
+  inviteeId?: string;
+}
+
 export interface GuestList {
   sections: GuestSection[];
   invitees: Invitee[];
+  keyRoles?: KeyRole[];
 }
 
 export interface PortalData {
