@@ -862,6 +862,7 @@ export default function InviteeListCard({ responses }: Props) {
   });
   const [loading, setLoading] = useState(true);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestRef = useRef<GuestList | null>(null);
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<InviteeStatus | "all">(
@@ -885,11 +886,29 @@ export default function InviteeListCard({ responses }: Props) {
     });
   }, []);
 
+  // Debounced save, but keep the latest pending payload in a ref so we can
+  // flush it on tab-hide / unload / unmount. Without the flush, a quick reload
+  // right after an edit (e.g. assigning a role) drops the pending save before
+  // the 500ms timer fires, so the change is silently lost.
   const debouncedSave = useCallback((next: GuestList) => {
+    latestRef.current = next;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      saveGuestListAction(next);
+      saveTimer.current = null;
+      const data = latestRef.current;
+      latestRef.current = null;
+      if (data) saveGuestListAction(data);
     }, 500);
+  }, []);
+
+  const flushSave = useCallback(() => {
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    const data = latestRef.current;
+    latestRef.current = null;
+    if (data) saveGuestListAction(data);
   }, []);
 
   const mutate = useCallback(
@@ -902,6 +921,21 @@ export default function InviteeListCard({ responses }: Props) {
     },
     [debouncedSave],
   );
+
+  // Persist any pending edit before the page goes away (reload, navigation,
+  // backgrounding the tab) so recent changes are never lost.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flushSave();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", flushSave);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", flushSave);
+      flushSave();
+    };
+  }, [flushSave]);
 
   // rsvpId -> inviteeId, for "already linked" detection
   const linkedIds = useMemo(() => {
