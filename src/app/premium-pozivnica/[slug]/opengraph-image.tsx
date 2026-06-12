@@ -456,8 +456,8 @@ export default async function PremiumOGImage({
   const GOLD = "#bfa256"; // champagne gold accents (frame, ornaments)
   const GOLD_DEEP = "#a07d2c"; // deeper gold — wordmark / divider / date (contrast on light)
   const INK = "#3b3b45"; // soft charcoal — couple names
-  const CLOUD = "#ffffff"; // soft white clouds
-  const SKY = "#b7d4ef"; // clear light-blue sky (top)
+  const PAPER = "#fcfbf8"; // warm near-white paper (center)
+  const PAPER_EDGE = "#e9e6dd"; // soft neutral greige (edges)
 
   // Only four soft corner flourishes — no scattered "stars" (those read as a
   // night sky). Keeps the calm, daytime feel.
@@ -486,9 +486,9 @@ export default async function PremiumOGImage({
           height: "100%",
           alignItems: "center",
           justifyContent: "center",
-          // Soft white clouds over a light-blue sky — lots of puffs so only
-          // glimpses of blue peek through (layered radials over a sky→haze base).
-          background: `radial-gradient(circle at 16% 26%, ${CLOUD}, rgba(255,255,255,0) 21%), radial-gradient(circle at 48% 16%, ${CLOUD}, rgba(255,255,255,0) 19%), radial-gradient(circle at 80% 22%, ${CLOUD}, rgba(255,255,255,0) 21%), radial-gradient(circle at 90% 54%, ${CLOUD}, rgba(255,255,255,0) 19%), radial-gradient(circle at 64% 72%, ${CLOUD}, rgba(255,255,255,0) 21%), radial-gradient(circle at 30% 74%, ${CLOUD}, rgba(255,255,255,0) 21%), radial-gradient(circle at 9% 56%, ${CLOUD}, rgba(255,255,255,0) 17%), linear-gradient(180deg, ${SKY} 0%, #dcebf8 48%, #f3f9fd 100%)`,
+          // Neutral, "colorless" warm paper — soft near-white center easing into
+          // a light greige at the edges. No blue; elegant and timeless.
+          background: `radial-gradient(ellipse 120% 95% at 50% 38%, ${PAPER} 0%, #f4f2ec 52%, ${PAPER_EDGE} 100%)`,
           position: "relative",
         }}
       >
