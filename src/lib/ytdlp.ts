@@ -28,6 +28,47 @@ function getDownloadUrl(): string {
   }
 }
 
+// ── YouTube cookies (the durable fix for the datacenter-IP bot wall) ──────────
+// YouTube serves "Sign in to confirm you're not a bot" to flagged IPs (Vercel's
+// ranges qualify). The only reliable bypass on a serverless host is a cookies
+// file from a logged-in account. Set YTDLP_COOKIES to the contents of a
+// Netscape-format cookies.txt (raw, or base64-encoded). We write it once per
+// process to a temp file and pass it via --cookies. `--cookies-from-browser`
+// can't work here (no browser on the Lambda).
+export function hasYtCookies(): boolean {
+  return !!process.env.YTDLP_COOKIES?.trim();
+}
+
+let cookiesPath: string | null | undefined; // undefined = not yet resolved
+async function getCookiesArgs(): Promise<string[]> {
+  if (cookiesPath === undefined) {
+    const raw = process.env.YTDLP_COOKIES?.trim();
+    if (raw) {
+      // Accept either a raw Netscape cookies.txt or a base64 blob of one.
+      const looksLikeCookieFile =
+        raw.includes("\t") || /^#\s*(HTTP Cookie File|Netscape)/i.test(raw);
+      let content = raw;
+      if (!looksLikeCookieFile) {
+        try {
+          content = Buffer.from(raw, "base64").toString("utf8");
+        } catch {
+          /* fall back to raw */
+        }
+      }
+      const p = path.join(tmpdir(), "yt-cookies.txt");
+      try {
+        await writeFile(p, content, { mode: 0o600 });
+        cookiesPath = p;
+      } catch {
+        cookiesPath = null;
+      }
+    } else {
+      cookiesPath = null;
+    }
+  }
+  return cookiesPath ? ["--cookies", cookiesPath] : [];
+}
+
 // Singleton promise — one download per process, not per request.
 // Reset to null on failure so the next request can retry.
 let ensurePromise: Promise<void> | null = null;
@@ -75,6 +116,7 @@ export class YtDlpError extends Error {
       | "PRIVATE"
       | "AGE"
       | "UNAVAILABLE"
+      | "BOT"
       | "UNKNOWN",
     public readonly extra?: Record<string, unknown>,
   ) {
@@ -83,9 +125,12 @@ export class YtDlpError extends Error {
   }
 }
 
-// TV player client doesn't require a PO token for regular public videos.
-// Fallback to "default" if TV fails so we cover edge-case videos.
-const EXTRACTOR_ARGS = "youtube:player_client=tv,default";
+// Rotate through several player clients — yt-dlp tries each in order until one
+// returns formats. Different clients trip YouTube's bot wall differently, so a
+// spread maximizes the odds of an anonymous extraction; with cookies present the
+// web/default client succeeds first and fast. Ordering favors clients that have
+// been most resilient anonymously, with default/web last.
+const EXTRACTOR_ARGS = "youtube:player_client=web_safari,mweb,tv,default";
 
 export interface YtDownloadResult {
   title: string;
@@ -97,11 +142,15 @@ export interface YtDownloadResult {
 
 // Downloads audio directly to disk, reads it into a Buffer, then cleans up.
 // Bypasses CDN entirely — no server-to-server streaming from third-party CDNs.
-export async function downloadYtAudio(youtubeUrl: string): Promise<YtDownloadResult> {
+export async function downloadYtAudio(
+  youtubeUrl: string,
+  opts: { timeoutMs?: number } = {},
+): Promise<YtDownloadResult> {
   await ensureYtDlp();
 
   const id = randomBytes(8).toString("hex");
   const outTemplate = path.join(tmpdir(), `yt-${id}.%(ext)s`);
+  const cookieArgs = await getCookiesArgs();
 
   let stdout: string;
   let stderr = "";
@@ -110,6 +159,7 @@ export async function downloadYtAudio(youtubeUrl: string): Promise<YtDownloadRes
       YTDLP_PATH,
       [
         "--no-playlist",
+        ...cookieArgs,
         "-f",
         "bestaudio[ext=m4a]/bestaudio[acodec=aac]/bestaudio",
         "--extractor-args",
@@ -122,11 +172,13 @@ export async function downloadYtAudio(youtubeUrl: string): Promise<YtDownloadRes
         outTemplate,
         youtubeUrl,
       ],
-      { timeout: 50_000 },
+      { timeout: opts.timeoutMs ?? 50_000 },
     ));
   } catch (err) {
     const raw =
       (err as NodeJS.ErrnoException & { stderr?: string }).stderr ?? stderr ?? "";
+    if (/Sign in to confirm|not a bot|cookies/i.test(raw))
+      throw new YtDlpError("Bot check / sign-in required", "BOT");
     if (raw.includes("Private video")) throw new YtDlpError("Private", "PRIVATE");
     if (raw.includes("age-restricted") || raw.includes("age restricted"))
       throw new YtDlpError("Age restricted", "AGE");
@@ -174,6 +226,7 @@ export async function downloadYtAudio(youtubeUrl: string): Promise<YtDownloadRes
 
 export async function getYtAudioInfo(youtubeUrl: string): Promise<YtAudioInfo> {
   await ensureYtDlp();
+  const cookieArgs = await getCookiesArgs();
 
   let stdout: string;
   let stderr = "";
@@ -182,6 +235,7 @@ export async function getYtAudioInfo(youtubeUrl: string): Promise<YtAudioInfo> {
       YTDLP_PATH,
       [
         "--no-playlist",
+        ...cookieArgs,
         "--print",
         "%(title)s\t%(duration)s\t%(is_live)s\t%(url)s\t%(ext)s",
         "-f",
@@ -195,6 +249,8 @@ export async function getYtAudioInfo(youtubeUrl: string): Promise<YtAudioInfo> {
   } catch (err) {
     const raw =
       (err as NodeJS.ErrnoException & { stderr?: string }).stderr ?? stderr ?? "";
+    if (/Sign in to confirm|not a bot|cookies/i.test(raw))
+      throw new YtDlpError("Bot check / sign-in required", "BOT");
     if (raw.includes("Private video")) throw new YtDlpError("Private", "PRIVATE");
     if (raw.includes("age-restricted") || raw.includes("age restricted"))
       throw new YtDlpError("Age restricted", "AGE");

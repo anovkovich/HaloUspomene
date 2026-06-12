@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { put, del } from "@vercel/blob";
 import { getWeddingData, patchCouple, unsetCoupleFields } from "@/lib/couples";
-import { downloadYtAudio, YtDlpError } from "@/lib/ytdlp";
+import { YtDlpError } from "@/lib/ytdlp";
+import { downloadYouTubeAudioBytes } from "@/lib/yt-audio";
 
 export const maxDuration = 60;
 export const runtime = "nodejs";
@@ -71,11 +72,12 @@ export async function POST(
       );
     }
 
-    // Download audio to disk via yt-dlp, read into buffer.
-    // Bypasses third-party CDN streaming which drops connections server-to-server.
-    let ytResult: Awaited<ReturnType<typeof downloadYtAudio>>;
+    // Resilient download: loader.to (off-server) + yt-dlp (with cookies if
+    // YTDLP_COOKIES is set), ordered automatically. Returns the audio bytes,
+    // which we then store in Blob — no server-to-server CDN streaming.
+    let ytResult: Awaited<ReturnType<typeof downloadYouTubeAudioBytes>>;
     try {
-      ytResult = await downloadYtAudio(url);
+      ytResult = await downloadYouTubeAudioBytes(url);
     } catch (err) {
       if (err instanceof YtDlpError) {
         const msgs: Record<string, string> = {
@@ -85,6 +87,7 @@ export async function POST(
           AGE: "Video je uzrasno ograničen.",
           UNAVAILABLE: "Video nije dostupan.",
           NO_URL: "Ne možemo da preuzmemo ovaj video.",
+          BOT: "YouTube traži prijavu (zaštita od botova). Postavi YTDLP_COOKIES na serveru ili koristi Direktan upload.",
           UNKNOWN: "Ne možemo da preuzmemo ovaj video.",
         };
         return NextResponse.json(
@@ -93,8 +96,8 @@ export async function POST(
         );
       }
       return NextResponse.json(
-        { error: "Interna greška servera.", detail: String(err) },
-        { status: 500 },
+        { error: "Ne možemo da preuzmemo ovaj video. Pokušajte Direktan upload.", detail: String(err) },
+        { status: 502 },
       );
     }
 

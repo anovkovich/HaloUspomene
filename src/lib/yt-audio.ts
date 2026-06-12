@@ -6,13 +6,26 @@
  * Routes import getYouTubeAudio() and don't need to know which path ran.
  */
 
-import { getYtAudioInfo, YtDlpError } from "@/lib/ytdlp";
+import {
+  getYtAudioInfo,
+  downloadYtAudio,
+  hasYtCookies,
+  YtDlpError,
+} from "@/lib/ytdlp";
 
 export interface YtAudioResult {
   title: string;
   duration: number; // seconds — 0 when unknown (loader.to doesn't return it)
   audioUrl: string;
   mimeType: string;
+}
+
+export interface YtAudioBytes {
+  title: string;
+  buffer: Buffer;
+  mimeType: string;
+  ext: string;
+  duration: number; // 0 when unknown (loader.to path)
 }
 
 // Re-export so routes can keep a single import for error handling
@@ -69,7 +82,38 @@ async function viaLoaderTo(youtubeUrl: string): Promise<YtAudioResult> {
   throw new Error("loader.to: timed out waiting for download URL");
 }
 
-// ── public entry point ───────────────────────────────────────────────────────
+// Download the actual audio bytes via loader.to (extraction happens on their
+// servers, so it bypasses YouTube's bot wall against OUR IP).
+async function bytesViaLoaderTo(youtubeUrl: string): Promise<YtAudioBytes> {
+  const { title, audioUrl, mimeType } = await viaLoaderTo(youtubeUrl);
+  const res = await fetch(audioUrl, { signal: AbortSignal.timeout(45_000) });
+  if (!res.ok) throw new Error(`loader.to file download HTTP ${res.status}`);
+  const buffer = Buffer.from(await res.arrayBuffer());
+  if (buffer.byteLength < 2048)
+    throw new Error("loader.to returned an empty/too-small file");
+  const ext = mimeType.includes("mp4")
+    ? "m4a"
+    : mimeType.includes("webm")
+      ? "webm"
+      : "mp3";
+  return { title, buffer, mimeType, ext, duration: 0 };
+}
+
+async function bytesViaYtDlp(
+  youtubeUrl: string,
+  timeoutMs?: number,
+): Promise<YtAudioBytes> {
+  const r = await downloadYtAudio(youtubeUrl, { timeoutMs });
+  return {
+    title: r.title,
+    buffer: r.buffer,
+    mimeType: r.mimeType,
+    ext: r.ext,
+    duration: r.duration,
+  };
+}
+
+// ── public entry points ──────────────────────────────────────────────────────
 
 export async function getYouTubeAudio(
   youtubeUrl: string,
@@ -88,4 +132,34 @@ export async function getYouTubeAudio(
   // Fallback: yt-dlp (throws YtDlpError with typed codes)
   const info = await getYtAudioInfo(youtubeUrl);
   return { ...info };
+}
+
+/**
+ * Downloads the audio bytes for a YouTube URL, resilient to YouTube's
+ * datacenter-IP bot wall:
+ *   - With cookies configured (YTDLP_COOKIES): prefer yt-dlp (fast, reliable,
+ *     enforces duration/live rules), fall back to loader.to.
+ *   - Without cookies: prefer loader.to (off-server extraction, dodges the bot
+ *     wall), fall back to yt-dlp with a short timeout so the whole request fits
+ *     inside the route's 60s budget.
+ * Throws the LAST error (a typed YtDlpError when yt-dlp ran last) so callers can
+ * map it to a user-facing message.
+ */
+export async function downloadYouTubeAudioBytes(
+  youtubeUrl: string,
+): Promise<YtAudioBytes> {
+  const attempts: Array<() => Promise<YtAudioBytes>> = hasYtCookies()
+    ? [() => bytesViaYtDlp(youtubeUrl), () => bytesViaLoaderTo(youtubeUrl)]
+    : [() => bytesViaLoaderTo(youtubeUrl), () => bytesViaYtDlp(youtubeUrl, 22_000)];
+
+  let lastErr: unknown;
+  for (const attempt of attempts) {
+    try {
+      return await attempt();
+    } catch (err) {
+      lastErr = err;
+      console.warn("[yt-audio] download attempt failed:", (err as Error).message);
+    }
+  }
+  throw lastErr;
 }
