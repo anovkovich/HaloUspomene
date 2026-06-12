@@ -6,6 +6,7 @@ import {
   AnimatePresence,
   useScroll,
   useTransform,
+  useMotionValueEvent,
 } from "framer-motion";
 import { Heart, Send, MapPin, Clock, ChevronDown } from "lucide-react";
 import type { ThemeInvitationProps } from "../PremiumInvitationClient";
@@ -367,15 +368,34 @@ export default function WatercolorInvitation({
     target: heroRef,
     offset: ["start start", "end start"],
   });
+  // Page-level scroll (in px) — drives how strongly the hero illustration is
+  // muted as the reader descends toward the content (timeline, RSVP, …).
+  const { scrollY } = useScroll();
 
-  // Track small-screen breakpoint for responsive car parallax values.
+  // Track small-screen breakpoint for responsive car parallax values, and the
+  // viewport height so the background-mute ramp can be expressed in "screens".
   const [isSmall, setIsSmall] = useState(false);
+  const [vh, setVh] = useState(800);
   useEffect(() => {
-    const check = () => setIsSmall(window.innerWidth < 768);
+    const check = () => {
+      setIsSmall(window.innerWidth < 768);
+      setVh(window.innerHeight);
+    };
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
+
+  // Soft-focus the background once the reader scrolls into the content. A simple
+  // boolean (with hysteresis so it can't flicker at the boundary) toggled via a
+  // one-time CSS transition — NOT a scroll-linked filter — so the blur stays
+  // smooth on mobile (continuously re-blurring a full-screen image per frame is
+  // the exact jank the overlay below was written to avoid).
+  const [bgMuted, setBgMuted] = useState(false);
+  useMotionValueEvent(scrollY, "change", (y) => {
+    if (y > vh * 0.6) setBgMuted(true);
+    else if (y < vh * 0.4) setBgMuted(false);
+  });
 
   // Parallax layers — all freeze at 50% scroll so the hero locks in place along with the car
   const yBg = useTransform(scrollYProgress, [0, 0.5, 1], [0, -40, -40]);
@@ -384,15 +404,15 @@ export default function WatercolorInvitation({
   // Hero bg stays visible throughout — sections below show it through their backdrop-blur
   const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 1]);
 
-  // ONE shared blur+darken overlay over the fixed hero — opacity ramps with scroll.
-  // Sections below are fully transparent so there are no visible seams between them.
-  // Mobile skips backdrop-blur (it's the single biggest scroll-jank source there —
-  // compositor re-blurs the entire viewport every frame); compensates with a darker
-  // overlay so the hero still recedes behind content.
+  // Gentle WARM veil over the fixed hero — opacity ramps with page scroll (in
+  // viewport-height units). Its only job is to keep the white/gold text legible
+  // over the softened background; the heavy lifting (removing busy detail) is
+  // done by blurring the background image, not by darkening. Kept intentionally
+  // light and warm so the mood stays bright and celebratory, never gloomy.
   const overlayOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.4, 1],
-    isSmall ? [0, 0.62, 0.82] : [0, 0.5, 0.7],
+    scrollY,
+    [0, vh * 0.4, vh * 1.3],
+    isSmall ? [0, 0.45, 0.72] : [0, 0.38, 0.62],
   );
 
   // Car parallax — moves until ~50% scroll, then locks in place.
@@ -430,15 +450,12 @@ export default function WatercolorInvitation({
         className="fixed inset-0 z-[5] pointer-events-none"
         style={{
           opacity: overlayOpacity,
+          // Warm champagne/amber veil (not a cold dark one) — keeps text readable
+          // while preserving a bright, celebratory feel. The background image's
+          // own blur handles detail reduction, so no costly backdrop-filter here.
           backgroundColor: isSmall
-            ? "rgba(20, 14, 8, 0.55)"
-            : "rgba(20, 14, 8, 0.32)",
-          ...(isSmall
-            ? {}
-            : {
-                backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)",
-              }),
+            ? "rgba(40, 26, 14, 0.6)"
+            : "rgba(40, 26, 14, 0.5)",
           willChange: "opacity",
           contain: "paint",
         }}
@@ -468,6 +485,19 @@ export default function WatercolorInvitation({
               alt=""
               className="absolute inset-0 w-full h-full object-cover object-center"
               fetchPriority="high"
+              style={{
+                // Once the reader scrolls into the content, soft-focus the busy
+                // illustration so it stops competing with the text — but keep it
+                // bright and a touch more saturated so it reads as a dreamy,
+                // cheerful backdrop rather than something darkened. scale(1.06)
+                // hides the blur's edge feathering. One-time CSS transition.
+                filter: bgMuted
+                  ? "blur(9px) saturate(1.1) brightness(1.02)"
+                  : "blur(0px) saturate(1) brightness(1)",
+                transform: "scale(1.06)",
+                transition: "filter 0.8s ease",
+                willChange: "filter",
+              }}
             />
             {/* Gradient overlays for text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
@@ -553,7 +583,20 @@ export default function WatercolorInvitation({
               bottom: "clamp(-16svh, calc(24svh - 17vw), 22svh)",
             }}
           >
-            <img src={carSrc} alt="Save the Date" className="w-full h-auto" />
+            <img
+              src={carSrc}
+              alt="Save the Date"
+              className="w-full h-auto"
+              style={{
+                // Mute the car together with the background so it recedes into
+                // the same soft-focus plane once the reader scrolls into content.
+                filter: bgMuted
+                  ? "blur(9px) saturate(1.1) brightness(1.02)"
+                  : "blur(0px) saturate(1) brightness(1)",
+                transition: "filter 0.8s ease",
+                willChange: "filter",
+              }}
+            />
           </motion.div>
 
           {/* Scroll indicator */}
