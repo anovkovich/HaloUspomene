@@ -925,7 +925,8 @@ export default function InviteeListCard({ responses }: Props) {
     if (!name) return;
     mutate((gl) => ({
       ...gl,
-      sections: [...gl.sections, { id: uid("sec"), name }],
+      // New section goes to the top of the list, not the bottom.
+      sections: [{ id: uid("sec"), name }, ...gl.sections],
     }));
     setNewSectionName("");
     setShowAddSection(false);
