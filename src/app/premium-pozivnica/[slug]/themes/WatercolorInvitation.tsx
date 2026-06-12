@@ -599,13 +599,17 @@ export default function WatercolorInvitation({
             />
           </motion.div>
 
-          {/* Scroll indicator */}
+          {/* Scroll indicator — anchored to the dynamic viewport bottom (dvh)
+              so it stays above the iOS URL bar instead of hiding behind it. */}
           <motion.div
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center"
+            className="absolute left-1/2 -translate-x-1/2 z-30 flex flex-col items-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}
             transition={{ delay: 2, duration: 1 }}
-            style={{ opacity: scrollIndicatorOpacity }}
+            style={{
+              opacity: scrollIndicatorOpacity,
+              top: "calc(100dvh - 3rem)",
+            }}
           >
             <motion.div
               animate={{ y: [0, 6, 0] }}
