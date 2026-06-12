@@ -646,17 +646,34 @@ export default function WatercolorInvitation({
           >
             {formattedDateShort}
           </p>
-          {data.tagline && (
-            <p
-              className="text-white italic font-serif text-2xl sm:text-3xl leading-relaxed"
-              style={{
+          {data.tagline &&
+            (() => {
+              // First line stays large; any following lines render a touch
+              // smaller so a long second sentence doesn't dominate the hero.
+              const [first, ...rest] = data.tagline.split(/\\n|\n/);
+              const taglineShadow = {
                 textShadow:
                   "0 3px 18px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.75)",
-              }}
-            >
-              <MultilineText text={data.tagline} />
-            </p>
-          )}
+              };
+              return (
+                <div>
+                  <p
+                    className="text-white italic font-serif text-2xl sm:text-3xl leading-relaxed"
+                    style={taglineShadow}
+                  >
+                    {first}
+                  </p>
+                  {rest.length > 0 && (
+                    <p
+                      className="text-white/90 italic font-serif text-lg sm:text-xl leading-relaxed mt-2"
+                      style={taglineShadow}
+                    >
+                      <MultilineText text={rest.join("\n")} />
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
         </motion.div>
       </section>
 

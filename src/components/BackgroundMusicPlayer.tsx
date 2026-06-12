@@ -28,6 +28,11 @@ interface Props {
    * gesture listeners used by the classic (uncontrolled) path.
    */
   controlled?: boolean;
+  /**
+   * Frosted-glass button instead of a solid accent fill — matches the
+   * glassmorphism cards (e.g. the watercolor time pills). Icon uses accentHex.
+   */
+  glass?: boolean;
 }
 
 // Floating bottom-right play/pause button for background music on invitations.
@@ -35,7 +40,7 @@ interface Props {
 // "click to play" affordance — the subtle pulse on the resting state nudges
 // users to notice that a song is available.
 function BackgroundMusicPlayerInner(
-  { src, accentHex = "#AE343F", controlled = false }: Props,
+  { src, accentHex = "#AE343F", controlled = false, glass = false }: Props,
   ref: React.Ref<BackgroundMusicHandle>,
 ) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -182,11 +187,25 @@ function BackgroundMusicPlayerInner(
         className={`fixed bottom-5 right-5 z-50 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${
           isPlaying ? "" : "animate-pulse-slow"
         }`}
-        style={{
-          backgroundColor: accentHex,
-          color: "#fff",
-          boxShadow: `0 8px 24px ${accentHex}55`,
-        }}
+        style={
+          glass
+            ? {
+                // Frosted-glass look — mirrors the watercolor time pills.
+                background:
+                  "linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 50%, rgba(212,175,55,0.10) 100%)",
+                backdropFilter: "blur(16px) saturate(140%)",
+                WebkitBackdropFilter: "blur(16px) saturate(140%)",
+                border: "1px solid rgba(255,255,255,0.22)",
+                color: accentHex,
+                boxShadow:
+                  "0 12px 32px -12px rgba(0,0,0,0.45), 0 0 0 1px rgba(212,175,55,0.08), inset 0 1px 0 rgba(255,255,255,0.18)",
+              }
+            : {
+                backgroundColor: accentHex,
+                color: "#fff",
+                boxShadow: `0 8px 24px ${accentHex}55`,
+              }
+        }
       >
         {isPlaying ? (
           <Pause size={18} fill="currentColor" />

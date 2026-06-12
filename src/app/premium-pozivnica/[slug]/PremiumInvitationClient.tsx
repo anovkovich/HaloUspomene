@@ -232,6 +232,7 @@ export default function PremiumInvitationClient({
         <BackgroundMusicPlayer
           ref={musicRef}
           controlled
+          glass={data.premium_theme === "watercolor"}
           src={data.music_url!}
           accentHex="#d4af37"
         />

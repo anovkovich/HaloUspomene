@@ -449,15 +449,18 @@ export default async function PremiumOGImage({
     );
   }
 
-  // ─────────────────── WATERCOLOR (deep gold luxury) ───────────────────
-  const GOLD = "#d4af37";
-  const GOLD_LIGHT = "#f5d77e";
-  // Lighter, warmer gradient: glowing caramel-bronze center → deep brown edges
-  const DARK = "#1a0d05";
-  const DARK2 = "#5a381c";
+  // ─────────────────── WATERCOLOR (soft cloud / partly-cloudy sky) ───────────────────
+  // Light, airy palette — bright cloud white drifting into a pale blue-grey sky
+  // — with champagne-gold accents and an ink-charcoal serif for the names.
+  // Gentle and daytime, not the previous dark "night sky".
+  const GOLD = "#bfa256"; // champagne gold accents (frame, ornaments)
+  const GOLD_DEEP = "#a07d2c"; // deeper gold — wordmark / divider / date (contrast on light)
+  const INK = "#3b3b45"; // soft charcoal — couple names
+  const CLOUD = "#ffffff"; // soft white clouds
+  const SKY = "#b7d4ef"; // clear light-blue sky (top)
 
-  // Scattered gold "sparkle" positions — drawn as CSS diamonds (rotated squares)
-  // to avoid relying on Unicode star glyphs that Satori can't find in our fonts.
+  // Only four soft corner flourishes — no scattered "stars" (those read as a
+  // night sky). Keeps the calm, daytime feel.
   type Sparkle = {
     top?: number;
     bottom?: number;
@@ -467,30 +470,10 @@ export default async function PremiumOGImage({
     op: number;
   };
   const sparkles: Sparkle[] = [
-    // corner flourishes (brighter, larger)
-    { top: 58,  left: 58,  size: 16, op: 0.9  },
-    { top: 58,  right: 58, size: 16, op: 0.9  },
-    { bottom: 58, left: 58,  size: 16, op: 0.9  },
-    { bottom: 58, right: 58, size: 16, op: 0.9  },
-    // scattered across top area
-    { top: 120, left: 190,  size: 9,  op: 0.6  },
-    { top: 90,  left: 340,  size: 6,  op: 0.5  },
-    { top: 150, right: 220, size: 8,  op: 0.6  },
-    { top: 100, right: 360, size: 10, op: 0.7  },
-    { top: 200, left: 90,   size: 7,  op: 0.55 },
-    { top: 210, right: 100, size: 8,  op: 0.6  },
-    // mid-sides
-    { top: 300, left: 80,   size: 6,  op: 0.5  },
-    { top: 300, right: 80,  size: 6,  op: 0.5  },
-    { top: 360, left: 140,  size: 9,  op: 0.6  },
-    { top: 360, right: 140, size: 9,  op: 0.6  },
-    // bottom scatter
-    { bottom: 150, left: 180,  size: 8, op: 0.55 },
-    { bottom: 150, right: 180, size: 8, op: 0.55 },
-    { bottom: 120, left: 340,  size: 6, op: 0.5  },
-    { bottom: 120, right: 340, size: 6, op: 0.5  },
-    { bottom: 200, left: 100,  size: 8, op: 0.6  },
-    { bottom: 200, right: 100, size: 8, op: 0.6  },
+    { top: 58, left: 58, size: 14, op: 0.8 },
+    { top: 58, right: 58, size: 14, op: 0.8 },
+    { bottom: 58, left: 58, size: 14, op: 0.8 },
+    { bottom: 58, right: 58, size: 14, op: 0.8 },
   ];
 
   return new ImageResponse(
@@ -503,11 +486,13 @@ export default async function PremiumOGImage({
           height: "100%",
           alignItems: "center",
           justifyContent: "center",
-          background: `radial-gradient(ellipse 95% 80% at 50% 50%, ${DARK2} 0%, ${DARK} 90%)`,
+          // Soft white clouds over a light-blue sky — lots of puffs so only
+          // glimpses of blue peek through (layered radials over a sky→haze base).
+          background: `radial-gradient(circle at 16% 26%, ${CLOUD}, rgba(255,255,255,0) 21%), radial-gradient(circle at 48% 16%, ${CLOUD}, rgba(255,255,255,0) 19%), radial-gradient(circle at 80% 22%, ${CLOUD}, rgba(255,255,255,0) 21%), radial-gradient(circle at 90% 54%, ${CLOUD}, rgba(255,255,255,0) 19%), radial-gradient(circle at 64% 72%, ${CLOUD}, rgba(255,255,255,0) 21%), radial-gradient(circle at 30% 74%, ${CLOUD}, rgba(255,255,255,0) 21%), radial-gradient(circle at 9% 56%, ${CLOUD}, rgba(255,255,255,0) 17%), linear-gradient(180deg, ${SKY} 0%, #dcebf8 48%, #f3f9fd 100%)`,
           position: "relative",
         }}
       >
-        {/* Double gold frame */}
+        {/* Double champagne frame */}
         <div
           style={{
             display: "flex",
@@ -517,7 +502,7 @@ export default async function PremiumOGImage({
             right: 34,
             bottom: 34,
             border: `1px solid ${GOLD}`,
-            opacity: 0.75,
+            opacity: 0.7,
           }}
         />
         <div
@@ -533,9 +518,8 @@ export default async function PremiumOGImage({
           }}
         />
 
-        {/* Scattered gold sparkles (CSS diamonds, no glyphs).
-            Only set defined position props — Satori chokes on `undefined`
-            values in style, whereas React silently skips them. */}
+        {/* Four soft corner diamonds (no scattered stars).
+            Only set defined position props — Satori chokes on `undefined`. */}
         {sparkles.map((s, i) => {
           const style: Record<string, string | number> = {
             display: "flex",
@@ -564,39 +548,26 @@ export default async function PremiumOGImage({
             fontFamily: "Josefin Sans",
             fontSize: 14,
             letterSpacing: "0.45em",
-            color: GOLD,
+            color: GOLD_DEEP,
           }}
         >
-          <div style={{ display: "flex", width: 56, height: 1, background: GOLD, opacity: 0.8 }} />
+          <div style={{ display: "flex", width: 56, height: 1, background: GOLD_DEEP, opacity: 0.7 }} />
           <span>PREMIUM POZIVNICA</span>
-          <div style={{ display: "flex", width: 56, height: 1, background: GOLD, opacity: 0.8 }} />
+          <div style={{ display: "flex", width: 56, height: 1, background: GOLD_DEEP, opacity: 0.7 }} />
         </div>
 
-        {/* Gold ornament above names — CSS diamond */}
-        <div
-          style={{
-            display: "flex",
-            width: 14,
-            height: 14,
-            background: GOLD,
-            opacity: 0.95,
-            transform: "rotate(45deg)",
-            marginBottom: 18,
-          }}
-        />
-
-
-        {/* Couple names — gold foil effect */}
+        {/* Couple names — elegant serif (Cormorant Garamond) in ink charcoal */}
         <span
           style={{
-            fontFamily: "Script",
-            fontSize: 120,
-            color: GOLD_LIGHT,
-            lineHeight: 1,
+            fontFamily: "Cormorant Garamond",
+            fontSize: 104,
+            color: INK,
+            lineHeight: 1.05,
             textAlign: "center",
-            maxWidth: 1000,
-            padding: "0 80px",
-            textShadow: `0 2px 6px rgba(0,0,0,0.75)`,
+            maxWidth: 1040,
+            padding: "0 70px",
+            letterSpacing: "0.015em",
+            textShadow: `0 1px 2px rgba(0,0,0,0.06)`,
           }}
         >
           {fullName}
@@ -611,18 +582,18 @@ export default async function PremiumOGImage({
             marginTop: 30,
           }}
         >
-          <div style={{ display: "flex", width: 200, height: 1, background: GOLD, opacity: 0.7 }} />
+          <div style={{ display: "flex", width: 200, height: 1, background: GOLD_DEEP, opacity: 0.55 }} />
           <div
             style={{
               display: "flex",
               width: 12,
               height: 12,
-              background: GOLD,
-              opacity: 0.95,
+              background: GOLD_DEEP,
+              opacity: 0.9,
               transform: "rotate(45deg)",
             }}
           />
-          <div style={{ display: "flex", width: 200, height: 1, background: GOLD, opacity: 0.7 }} />
+          <div style={{ display: "flex", width: 200, height: 1, background: GOLD_DEEP, opacity: 0.55 }} />
         </div>
 
         {/* Date */}
@@ -631,7 +602,7 @@ export default async function PremiumOGImage({
             fontFamily: "Cormorant Garamond",
             fontStyle: "italic",
             fontSize: 60,
-            color: GOLD_LIGHT,
+            color: GOLD_DEEP,
             marginTop: 22,
             letterSpacing: "0.05em",
           }}
@@ -646,8 +617,8 @@ export default async function PremiumOGImage({
             bottom: 86,
             fontFamily: "Josefin Sans",
             fontSize: 12,
-            color: GOLD,
-            opacity: 0.45,
+            color: GOLD_DEEP,
+            opacity: 0.5,
             letterSpacing: "0.45em",
           }}
         >
