@@ -624,7 +624,7 @@ export default function WatercolorInvitation({
       </div>
 
       {/* ═══════════════ DATE & WELCOME ═══════════════ */}
-      <section className="relative z-10 py-16 sm:py-24 px-6 overflow-hidden">
+      <section className="relative z-10 -mt-px py-16 sm:py-24 px-6 overflow-hidden">
         <motion.div
           className="relative z-10 text-center max-w-md mx-auto"
           initial={{ opacity: 0, y: 30 }}
@@ -679,7 +679,7 @@ export default function WatercolorInvitation({
 
       {/* ═══════════════ TIMELINE ═══════════════ */}
       {data.timeline.length > 0 && (
-        <section className="relative z-10 py-20 px-6 overflow-hidden">
+        <section className="relative z-10 -mt-px py-20 px-6 overflow-hidden">
           <div className="relative z-10 max-w-md mx-auto">
             <div className="flex flex-col items-center gap-12 sm:gap-14">
               {data.timeline.map((item, i) => (
@@ -760,7 +760,7 @@ export default function WatercolorInvitation({
 
       {/* ═══════════════ RSVP ═══════════════ */}
       <section
-        className="relative z-10 py-20 sm:py-28 px-6 overflow-hidden"
+        className="relative z-10 -mt-px py-20 sm:py-28 px-6 overflow-hidden"
         id="rsvp"
       >
         <motion.div
@@ -831,7 +831,7 @@ export default function WatercolorInvitation({
 
       {/* ═══════════════ LOCATIONS ═══════════════ */}
       {data.map_enabled && data.locations.some((l) => l.map_url) && (
-        <section className="relative z-10 py-16 sm:py-20 px-6 overflow-hidden">
+        <section className="relative z-10 -mt-px py-16 sm:py-20 px-6 overflow-hidden">
           <div className="max-w-md mx-auto">
             {/* Section title with decorative ornament */}
             <div className="flex items-center justify-center gap-3 mb-10">
@@ -936,7 +936,7 @@ export default function WatercolorInvitation({
       )}
 
       {/* ═══════════════ FOOTER ═══════════════ */}
-      <footer className="relative z-10 py-16 sm:py-20 text-center px-6 overflow-hidden">
+      <footer className="relative z-10 -mt-px py-16 sm:py-20 text-center px-6 overflow-hidden">
         <div className="max-w-md mx-auto">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="w-14 sm:w-24 h-px bg-gradient-to-r from-transparent to-[#d4af37]" />
