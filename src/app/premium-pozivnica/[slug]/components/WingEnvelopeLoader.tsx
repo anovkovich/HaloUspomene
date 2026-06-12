@@ -22,6 +22,8 @@ interface WingEnvelopeLoaderProps {
   requireTap?: boolean;
   /** Fired on the tap gesture — used to unlock/buffer background music. */
   onTap?: () => void;
+  /** Fired when the envelope visibly opens — used to start background music. */
+  onOpen?: () => void;
 }
 
 const ITEM_SRCS: Record<string, string> = {
@@ -83,6 +85,7 @@ export default function WingEnvelopeLoader({
   theme = "watercolor",
   requireTap = false,
   onTap,
+  onOpen,
 }: WingEnvelopeLoaderProps) {
   const [stage, setStage] = useState<Stage>("sealed");
   const [isMobile, setIsMobile] = useState(false);
@@ -104,6 +107,7 @@ export default function WingEnvelopeLoader({
       setStage("untying"); // bow unties
       await new Promise((r) => setTimeout(r, 800));
       setStage("opening"); // wings open
+      onOpen?.(); // envelope visibly opens → start the music here
       await new Promise((r) => setTimeout(r, 1200));
       setStage("extracted"); // card rises
       await new Promise((r) => setTimeout(r, 2600));
@@ -112,7 +116,7 @@ export default function WingEnvelopeLoader({
       onComplete();
     };
     sequence();
-  }, [tapped, requireTap, onComplete]);
+  }, [tapped, requireTap, onComplete, onOpen]);
 
   const isUntied = stage !== "sealed";
   const isOpen = stage === "opening" || stage === "extracted" || stage === "fadeout";

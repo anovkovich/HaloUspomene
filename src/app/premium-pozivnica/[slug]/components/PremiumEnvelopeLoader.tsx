@@ -22,6 +22,8 @@ interface PremiumEnvelopeLoaderProps {
   requireTap?: boolean;
   /** Fired on the tap gesture — used to unlock/buffer background music. */
   onTap?: () => void;
+  /** Fired when the envelope visibly opens — used to start background music. */
+  onOpen?: () => void;
 }
 
 const ITEM_SRCS: Record<string, string> = {
@@ -86,6 +88,7 @@ export default function PremiumEnvelopeLoader({
   theme = "watercolor",
   requireTap = false,
   onTap,
+  onOpen,
 }: PremiumEnvelopeLoaderProps) {
   const [stage, setStage] = useState<Stage>("sealed");
   const [isMobile, setIsMobile] = useState(false);
@@ -107,6 +110,7 @@ export default function PremiumEnvelopeLoader({
     const sequence = async () => {
       await new Promise((r) => setTimeout(r, requireTap ? 100 : 800));
       setStage("opening");
+      onOpen?.(); // envelope visibly opens → start the music here
       await new Promise((r) => setTimeout(r, 1200));
       setStage("extracted");
       await new Promise((r) => setTimeout(r, 2600));
@@ -115,7 +119,7 @@ export default function PremiumEnvelopeLoader({
       onComplete();
     };
     sequence();
-  }, [tapped, requireTap, onComplete]);
+  }, [tapped, requireTap, onComplete, onOpen]);
 
   const isOpen = stage !== "sealed";
   const isExtracted = stage === "extracted" || stage === "fadeout";

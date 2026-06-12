@@ -69,9 +69,14 @@ export default function PremiumInvitationClient({
   const musicRef = useRef<BackgroundMusicHandle>(null);
 
   // Tap on the envelope = the user gesture. Use it to unlock + buffer the song
-  // (parked at 0) so it can start instantly, from the top, at the reveal.
+  // (parked at 0) so it can start instantly, from the top, when it opens.
   const handleEnvelopeTap = useCallback(() => {
     musicRef.current?.unlock();
+  }, []);
+
+  // Envelope visibly opens (well before the loader fades away) → start music.
+  const handleEnvelopeOpen = useCallback(() => {
+    musicRef.current?.reveal();
   }, []);
 
   // On every page load/refresh, jump the user back to the top of the
@@ -138,9 +143,6 @@ export default function PremiumInvitationClient({
   const handleEnvelopeComplete = useCallback(() => {
     setIsLoading(false);
     setTimeout(() => setIsRevealed(true), 100);
-    // Start the music exactly at the reveal, from the top, with a fade-in —
-    // already unlocked/buffered by the tap, so there's no fetch delay.
-    musicRef.current?.reveal();
   }, []);
 
   const isPastDeadline = useMemo(() => {
@@ -152,6 +154,7 @@ export default function PremiumInvitationClient({
   const envelopeProps = {
     onComplete: handleEnvelopeComplete,
     onTap: handleEnvelopeTap,
+    onOpen: handleEnvelopeOpen,
     names: full_display,
     eventDate: formattedDate,
     envelopeItems: data.envelope_items,
