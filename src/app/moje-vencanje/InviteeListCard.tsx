@@ -1202,7 +1202,7 @@ export default function InviteeListCard({ responses }: Props) {
       : null;
 
   const keyRoles = guestList.keyRoles ?? DEFAULT_KEY_ROLES;
-  const rolesCollapsed = collapsed[KEYROLES_KEY] ?? false;
+  const rolesCollapsed = collapsed[KEYROLES_KEY] ?? true;
   const filledRoles = keyRoles.filter((r) => r.name.trim()).length;
   const rolePickerRole =
     rolePickerId != null
@@ -1473,7 +1473,7 @@ export default function InviteeListCard({ responses }: Props) {
         ) : (
           <button
             onClick={() => setShowAddSection(true)}
-            className="flex items-center gap-1.5 text-xs font-medium text-[#232323]/70 hover:text-[#AE343F] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-[#232323]/20 bg-[#F5F4DC]/60 text-xs font-semibold text-[#232323]/80 hover:border-[#AE343F]/50 hover:bg-[#AE343F]/[0.04] hover:text-[#AE343F] transition-colors cursor-pointer"
           >
             <FolderPlus size={14} />
             Dodaj celinu
@@ -1498,7 +1498,8 @@ export default function InviteeListCard({ responses }: Props) {
             // When filtering, hide groups with no matches
             if (filtering && items.length === 0) return null;
 
-            const isCollapsed = collapsed[key] ?? false;
+            // Collapsed by default; force-open while filtering so search hits show.
+            const isCollapsed = filtering ? false : collapsed[key] ?? true;
             const groupPeople = all.reduce((s, i) => s + i.count, 0);
             const gInvited = all.reduce(
               (s, i) => (i.status === "invited" ? s + i.count : s),
