@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 import dynamic from "next/dynamic";
-import BackgroundMusicPlayer from "@/components/BackgroundMusicPlayer";
+import BackgroundMusicPlayer, {
+  type BackgroundMusicHandle,
+} from "@/components/BackgroundMusicPlayer";
 
 const PremiumEnvelopeLoader = dynamic(
   () => import("./components/PremiumEnvelopeLoader"),
@@ -62,6 +64,15 @@ export default function PremiumInvitationClient({
   const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
   const { bride, groom, full_display } = data.couple_names;
+
+  const musicEnabled = !!(data.paid_for_music && data.music_url);
+  const musicRef = useRef<BackgroundMusicHandle>(null);
+
+  // Tap on the envelope = the user gesture. Use it to unlock + buffer the song
+  // (parked at 0) so it can start instantly, from the top, at the reveal.
+  const handleEnvelopeTap = useCallback(() => {
+    musicRef.current?.unlock();
+  }, []);
 
   // On every page load/refresh, jump the user back to the top of the
   // invitation. Otherwise the browser restores their previous scroll
@@ -127,6 +138,9 @@ export default function PremiumInvitationClient({
   const handleEnvelopeComplete = useCallback(() => {
     setIsLoading(false);
     setTimeout(() => setIsRevealed(true), 100);
+    // Start the music exactly at the reveal, from the top, with a fade-in —
+    // already unlocked/buffered by the tap, so there's no fetch delay.
+    musicRef.current?.reveal();
   }, []);
 
   const isPastDeadline = useMemo(() => {
@@ -137,11 +151,12 @@ export default function PremiumInvitationClient({
 
   const envelopeProps = {
     onComplete: handleEnvelopeComplete,
+    onTap: handleEnvelopeTap,
     names: full_display,
     eventDate: formattedDate,
     envelopeItems: data.envelope_items,
     theme: data.premium_theme,
-    requireTap: !!(data.paid_for_music && data.music_url),
+    requireTap: musicEnabled,
   };
 
   // Shared props for theme components
@@ -206,11 +221,17 @@ export default function PremiumInvitationClient({
         )
       )}
 
-      {/* Background music — gold accent on premium. Hidden behind the envelope
-          (the loader has its own much higher z-index) so it doesn't peek out
-          before the reveal. */}
-      {!isLoading && data.paid_for_music && data.music_url && (
-        <BackgroundMusicPlayer src={data.music_url} accentHex="#d4af37" />
+      {/* Background music — gold accent on premium. Mounted from the start (so
+          the envelope tap can unlock + buffer it) and driven imperatively:
+          unlock() on tap, reveal() at the open. The button sits behind the
+          envelope (higher z-index) so it doesn't peek out before the reveal. */}
+      {musicEnabled && (
+        <BackgroundMusicPlayer
+          ref={musicRef}
+          controlled
+          src={data.music_url!}
+          accentHex="#d4af37"
+        />
       )}
     </>
   );

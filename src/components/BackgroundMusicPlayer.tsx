@@ -1,31 +1,109 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Music, Pause } from "lucide-react";
+
+export interface BackgroundMusicHandle {
+  /** Call INSIDE a user-gesture handler (e.g. the envelope tap) to unlock
+   *  autoplay + start buffering, parked at the start of the track. */
+  unlock: () => void;
+  /** Call at the reveal moment to start playback from the top with a fade-in. */
+  reveal: () => void;
+}
 
 interface Props {
   src: string;
   /** Hex accent for the button (defaults to brand red, premium passes gold). */
   accentHex?: string;
+  /**
+   * Premium mode: playback is driven externally via the imperative handle
+   * (unlock() on the envelope tap, reveal() when the invitation opens), timed
+   * to the envelope. Suppresses the mount-time autoplay attempt and the global
+   * gesture listeners used by the classic (uncontrolled) path.
+   */
+  controlled?: boolean;
 }
 
 // Floating bottom-right play/pause button for background music on invitations.
 // Browsers block real autoplay without a user gesture, so this is an explicit
 // "click to play" affordance — the subtle pulse on the resting state nudges
 // users to notice that a song is available.
-export default function BackgroundMusicPlayer({
-  src,
-  accentHex = "#AE343F",
-}: Props) {
+function BackgroundMusicPlayerInner(
+  { src, accentHex = "#AE343F", controlled = false }: Props,
+  ref: React.Ref<BackgroundMusicHandle>,
+) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const fadeTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Try autoplay; if blocked by the browser, latch onto the first user
-  // gesture anywhere on the page (scroll/click/touch/key) and play then.
-  // The envelope opener does NOT count as a gesture (it runs from useEffect),
-  // so this gesture-listener path is what actually starts the music for most
-  // visitors on desktop Chrome (post-MEI it sometimes autoplays directly).
+  const clearFade = () => {
+    if (fadeTimer.current) {
+      clearInterval(fadeTimer.current);
+      fadeTimer.current = null;
+    }
+  };
+
+  const fadeIn = (a: HTMLAudioElement, ms = 1200) => {
+    clearFade();
+    const steps = 24;
+    let i = 0;
+    a.volume = 0;
+    fadeTimer.current = setInterval(() => {
+      i++;
+      a.volume = Math.min(1, i / steps);
+      if (i >= steps) clearFade();
+    }, ms / steps);
+  };
+
+  // Premium imperative control — timed to the envelope animation.
+  useImperativeHandle(
+    ref,
+    () => ({
+      unlock() {
+        const a = audioRef.current;
+        if (!a) return;
+        // Play within the gesture to satisfy autoplay policy + warm the buffer,
+        // then park at the start so the song begins from 0 at reveal() with no
+        // fetch delay — and without playing 6s of silent intro under the cover.
+        a.muted = false;
+        a.volume = 0;
+        a.play()
+          .then(() => {
+            a.pause();
+            a.currentTime = 0;
+          })
+          .catch(() => {});
+      },
+      reveal() {
+        const a = audioRef.current;
+        if (!a) return;
+        try {
+          a.currentTime = 0;
+        } catch {
+          /* ignore */
+        }
+        a.muted = false;
+        a.play()
+          .then(() => {
+            setIsPlaying(true);
+            fadeIn(a);
+          })
+          .catch(() => setIsPlaying(false));
+      },
+    }),
+    [],
+  );
+
+  // Uncontrolled (classic) path: try autoplay; if blocked, latch onto the first
+  // user gesture anywhere on the page (scroll/click/touch/key) and play then.
   useEffect(() => {
+    if (controlled) return;
     const a = audioRef.current;
     if (!a) return;
 
@@ -41,22 +119,28 @@ export default function BackgroundMusicPlayer({
       }
     };
 
-    // First attempt: works on desktop Chrome when the domain has high
-    // Media Engagement Index (visitor opened audio here before).
     void tryPlay();
 
-    const onGesture = () => {
-      void tryPlay();
-    };
+    const onGesture = () => void tryPlay();
     const events = ["pointerdown", "keydown", "scroll", "touchstart"] as const;
     events.forEach((ev) =>
-      window.addEventListener(ev, onGesture, { passive: true, once: false }),
+      window.addEventListener(ev, onGesture, { passive: true }),
     );
 
     return () => {
       events.forEach((ev) => window.removeEventListener(ev, onGesture));
-      a.pause();
-      a.src = "";
+    };
+  }, [controlled]);
+
+  // Cleanup on unmount.
+  useEffect(() => {
+    return () => {
+      clearFade();
+      const a = audioRef.current;
+      if (a) {
+        a.pause();
+        a.src = "";
+      }
     };
   }, []);
 
@@ -69,6 +153,9 @@ export default function BackgroundMusicPlayer({
       return;
     }
     try {
+      clearFade();
+      a.muted = false;
+      a.volume = 1;
       await a.play();
       setIsPlaying(true);
     } catch {
@@ -84,7 +171,7 @@ export default function BackgroundMusicPlayer({
         ref={audioRef}
         src={src}
         loop
-        preload="none"
+        preload={controlled ? "auto" : "none"}
         onEnded={() => setIsPlaying(false)}
         onPause={() => setIsPlaying(false)}
       />
@@ -126,3 +213,6 @@ export default function BackgroundMusicPlayer({
     </>
   );
 }
+
+const BackgroundMusicPlayer = forwardRef(BackgroundMusicPlayerInner);
+export default BackgroundMusicPlayer;

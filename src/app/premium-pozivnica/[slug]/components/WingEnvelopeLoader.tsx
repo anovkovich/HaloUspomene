@@ -20,6 +20,8 @@ interface WingEnvelopeLoaderProps {
    * user gesture that unlocks background-music autoplay on mobile/Safari.
    */
   requireTap?: boolean;
+  /** Fired on the tap gesture — used to unlock/buffer background music. */
+  onTap?: () => void;
 }
 
 const ITEM_SRCS: Record<string, string> = {
@@ -80,6 +82,7 @@ export default function WingEnvelopeLoader({
   envelopeItems = [],
   theme = "watercolor",
   requireTap = false,
+  onTap,
 }: WingEnvelopeLoaderProps) {
   const [stage, setStage] = useState<Stage>("sealed");
   const [isMobile, setIsMobile] = useState(false);
@@ -133,7 +136,14 @@ export default function WingEnvelopeLoader({
           stage === "fadeout" ? "none" : isOpen ? t.overlay.backdropFilterOpen : "none",
         transition: "all 1.5s ease",
       }}
-      onClick={!tapped ? () => setTapped(true) : undefined}
+      onClick={
+        !tapped
+          ? () => {
+              onTap?.();
+              setTapped(true);
+            }
+          : undefined
+      }
     >
       {/* Square envelope container */}
       <div

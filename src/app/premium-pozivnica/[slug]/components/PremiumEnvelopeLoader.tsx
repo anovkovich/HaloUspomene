@@ -20,6 +20,8 @@ interface PremiumEnvelopeLoaderProps {
    * user gesture that unlocks background-music autoplay on mobile/Safari.
    */
   requireTap?: boolean;
+  /** Fired on the tap gesture — used to unlock/buffer background music. */
+  onTap?: () => void;
 }
 
 const ITEM_SRCS: Record<string, string> = {
@@ -83,6 +85,7 @@ export default function PremiumEnvelopeLoader({
   envelopeItems = [],
   theme = "watercolor",
   requireTap = false,
+  onTap,
 }: PremiumEnvelopeLoaderProps) {
   const [stage, setStage] = useState<Stage>("sealed");
   const [isMobile, setIsMobile] = useState(false);
@@ -135,7 +138,14 @@ export default function PremiumEnvelopeLoader({
           stage === "fadeout" ? "none" : isOpen ? t.overlay.backdropFilterOpen : "none",
         transition: "all 1.5s ease",
       }}
-      onClick={!tapped ? () => setTapped(true) : undefined}
+      onClick={
+        !tapped
+          ? () => {
+              onTap?.();
+              setTapped(true);
+            }
+          : undefined
+      }
     >
       {/* 3D Scene */}
       <div
