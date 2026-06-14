@@ -129,12 +129,13 @@ export default function OverviewCard({
   }, []);
 
   const handleCopyLink = useCallback(() => {
-    navigator.clipboard.writeText(
-      `https://halouspomene.rs/pozivnica/${coupleInfo.slug}`,
-    );
+    const path = coupleInfo.premium
+      ? `premium-pozivnica/${coupleInfo.slug}`
+      : `pozivnica/${coupleInfo.slug}`;
+    navigator.clipboard.writeText(`https://halouspomene.rs/${path}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [coupleInfo.slug]);
+  }, [coupleInfo.slug, coupleInfo.premium]);
 
   const handleDownloadPDF = useCallback(async () => {
     setPdfLoading(true);

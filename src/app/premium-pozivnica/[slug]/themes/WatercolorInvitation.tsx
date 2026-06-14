@@ -762,77 +762,6 @@ export default function WatercolorInvitation({
         </section>
       )}
 
-      {/* ═══════════════ RSVP ═══════════════ */}
-      <section
-        className="relative z-10 -mt-px py-20 sm:py-28 px-6 overflow-hidden"
-        id="rsvp"
-      >
-        <motion.div
-          className="relative z-10 max-w-md mx-auto rounded-3xl p-6 sm:p-8 overflow-hidden"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 50%, rgba(212,175,55,0.08) 100%)",
-            backdropFilter: "blur(24px) saturate(140%)",
-            WebkitBackdropFilter: "blur(24px) saturate(140%)",
-            border: "1px solid rgba(255,255,255,0.18)",
-            boxShadow:
-              "0 20px 60px -20px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,175,55,0.08), inset 0 1px 0 rgba(255,255,255,0.15)",
-          }}
-        >
-          {/* Top shine highlight */}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-px"
-            style={{
-              background:
-                "linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent)",
-            }}
-          />
-          {/* Soft gold ambient glow at top */}
-          <div
-            className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-72 h-40 rounded-full"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, rgba(212,175,55,0.18), transparent 70%)",
-            }}
-          />
-          <p
-            className="relative font-serif uppercase tracking-[0.4em] text-white text-lg sm:text-2xl mb-8 text-center"
-            style={{
-              textShadow:
-                "0 2px 12px rgba(0,0,0,0.85), 0 1px 4px rgba(0,0,0,0.75)",
-            }}
-          >
-            Potvrda dolaska
-          </p>
-          {isPastDeadline ? (
-            <p className="text-sm text-white/50 text-center">
-              Rok za potvrdu dolaska je istekao.
-            </p>
-          ) : (
-            <WatercolorRSVPForm
-              slug={slug}
-              submitUntil={data.submit_until}
-              formattedDeadline={formattedSubmitUntil}
-            />
-          )}
-          <PremiumCallCTA
-            contactPhone={data.contact_phone}
-            showNumbers={data.show_numbers}
-            numberNames={data.number_names}
-            useCyrillic={data.useCyrillic}
-            labelClassName="text-white/70"
-            numberClassName="text-[#d4af37]"
-            separatorClassName="text-white/30"
-            nameClassName="text-white/65"
-            wrapperClassName="mt-6"
-          />
-        </motion.div>
-      </section>
-
       {/* ═══════════════ LOCATIONS ═══════════════ */}
       {data.map_enabled && data.locations.some((l) => l.map_url) && (
         <section className="relative z-10 -mt-px py-16 sm:py-20 px-6 overflow-hidden">
@@ -938,6 +867,77 @@ export default function WatercolorInvitation({
           </div>
         </section>
       )}
+
+      {/* ═══════════════ RSVP ═══════════════ */}
+      <section
+        className="relative z-10 -mt-px py-20 sm:py-28 px-6 overflow-hidden"
+        id="rsvp"
+      >
+        <motion.div
+          className="relative z-10 max-w-md mx-auto rounded-3xl p-6 sm:p-8 overflow-hidden"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 50%, rgba(212,175,55,0.08) 100%)",
+            backdropFilter: "blur(24px) saturate(140%)",
+            WebkitBackdropFilter: "blur(24px) saturate(140%)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            boxShadow:
+              "0 20px 60px -20px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,175,55,0.08), inset 0 1px 0 rgba(255,255,255,0.15)",
+          }}
+        >
+          {/* Top shine highlight */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-px"
+            style={{
+              background:
+                "linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent)",
+            }}
+          />
+          {/* Soft gold ambient glow at top */}
+          <div
+            className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-72 h-40 rounded-full"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, rgba(212,175,55,0.18), transparent 70%)",
+            }}
+          />
+          <p
+            className="relative font-serif uppercase tracking-[0.4em] text-white text-lg sm:text-2xl mb-8 text-center"
+            style={{
+              textShadow:
+                "0 2px 12px rgba(0,0,0,0.85), 0 1px 4px rgba(0,0,0,0.75)",
+            }}
+          >
+            Potvrda dolaska
+          </p>
+          {isPastDeadline ? (
+            <p className="text-sm text-white/50 text-center">
+              Rok za potvrdu dolaska je istekao.
+            </p>
+          ) : (
+            <WatercolorRSVPForm
+              slug={slug}
+              submitUntil={data.submit_until}
+              formattedDeadline={formattedSubmitUntil}
+            />
+          )}
+          <PremiumCallCTA
+            contactPhone={data.contact_phone}
+            showNumbers={data.show_numbers}
+            numberNames={data.number_names}
+            useCyrillic={data.useCyrillic}
+            labelClassName="text-white/70"
+            numberClassName="text-[#d4af37]"
+            separatorClassName="text-white/30"
+            nameClassName="text-white/65"
+            wrapperClassName="mt-6"
+          />
+        </motion.div>
+      </section>
 
       {/* ═══════════════ FOOTER ═══════════════ */}
       <footer className="relative z-10 -mt-px py-16 sm:py-20 text-center px-6 overflow-hidden">
