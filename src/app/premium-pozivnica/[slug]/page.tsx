@@ -19,9 +19,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data?.premium) return {};
 
   const { bride, groom, full_display } = data.couple_names;
+  const title = `${full_display} — Premium Pozivnica`;
+  const description = `Premium AI pozivnica za venčanje — ${bride} i ${groom}`;
   return {
-    title: `${full_display} — Premium Pozivnica`,
-    description: `Premium AI pozivnica za venčanje — ${bride} i ${groom}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://halouspomene.rs/premium-pozivnica/${slug}`,
+      siteName: "HaloUspomene",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
     robots: { index: false, follow: false },
   };
 }
