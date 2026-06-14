@@ -18,9 +18,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getWeddingData(slug);
   if (!data?.premium) return {};
 
-  const { bride, groom, full_display } = data.couple_names;
+  const { full_display } = data.couple_names;
   const title = `${full_display} — Premium Pozivnica`;
-  const description = `Premium AI pozivnica za venčanje — ${bride} i ${groom}`;
+  const description = `Halo Uspomene pozivnica za venčanje — sve na jednom mestu!`;
   return {
     title,
     description,
