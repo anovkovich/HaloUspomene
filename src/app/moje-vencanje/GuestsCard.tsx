@@ -18,8 +18,10 @@ import {
   ChevronDown,
   Pencil,
   Trash2,
+  Link2,
 } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
+import type { GuestList, Invitee } from "./types";
 import { triggerHaptic } from "@/lib/haptics";
 import {
   loadGuestsAction,
@@ -28,8 +30,21 @@ import {
   updateGuestCategoryAction,
   updateGuestCountAction,
   deleteGuestAction,
+  loadGuestListAction,
+  saveGuestListAction,
 } from "./actions";
 import InviteeListCard from "./InviteeListCard";
+
+// Normalize for fuzzy name matching: lowercase, strip diacritics, collapse spaces.
+function normalizeName(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "dj")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 function getPersonLabel(count: number): string {
   if (count === 1) return "osoba";
@@ -90,20 +105,32 @@ function useLongPress(callback: () => void, ms = 500) {
 function ResponseCard({
   entry,
   category,
+  linkedInvitee,
   onCategoryChange,
   onEdit,
+  onOpenLink,
+  onUnlink,
 }: {
   entry: RSVPEntry;
   category?: string;
+  linkedInvitee?: Invitee | null;
   onCategoryChange?: (id: string, cat: string) => void;
   onEdit?: (entry: RSVPEntry) => void;
+  onOpenLink?: (entry: RSVPEntry) => void;
+  onUnlink?: (rsvpId: string) => void;
 }) {
   const isAttending = entry.attending === "Da";
   const guestCount = parseInt(entry.guestCount) || 1;
   const longPress = useLongPress(() => onEdit?.(entry));
 
   return (
-    <div className="relative p-4 bg-white rounded-xl border border-[#232323]/22 shadow-sm">
+    <div
+      className={`relative p-4 bg-white rounded-xl border shadow-sm ${
+        linkedInvitee
+          ? "border-[#4a8a5c]/70 bg-[#4a8a5c]/[0.03]"
+          : "border-[#232323]/22"
+      }`}
+    >
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -174,6 +201,165 @@ function ResponseCard({
             {formatTimestamp(entry.timestamp)}
           </p>
         )}
+
+        {/* Link to a zvanica (planning list) */}
+        <div className="pt-0.5">
+          {linkedInvitee ? (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#3a6e49] bg-[#4a8a5c]/12 border border-[#4a8a5c]/40 rounded-full pl-2 pr-1.5 py-0.5">
+              <Link2 size={11} />
+              Povezano: {linkedInvitee.name}
+              <button
+                onClick={() => onUnlink?.(entry.id)}
+                title="Otkaži vezu"
+                className="text-[#3a6e49]/70 hover:text-[#AE343F] transition-colors cursor-pointer"
+              >
+                <X size={11} />
+              </button>
+            </span>
+          ) : (
+            <button
+              onClick={() => onOpenLink?.(entry)}
+              className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#232323]/55 hover:text-[#AE343F] transition-colors cursor-pointer"
+            >
+              <Link2 size={11} />
+              Poveži sa zvanicom
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Invitee picker (link an RSVP to a zvanica) ─────────────── */
+
+function InviteePickerModal({
+  rsvpName,
+  invitees,
+  linkedInviteeIdByRsvp,
+  onClose,
+  onPick,
+}: {
+  rsvpName: string;
+  invitees: Invitee[];
+  linkedInviteeIdByRsvp: Map<string, string>; // rsvpId -> inviteeId already linked
+  onClose: () => void;
+  onPick: (invitee: Invitee) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const q = normalizeName(query);
+  const linkedInviteeIds = new Set(linkedInviteeIdByRsvp.values());
+
+  const matches = useMemo(() => {
+    const named = invitees.filter((i) => i.name.trim());
+    const target = normalizeName(rsvpName);
+    return named
+      .filter((i) => !q || normalizeName(i.name).includes(q))
+      .map((i) => {
+        const n = normalizeName(i.name);
+        let score = 0;
+        if (n === target) score = 3;
+        else if (n.includes(target) || target.includes(n)) score = 2;
+        else if (n.split(" ")[0] === target.split(" ")[0]) score = 1;
+        return { i, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 60);
+  }, [invitees, q, rsvpName]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <div className="min-w-0">
+            <h3 className="font-serif text-lg text-[#232323]">
+              Poveži sa zvanicom
+            </h3>
+            <p className="text-xs text-[#232323]/60 truncate">
+              potvrda: {rsvpName}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-[#232323]/60 hover:text-[#232323] transition-colors cursor-pointer shrink-0"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="px-5 pb-3">
+          <div className="relative">
+            <Search
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#232323]/55"
+            />
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Pretraži zvanice..."
+              className="w-full bg-white pl-10 pr-3 py-2.5 text-sm rounded-lg border border-[#232323]/20 placeholder:text-[#232323]/50 outline-none focus:border-[#AE343F] transition-colors"
+            />
+          </div>
+        </div>
+
+        <div className="px-5 pb-5 overflow-y-auto space-y-2">
+          {matches.length === 0 && (
+            <p className="text-center text-sm text-[#232323]/60 py-8">
+              {invitees.length === 0
+                ? "Lista zvanica je prazna — dodaj zvanice u tabu „Lista zvanica”."
+                : "Nema rezultata"}
+            </p>
+          )}
+          {matches.map(({ i, score }) => {
+            const linkedElsewhere = linkedInviteeIds.has(i.id);
+            return (
+              <button
+                key={i.id}
+                onClick={() => onPick(i)}
+                className={`w-full text-left p-3 rounded-xl border transition-colors cursor-pointer ${
+                  score >= 3
+                    ? "border-[#AE343F]/45 bg-[#AE343F]/[0.04]"
+                    : "border-[#232323]/15 hover:border-[#232323]/30"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-[#232323] truncate">
+                    {i.name}
+                  </span>
+                  {i.category && (
+                    <span className="shrink-0 text-[10px] font-medium text-[#232323]/55 bg-[#F5F4DC] border border-[#232323]/12 rounded px-1.5 py-0.5">
+                      {i.category === "Mladozenjini"
+                        ? "Mladoženjini"
+                        : i.category === "Zajednicki"
+                          ? "Zajednički"
+                          : i.category}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  {score >= 3 && (
+                    <span className="text-[11px] text-[#AE343F] font-medium">
+                      Verovatno poklapanje
+                    </span>
+                  )}
+                  {linkedElsewhere && (
+                    <span className="text-[11px] text-[#232323]/55">
+                      Već povezano sa drugom potvrdom
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -338,6 +524,148 @@ export default function GuestsCard({ slug, draft }: Props) {
       setLoading(false);
     });
   }, []);
+
+  // ── Shared guest list (owned here so both sub-views — Potvrde & Lista —
+  //    see one live, persisted copy; linking works from either direction). ──
+  const [guestList, setGuestList] = useState<GuestList>({
+    sections: [],
+    invitees: [],
+  });
+  const [guestListLoading, setGuestListLoading] = useState(true);
+  const [linkingRsvp, setLinkingRsvp] = useState<RSVPEntry | null>(null);
+  const glSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const glLatestRef = useRef<GuestList | null>(null);
+
+  useEffect(() => {
+    loadGuestListAction().then((gl) => {
+      if (gl) setGuestList(gl);
+      setGuestListLoading(false);
+    });
+  }, []);
+
+  const debouncedSaveGuestList = useCallback((next: GuestList) => {
+    glLatestRef.current = next;
+    if (glSaveTimer.current) clearTimeout(glSaveTimer.current);
+    glSaveTimer.current = setTimeout(() => {
+      glSaveTimer.current = null;
+      const data = glLatestRef.current;
+      glLatestRef.current = null;
+      if (data) saveGuestListAction(data);
+    }, 500);
+  }, []);
+
+  const flushGuestList = useCallback(() => {
+    if (glSaveTimer.current) {
+      clearTimeout(glSaveTimer.current);
+      glSaveTimer.current = null;
+    }
+    const data = glLatestRef.current;
+    glLatestRef.current = null;
+    if (data) saveGuestListAction(data);
+  }, []);
+
+  const mutateGuestList = useCallback(
+    (fn: (gl: GuestList) => GuestList) => {
+      setGuestList((prev) => {
+        const next = fn(prev);
+        debouncedSaveGuestList(next);
+        return next;
+      });
+    },
+    [debouncedSaveGuestList],
+  );
+
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "hidden") flushGuestList();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("pagehide", flushGuestList);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("pagehide", flushGuestList);
+      flushGuestList();
+    };
+  }, [flushGuestList]);
+
+  // rsvpId -> linked invitee (border + label on the Potvrde view)
+  const inviteeByRsvpId = useMemo(() => {
+    const m = new Map<string, Invitee>();
+    for (const i of guestList.invitees)
+      if (i.linkedRsvpId) m.set(i.linkedRsvpId, i);
+    return m;
+  }, [guestList.invitees]);
+
+  // rsvpId -> inviteeId already linked (so the picker can flag taken zvanice)
+  const linkedInviteeIdByRsvp = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const i of guestList.invitees)
+      if (i.linkedRsvpId) m.set(i.linkedRsvpId, i.id);
+    return m;
+  }, [guestList.invitees]);
+
+  // Unified link: set invitee.linkedRsvpId (clearing any prior link to that
+  // RSVP), copy the RSVP's attendance onto the zvanica, and copy the zvanica's
+  // category onto the potvrda. Used from both the Lista and Potvrde views.
+  const linkRsvpToInvitee = useCallback(
+    (inviteeId: string, rsvp: RSVPEntry) => {
+      const invitee = guestList.invitees.find((i) => i.id === inviteeId);
+      const cat = invitee?.category ?? "";
+      mutateGuestList((gl) => ({
+        ...gl,
+        invitees: gl.invitees.map((i) => {
+          if (i.id === inviteeId) {
+            return {
+              ...i,
+              linkedRsvpId: rsvp.id,
+              status:
+                rsvp.attending === "Da"
+                  ? ("confirmed" as const)
+                  : ("declined" as const),
+              count:
+                rsvp.attending === "Da"
+                  ? parseInt(rsvp.guestCount) || i.count
+                  : i.count,
+            };
+          }
+          if (i.linkedRsvpId === rsvp.id) return { ...i, linkedRsvpId: undefined };
+          return i;
+        }),
+      }));
+      // Only copy a category when the zvanica actually has one — never wipe an
+      // existing potvrda category by linking to an uncategorized zvanica.
+      if (rsvp.attending === "Da" && cat) {
+        setCategories((prev) => ({ ...prev, [rsvp.id]: cat }));
+        updateGuestCategoryAction(rsvp.id, cat);
+      }
+      toast("Povezano sa zvanicom");
+    },
+    [guestList.invitees, mutateGuestList],
+  );
+
+  const unlinkInviteeById = useCallback(
+    (inviteeId: string) => {
+      mutateGuestList((gl) => ({
+        ...gl,
+        invitees: gl.invitees.map((i) =>
+          i.id === inviteeId ? { ...i, linkedRsvpId: undefined } : i,
+        ),
+      }));
+    },
+    [mutateGuestList],
+  );
+
+  const unlinkByRsvp = useCallback(
+    (rsvpId: string) => {
+      mutateGuestList((gl) => ({
+        ...gl,
+        invitees: gl.invitees.map((i) =>
+          i.linkedRsvpId === rsvpId ? { ...i, linkedRsvpId: undefined } : i,
+        ),
+      }));
+    },
+    [mutateGuestList],
+  );
 
   const expiryBanner = useMemo(() => {
     if (!eventDate) return null;
@@ -529,7 +857,14 @@ export default function GuestsCard({ slug, draft }: Props) {
       </div>
 
       {subView === "lista" ? (
-        <InviteeListCard responses={[...attending, ...notAttending]} />
+        <InviteeListCard
+          responses={[...attending, ...notAttending]}
+          guestList={guestList}
+          loading={guestListLoading}
+          mutate={mutateGuestList}
+          onLink={linkRsvpToInvitee}
+          onUnlink={unlinkInviteeById}
+        />
       ) : (
         <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -809,8 +1144,11 @@ export default function GuestsCard({ slug, draft }: Props) {
               key={entry.id}
               entry={entry}
               category={entry.attending === "Da" ? categories[entry.id] ?? "" : undefined}
+              linkedInvitee={inviteeByRsvpId.get(entry.id) ?? null}
               onCategoryChange={entry.attending === "Da" ? handleCategoryChange : undefined}
               onEdit={(e) => setEditingEntry(e)}
+              onOpenLink={(e) => setLinkingRsvp(e)}
+              onUnlink={unlinkByRsvp}
             />
           ))}
         </div>
@@ -828,6 +1166,19 @@ export default function GuestsCard({ slug, draft }: Props) {
               onClose={() => setEditingEntry(null)}
               onSave={handleEditSave}
               onDelete={handleEditDelete}
+            />
+          )}
+
+          {linkingRsvp && (
+            <InviteePickerModal
+              rsvpName={linkingRsvp.name}
+              invitees={guestList.invitees}
+              linkedInviteeIdByRsvp={linkedInviteeIdByRsvp}
+              onClose={() => setLinkingRsvp(null)}
+              onPick={(invitee) => {
+                linkRsvpToInvitee(invitee.id, linkingRsvp);
+                setLinkingRsvp(null);
+              }}
             />
           )}
         </div>

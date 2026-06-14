@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { motion, LayoutGroup } from "framer-motion";
 import {
   Plus,
@@ -25,7 +19,6 @@ import {
   Users,
   Star,
 } from "lucide-react";
-import { toast } from "sonner";
 import type { RSVPEntry } from "@/lib/rsvp";
 import type {
   GuestList,
@@ -35,7 +28,6 @@ import type {
   InviteeCategory,
   KeyRole,
 } from "./types";
-import { loadGuestListAction, saveGuestListAction } from "./actions";
 
 /* ── Constants ──────────────────────────────────────────────── */
 
@@ -124,10 +116,6 @@ function normalizeName(s: string): string {
     .replace(/đ/g, "dj")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function statusFromRsvp(entry: RSVPEntry): InviteeStatus {
-  return entry.attending === "Da" ? "confirmed" : "declined";
 }
 
 /* ── Link confirmation modal ───────────────────────────────── */
@@ -853,17 +841,23 @@ function StatusTally({
 
 interface Props {
   responses: RSVPEntry[];
+  // Guest list state is owned by the parent (GuestsCard) so the Potvrde view can
+  // share the same live, persisted copy (linking works from both directions).
+  guestList: GuestList;
+  loading: boolean;
+  mutate: (fn: (gl: GuestList) => GuestList) => void;
+  onLink: (inviteeId: string, rsvp: RSVPEntry) => void;
+  onUnlink: (inviteeId: string) => void;
 }
 
-export default function InviteeListCard({ responses }: Props) {
-  const [guestList, setGuestList] = useState<GuestList>({
-    sections: [],
-    invitees: [],
-  });
-  const [loading, setLoading] = useState(true);
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const latestRef = useRef<GuestList | null>(null);
-
+export default function InviteeListCard({
+  responses,
+  guestList,
+  loading,
+  mutate,
+  onLink,
+  onUnlink,
+}: Props) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<InviteeStatus | "all">(
     "all",
@@ -878,64 +872,6 @@ export default function InviteeListCard({ responses }: Props) {
   // Drag state
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadGuestListAction().then((gl) => {
-      if (gl) setGuestList(gl);
-      setLoading(false);
-    });
-  }, []);
-
-  // Debounced save, but keep the latest pending payload in a ref so we can
-  // flush it on tab-hide / unload / unmount. Without the flush, a quick reload
-  // right after an edit (e.g. assigning a role) drops the pending save before
-  // the 500ms timer fires, so the change is silently lost.
-  const debouncedSave = useCallback((next: GuestList) => {
-    latestRef.current = next;
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      saveTimer.current = null;
-      const data = latestRef.current;
-      latestRef.current = null;
-      if (data) saveGuestListAction(data);
-    }, 500);
-  }, []);
-
-  const flushSave = useCallback(() => {
-    if (saveTimer.current) {
-      clearTimeout(saveTimer.current);
-      saveTimer.current = null;
-    }
-    const data = latestRef.current;
-    latestRef.current = null;
-    if (data) saveGuestListAction(data);
-  }, []);
-
-  const mutate = useCallback(
-    (fn: (gl: GuestList) => GuestList) => {
-      setGuestList((prev) => {
-        const next = fn(prev);
-        debouncedSave(next);
-        return next;
-      });
-    },
-    [debouncedSave],
-  );
-
-  // Persist any pending edit before the page goes away (reload, navigation,
-  // backgrounding the tab) so recent changes are never lost.
-  useEffect(() => {
-    const onVisibility = () => {
-      if (document.visibilityState === "hidden") flushSave();
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("pagehide", flushSave);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("pagehide", flushSave);
-      flushSave();
-    };
-  }, [flushSave]);
 
   // rsvpId -> inviteeId, for "already linked" detection
   const linkedIds = useMemo(() => {
@@ -1052,34 +988,8 @@ export default function InviteeListCard({ responses }: Props) {
     }));
   };
 
-  const linkInvitee = (inviteeId: string, rsvp: RSVPEntry) => {
-    mutate((gl) => ({
-      ...gl,
-      invitees: gl.invitees.map((inv) =>
-        inv.id === inviteeId
-          ? {
-              ...inv,
-              linkedRsvpId: rsvp.id,
-              status: statusFromRsvp(rsvp),
-              count:
-                rsvp.attending === "Da"
-                  ? parseInt(rsvp.guestCount) || inv.count
-                  : inv.count,
-            }
-          : inv,
-      ),
-    }));
-    toast("Potvrda povezana");
-  };
-
-  const unlinkInvitee = (inviteeId: string) => {
-    mutate((gl) => ({
-      ...gl,
-      invitees: gl.invitees.map((inv) =>
-        inv.id === inviteeId ? { ...inv, linkedRsvpId: undefined } : inv,
-      ),
-    }));
-  };
+  // Linking is handled by the parent (it also copies the zvanica's category onto
+  // the RSVP), so links made here and from the Potvrde view stay consistent.
 
   /* ── Key roles (reference album — does not affect totals) ── */
 
@@ -1693,7 +1603,7 @@ export default function InviteeListCard({ responses }: Props) {
             setLinkingId(editingInvitee.id);
             setEditingId(null);
           }}
-          onUnlink={() => unlinkInvitee(editingInvitee.id)}
+          onUnlink={() => onUnlink(editingInvitee.id)}
         />
       )}
 
@@ -1705,7 +1615,7 @@ export default function InviteeListCard({ responses }: Props) {
           linkedIds={linkedIds}
           onClose={() => setLinkingId(null)}
           onLink={(rsvp) => {
-            linkInvitee(linkingInvitee.id, rsvp);
+            onLink(linkingInvitee.id, rsvp);
             setLinkingId(null);
           }}
         />
