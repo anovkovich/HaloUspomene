@@ -359,6 +359,8 @@ export async function loadOverviewAction(): Promise<{
     notAttending: number;
     totalGuests: number;
     uncategorized: number;
+    notInvited: number;
+    unlinkedConfirmations: number;
     recentResponses: { name: string; attending: string; guestCount: string; timestamp: string }[];
   };
   audioStats: { count: number; totalDurationMs: number; paidForAudio: boolean };
@@ -370,16 +372,27 @@ export async function loadOverviewAction(): Promise<{
   if (!data) return null;
 
   // Guests
-  let guestStats = { attending: 0, notAttending: 0, totalGuests: 0, uncategorized: 0, recentResponses: [] as { name: string; attending: string; guestCount: string; timestamp: string }[] };
+  let guestStats = { attending: 0, notAttending: 0, totalGuests: 0, uncategorized: 0, notInvited: 0, unlinkedConfirmations: 0, recentResponses: [] as { name: string; attending: string; guestCount: string; timestamp: string }[] };
   try {
     const responses = await getRSVPResponses(slug);
     const att = responses.filter((r) => r.attending === "Da");
     const notAtt = responses.filter((r) => r.attending === "Ne");
+    const portal = await dbLoadPortal(slug);
+    const invitees = portal.guestList?.invitees ?? [];
+    const linkedIds = new Set(
+      invitees.map((i) => i.linkedRsvpId).filter(Boolean) as string[],
+    );
     guestStats = {
       attending: att.length,
       notAttending: notAtt.length,
       totalGuests: att.reduce((s, r) => s + (parseInt(r.guestCount) || 1), 0),
       uncategorized: att.filter((r) => !r.category).length,
+      notInvited: invitees.filter((i) => i.status === "not-invited").length,
+      // Only meaningful once the couple actually uses the planning list.
+      unlinkedConfirmations:
+        invitees.length > 0
+          ? responses.filter((r) => !linkedIds.has(r.id)).length
+          : 0,
       recentResponses: [...responses]
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 5)

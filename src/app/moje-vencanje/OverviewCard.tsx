@@ -15,7 +15,6 @@ import {
   Clock,
   QrCode,
   X,
-  Armchair,
   Sparkles,
   Mail,
   Hourglass,
@@ -23,7 +22,6 @@ import {
 import {
   loadOverviewAction,
   getWeddingDataForPDF,
-  loadSeatingStatsAction,
 } from "./actions";
 import type { ActiveView } from "./Sidebar";
 import type { ChecklistItem, PortalBudget } from "./types";
@@ -53,6 +51,15 @@ function daysUntil(dateStr: string): number {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return Math.max(0, Math.round((target.getTime() - today.getTime()) / 86_400_000));
+}
+
+/** Serbian numeric declension: pick the right noun form for a count. */
+function plural(n: number, one: string, few: string, many: string): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
 }
 
 function formatDuration(ms: number) {
@@ -85,6 +92,8 @@ export default function OverviewCard({
     notAttending: number;
     totalGuests: number;
     uncategorized: number;
+    notInvited: number;
+    unlinkedConfirmations: number;
     recentResponses: {
       name: string;
       attending: string;
@@ -100,13 +109,6 @@ export default function OverviewCard({
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [paidForRaspored, setPaidForRaspored] = useState(false);
-  const [seatingModal, setSeatingModal] = useState<{
-    totalGuests: number;
-    seated: number;
-    notSeated: number;
-    slug: string;
-  } | null>(null);
-  const [seatingLoading, setSeatingLoading] = useState(false);
   const [pdfModal, setPdfModal] = useState<{
     weddingData: WeddingData;
     slug: string;
@@ -212,13 +214,6 @@ export default function OverviewCard({
     a.click();
   }, [coupleInfo.slug]);
 
-  const handleOpenSeatingModal = useCallback(async () => {
-    setSeatingLoading(true);
-    const stats = await loadSeatingStatsAction();
-    if (stats) setSeatingModal(stats);
-    setSeatingLoading(false);
-  }, []);
-
   // Derived stats
   const days = daysUntil(coupleInfo.eventDate);
   const completedCount = checklist.filter((i) => i.completed).length;
@@ -245,17 +240,51 @@ export default function OverviewCard({
 
   // Alerts
   const alerts: { text: string; action: () => void }[] = [];
-  if (guestStats && guestStats.uncategorized > 0) {
-    alerts.push({
-      text: `${guestStats.uncategorized} nekategorisanih gostiju`,
-      action: handleOpenSeatingModal,
-    });
+  if (guestStats) {
+    if (guestStats.unlinkedConfirmations > 0) {
+      alerts.push({
+        text: `${guestStats.unlinkedConfirmations} ${plural(
+          guestStats.unlinkedConfirmations,
+          "nepovezana potvrda gostiju",
+          "nepovezane potvrde gostiju",
+          "nepovezanih potvrda gostiju",
+        )}`,
+        action: () => onNavigate("guests"),
+      });
+    }
+    if (guestStats.notInvited > 0) {
+      alerts.push({
+        text: `${guestStats.notInvited} ${plural(
+          guestStats.notInvited,
+          "nepozvan gost",
+          "nepozvana gosta",
+          "nepozvanih gostiju",
+        )}`,
+        action: () => onNavigate("guests"),
+      });
+    }
+    if (guestStats.uncategorized > 0) {
+      alerts.push({
+        text: `${guestStats.uncategorized} ${plural(
+          guestStats.uncategorized,
+          "nekategorisan gost",
+          "nekategorisana gosta",
+          "nekategorisanih gostiju",
+        )}`,
+        action: () => onNavigate("guests"),
+      });
+    }
   }
   // Upcoming checklist items (items in nearest uncompleted group)
   const upcomingCount = checklist.filter((i) => !i.completed).length;
   if (upcomingCount > 0 && upcomingCount <= 10) {
     alerts.push({
-      text: `${upcomingCount} preostalih stavki na checklisti`,
+      text: `${upcomingCount} ${plural(
+        upcomingCount,
+        "preostala stavka na checklisti",
+        "preostale stavke na checklisti",
+        "preostalih stavki na checklisti",
+      )}`,
       action: () => onNavigate("checklist"),
     });
   }
@@ -383,18 +412,19 @@ export default function OverviewCard({
           {loading ? (
             <span className="loading loading-spinner loading-xs text-[#d4af37]" />
           ) : alerts.length > 0 ? (
-            <div className="space-y-1.5">
+            <ul className="space-y-1.5">
               {alerts.map((alert, i) => (
-                <button
-                  key={i}
-                  onClick={alert.action}
-                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-xs bg-[#d4af37]/10 border border-[#d4af37]/25 text-[#232323]/85 hover:border-[#d4af37]/45 transition-colors cursor-pointer"
-                >
-                  <AlertCircle size={12} className="text-[#d4af37] shrink-0" />
-                  <span className="truncate">{alert.text}</span>
-                </button>
+                <li key={i} className="flex items-start gap-2">
+                  <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#d4af37] shrink-0" />
+                  <button
+                    onClick={alert.action}
+                    className="text-left text-xs text-[#232323]/85 hover:text-[#AE343F] hover:underline transition-colors cursor-pointer"
+                  >
+                    {alert.text}
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           ) : (
             <p className="text-xs text-green-700 flex items-center gap-1.5">
               <Check size={12} />
@@ -613,76 +643,6 @@ export default function OverviewCard({
           </div>
         </div>
       )}
-      {/* Seating stats modal */}
-      {(seatingModal || seatingLoading) && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => !seatingLoading && setSeatingModal(null)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-sm p-6 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {seatingLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <span className="loading loading-spinner loading-md text-[#AE343F]" />
-              </div>
-            ) : seatingModal ? (
-              <>
-                <button
-                  onClick={() => setSeatingModal(null)}
-                  className="absolute top-4 right-4 text-[#232323]/60 hover:text-[#232323] transition-colors cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-
-                <h3 className="font-serif text-lg text-[#232323] mb-5">
-                  Raspored gostiju
-                </h3>
-
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-[#F5F4DC]/50 border border-[#232323]/15">
-                    <span className="text-sm text-[#232323]/85 flex items-center gap-2">
-                      <Users size={14} className="text-[#AE343F]" />
-                      Ukupno dolazi
-                    </span>
-                    <span className="text-sm font-bold text-[#232323]">
-                      {seatingModal.totalGuests}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-green-50 border border-green-200/50">
-                    <span className="text-sm text-[#232323]/85 flex items-center gap-2">
-                      <Armchair size={14} className="text-green-600" />
-                      Raspoređeno
-                    </span>
-                    <span className="text-sm font-bold text-green-700">
-                      {seatingModal.seated}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200/50">
-                    <span className="text-sm text-[#232323]/85 flex items-center gap-2">
-                      <AlertCircle size={14} className="text-amber-500" />
-                      Neraspoređeno
-                    </span>
-                    <span className="text-sm font-bold text-amber-600">
-                      {seatingModal.notSeated}
-                    </span>
-                  </div>
-                </div>
-
-                <Link
-                  href={`/pozivnica/${seatingModal.slug}/raspored-sedenja`}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-[#AE343F] text-white text-sm font-medium hover:bg-[#962d36] transition-colors"
-                >
-                  <Armchair size={15} />
-                  Otvori raspored sedenja
-                </Link>
-              </>
-            ) : null}
-          </div>
-        </div>
-      )}
-
       {/* PDF download options modal */}
       {pdfModal && (
         <div
