@@ -293,7 +293,7 @@ export function BirthdayRSVPForm({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Ostavite napomenu ili navedite imena osoba koje dolaze sa vama..."
-          rows={2}
+          rows={3}
           className="w-full px-4 py-3 rounded-xl text-base outline-none transition-colors resize-none"
           style={{
             backgroundColor: "var(--theme-background)",

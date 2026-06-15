@@ -335,7 +335,7 @@ function WatercolorRSVPForm({
               value={details}
               onChange={(e) => setDetails(e.target.value)}
               placeholder="Ostavite napomenu ili navedite imena osoba koje dolaze sa vama..."
-              rows={2}
+              rows={3}
               className="w-full bg-white/10 border border-white/25 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/60 focus:outline-none focus:border-[#d4af37]/60 focus:ring-1 focus:ring-[#d4af37]/25 resize-none transition-all"
             />
           </motion.div>

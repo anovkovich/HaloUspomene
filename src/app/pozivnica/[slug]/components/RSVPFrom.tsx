@@ -445,7 +445,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ slug, calendarEvent }) => {
                 {t.additionalNotes}
               </label>
               <textarea
-                className="w-full p-4 h-25 md:h-15 font-light outline-none transition-all duration-300 resize-none"
+                className="w-full p-4 h-28 md:h-20 font-light outline-none transition-all duration-300 resize-none"
                 style={{
                   backgroundColor: "var(--theme-surface)",
                   color: "var(--theme-text-muted)",

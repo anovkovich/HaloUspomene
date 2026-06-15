@@ -608,7 +608,7 @@ function LineArtRSVPForm({ slug, submitUntil, formattedDeadline, calendar }: { s
           value={details}
           onChange={(e) => setDetails(e.target.value)}
           placeholder="Ostavite napomenu ili navedite imena osoba koje dolaze sa vama..."
-          rows={2}
+          rows={3}
           className="w-full bg-white border border-[#d4af37]/15 rounded-xl px-4 py-3 text-[#232323] text-sm placeholder:text-[#8B7355]/40 focus:outline-none focus:border-[#d4af37]/50 focus:ring-1 focus:ring-[#d4af37]/20 resize-none transition-all"
         />
       </motion.div>

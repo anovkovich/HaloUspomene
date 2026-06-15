@@ -984,7 +984,7 @@ function FountainRSVPForm({
               value={details}
               onChange={(e) => setDetails(e.target.value)}
               placeholder="Ostavite napomenu ili navedite imena osoba koje dolaze sa vama..."
-              rows={2}
+              rows={3}
               className="w-full bg-white/10 border border-white/30 rounded-2xl px-5 py-3 text-sm text-white placeholder:text-white/55 focus:outline-none focus:border-white/60 focus:ring-2 focus:ring-white/20 resize-none transition-all"
             />
           </motion.div>
