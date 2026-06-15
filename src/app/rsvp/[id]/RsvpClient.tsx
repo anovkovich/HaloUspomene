@@ -12,6 +12,12 @@ import type {
   ScriptFontType,
   PremiumThemeType,
 } from "@/app/pozivnica/[slug]/types";
+import {
+  type CalendarEvent,
+  parseLocalDate,
+  hasTimeComponent,
+  calendarLabels as buildCalendarLabels,
+} from "@/lib/calendar";
 
 interface BaseProps {
   slug: string;
@@ -19,6 +25,10 @@ interface BaseProps {
   subtitle: string;
   eventDate: string;
   submitUntil: string;
+  /** Venue line ("Naziv, Adresa") for the calendar event. */
+  eventLocation?: string;
+  /** Invitation URL added to the calendar event description. */
+  eventUrl?: string;
 }
 
 interface CoupleSpecific {
@@ -230,6 +240,19 @@ export default function RsvpClient(props: Props) {
     (props.kind === "classic" || props.kind === "premium") && props.useCyrillic;
   const formattedDate = formatDate(props.eventDate, cyrillic);
 
+  // "Add to calendar" event for the RSVP success screen.
+  const calLabels = buildCalendarLabels(cyrillic);
+  const calStart = parseLocalDate(props.eventDate);
+  const calendarEvent: CalendarEvent | null = calStart
+    ? {
+        title: `${props.title} — ${props.subtitle}`,
+        start: calStart,
+        allDay: !hasTimeComponent(props.eventDate),
+        location: props.eventLocation || undefined,
+        description: props.eventUrl || undefined,
+      }
+    : null;
+
   const header = (
     <div className="text-center mb-8">
       <p
@@ -333,7 +356,7 @@ export default function RsvpClient(props: Props) {
       >
         {wrap(
           <>
-            <RSVPForm slug={props.slug} />
+            <RSVPForm slug={props.slug} calendarEvent={calendarEvent} />
             {callBlock}
           </>,
         )}
@@ -361,6 +384,8 @@ export default function RsvpClient(props: Props) {
             submitUntil={props.submitUntil}
             formattedDeadline={formattedDeadline}
             cyrillic={cyrillic}
+            calendarEvent={calendarEvent}
+            calendarLabels={calLabels}
           />
         </PremiumRsvpLayout>
       </ThemeProvider>
@@ -370,7 +395,13 @@ export default function RsvpClient(props: Props) {
   if (props.kind === "standalone") {
     return (
       <div style={NEUTRAL_VARS as React.CSSProperties}>
-        {wrap(<StandaloneRSVPForm slug={props.slug} />)}
+        {wrap(
+          <StandaloneRSVPForm
+            slug={props.slug}
+            calendarEvent={calendarEvent}
+            calendarLabels={calLabels}
+          />,
+        )}
       </div>
     );
   }
@@ -382,6 +413,8 @@ export default function RsvpClient(props: Props) {
           slug={props.slug}
           submitUntil={props.submitUntil}
           gender={props.gender}
+          calendarEvent={calendarEvent}
+          calendarLabels={calLabels}
         />,
       )}
     </div>

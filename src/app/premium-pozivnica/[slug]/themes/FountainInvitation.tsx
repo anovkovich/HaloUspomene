@@ -12,11 +12,14 @@ import {
 import { Clock, Heart, Send } from "lucide-react";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import TornPaperDivider from "../components/TornPaperDivider";
-import type { ThemeInvitationProps } from "../PremiumInvitationClient";
+import AddToCalendar from "@/components/ui/AddToCalendar";
+import type {
+  ThemeInvitationProps,
+  PremiumCalendarBundle,
+} from "../PremiumInvitationClient";
 
 const BURGUNDY = "#6B0E1E";
 const BURGUNDY_DEEP = "#4A0813";
-const CREAM = "#fdfaf3";
 
 const ASSETS = {
   bgPortrait: "/images/premium/fountain/bg-portrait.webp",
@@ -238,7 +241,7 @@ function RosesBand({
     }
 
     return arr;
-  }, [bandHeight, seed]);
+  }, [bandHeight, seed, whiteOnly]);
 
   return (
     <div
@@ -806,10 +809,12 @@ function FountainRSVPForm({
   slug,
   formattedDeadline,
   rsvpByLabel,
+  calendar,
 }: {
   slug: string;
   formattedDeadline: string;
   rsvpByLabel: string;
+  calendar: PremiumCalendarBundle;
 }) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
@@ -881,6 +886,20 @@ function FountainRSVPForm({
             ? `Radujemo se vašem dolasku! (${guestCount} ${guestCount === 1 ? "osoba" : "osobe"})`
             : "Žao nam je što nećete moći da dođete."}
         </p>
+        {attending === "Da" && calendar.event && (
+          <div className="mt-5 flex justify-center">
+            <AddToCalendar
+              event={calendar.event}
+              label={calendar.labels.addToCalendar}
+              dialogTitle={calendar.labels.dialogTitle}
+              googleLabel={calendar.labels.google}
+              appleLabel={calendar.labels.apple}
+              icsFilename={`vencanje-${slug}.ics`}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-sm font-medium shadow-md hover:brightness-95 transition-all cursor-pointer"
+              style={{ color: BURGUNDY_DEEP }}
+            />
+          </div>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -888,7 +907,7 @@ function FountainRSVPForm({
             setName("");
             setDetails("");
           }}
-          className="mt-5 text-xs text-white/45 underline hover:text-white/70 transition-colors"
+          className="mt-5 block mx-auto text-xs text-white/45 underline hover:text-white/70 transition-colors"
         >
           Pošalji još jednu potvrdu
         </button>
@@ -964,7 +983,7 @@ function FountainRSVPForm({
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              placeholder="Napomena (opciono)"
+              placeholder="Ostavite napomenu ili navedite imena osoba koje dolaze sa vama..."
               rows={2}
               className="w-full bg-white/10 border border-white/30 rounded-2xl px-5 py-3 text-sm text-white placeholder:text-white/55 focus:outline-none focus:border-white/60 focus:ring-2 focus:ring-white/20 resize-none transition-all"
             />
@@ -1006,6 +1025,19 @@ function FountainRSVPForm({
           {rsvpByLabel} {formattedDeadline}.
         </p>
       )}
+      {calendar.reminder && (
+        <div className="flex justify-center">
+          <AddToCalendar
+            event={calendar.reminder.event}
+            label={calendar.reminder.label}
+            dialogTitle={calendar.labels.dialogTitle}
+            googleLabel={calendar.labels.google}
+            appleLabel={calendar.labels.apple}
+            icsFilename={`podsetnik-${slug}.ics`}
+            className="inline-flex items-center gap-1.5 text-xs text-white/55 underline decoration-dotted underline-offset-2 hover:text-white/85 transition-colors cursor-pointer"
+          />
+        </div>
+      )}
     </form>
   );
 }
@@ -1015,10 +1047,10 @@ export default function FountainInvitation({
   slug,
   bride,
   groom,
-  full_display,
   formattedDate,
   isPastDeadline,
   isRevealed,
+  calendar,
 }: ThemeInvitationProps) {
   const lang = data.useCyrillic ? T.cyrillic : T.latin;
   // True when the envelope holds for a tap (music is enabled). For these
@@ -1043,17 +1075,16 @@ export default function FountainInvitation({
   // JS per frame, no scroll listeners. Older browsers fall back to the
   // framer-motion path below.
   const heroRef = useRef<HTMLElement>(null);
-  const [cssScrollTimeline, setCssScrollTimeline] = useState(false);
-  useEffect(() => {
-    if (
+  // Detect CSS scroll-driven animation support once, at first (client-only)
+  // render — this theme is dynamically imported with ssr:false, so `CSS` is
+  // always defined here. A lazy initializer avoids a setState-in-effect.
+  const [cssScrollTimeline] = useState(
+    () =>
       typeof CSS !== "undefined" &&
       typeof CSS.supports === "function" &&
       (CSS.supports("animation-timeline", "scroll()") ||
-        CSS.supports("animation-timeline", "view()"))
-    ) {
-      setCssScrollTimeline(true);
-    }
-  }, []);
+        CSS.supports("animation-timeline", "view()")),
+  );
 
   const { scrollYProgress: heroScrollProgress } = useScroll({
     target: heroRef,
@@ -1124,7 +1155,6 @@ export default function FountainInvitation({
         >
           <picture>
             <source media="(min-width: 768px)" srcSet={ASSETS.bgLandscape} />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={ASSETS.bgPortrait}
               alt=""
@@ -1523,6 +1553,7 @@ export default function FountainInvitation({
                   slug={slug}
                   formattedDeadline={deadlineGenitive}
                   rsvpByLabel={lang.rsvpBy}
+                  calendar={calendar}
                 />
               </div>
             );

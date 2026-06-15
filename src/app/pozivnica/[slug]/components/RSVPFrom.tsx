@@ -4,12 +4,16 @@ import React, { useState } from "react";
 import { Heart, Check, Send, Users, MessageSquare, User } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import AddToCalendar from "@/components/ui/AddToCalendar";
+import type { CalendarEvent } from "@/lib/calendar";
 
 interface RSVPFormProps {
   slug: string;
+  /** Wedding event for the "Add to calendar" button on the success screen. */
+  calendarEvent?: CalendarEvent | null;
 }
 
-export const RSVPForm: React.FC<RSVPFormProps> = ({ slug }) => {
+export const RSVPForm: React.FC<RSVPFormProps> = ({ slug, calendarEvent }) => {
   const { t } = useTheme();
   const { execute: executeRecaptcha } = useRecaptcha();
   const [submitted, setSubmitted] = useState(false);
@@ -179,6 +183,24 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ slug }) => {
                 : t.notAttending}
             </p>
           </div>
+
+          {isAttending && calendarEvent && (
+            <div className="mb-6 flex justify-center animate-[fade-in-up_0.5s_ease-out_0.65s_both]">
+              <AddToCalendar
+                event={calendarEvent}
+                label={t.addToCalendar}
+                dialogTitle={t.calendarDialogTitle}
+                googleLabel={t.calendarGoogle}
+                appleLabel={t.calendarApple}
+                icsFilename={`vencanje-${slug}.ics`}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-[var(--theme-radius)] text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                style={{
+                  backgroundColor: "var(--theme-primary)",
+                  boxShadow: "var(--theme-shadow)",
+                }}
+              />
+            </div>
+          )}
 
           <button
             onClick={resetForm}

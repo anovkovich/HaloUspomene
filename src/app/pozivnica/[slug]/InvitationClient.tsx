@@ -3,10 +3,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Heart, Calendar, MapPin, Clock, Mic, Church } from "lucide-react";
-// MapPin and Clock retained for Feature Cards section below
+import { Heart, Calendar, MapPin, Mic, Church } from "lucide-react";
+// MapPin retained for Feature Cards section below
 import { WeddingData } from "./types";
-import { getThemeConfig } from "./constants";
 import { getTranslations, type Lang } from "./translations";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { EnvelopeLoader } from "./components/EnvelopeLoader";
@@ -16,6 +15,13 @@ import { RSVPForm } from "./components/RSVPFrom";
 import { generateInvitationPDF } from "./generateInvitationPDF";
 import PolaroidGallery from "./PolaroidGallery";
 import CallCTA from "@/components/CallCTA";
+import AddToCalendar from "@/components/ui/AddToCalendar";
+import {
+  type CalendarEvent,
+  parseLocalDate,
+  hasTimeComponent,
+  planRsvpReminder,
+} from "@/lib/calendar";
 import Link from "next/link";
 import { Download } from "lucide-react";
 
@@ -249,7 +255,6 @@ export default function InvitationClient({
     [lang, useIjekavica],
   );
 
-  const themeConfig = useMemo(() => getThemeConfig(data.theme), [data.theme]);
   const formattedDate = useMemo(
     () => formatEventDate(data.event_date, t.months, t.days_week, useIjekavica),
     [data.event_date, t.months, t.days_week, useIjekavica],
@@ -269,6 +274,41 @@ export default function InvitationClient({
       data.event_date.split("T")[1]?.split(":")[1],
     [data.event_date],
   );
+
+  // "Add to calendar" event for the wedding (used on the RSVP success screen).
+  const weddingCalendarEvent = useMemo<CalendarEvent | null>(() => {
+    const start = parseLocalDate(data.event_date);
+    if (!start) return null;
+    const loc = mainLocation ?? data.locations[0];
+    const location = loc
+      ? [loc.name, loc.address].filter(Boolean).join(", ")
+      : undefined;
+    return {
+      title: data.couple_names.full_display
+        ? `${t.calendarWeddingTitle} — ${data.couple_names.full_display}`
+        : t.calendarWeddingTitle,
+      start,
+      allDay: !hasTimeComponent(data.event_date),
+      location,
+      description: `${t.calendarWeddingDesc} https://halouspomene.rs/pozivnica/${slug}`,
+    };
+  }, [data.event_date, data.couple_names.full_display, data.locations, mainLocation, t, slug]);
+
+  // RSVP reminder (calendar event for the "podseti me" link below the deadline).
+  const rsvpReminder = useMemo(() => {
+    const plan = planRsvpReminder(data.submit_until);
+    if (!plan) return null;
+    const event: CalendarEvent = {
+      title: t.reminderEventTitle,
+      start: plan.remindDate,
+      allDay: true,
+      description: `${t.reminderEventDesc} https://halouspomene.rs/pozivnica/${slug}`,
+    };
+    return {
+      event,
+      label: plan.mode === "in15" ? t.reminderIn15 : t.reminderDayBefore,
+    };
+  }, [data.submit_until, t, slug]);
 
   // RSVP deadline & seating lookup availability
   const { isPastDeadline, showGdeSedimLink, isWeddingDay, submitUntilDisplay } =
@@ -800,6 +840,20 @@ export default function InvitationClient({
                 {submitUntilDisplay}
               </span>
             </p>
+            {!isPastDeadline && rsvpReminder && (
+              <div className="mt-4 flex justify-center">
+                <AddToCalendar
+                  event={rsvpReminder.event}
+                  label={rsvpReminder.label}
+                  dialogTitle={t.calendarDialogTitle}
+                  googleLabel={t.calendarGoogle}
+                  appleLabel={t.calendarApple}
+                  icsFilename={`podsetnik-${slug}.ics`}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-70 cursor-pointer"
+                  style={{ color: "var(--theme-text-light)" }}
+                />
+              </div>
+            )}
           </div>
           {isPastDeadline ? (
             <div
@@ -824,7 +878,7 @@ export default function InvitationClient({
               </p>
             </div>
           ) : (
-            <RSVPForm slug={slug} />
+            <RSVPForm slug={slug} calendarEvent={weddingCalendarEvent} />
           )}
 
           {/* Optional per-couple call-CTA below the RSVP form. Renders

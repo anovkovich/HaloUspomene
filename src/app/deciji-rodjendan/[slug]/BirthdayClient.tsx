@@ -13,6 +13,13 @@ import { SceneDecorations, AgeBadge } from "./components/Illustrations";
 import { BirthdayCountdown } from "./components/Countdown";
 import { BirthdayRSVPForm } from "./components/BirthdayRSVPForm";
 import { MultilineText } from "@/lib/multiline";
+import {
+  type CalendarEvent,
+  parseLocalDate,
+  hasTimeComponent,
+  planRsvpReminder,
+  calendarLabels,
+} from "@/lib/calendar";
 
 interface Props {
   data: BirthdayData;
@@ -58,6 +65,37 @@ export default function BirthdayClient({ data, slug }: Props) {
   const themeConfig = getBirthdayThemeConfig(data.theme);
   const dateInfo = formatDate(data.event_date);
   const confetti = themeConfig.colors.confetti;
+
+  // "Add to calendar" + RSVP reminder for the birthday.
+  const birthdayUrl = `https://halouspomene.rs/deciji-rodjendan/${slug}`;
+  const birthdayStart = parseLocalDate(data.event_date);
+  const birthdayEvent: CalendarEvent | null = birthdayStart
+    ? {
+        title: `${data.child_name} — ${data.age}. rođendan`,
+        start: birthdayStart,
+        allDay: !hasTimeComponent(data.event_date),
+        location: data.location
+          ? [data.location.name, data.location.address].filter(Boolean).join(", ")
+          : undefined,
+        description: `Radujemo se vašem dolasku! ${birthdayUrl}`,
+      }
+    : null;
+  const birthdayReminderPlan = planRsvpReminder(data.submit_until);
+  const birthdayReminder = birthdayReminderPlan
+    ? {
+        event: {
+          title: "Podsetnik: potvrdi dolazak",
+          start: birthdayReminderPlan.remindDate,
+          allDay: true,
+          description: `Ne zaboravi da potvrdiš dolazak na rođendan. ${birthdayUrl}`,
+        } as CalendarEvent,
+        label:
+          birthdayReminderPlan.mode === "in15"
+            ? "Podseti me za 15 dana"
+            : "Podseti me dan pre roka",
+      }
+    : null;
+  const birthdayCalLabels = calendarLabels(false);
   const illustration = themeConfig.illustration;
 
   return (
@@ -294,6 +332,9 @@ export default function BirthdayClient({ data, slug }: Props) {
               slug={slug}
               submitUntil={data.submit_until}
               gender={data.gender}
+              calendarEvent={birthdayEvent}
+              reminder={birthdayReminder}
+              calendarLabels={birthdayCalLabels}
             />
           </div>
         </section>

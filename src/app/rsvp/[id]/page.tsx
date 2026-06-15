@@ -55,6 +55,12 @@ export default async function RsvpPage({ params }: PageProps) {
       (_, i) => data.show_numbers?.[i] === true,
     );
 
+    const loc =
+      data.locations?.find((l) => l.type === "hall") ?? data.locations?.[0];
+    const eventLocation = loc
+      ? [loc.name, loc.address].filter(Boolean).join(", ")
+      : undefined;
+
     return (
       <RsvpClient
         kind={data.premium ? "premium" : "classic"}
@@ -63,6 +69,8 @@ export default async function RsvpPage({ params }: PageProps) {
         subtitle={subtitle}
         eventDate={data.event_date}
         submitUntil={data.submit_until}
+        eventLocation={eventLocation}
+        eventUrl={`https://halouspomene.rs/${data.premium ? "premium-pozivnica" : "pozivnica"}/${slug}`}
         theme={data.theme}
         scriptFont={data.scriptFont ?? "great-vibes"}
         useCyrillic={data.useCyrillic ?? false}
@@ -101,6 +109,10 @@ export default async function RsvpPage({ params }: PageProps) {
       : data.child_name;
   const subtitle = isEighteenth ? "18. rođendan" : `${data.age}. rođendan`;
 
+  const eventLocation = data.location
+    ? [data.location.name, data.location.address].filter(Boolean).join(", ")
+    : undefined;
+
   return (
     <RsvpClient
       kind="birthday"
@@ -109,6 +121,8 @@ export default async function RsvpPage({ params }: PageProps) {
       subtitle={subtitle}
       eventDate={data.event_date}
       submitUntil={data.submit_until}
+      eventLocation={eventLocation}
+      eventUrl={`https://halouspomene.rs/${isEighteenth ? "punoletstvo" : "deciji-rodjendan"}/${slug}`}
       gender={data.gender}
     />
   );

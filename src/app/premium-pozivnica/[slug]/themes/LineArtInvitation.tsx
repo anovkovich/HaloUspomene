@@ -3,10 +3,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, useScroll, useTransform, useMotionValue, animate } from "framer-motion";
 import { Heart, Send, MapPin, Clock, Church, Home, Sparkles } from "lucide-react";
-import type { ThemeInvitationProps } from "../PremiumInvitationClient";
+import type {
+  ThemeInvitationProps,
+  PremiumCalendarBundle,
+} from "../PremiumInvitationClient";
 import dynamic from "next/dynamic";
 import { MultilineText } from "@/lib/multiline";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import AddToCalendar from "@/components/ui/AddToCalendar";
 import PremiumCallCTA from "../components/PremiumCallCTA";
 
 const HeroSection = dynamic(() => import("../components/HeroSection"), {
@@ -62,18 +66,6 @@ function GoldDivider({ className = "" }: { className?: string }) {
       <div className="w-12 sm:w-20 h-px bg-gradient-to-r from-transparent to-[#d4af37]/60" />
       <Heart size={10} className="text-[#d4af37]/60" fill="currentColor" />
       <div className="w-12 sm:w-20 h-px bg-gradient-to-l from-transparent to-[#d4af37]/60" />
-    </div>
-  );
-}
-
-function SectionDivider() {
-  return (
-    <div className="flex items-center justify-center py-4">
-      <img
-        src="/images/premium/ornaments/wave-divider.svg"
-        alt=""
-        className="w-[60%] max-w-[200px] h-auto opacity-20"
-      />
     </div>
   );
 }
@@ -486,7 +478,7 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
   );
 }
 
-function LineArtRSVPForm({ slug, submitUntil, formattedDeadline }: { slug: string; submitUntil: string; formattedDeadline: string }) {
+function LineArtRSVPForm({ slug, submitUntil, formattedDeadline, calendar }: { slug: string; submitUntil: string; formattedDeadline: string; calendar: PremiumCalendarBundle }) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
   const [attending, setAttending] = useState<"Da" | "Ne">("Da");
@@ -520,8 +512,8 @@ function LineArtRSVPForm({ slug, submitUntil, formattedDeadline }: { slug: strin
         throw new Error(data.error || "Greška pri slanju.");
       }
       setIsSubmitted(true);
-    } catch (err: any) {
-      setError(err.message || "Greška pri slanju.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Greška pri slanju.");
     } finally {
       setIsSubmitting(false);
     }
@@ -539,7 +531,21 @@ function LineArtRSVPForm({ slug, submitUntil, formattedDeadline }: { slug: strin
             ? `Radujemo se vašem dolasku! (${guestCount} ${guestCount === 1 ? "osoba" : "osobe"})`
             : "Žao nam je što nećete moći da dođete."}
         </p>
-        <button type="button" onClick={() => { setIsSubmitted(false); setName(""); setDetails(""); }} className="mt-6 text-xs text-[#8B7355]/50 underline hover:text-[#8B7355]">
+        {attending === "Da" && calendar.event && (
+          <div className="mt-6 flex justify-center">
+            <AddToCalendar
+              event={calendar.event}
+              label={calendar.labels.addToCalendar}
+              dialogTitle={calendar.labels.dialogTitle}
+              googleLabel={calendar.labels.google}
+              appleLabel={calendar.labels.apple}
+              icsFilename={`vencanje-${slug}.ics`}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-medium text-sm shadow-md hover:brightness-105 transition-all cursor-pointer"
+              style={{ background: "linear-gradient(135deg, #e8d48a, #d4af37 40%, #b89520)" }}
+            />
+          </div>
+        )}
+        <button type="button" onClick={() => { setIsSubmitted(false); setName(""); setDetails(""); }} className="mt-6 block mx-auto text-xs text-[#8B7355]/50 underline hover:text-[#8B7355]">
           Pošalji još jednu potvrdu
         </button>
       </motion.div>
@@ -601,7 +607,7 @@ function LineArtRSVPForm({ slug, submitUntil, formattedDeadline }: { slug: strin
         <textarea
           value={details}
           onChange={(e) => setDetails(e.target.value)}
-          placeholder="Napomena (opciono)"
+          placeholder="Ostavite napomenu ili navedite imena osoba koje dolaze sa vama..."
           rows={2}
           className="w-full bg-white border border-[#d4af37]/15 rounded-xl px-4 py-3 text-[#232323] text-sm placeholder:text-[#8B7355]/40 focus:outline-none focus:border-[#d4af37]/50 focus:ring-1 focus:ring-[#d4af37]/20 resize-none transition-all"
         />
@@ -624,6 +630,19 @@ function LineArtRSVPForm({ slug, submitUntil, formattedDeadline }: { slug: strin
       {submitUntil && (
         <p className="text-[10px] text-[#8B7355]/50 text-center">Rok za potvrdu: {formattedDeadline}</p>
       )}
+      {calendar.reminder && (
+        <div className="flex justify-center">
+          <AddToCalendar
+            event={calendar.reminder.event}
+            label={calendar.reminder.label}
+            dialogTitle={calendar.labels.dialogTitle}
+            googleLabel={calendar.labels.google}
+            appleLabel={calendar.labels.apple}
+            icsFilename={`podsetnik-${slug}.ics`}
+            className="inline-flex items-center gap-1.5 text-[11px] text-[#8B7355]/70 underline decoration-dotted underline-offset-2 hover:text-[#8B7355] transition-colors cursor-pointer"
+          />
+        </div>
+      )}
     </form>
   );
 }
@@ -637,6 +656,7 @@ export default function LineArtInvitation({
   formattedDateShort,
   formattedSubmitUntil,
   isPastDeadline,
+  calendar,
 }: ThemeInvitationProps) {
   // Window-level scroll for page parallax
   const { scrollY } = useScroll();
@@ -830,7 +850,7 @@ export default function LineArtInvitation({
                 Rok za potvrdu dolaska je istekao.
               </p>
             ) : (
-              <LineArtRSVPForm slug={slug} submitUntil={data.submit_until} formattedDeadline={formattedSubmitUntil} />
+              <LineArtRSVPForm slug={slug} submitUntil={data.submit_until} formattedDeadline={formattedSubmitUntil} calendar={calendar} />
             )}
             <PremiumCallCTA
               contactPhone={data.contact_phone}

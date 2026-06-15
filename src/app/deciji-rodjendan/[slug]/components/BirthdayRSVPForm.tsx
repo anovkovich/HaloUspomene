@@ -4,18 +4,33 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, Minus, Plus } from "lucide-react";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import AddToCalendar from "@/components/ui/AddToCalendar";
+import {
+  type CalendarEvent,
+  type CalendarLabels,
+  calendarLabels as defaultCalendarLabels,
+} from "@/lib/calendar";
 
 interface BirthdayRSVPFormProps {
   slug: string;
   submitUntil: string;
-  /** Drives gender-aware placeholder wording (slavljenika / slavljenicu). */
+  /** Accepted for call-site compatibility; no longer used in the form copy. */
   gender?: "boy" | "girl" | "neutral";
+  /** "Add to calendar" event for the success screen. */
+  calendarEvent?: CalendarEvent | null;
+  /** RSVP reminder link shown at the bottom of the form. */
+  reminder?: { event: CalendarEvent; label: string } | null;
+  calendarLabels?: CalendarLabels;
 }
 
-export function BirthdayRSVPForm({ slug, submitUntil, gender = "neutral" }: BirthdayRSVPFormProps) {
+export function BirthdayRSVPForm({
+  slug,
+  submitUntil,
+  calendarEvent,
+  reminder,
+  calendarLabels = defaultCalendarLabels(false),
+}: BirthdayRSVPFormProps) {
   const { execute: executeRecaptcha } = useRecaptcha();
-  const honoreeNoun =
-    gender === "girl" ? "slavljenicu" : "slavljenika";
   const [name, setName] = useState("");
   const [attending, setAttending] = useState<"Da" | "Ne" | null>(null);
   const [guestCount, setGuestCount] = useState(1);
@@ -75,6 +90,20 @@ export function BirthdayRSVPForm({ slug, submitUntil, gender = "neutral" }: Birt
             ? "Vidimo se na proslavi!"
             : "Žao nam je što nećete moći da dođete."}
         </p>
+        {attending === "Da" && calendarEvent && (
+          <div className="mt-6 flex justify-center">
+            <AddToCalendar
+              event={calendarEvent}
+              label={calendarLabels.addToCalendar}
+              dialogTitle={calendarLabels.dialogTitle}
+              googleLabel={calendarLabels.google}
+              appleLabel={calendarLabels.apple}
+              icsFilename={`rodjendan-${slug}.ics`}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90 cursor-pointer"
+              style={{ backgroundColor: "var(--theme-primary)" }}
+            />
+          </div>
+        )}
       </motion.div>
     );
   }
@@ -263,7 +292,7 @@ export function BirthdayRSVPForm({ slug, submitUntil, gender = "neutral" }: Birt
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder={`Čestitka ili poruka za ${honoreeNoun}...`}
+          placeholder="Ostavite napomenu ili navedite imena osoba koje dolaze sa vama..."
           rows={2}
           className="w-full px-4 py-3 rounded-xl text-base outline-none transition-colors resize-none"
           style={{
@@ -298,6 +327,21 @@ export function BirthdayRSVPForm({ slug, submitUntil, gender = "neutral" }: Birt
           "Potvrdi dolazak 🎈"
         )}
       </button>
+
+      {reminder && (
+        <div className="flex justify-center">
+          <AddToCalendar
+            event={reminder.event}
+            label={reminder.label}
+            dialogTitle={calendarLabels.dialogTitle}
+            googleLabel={calendarLabels.google}
+            appleLabel={calendarLabels.apple}
+            icsFilename={`podsetnik-${slug}.ics`}
+            className="inline-flex items-center gap-1.5 text-xs underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-70 cursor-pointer"
+            style={{ color: "var(--theme-text-light)" }}
+          />
+        </div>
+      )}
     </form>
   );
 }

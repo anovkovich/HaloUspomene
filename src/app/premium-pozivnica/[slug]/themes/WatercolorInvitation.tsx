@@ -9,9 +9,13 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import { Heart, Send, MapPin, Clock, ChevronDown } from "lucide-react";
-import type { ThemeInvitationProps } from "../PremiumInvitationClient";
+import type {
+  ThemeInvitationProps,
+  PremiumCalendarBundle,
+} from "../PremiumInvitationClient";
 import { MultilineText } from "@/lib/multiline";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import AddToCalendar from "@/components/ui/AddToCalendar";
 import PremiumCallCTA from "../components/PremiumCallCTA";
 
 /*
@@ -156,10 +160,12 @@ function WatercolorRSVPForm({
   slug,
   submitUntil,
   formattedDeadline,
+  calendar,
 }: {
   slug: string;
   submitUntil: string;
   formattedDeadline: string;
+  calendar: PremiumCalendarBundle;
 }) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
@@ -203,8 +209,8 @@ function WatercolorRSVPForm({
         throw new Error(data.error || "Greška pri slanju.");
       }
       setIsSubmitted(true);
-    } catch (err: any) {
-      setError(err.message || "Greška pri slanju.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Greška pri slanju.");
     } finally {
       setIsSubmitting(false);
     }
@@ -226,6 +232,19 @@ function WatercolorRSVPForm({
             ? `Radujemo se vašem dolasku! (${guestCount} ${guestCount === 1 ? "osoba" : "osobe"})`
             : "Žao nam je što nećete moći da dođete."}
         </p>
+        {attending === "Da" && calendar.event && (
+          <div className="mt-6 flex justify-center">
+            <AddToCalendar
+              event={calendar.event}
+              label={calendar.labels.addToCalendar}
+              dialogTitle={calendar.labels.dialogTitle}
+              googleLabel={calendar.labels.google}
+              appleLabel={calendar.labels.apple}
+              icsFilename={`vencanje-${slug}.ics`}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white font-medium text-sm shadow-lg shadow-[#d4af37]/25 hover:brightness-110 transition-all cursor-pointer"
+            />
+          </div>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -233,7 +252,7 @@ function WatercolorRSVPForm({
             setName("");
             setDetails("");
           }}
-          className="mt-6 text-xs text-white/30 underline hover:text-white/50"
+          className="mt-6 block mx-auto text-xs text-white/30 underline hover:text-white/50"
         >
           Pošalji još jednu potvrdu
         </button>
@@ -315,7 +334,7 @@ function WatercolorRSVPForm({
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              placeholder="Napomena (opciono)"
+              placeholder="Ostavite napomenu ili navedite imena osoba koje dolaze sa vama..."
               rows={2}
               className="w-full bg-white/10 border border-white/25 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/60 focus:outline-none focus:border-[#d4af37]/60 focus:ring-1 focus:ring-[#d4af37]/25 resize-none transition-all"
             />
@@ -349,6 +368,19 @@ function WatercolorRSVPForm({
           <span className="text-[#d4af37]">{formattedDeadline}</span>
         </p>
       )}
+      {calendar.reminder && (
+        <div className="flex justify-center">
+          <AddToCalendar
+            event={calendar.reminder.event}
+            label={calendar.reminder.label}
+            dialogTitle={calendar.labels.dialogTitle}
+            googleLabel={calendar.labels.google}
+            appleLabel={calendar.labels.apple}
+            icsFilename={`podsetnik-${slug}.ics`}
+            className="inline-flex items-center gap-1.5 text-xs text-[#d4af37]/80 underline decoration-dotted underline-offset-4 hover:text-[#d4af37] transition-colors cursor-pointer"
+          />
+        </div>
+      )}
     </form>
   );
 }
@@ -362,6 +394,7 @@ export default function WatercolorInvitation({
   formattedDateShort,
   formattedSubmitUntil,
   isPastDeadline,
+  calendar,
 }: ThemeInvitationProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -923,6 +956,7 @@ export default function WatercolorInvitation({
               slug={slug}
               submitUntil={data.submit_until}
               formattedDeadline={formattedSubmitUntil}
+              calendar={calendar}
             />
           )}
           <PremiumCallCTA

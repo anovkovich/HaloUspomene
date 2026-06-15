@@ -4,12 +4,24 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2, CheckCircle2, Minus, Plus } from "lucide-react";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import AddToCalendar from "@/components/ui/AddToCalendar";
+import {
+  type CalendarEvent,
+  type CalendarLabels,
+  calendarLabels as defaultCalendarLabels,
+} from "@/lib/calendar";
 
 interface Props {
   slug: string;
+  calendarEvent?: CalendarEvent | null;
+  calendarLabels?: CalendarLabels;
 }
 
-export default function StandaloneRSVPForm({ slug }: Props) {
+export default function StandaloneRSVPForm({
+  slug,
+  calendarEvent,
+  calendarLabels = defaultCalendarLabels(false),
+}: Props) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
   const [attending, setAttending] = useState<"Da" | "Ne" | null>(null);
@@ -49,6 +61,20 @@ export default function StandaloneRSVPForm({ slug }: Props) {
             ? "Vidimo se na proslavi!"
             : "Žao nam je što nećete moći da dođete."}
         </p>
+        {attending === "Da" && calendarEvent && (
+          <div className="mt-6 flex justify-center">
+            <AddToCalendar
+              event={calendarEvent}
+              label={calendarLabels.addToCalendar}
+              dialogTitle={calendarLabels.dialogTitle}
+              googleLabel={calendarLabels.google}
+              appleLabel={calendarLabels.apple}
+              icsFilename={`dogadjaj-${slug}.ics`}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 cursor-pointer"
+              style={{ backgroundColor: "var(--theme-primary)" }}
+            />
+          </div>
+        )}
       </motion.div>
     );
   }

@@ -55,6 +55,18 @@ export interface Translations {
   people: string;
   notAttending: string;
 
+  // Add to calendar
+  addToCalendar: string;
+  calendarDialogTitle: string;
+  calendarGoogle: string;
+  calendarApple: string;
+  calendarWeddingTitle: string;
+  calendarWeddingDesc: string;
+  reminderIn15: string;
+  reminderDayBefore: string;
+  reminderEventTitle: string;
+  reminderEventDesc: string;
+
   // Footer
   thankYouFooter: string;
 
@@ -137,7 +149,8 @@ export const latinTranslations: Translations = {
   attendingNoSub: "Sve najlepše!",
   guestCount: "Broj osoba (uključujući Vas)",
   additionalNotes: "Dodatne napomene",
-  notesPlaceholder: "Posebni zahtevi ili poruka mladencima...",
+  notesPlaceholder:
+    "Ostavite napomenu ili navedite imena osoba koje dolaze sa vama...",
   sending: "Šaljem...",
   confirmAttendance: "Potvrdite dolazak",
 
@@ -152,6 +165,18 @@ export const latinTranslations: Translations = {
   person: "osoba",
   people: "osobe",
   notAttending: "Neće prisustvovati",
+
+  // Add to calendar
+  addToCalendar: "Dodaj u kalendar",
+  calendarDialogTitle: "Dodaj u kalendar",
+  calendarGoogle: "Google kalendar",
+  calendarApple: "Apple / Outlook",
+  calendarWeddingTitle: "Venčanje",
+  calendarWeddingDesc: "Radujemo se što ćemo vas videti na proslavi!",
+  reminderIn15: "Podseti me za 15 dana",
+  reminderDayBefore: "Podseti me dan pre roka",
+  reminderEventTitle: "Podsetnik: potvrdi dolazak",
+  reminderEventDesc: "Ne zaboravi da potvrdiš dolazak na venčanje.",
 
   // RSVP closed
   rsvpClosed: "Prijave su zatvorene",
@@ -270,7 +295,8 @@ export const cyrillicTranslations: Translations = {
   attendingNoSub: "Све најлепше!",
   guestCount: "Број особа (укључујући Вас)",
   additionalNotes: "Додатне напомене",
-  notesPlaceholder: "Посебни захтеви или порука младенцима...",
+  notesPlaceholder:
+    "Оставите напомену или наведите имена особа које долазе са вама...",
   sending: "Шаљем...",
   confirmAttendance: "Потврдите долазак",
 
@@ -285,6 +311,18 @@ export const cyrillicTranslations: Translations = {
   person: "особа",
   people: "особе",
   notAttending: "Неће присуствовати",
+
+  // Add to calendar
+  addToCalendar: "Додај у календар",
+  calendarDialogTitle: "Додај у календар",
+  calendarGoogle: "Google календар",
+  calendarApple: "Apple / Outlook",
+  calendarWeddingTitle: "Венчање",
+  calendarWeddingDesc: "Радујемо се што ћемо вас видети на прослави!",
+  reminderIn15: "Подсети ме за 15 дана",
+  reminderDayBefore: "Подсети ме дан пре рока",
+  reminderEventTitle: "Подсетник: потврди долазак",
+  reminderEventDesc: "Не заборави да потврдиш долазак на венчање.",
 
   // RSVP closed
   rsvpClosed: "Пријаве су затворене",
@@ -405,7 +443,8 @@ export const germanTranslations: Translations = {
   attendingNoSub: "Alles Gute!",
   guestCount: "Anzahl der Personen (Euch eingeschlossen)",
   additionalNotes: "Anmerkungen",
-  notesPlaceholder: "Besondere Wünsche oder eine Nachricht an das Brautpaar...",
+  notesPlaceholder:
+    "Hinterlasst eine Notiz oder die Namen der Personen, die mit Euch kommen...",
   sending: "Wird gesendet...",
   confirmAttendance: "Teilnahme bestätigen",
 
@@ -420,6 +459,18 @@ export const germanTranslations: Translations = {
   person: "Person",
   people: "Personen",
   notAttending: "Wird nicht teilnehmen",
+
+  // Add to calendar
+  addToCalendar: "Zum Kalender hinzufügen",
+  calendarDialogTitle: "Zum Kalender hinzufügen",
+  calendarGoogle: "Google Kalender",
+  calendarApple: "Apple / Outlook",
+  calendarWeddingTitle: "Hochzeit",
+  calendarWeddingDesc: "Wir freuen uns darauf, Euch auf der Feier zu sehen!",
+  reminderIn15: "In 15 Tagen erinnern",
+  reminderDayBefore: "Am Vortag der Frist erinnern",
+  reminderEventTitle: "Erinnerung: Teilnahme bestätigen",
+  reminderEventDesc: "Vergiss nicht, Deine Teilnahme an der Hochzeit zu bestätigen.",
 
   // RSVP closed
   rsvpClosed: "Die Anmeldung ist geschlossen",
@@ -514,7 +565,6 @@ export const latinIjekavicaTranslations: Translations = {
   ...latinTranslations,
   where: "Gdje",
   attendingNoSub: "Sve najljepše!",
-  notesPlaceholder: "Posebni zahtjevi ili poruka mladencima...",
   confirmationRecorded: "Vaša potvrda je uspješno zabilježena.",
   lookingForward: "Radujemo se što ćemo Vas vidjeti na proslavi!",
   hopeToSee: "Nadamo se da ćemo se vidjeti nekom drugom prilikom.",
@@ -524,6 +574,8 @@ export const latinIjekavicaTranslations: Translations = {
   seatingAvailableNote:
     "Dan prije proslave biće dostupna provjera gdje ste raspoređeni sa sjedenjem.",
   thankYouFooter: "Hvala Vam što ste dio naše sreće",
+  calendarWeddingTitle: "Vjenčanje",
+  reminderEventDesc: "Ne zaboravi da potvrdiš dolazak na vjenčanje.",
   inviteYou: "Pozivaju Vas na vjenčanje",
   audioNotAvailableYet:
     "Audio knjiga utisaka biće dostupna na dan vjenčanja",

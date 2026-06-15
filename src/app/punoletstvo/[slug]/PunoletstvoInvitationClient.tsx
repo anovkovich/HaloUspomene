@@ -12,6 +12,14 @@ import { ThemeProvider } from "@/app/pozivnica/[slug]/components/ThemeProvider";
 import { EnvelopeLoader } from "@/app/pozivnica/[slug]/components/EnvelopeLoader";
 import { BirthdayRSVPForm } from "@/app/deciji-rodjendan/[slug]/components/BirthdayRSVPForm";
 import { MultilineText } from "@/lib/multiline";
+import AddToCalendar from "@/components/ui/AddToCalendar";
+import {
+  type CalendarEvent,
+  parseLocalDate,
+  hasTimeComponent,
+  planRsvpReminder,
+  calendarLabels,
+} from "@/lib/calendar";
 
 interface Props {
   data: BirthdayData;
@@ -310,6 +318,37 @@ export default function PunoletstvoInvitationClient({ data, slug }: Props) {
     displayName.slice(0, 2).toUpperCase();
 
   const dateInfo = formatDate(data.event_date);
+
+  // "Add to calendar" + RSVP reminder for the 18th birthday.
+  const punoletstvoUrl = `https://halouspomene.rs/punoletstvo/${slug}`;
+  const punoletstvoStart = parseLocalDate(data.event_date);
+  const punoletstvoEvent: CalendarEvent | null = punoletstvoStart
+    ? {
+        title: `${displayName} — 18. rođendan`,
+        start: punoletstvoStart,
+        allDay: !hasTimeComponent(data.event_date),
+        location: data.location
+          ? [data.location.name, data.location.address].filter(Boolean).join(", ")
+          : undefined,
+        description: `Radujemo se vašem dolasku! ${punoletstvoUrl}`,
+      }
+    : null;
+  const punoletstvoReminderPlan = planRsvpReminder(data.submit_until);
+  const punoletstvoReminder = punoletstvoReminderPlan
+    ? {
+        event: {
+          title: "Podsetnik: potvrdi dolazak",
+          start: punoletstvoReminderPlan.remindDate,
+          allDay: true,
+          description: `Ne zaboravi da potvrdiš dolazak na proslavu. ${punoletstvoUrl}`,
+        } as CalendarEvent,
+        label:
+          punoletstvoReminderPlan.mode === "in15"
+            ? "Podseti me za 15 dana"
+            : "Podseti me dan pre roka",
+      }
+    : null;
+  const punoletstvoCalLabels = calendarLabels(false);
 
   return (
     <ThemeProvider theme={theme} scriptFont={scriptFont}>
@@ -734,12 +773,28 @@ export default function PunoletstvoInvitationClient({ data, slug }: Props) {
                     {formatDate(data.submit_until).fullGenitive}
                   </strong>
                 </p>
+                {punoletstvoReminder && (
+                  <div className="mt-3 flex justify-center">
+                    <AddToCalendar
+                      event={punoletstvoReminder.event}
+                      label={punoletstvoReminder.label}
+                      dialogTitle={punoletstvoCalLabels.dialogTitle}
+                      googleLabel={punoletstvoCalLabels.google}
+                      appleLabel={punoletstvoCalLabels.apple}
+                      icsFilename={`podsetnik-${slug}.ics`}
+                      className="inline-flex items-center gap-1.5 text-xs underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-70 cursor-pointer"
+                      style={{ color: "var(--theme-text-light)" }}
+                    />
+                  </div>
+                )}
               </div>
 
               <BirthdayRSVPForm
                 slug={slug}
                 submitUntil={data.submit_until}
                 gender={data.gender}
+                calendarEvent={punoletstvoEvent}
+                calendarLabels={punoletstvoCalLabels}
               />
             </motion.div>
           </section>

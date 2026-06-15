@@ -4,6 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Send, X } from "lucide-react";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import AddToCalendar from "@/components/ui/AddToCalendar";
+import type { CalendarEvent, CalendarLabels } from "@/lib/calendar";
 
 /* Luxe premium RSVP form — glassmorphism + gold, matching the Watercolor
    invitation's "Potvrda dolaska". Self-contained (own strings) so it can live on
@@ -39,7 +41,7 @@ const LAT: Strings = {
   come: "Dolazim",
   notCome: "Ne dolazim",
   count: "Broj osoba",
-  notePh: "Napomena (opciono)",
+  notePh: "Ostavite napomenu ili navedite imena osoba koje dolaze sa vama...",
   confirm: "Potvrdi",
   send: "Pošalji",
   sending: "Slanje...",
@@ -56,7 +58,7 @@ const CYR: Strings = {
   come: "Долазим",
   notCome: "Не долазим",
   count: "Број особа",
-  notePh: "Напомена (опционо)",
+  notePh: "Оставите напомену или наведите имена особа које долазе са вама...",
   confirm: "Потврди",
   send: "Пошаљи",
   sending: "Слање...",
@@ -72,11 +74,15 @@ export default function PremiumRsvpForm({
   submitUntil,
   formattedDeadline,
   cyrillic,
+  calendarEvent,
+  calendarLabels: calLabels,
 }: {
   slug: string;
   submitUntil: string;
   formattedDeadline: string | null;
   cyrillic: boolean;
+  calendarEvent?: CalendarEvent | null;
+  calendarLabels?: CalendarLabels;
 }) {
   const t = cyrillic ? CYR : LAT;
   const { execute: executeRecaptcha } = useRecaptcha();
@@ -160,6 +166,19 @@ export default function PremiumRsvpForm({
         <p className="text-sm text-white/70">
           {attending === "Da" ? t.glad(guestCount) : t.sorry}
         </p>
+        {attending === "Da" && calendarEvent && calLabels && (
+          <div className="mt-6 flex justify-center">
+            <AddToCalendar
+              event={calendarEvent}
+              label={calLabels.addToCalendar}
+              dialogTitle={calLabels.dialogTitle}
+              googleLabel={calLabels.google}
+              appleLabel={calLabels.apple}
+              icsFilename={`vencanje-${slug}.ics`}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white font-medium text-sm shadow-lg shadow-[#d4af37]/25 hover:brightness-110 transition-all cursor-pointer"
+            />
+          </div>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -168,7 +187,7 @@ export default function PremiumRsvpForm({
             setDetails("");
             setGuestCount(1);
           }}
-          className="mt-6 text-xs text-white/40 underline hover:text-white/70 cursor-pointer"
+          className="mt-6 block mx-auto text-xs text-white/40 underline hover:text-white/70 cursor-pointer"
         >
           {t.another}
         </button>
