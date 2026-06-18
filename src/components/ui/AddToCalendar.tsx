@@ -5,7 +5,7 @@ import { CalendarPlus, X, ExternalLink, Download } from "lucide-react";
 import {
   type CalendarEvent,
   googleCalendarUrl,
-  downloadICS,
+  icsHref,
 } from "@/lib/calendar";
 
 interface Props {
@@ -87,17 +87,17 @@ export default function AddToCalendar({
                 {googleLabel}
                 <ExternalLink size={14} className="shrink-0 opacity-60" />
               </a>
-              <button
-                type="button"
-                onClick={() => {
-                  downloadICS(event, icsFilename);
-                  setOpen(false);
-                }}
+              {/* Real same-origin URL (no `download` attr) so iOS Safari
+                  opens the Calendar sheet; desktop/Android download via the
+                  endpoint's Content-Disposition header. */}
+              <a
+                href={icsHref(event, icsFilename)}
+                onClick={() => setOpen(false)}
                 className="flex w-full items-center justify-between gap-2 rounded-xl border border-[#232323]/15 px-4 py-3 text-sm font-medium text-[#232323] transition-colors hover:border-[#AE343F]/45 hover:text-[#AE343F] cursor-pointer"
               >
                 {appleLabel}
                 <Download size={14} className="shrink-0 opacity-60" />
-              </button>
+              </a>
             </div>
           </div>
         </div>

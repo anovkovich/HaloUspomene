@@ -166,15 +166,30 @@ export function buildICS(ev: CalendarEvent): string {
   return lines.join("\r\n");
 }
 
-/** Trigger a client-side .ics download (works on iOS/macOS/Outlook). */
-export function downloadICS(ev: CalendarEvent, filename = "dogadjaj.ics"): void {
-  const ics = buildICS(ev);
-  const a = document.createElement("a");
-  a.href = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+function localDateTimeParam(d: Date): string {
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+    `T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  );
+}
+
+/**
+ * URL of the server `.ics` endpoint for this event. Serving the file from a
+ * real URL (with `Content-Type: text/calendar` + `Content-Disposition`) is the
+ * only reliable way to add to calendar on iOS Safari — `download` on a
+ * `data:`/`blob:` URL silently fails there. Works on desktop and Android too.
+ */
+export function icsHref(ev: CalendarEvent, filename = "dogadjaj"): string {
+  const params = new URLSearchParams();
+  params.set("title", ev.title);
+  if (ev.description) params.set("desc", ev.description);
+  if (ev.location) params.set("loc", ev.location);
+  params.set("start", localDateTimeParam(ev.start));
+  if (ev.end) params.set("end", localDateTimeParam(ev.end));
+  if (ev.allDay) params.set("allday", "1");
+  params.set("name", filename.replace(/\.ics$/i, ""));
+  // Trailing slash matches `trailingSlash: true` so the tap isn't 308-redirected.
+  return `/api/ics/?${params.toString()}`;
 }
 
 export interface ReminderPlan {
