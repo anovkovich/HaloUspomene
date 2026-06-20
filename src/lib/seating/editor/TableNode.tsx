@@ -32,7 +32,6 @@ const SEAT_ORBIT_R = CIRCLE_TABLE_R + 16;
 // Defaults for resizable zones
 const DECO_DEFAULT_W = 160;
 const DECO_DEFAULT_H = 80;
-const DECO_STEP = 20;
 const DECO_MIN_W = 100;
 const DECO_MAX_W = 500;
 const DECO_MIN_H = 60;
@@ -139,11 +138,13 @@ function EntranceDecoration({
   onUpdate,
   onDelete,
   onElementHover,
+  scale = 1,
 }: {
   table: TableData;
   onUpdate: (id: string, changes: Partial<TableData>) => void;
   onDelete: (id: string) => void;
   onElementHover?: (hint: string | null) => void;
+  scale?: number;
 }) {
   const wrapperHint = "Pomeri element";
   const restoreWrapperHint = () => onElementHover?.(wrapperHint);
@@ -225,6 +226,7 @@ function EntranceDecoration({
       defaultPosition={{ x: table.x, y: table.y }}
       onStop={(_, data) => onUpdate(table.id, { x: data.x, y: data.y })}
       cancel="button, input"
+      scale={scale}
     >
       <div
         ref={nodeRef}
@@ -268,11 +270,13 @@ function ResizableZone({
   onUpdate,
   onDelete,
   onElementHover,
+  scale = 1,
 }: {
   table: TableData;
   onUpdate: (id: string, changes: Partial<TableData>) => void;
   onDelete: (id: string) => void;
   onElementHover?: (hint: string | null) => void;
+  scale?: number;
 }) {
   const wrapperHint = "Pomeri element";
   const restoreWrapperHint = () => onElementHover?.(wrapperHint);
@@ -313,14 +317,16 @@ function ResizableZone({
         DECO_MIN_W,
         Math.min(
           DECO_MAX_W,
-          dragStart.current.w + (ev.clientX - dragStart.current.mouseX),
+          dragStart.current.w +
+            (ev.clientX - dragStart.current.mouseX) / scale,
         ),
       );
       const newH = Math.max(
         DECO_MIN_H,
         Math.min(
           DECO_MAX_H,
-          dragStart.current.h + (ev.clientY - dragStart.current.mouseY),
+          dragStart.current.h +
+            (ev.clientY - dragStart.current.mouseY) / scale,
         ),
       );
       onUpdate(table.id, {
@@ -345,6 +351,7 @@ function ResizableZone({
       defaultPosition={{ x: table.x, y: table.y }}
       onStop={(_, data) => onUpdate(table.id, { x: data.x, y: data.y })}
       cancel="button, input, .resize-handle"
+      scale={scale}
     >
       <div
         ref={nodeRef}
@@ -474,6 +481,8 @@ interface Props {
   onDelete: (id: string) => void;
   readOnly?: boolean;
   onTap?: (table: TableData) => void;
+  /** Canvas zoom; passed to react-draggable so drag tracks the cursor 1:1. */
+  scale?: number;
 }
 
 export default function TableNode({
@@ -486,6 +495,7 @@ export default function TableNode({
   onDelete,
   readOnly,
   onTap,
+  scale = 1,
 }: Props) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -531,11 +541,12 @@ export default function TableNode({
           onUpdate={onUpdate}
           onDelete={onDelete}
           onElementHover={elementHover}
+          scale={scale}
         />
       );
     }
     return (
-      <ResizableZone table={table} onUpdate={onUpdate} onDelete={onDelete} onElementHover={elementHover} />
+      <ResizableZone table={table} onUpdate={onUpdate} onDelete={onDelete} onElementHover={elementHover} scale={scale} />
     );
   }
 
@@ -566,7 +577,9 @@ export default function TableNode({
     onUpdate(table.id, { seats: next, assignments: newAssignments });
   };
 
-  const isRotated = table.type === "rectangular" && !!table.rotated;
+  const isRotated =
+    (table.type === "rectangular" || table.type === "single-sided") &&
+    !!table.rotated;
 
   const landscapeWidth = Math.max(160, seatsPerRow * (SEAT_SIZE + 6) - 6 + 32);
   // Portrait width = landscape total height:
@@ -577,7 +590,9 @@ export default function TableNode({
     table.type === "circle"
       ? (SEAT_ORBIT_R + SEAT_SIZE / 2 + 6) * 2
       : table.type === "single-sided"
-        ? Math.max(160, table.seats * (SEAT_SIZE + 6) - 6 + 32)
+        ? isRotated
+          ? SEAT_SIZE + 8 + 60 + 16 // seat column + gap + surface + px-2*2
+          : Math.max(160, table.seats * (SEAT_SIZE + 6) - 6 + 32)
         : isRotated
           ? LANDSCAPE_HEIGHT
           : landscapeWidth;
@@ -637,7 +652,7 @@ export default function TableNode({
   );
 
   const rotateBtn =
-    table.type === "rectangular" ? (
+    table.type === "rectangular" || table.type === "single-sided" ? (
       <button
         onClick={() => onUpdate(table.id, { rotated: !table.rotated })}
         onMouseEnter={() => elementHover?.("Rotiraj sto")}
@@ -660,11 +675,26 @@ export default function TableNode({
     </button>
   );
 
+  // Table name shown in the middle of the table surface (circle/rectangular).
+  const centerName = (
+    <span
+      className="font-raleway font-semibold truncate text-center px-1"
+      style={{
+        color: "rgba(35,35,35,0.6)",
+        fontSize: 12,
+        maxWidth: "92%",
+        pointerEvents: "none",
+      }}
+    >
+      {table.label}
+    </span>
+  );
+
   // Landscape rectangular: [− count +] [label] [↻] [🗑]
   // Portrait rectangular: row1 [− count + ↻ 🗑], row2 [label]
   // All others: [label] [− count +] [🗑]
   const header =
-    table.type === "rectangular" ? (
+    table.type === "rectangular" || table.type === "single-sided" ? (
       <div
         className="drag-handle rounded-t-lg cursor-grab active:cursor-grabbing table-header transition-opacity duration-150"
         style={{ backgroundColor: "#8a8a8a", color: "white", opacity: 0 }}
@@ -699,7 +729,7 @@ export default function TableNode({
         )}
       </div>
     ) : (
-      // Circle / single-sided: count first, then name
+      // Circle: count first, then name
       <div
         className="drag-handle flex items-center gap-1.5 px-2 py-1 rounded-t-lg cursor-grab active:cursor-grabbing table-header transition-opacity duration-150"
         style={{ backgroundColor: "#8a8a8a", color: "white", opacity: 0 }}
@@ -720,6 +750,7 @@ export default function TableNode({
       defaultPosition={{ x: table.x, y: table.y }}
       onStop={(_, data) => onUpdate(table.id, { x: data.x, y: data.y })}
       handle=".drag-handle"
+      scale={scale}
       cancel="button, input"
       disabled={readOnly}
     >
@@ -768,13 +799,15 @@ export default function TableNode({
               ))}
             </div>
             <div
-              className="h-15 rounded"
+              className="h-15 rounded flex items-center justify-center overflow-hidden"
               style={{
                 backgroundColor:
                   "rgba(35,35,35,0.09)",
                 border: "3px solid rgba(35,35,35,0.45)",
               }}
-            />
+            >
+              {centerName}
+            </div>
             <div className="flex gap-1.5 justify-center mt-2">
               {table.assignments.slice(seatsPerRow).map((a, i) => (
                 <Seat
@@ -806,7 +839,7 @@ export default function TableNode({
             </div>
             {/* Table surface — fixed 40px wide, matching landscape h-10 thickness */}
             <div
-              className="rounded"
+              className="rounded flex items-center justify-center overflow-hidden"
               style={{
                 width: 60,
                 minHeight: seatsPerRow * (SEAT_SIZE + 6) - 6,
@@ -814,7 +847,22 @@ export default function TableNode({
                   "rgba(35,35,35,0.09)",
                 border: "3px solid rgba(35,35,35,0.45)",
               }}
-            />
+            >
+              <span
+                className="font-raleway font-semibold text-center px-1"
+                style={{
+                  color: "rgba(35,35,35,0.6)",
+                  fontSize: 11,
+                  pointerEvents: "none",
+                  writingMode: "vertical-rl",
+                  transform: "rotate(180deg)",
+                  maxHeight: "92%",
+                  overflow: "hidden",
+                }}
+              >
+                {table.label}
+              </span>
+            </div>
             {/* Right column */}
             <div className="flex flex-col gap-1.5">
               {table.assignments.slice(seatsPerRow).map((a, i) => (
@@ -831,7 +879,7 @@ export default function TableNode({
         )}
 
         {/* SINGLE-SIDED */}
-        {table.type === "single-sided" && (
+        {table.type === "single-sided" && !isRotated && (
           <div className="px-3 pt-2 pb-3">
             <div className="flex gap-1.5 justify-center mb-2">
               {table.assignments.map((a, i) => (
@@ -855,6 +903,32 @@ export default function TableNode({
           </div>
         )}
 
+        {/* SINGLE-SIDED — portrait (rotated 90°): one seat column + surface */}
+        {table.type === "single-sided" && isRotated && (
+          <div className="flex items-start justify-center gap-2 px-2 pt-2 pb-2">
+            <div className="flex flex-col gap-1.5">
+              {table.assignments.map((a, i) => (
+                <Seat
+                  key={i}
+                  assignment={a}
+                  onClick={() => seatClick(table.id, i)}
+                  onHover={seatHover}
+                  isSelecting={isSelecting}
+                />
+              ))}
+            </div>
+            <div
+              className="rounded"
+              style={{
+                width: 60,
+                minHeight: table.seats * (SEAT_SIZE + 6) - 6,
+                backgroundColor: "rgba(35,35,35,0.09)",
+                border: "3px solid rgba(35,35,35,0.45)",
+              }}
+            />
+          </div>
+        )}
+
         {/* CIRCLE */}
         {table.type === "circle" && (
           <div
@@ -862,7 +936,7 @@ export default function TableNode({
             style={{ width: cardWidth, height: cardWidth }}
           >
             <div
-              className="absolute rounded-full"
+              className="absolute rounded-full flex items-center justify-center overflow-hidden"
               style={{
                 width: CIRCLE_TABLE_R * 2,
                 height: CIRCLE_TABLE_R * 2,
@@ -873,7 +947,9 @@ export default function TableNode({
                   "rgba(35,35,35,0.09)",
                 border: "3px solid rgba(35,35,35,0.45)",
               }}
-            />
+            >
+              {centerName}
+            </div>
             {table.assignments.map((a, i) => {
               const angle = (2 * Math.PI * i) / table.seats - Math.PI / 2;
               const cx = cardWidth / 2,

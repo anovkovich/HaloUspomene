@@ -23,7 +23,6 @@ import {
   Save,
   MoreVertical,
   Plus,
-  RotateCw,
   Search,
   Heart,
   Link2,
@@ -31,6 +30,7 @@ import {
   Pencil,
 } from "lucide-react";
 import GuestSidebar from "./GuestSidebar";
+import MemberNamesModal from "./MemberNamesModal";
 import TableNode from "./TableNode";
 import Toolbar from "./Toolbar";
 import AddTablePanel from "./AddTablePanel";
@@ -40,6 +40,12 @@ import MobileTableCard from "./MobileTableCard";
 import MobileSeatSheet from "./MobileSeatSheet";
 import MobileLayoutScreen from "./MobileLayoutScreen";
 import { generateAndDownloadPDF } from "../pdf/generatePDF";
+
+// Desktop infinite-canvas constants (module scope so effects need no deps).
+const WORLD_W = 12000;
+const WORLD_H = 9000;
+const MIN_ZOOM = 0.2;
+const MAX_ZOOM = 2.5;
 
 type RasporedActions = {
   save: (
@@ -129,6 +135,12 @@ export default function RasporedClient({
   const resolvedLookupUrl =
     guestLookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
   const [tables, setTables] = useState<TableData[]>([]);
+  // Per-party individual member names, keyed by RSVP id. When present, placing
+  // a party fills seats with these names instead of the party label.
+  const [members, setMembers] = useState<Record<string, string[]>>({});
+  const [memberModalGuest, setMemberModalGuest] = useState<RSVPEntry | null>(
+    null,
+  );
   const [selectedGuest, setSelectedGuest] = useState<RSVPEntry | null>(null);
   const [hoverSeat, setHoverSeat] = useState<SeatAssignment | null>(null);
   const [hoverHint, setHoverHint] = useState<string | null>(null);
@@ -165,6 +177,31 @@ export default function RasporedClient({
   const [sheetGuest, setSheetGuest] = useState<RSVPEntry | null>(null);
   const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  // ── Desktop infinite canvas: cursor-anchored zoom (Ctrl+wheel) + space-drag
+  //    pan over a large world. Separate from the PWA `zoom` above.
+  const [canvasZoom, setCanvasZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [spaceHeld, setSpaceHeld] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
+  // Refs mirror the live values so the native (non-passive) wheel listener and
+  // window pan listeners read fresh state without re-subscribing each render.
+  const zoomRef = useRef(1);
+  const panRef = useRef({ x: 0, y: 0 });
+  const panStart = useRef<{
+    mouseX: number;
+    mouseY: number;
+    panX: number;
+    panY: number;
+  } | null>(null);
+  const setCanvasZoomSynced = useCallback((z: number) => {
+    zoomRef.current = z;
+    setCanvasZoom(z);
+  }, []);
+  const setPanSynced = useCallback((p: { x: number; y: number }) => {
+    panRef.current = p;
+    setPan(p);
+  }, []);
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
@@ -219,13 +256,110 @@ export default function RasporedClient({
       // Check if PWA on larger screen (tablet/desktop)
       const standalone =
         window.matchMedia("(display-mode: standalone)").matches ||
-        (window.navigator as any).standalone === true;
+        (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+          true;
       if (standalone && window.innerWidth < 1024) {
         setIsPWADesktop(true);
         setZoom(Math.min(window.innerWidth / 1700, 0.35));
       }
     }
   }, []);
+
+  // Desktop canvas: Ctrl/⌘+wheel zooms toward the cursor; a plain wheel pans.
+  // Attached natively (non-passive) so preventDefault stops the browser's own
+  // page zoom. Only active on the regular desktop canvas.
+  useEffect(() => {
+    if (isMobile !== false || isPWADesktop) return;
+    const el = canvasRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+
+      if (e.ctrlKey || e.metaKey) {
+        const z = zoomRef.current;
+        const factor = Math.exp(-e.deltaY * 0.0015);
+        const nz = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z * factor));
+        if (nz === z) return;
+        // Keep the world point under the cursor fixed while zooming.
+        const worldX = (cx - panRef.current.x) / z;
+        const worldY = (cy - panRef.current.y) / z;
+        setPanSynced({ x: cx - worldX * nz, y: cy - worldY * nz });
+        setCanvasZoomSynced(nz);
+      } else {
+        setPanSynced({
+          x: panRef.current.x - e.deltaX,
+          y: panRef.current.y - e.deltaY,
+        });
+      }
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [isMobile, isPWADesktop, setPanSynced, setCanvasZoomSynced]);
+
+  // Hold Space to pan the canvas with a grab cursor (desktop only).
+  useEffect(() => {
+    if (isMobile !== false || isPWADesktop) return;
+    const isTypingTarget = (t: EventTarget | null) => {
+      const el = t as HTMLElement | null;
+      const tag = el?.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || el?.isContentEditable;
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" && !isTypingTarget(e.target)) {
+        e.preventDefault();
+        setSpaceHeld(true);
+      }
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") setSpaceHeld(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, [isMobile, isPWADesktop]);
+
+  // Drive the active space-pan drag via window listeners for smoothness.
+  useEffect(() => {
+    if (!isPanning) return;
+    const onMove = (e: MouseEvent) => {
+      const s = panStart.current;
+      if (!s) return;
+      setPanSynced({
+        x: s.panX + (e.clientX - s.mouseX),
+        y: s.panY + (e.clientY - s.mouseY),
+      });
+    };
+    const onUp = () => {
+      panStart.current = null;
+      setIsPanning(false);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, [isPanning, setPanSynced]);
+
+  const handleCanvasPanStart = (e: React.MouseEvent) => {
+    if (!spaceHeld) return;
+    e.preventDefault();
+    panStart.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      panX: panRef.current.x,
+      panY: panRef.current.y,
+    };
+    setIsPanning(true);
+  };
 
   // Load seating layout from MongoDB on mount
   useEffect(() => {
@@ -234,7 +368,20 @@ export default function RasporedClient({
       loadRaspored(slug).then((json) => {
         if (cancelled) return;
         try {
-          if (json) setTables(JSON.parse(json));
+          if (json) {
+            const parsed = JSON.parse(json);
+            if (Array.isArray(parsed)) {
+              // Legacy format: bare TableData[]
+              setTables(parsed);
+            } else {
+              setTables(Array.isArray(parsed?.tables) ? parsed.tables : []);
+              setMembers(
+                parsed?.members && typeof parsed.members === "object"
+                  ? parsed.members
+                  : {},
+              );
+            }
+          }
         } catch {
           /* ignore malformed JSON */
         }
@@ -257,7 +404,7 @@ export default function RasporedClient({
       return;
     }
     setIsDirty(true);
-  }, [tables, hydrated]);
+  }, [tables, members, hydrated]);
 
   // Block tab close when unsaved
   useEffect(() => {
@@ -289,26 +436,32 @@ export default function RasporedClient({
     [assignedCounts],
   );
 
-  // Place new tables/decorations near the top-left of the currently visible
-  // canvas viewport instead of an absolute grid, so users see what they just
-  // added. Cascades diagonally if the spot would overlap an existing item.
+  // The individual name to seat next for a party: the first entered member name
+  // not already placed, or the party label when no names were entered.
+  const pickMemberName = useCallback(
+    (tbls: TableData[], guestId: string, fallback: string): string => {
+      const names = (members[guestId] ?? [])
+        .map((n) => n.trim())
+        .filter(Boolean);
+      if (names.length === 0) return fallback;
+      const placed = new Set<string>();
+      for (const t of tbls)
+        for (const s of t.assignments)
+          if (s && s.guestId === guestId) placed.add(s.guestName);
+      return names.find((n) => !placed.has(n)) ?? fallback;
+    },
+    [members],
+  );
+
+  // Always spawn at the top-left of the currently visible canvas, stacking each
+  // new item a few px down-right of the last so they pile in the same corner.
   const findSpawnPosition = useCallback(() => {
-    const canvas = canvasRef.current;
-    const baseX = (canvas?.scrollLeft ?? 0) + 60;
-    const baseY = (canvas?.scrollTop ?? 0) + 60;
-    const TILE = 220; // approximate bounding-box for collision avoidance
-    let x = baseX;
-    let y = baseY;
-    for (let i = 0; i < 20; i++) {
-      const collides = tables.some(
-        (t) => Math.abs(t.x - x) < TILE && Math.abs(t.y - y) < TILE,
-      );
-      if (!collides) return { x, y };
-      x += 30;
-      y += 30;
-    }
-    return { x, y };
-  }, [tables]);
+    const z = zoomRef.current || 1;
+    const baseX = -panRef.current.x / z + 40;
+    const baseY = -panRef.current.y / z + 40;
+    const step = (tables.length % 8) * 16;
+    return { x: baseX + step, y: baseY + step };
+  }, [tables.length]);
 
   const addTable = async (type: TableType, label?: string, seats?: number) => {
     if (
@@ -323,11 +476,22 @@ export default function RasporedClient({
     }
     const defaultSeats =
       type === "circle" ? 12 : type === "single-sided" ? 6 : 10;
-    const idx = tables.length;
+    // The numbered "Sto N" series counts only round + rectangular tables;
+    // special elements (single-sided, decorations) are excluded.
+    const defaultLabel =
+      type === "single-sided"
+        ? `Jednostran sto ${
+            tables.filter((t) => t.type === "single-sided").length + 1
+          }`
+        : `Sto ${
+            tables.filter(
+              (t) => t.type === "circle" || t.type === "rectangular",
+            ).length + 1
+          }`;
     const pos = findSpawnPosition();
     setTables((prev) => [
       ...prev,
-      createTable(type, label ?? `Sto ${idx + 1}`, seats ?? defaultSeats, pos),
+      createTable(type, label ?? defaultLabel, seats ?? defaultSeats, pos),
     ]);
   };
 
@@ -356,8 +520,13 @@ export default function RasporedClient({
       prev.map((t) => (t.id === id ? { ...t, ...changes } : t)),
     );
 
-  const deleteTable = (id: string) =>
+  const deleteTable = (id: string) => {
+    // Clear any hover state — the hovered delete button unmounts with the table,
+    // so its mouseleave never fires and the cursor badge hint would stick.
+    setHoverHint(null);
+    setHoverSeat(null);
     setTables((prev) => prev.filter((t) => t.id !== id));
+  };
 
   const handleSeatClick = async (tableId: string, seatIndex: number) => {
     const targetTable = tables.find((t) => t.id === tableId);
@@ -374,8 +543,12 @@ export default function RasporedClient({
         return;
       }
     }
-    setTables((prev) =>
-      prev.map((t) => {
+    setTables((prev) => {
+      // Resolve the individual name before mutating, scanning the whole layout.
+      const memberName = selectedGuest
+        ? pickMemberName(prev, selectedGuest.id, selectedGuest.name)
+        : "";
+      return prev.map((t) => {
         if (t.id !== tableId) return t;
         const seat = t.assignments[seatIndex];
         if (seat) {
@@ -389,12 +562,12 @@ export default function RasporedClient({
         const a = [...t.assignments];
         const assignment: SeatAssignment = {
           guestId: selectedGuest.id,
-          guestName: selectedGuest.name,
+          guestName: memberName,
         };
         a[seatIndex] = assignment;
         return { ...t, assignments: a };
-      }),
-    );
+      });
+    });
 
     // Auto-advance to the next partially-seated guest when this click
     // just maxed out the current selection (e.g. after 3rd seat of 3/3).
@@ -415,10 +588,13 @@ export default function RasporedClient({
 
   const handleStartOver = () => {
     setTables([]);
+    setMembers({});
     setSelectedGuest(null);
+    setHoverHint(null);
+    setHoverSeat(null);
     setIsDirty(false);
     startSave(async () => {
-      await saveRaspored(slug, JSON.stringify([]));
+      await saveRaspored(slug, JSON.stringify({ tables: [], members: {} }));
     });
   };
 
@@ -426,7 +602,10 @@ export default function RasporedClient({
     setSaveError("");
     const data = tablesToSave ?? tables;
     startSave(async () => {
-      const result = await saveRaspored(slug, JSON.stringify(data));
+      const result = await saveRaspored(
+        slug,
+        JSON.stringify({ tables: data, members }),
+      );
       if (result.success) {
         if (tablesToSave) setTables(tablesToSave);
         setIsDirty(false);
@@ -435,6 +614,40 @@ export default function RasporedClient({
       } else {
         showToast(result.error ?? "Greška pri čuvanju");
       }
+    });
+  };
+
+  // Save individual member names for a party (from the names modal). Also
+  // relabels any seats already placed for that party, in entry order, so the
+  // canvas / PDF / lookup stay consistent.
+  const handleSaveMembers = (guestId: string, names: string[]) => {
+    const cleaned = names.map((n) => n.trim());
+    const namedList = cleaned.filter(Boolean);
+    const partyName = attending.find((g) => g.id === guestId)?.name ?? "";
+    setMembers((prev) => {
+      if (namedList.length === 0) {
+        const next = { ...prev };
+        delete next[guestId];
+        return next;
+      }
+      return { ...prev, [guestId]: cleaned };
+    });
+    setTables((prev) => {
+      let idx = 0;
+      return prev.map((t) => ({
+        ...t,
+        assignments: t.assignments.map((s) => {
+          if (s && s.guestId === guestId) {
+            const newName =
+              namedList.length === 0
+                ? partyName
+                : namedList[idx] ?? partyName;
+            idx++;
+            return { ...s, guestName: newName };
+          }
+          return s;
+        }),
+      }));
     });
   };
 
@@ -464,14 +677,15 @@ export default function RasporedClient({
         return;
       }
     }
-    setTables((prev) =>
-      prev.map((t) => {
+    setTables((prev) => {
+      const memberName = pickMemberName(prev, guest.id, guest.name);
+      return prev.map((t) => {
         if (t.id !== tableId) return t;
         const a = [...t.assignments];
-        a[seatIndex] = { guestId: guest.id, guestName: guest.name };
+        a[seatIndex] = { guestId: guest.id, guestName: memberName };
         return { ...t, assignments: a };
-      }),
-    );
+      });
+    });
   };
 
   // Mobile: remove assignment
@@ -1041,6 +1255,17 @@ export default function RasporedClient({
           assignedCounts={assignedCounts}
           onStartOver={handleStartOver}
           topAction={sidebarTopAction}
+          members={members}
+          onEditMembers={setMemberModalGuest}
+        />
+      )}
+
+      {memberModalGuest && (
+        <MemberNamesModal
+          guest={memberModalGuest}
+          initialNames={members[memberModalGuest.id] ?? []}
+          onSave={(names) => handleSaveMembers(memberModalGuest.id, names)}
+          onClose={() => setMemberModalGuest(null)}
         />
       )}
 
@@ -1083,13 +1308,34 @@ export default function RasporedClient({
           {/* Scrollable canvas */}
           <div
             ref={canvasRef}
-            className="absolute inset-0 overflow-auto"
+            className={`absolute inset-0 ${
+              isPWADesktop ? "overflow-auto" : "overflow-hidden"
+            }`}
             style={{
-              backgroundImage:
-                "radial-gradient(circle, rgba(35,35,35,0.3) 1px, transparent 1px)",
-              backgroundSize: "28px 28px",
+              ...(isPWADesktop
+                ? {
+                    backgroundImage:
+                      "radial-gradient(circle, rgba(35,35,35,0.3) 1px, transparent 1px)",
+                    backgroundSize: "28px 28px",
+                  }
+                : {
+                    // Infinite dot grid painted on the (untransformed) viewport
+                    // so it fills the screen in every direction and still pans/
+                    // zooms in lock-step with the world.
+                    backgroundColor: "var(--theme-background)",
+                    backgroundImage:
+                      "radial-gradient(circle, rgba(35,35,35,0.3) 1px, transparent 1px)",
+                    backgroundSize: `${28 * canvasZoom}px ${28 * canvasZoom}px`,
+                    backgroundPosition: `${pan.x}px ${pan.y}px`,
+                  }),
               touchAction: isPWADesktop ? "pan-x pan-y" : undefined,
+              cursor: !isPWADesktop && spaceHeld
+                ? isPanning
+                  ? "grabbing"
+                  : "grab"
+                : undefined,
             }}
+            onMouseDown={!isPWADesktop ? handleCanvasPanStart : undefined}
             onTouchStart={isPWADesktop ? handleTouchStart : undefined}
             onTouchMove={isPWADesktop ? handleTouchMove : undefined}
             onTouchEnd={isPWADesktop ? handleTouchEnd : undefined}
@@ -1130,9 +1376,15 @@ export default function RasporedClient({
             ) : (
               <div
                 style={{
-                  minWidth: 1600,
-                  minHeight: 1100,
-                  position: "relative",
+                  width: WORLD_W,
+                  height: WORLD_H,
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  transformOrigin: "0 0",
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${canvasZoom})`,
+                  // While space-panning, let the viewport capture the drag.
+                  pointerEvents: spaceHeld ? "none" : "auto",
                 }}
               >
                 {hydrated &&
@@ -1146,6 +1398,7 @@ export default function RasporedClient({
                       onElementHover={setHoverHint}
                       onUpdate={updateTable}
                       onDelete={deleteTable}
+                      scale={canvasZoom}
                     />
                   ))}
 
@@ -1439,6 +1692,11 @@ export default function RasporedClient({
           selectedGuest={selectedGuest}
           hoverSeat={hoverSeat}
           hint={hoverHint}
+          selectedLabel={
+            selectedGuest
+              ? pickMemberName(tables, selectedGuest.id, selectedGuest.name)
+              : null
+          }
           containerRef={canvasRef}
         />
       )}

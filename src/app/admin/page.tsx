@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
 import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
@@ -78,6 +78,7 @@ export default function AdminPage() {
   const [showBypassLink, setShowBypassLink] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const sortMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -104,6 +105,28 @@ export default function AdminPage() {
       return db - da; // tie: future before past
     });
   }, [couples, sortMode]);
+
+  // Diacritic-insensitive search over name, slug and theme.
+  const filteredCouples = useMemo(() => {
+    const q = search.trim();
+    if (!q) return sortedCouples;
+    const norm = (s: string) =>
+      s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const nq = norm(q);
+    return sortedCouples.filter((c) =>
+      norm(
+        [
+          c.slug,
+          c.couple_names?.full_display,
+          c.couple_names?.bride,
+          c.couple_names?.groom,
+          c.theme,
+        ]
+          .filter(Boolean)
+          .join(" "),
+      ).includes(nq),
+    );
+  }, [sortedCouples, search]);
   const [customReceipts, setCustomReceipts] = useState<Array<{ id: string; par: string; datum?: string; items: Array<{l: string; p: number}>; ba: number; created_at: string }>>([]);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -501,7 +524,11 @@ export default function AdminPage() {
       <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3 flex-wrap">
         <div className="flex items-baseline gap-3 flex-wrap">
           <h2 className="text-xl sm:text-2xl font-semibold text-white">
-            Pozivnice ({couples.length})
+            Pozivnice (
+            {search.trim()
+              ? `${filteredCouples.length}/${couples.length}`
+              : couples.length}
+            )
           </h2>
           <div className="relative" ref={sortMenuRef}>
             {(() => {
@@ -566,8 +593,37 @@ export default function AdminPage() {
         </div>
       </div>
 
+      {/* Search / filter */}
+      <div className="relative mb-4">
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-white/35"
+        />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Pretraži po imenu, slug-u ili temi..."
+          className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-9 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-[#AE343F]/60 transition-colors"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/80 transition-colors cursor-pointer"
+            title="Obriši pretragu"
+          >
+            <X size={15} />
+          </button>
+        )}
+      </div>
+
       <div className="space-y-3">
-        {sortedCouples.map((c) => {
+        {filteredCouples.length === 0 && (
+          <p className="text-center text-sm text-white/40 py-10">
+            Nema pozivnica za: {search.trim()}
+          </p>
+        )}
+        {filteredCouples.map((c) => {
           const s = stats[c.slug];
           const eventDate = c.event_date ? new Date(c.event_date) : null;
           const today = new Date();

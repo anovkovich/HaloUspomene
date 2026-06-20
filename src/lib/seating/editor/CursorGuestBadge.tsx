@@ -10,6 +10,9 @@ interface Props {
   /** Replacement label shown while hovering an interactive editor element
    *  (grab handle, rotate, label, entrance arrow). Overrides selectedGuest.name. */
   hint: string | null;
+  /** The individual name being placed next (entered member name). When set,
+   *  shown instead of the party label so you "carry" one person at a time. */
+  selectedLabel?: string | null;
   containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -21,6 +24,7 @@ export default function CursorGuestBadge({
   selectedGuest,
   hoverSeat,
   hint,
+  selectedLabel,
   containerRef,
 }: Props) {
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -45,7 +49,8 @@ export default function CursorGuestBadge({
   }, [selectedGuest]);
 
   const hasContent = !!selectedGuest || !!hoverSeat || !!hint;
-  const primaryText = hint ?? selectedGuest?.name ?? null;
+  const primaryText =
+    hint ?? selectedLabel ?? selectedGuest?.name ?? null;
   // Sub-line is only meaningful for the seat-hover case; suppress it when a hint
   // is overriding the primary line so the badge shows just one message at a time.
   const showSubLine = !hint && !!hoverSeat;

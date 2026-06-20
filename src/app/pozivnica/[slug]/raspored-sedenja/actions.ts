@@ -1,9 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { loadSeatingLayout, saveSeatingLayout } from "@/lib/seating";
+import { loadSeatingDoc, saveSeatingLayout } from "@/lib/seating";
+import {
+  parseEditorPayload,
+  serializeEditorPayload,
+} from "@/lib/seating/payload";
 import { getWeddingData } from "@/lib/couples";
-import type { TableData } from "@/lib/seating";
 
 export async function saveRaspored(
   slug: string,
@@ -14,8 +17,8 @@ export async function saveRaspored(
     if (!data?.paid_for_raspored) {
       return { success: false, error: "Raspored sedenja nije aktiviran za ovu pozivnicu" };
     }
-    const tables: TableData[] = JSON.parse(json);
-    await saveSeatingLayout(slug, tables);
+    const { tables, members } = parseEditorPayload(json);
+    await saveSeatingLayout(slug, tables, members);
     revalidatePath(`/pozivnica/${slug}/gde-sedim`);
     return { success: true };
   } catch (err) {
@@ -39,8 +42,8 @@ export async function loadRaspored(
   slug: string,
 ): Promise<string | null> {
   try {
-    const tables = await loadSeatingLayout(slug);
-    return tables ? JSON.stringify(tables) : null;
+    const doc = await loadSeatingDoc(slug);
+    return doc ? serializeEditorPayload(doc.tables, doc.members) : null;
   } catch {
     return null;
   }

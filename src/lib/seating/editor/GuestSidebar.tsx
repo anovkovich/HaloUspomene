@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, RotateCcw, Pencil } from "lucide-react";
+import { Check, X, RotateCcw, Pencil, Users } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
 
 // Wedding category values are stored without diacritics in the DB ("Mladozenjini"),
@@ -23,6 +23,11 @@ interface Props {
   /** Optional sticky CTA at the top of the sidebar (e.g. "Lista gostiju" link
    *  for standalone routes that have no toolbar back button). */
   topAction?: { label: string; href: string };
+  /** Per-party member names, keyed by RSVP id — drives the "names entered"
+   *  indicator on the per-guest button. */
+  members?: Record<string, string[]>;
+  /** Open the modal to enter individual names for everyone on a party. */
+  onEditMembers?: (guest: RSVPEntry) => void;
 }
 
 export default function GuestSidebar({
@@ -32,6 +37,8 @@ export default function GuestSidebar({
   assignedCounts,
   onStartOver,
   topAction,
+  members,
+  onEditMembers,
 }: Props) {
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -210,11 +217,15 @@ export default function GuestSidebar({
           const isSelected = selectedGuest?.id === guest.id;
           const isFullyAssigned = assigned >= total;
 
+          const hasNames = (members?.[guest.id] ?? []).some(
+            (n) => n && n.trim(),
+          );
+
           return (
-            <button
+            <div
               key={guest.id}
               onClick={() => onSelectGuest(isSelected ? null : guest)}
-              className="w-full text-left px-3 py-2 rounded-lg mb-1 transition-all"
+              className="w-full text-left px-3 py-2 rounded-lg mb-1 transition-all cursor-pointer"
               style={{
                 backgroundColor: isSelected
                   ? "var(--theme-primary)"
@@ -224,12 +235,39 @@ export default function GuestSidebar({
               }}
             >
               <div className="flex items-center justify-between gap-2">
-                <span
-                  className="text-xs font-raleway font-medium truncate"
-                  style={{ minWidth: 0 }}
-                >
-                  {guest.name}
-                </span>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  {onEditMembers && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditMembers(guest);
+                      }}
+                      title="Unesi imena gostiju na ovoj zvanici"
+                      className="shrink-0 flex items-center justify-center w-5 h-5 rounded transition-colors cursor-pointer"
+                      style={{
+                        color: isSelected
+                          ? "rgba(255,255,255,0.9)"
+                          : hasNames
+                            ? "var(--theme-primary)"
+                            : "var(--theme-text-light)",
+                        backgroundColor: isSelected
+                          ? "rgba(255,255,255,0.18)"
+                          : hasNames
+                            ? "var(--theme-primary-light, rgba(212,175,55,0.18))"
+                            : "transparent",
+                      }}
+                    >
+                      <Users size={12} />
+                    </button>
+                  )}
+                  <span
+                    className="text-xs font-raleway font-medium truncate"
+                    style={{ minWidth: 0 }}
+                  >
+                    {guest.name}
+                  </span>
+                </div>
 
                 <div className="flex items-center gap-1 shrink-0">
                   {isFullyAssigned ? (
@@ -254,7 +292,7 @@ export default function GuestSidebar({
                   </span>
                 </div>
               </div>
-            </button>
+            </div>
           );
         })}
       </div>

@@ -1,10 +1,10 @@
 "use server";
 
+import { loadSeatingDoc, saveSeatingLayout } from "@/lib/seating";
 import {
-  loadSeatingLayout,
-  saveSeatingLayout,
-  type TableData,
-} from "@/lib/seating";
+  parseEditorPayload,
+  serializeEditorPayload,
+} from "@/lib/seating/payload";
 import { isStandaloneActive } from "@/lib/standalone-seating";
 
 export async function saveStandaloneRaspored(
@@ -19,8 +19,8 @@ export async function saveStandaloneRaspored(
         error: "Pristup nije aktivan. Kontaktirajte HALO Uspomene.",
       };
     }
-    const tables: TableData[] = JSON.parse(json);
-    await saveSeatingLayout(slug, tables);
+    const { tables, members } = parseEditorPayload(json);
+    await saveSeatingLayout(slug, tables, members);
     return { success: true };
   } catch (err) {
     return {
@@ -34,8 +34,8 @@ export async function loadStandaloneRaspored(
   slug: string,
 ): Promise<string | null> {
   try {
-    const tables = await loadSeatingLayout(slug);
-    return tables ? JSON.stringify(tables) : null;
+    const doc = await loadSeatingDoc(slug);
+    return doc ? serializeEditorPayload(doc.tables, doc.members) : null;
   } catch {
     return null;
   }

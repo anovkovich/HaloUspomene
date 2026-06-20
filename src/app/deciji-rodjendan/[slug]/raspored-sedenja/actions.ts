@@ -1,8 +1,11 @@
 "use server";
 
-import { loadSeatingLayout, saveSeatingLayout } from "@/lib/seating";
+import { loadSeatingDoc, saveSeatingLayout } from "@/lib/seating";
+import {
+  parseEditorPayload,
+  serializeEditorPayload,
+} from "@/lib/seating/payload";
 import { getBirthdayData } from "@/lib/birthday";
-import type { TableData } from "@/lib/seating";
 
 // Birthday raspored shares seating_layouts (slug-keyed) with the wedding
 // editor but checks paid_for_raspored against birthday_events instead.
@@ -19,8 +22,8 @@ export async function saveBirthdayRaspored(
         error: "Raspored sedenja nije aktiviran za ovaj rođendan",
       };
     }
-    const tables: TableData[] = JSON.parse(json);
-    await saveSeatingLayout(slug, tables);
+    const { tables, members } = parseEditorPayload(json);
+    await saveSeatingLayout(slug, tables, members);
     return { success: true };
   } catch (err) {
     return {
@@ -43,8 +46,8 @@ export async function loadBirthdayRaspored(
   slug: string,
 ): Promise<string | null> {
   try {
-    const tables = await loadSeatingLayout(slug);
-    return tables ? JSON.stringify(tables) : null;
+    const doc = await loadSeatingDoc(slug);
+    return doc ? serializeEditorPayload(doc.tables, doc.members) : null;
   } catch {
     return null;
   }

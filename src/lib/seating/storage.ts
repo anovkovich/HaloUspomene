@@ -4,6 +4,10 @@ import type { TableData } from "./types";
 interface SeatingDocument {
   slug: string;
   tables: TableData[];
+  /** Optional per-party member names, keyed by RSVP id. Lets the editor place
+   *  individual guests (e.g. "Jovan Glavonjić") on seats instead of the party
+   *  label. Absent on layouts created before this feature. */
+  members?: Record<string, string[]>;
   updatedAt: Date;
 }
 
@@ -20,6 +24,16 @@ export async function loadSeatingLayout(
   return doc?.tables ?? null;
 }
 
+/** Loads tables + party member names in a single query (used by the editor). */
+export async function loadSeatingDoc(
+  slug: string
+): Promise<{ tables: TableData[]; members: Record<string, string[]> } | null> {
+  const c = await col();
+  const doc = await c.findOne({ slug });
+  if (!doc) return null;
+  return { tables: doc.tables ?? [], members: doc.members ?? {} };
+}
+
 export async function deleteSeatingLayout(slug: string): Promise<void> {
   const c = await col();
   await c.deleteOne({ slug });
@@ -27,12 +41,13 @@ export async function deleteSeatingLayout(slug: string): Promise<void> {
 
 export async function saveSeatingLayout(
   slug: string,
-  tables: TableData[]
+  tables: TableData[],
+  members: Record<string, string[]> = {}
 ): Promise<void> {
   const c = await col();
   await c.updateOne(
     { slug },
-    { $set: { slug, tables, updatedAt: new Date() } },
+    { $set: { slug, tables, members, updatedAt: new Date() } },
     { upsert: true }
   );
 }

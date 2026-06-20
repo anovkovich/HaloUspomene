@@ -14,6 +14,7 @@
 
 export {
   loadSeatingLayout,
+  loadSeatingDoc,
   saveSeatingLayout,
   deleteSeatingLayout,
 } from "./storage";
