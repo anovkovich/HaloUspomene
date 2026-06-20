@@ -27,4 +27,7 @@ export interface TableData {
   decoHeight?: number;
   /** Rectangular only: portrait orientation (seats on left/right) */
   rotated?: boolean;
+  /** Single-sided only: put seats on the opposite side of the table surface
+   *  (bottom instead of top in landscape; right instead of left when rotated). */
+  flipped?: boolean;
 }

@@ -7,6 +7,8 @@ import {
   Plus,
   Minus,
   RotateCw,
+  FlipVertical2,
+  FlipHorizontal2,
   Music,
   DoorOpen,
   Crown,
@@ -664,6 +666,24 @@ export default function TableNode({
       </button>
     ) : null;
 
+  // Single-sided: flip the seats to the opposite side of the table surface.
+  const flipBtn =
+    table.type === "single-sided" ? (
+      <button
+        onClick={() => onUpdate(table.id, { flipped: !table.flipped })}
+        onMouseEnter={() => elementHover?.("Promeni stranu stolica")}
+        onMouseLeave={() => elementHover?.(null)}
+        className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/20"
+        style={{ opacity: table.flipped ? 1 : 0.6 }}
+      >
+        {isRotated ? (
+          <FlipHorizontal2 size={9} />
+        ) : (
+          <FlipVertical2 size={9} />
+        )}
+      </button>
+    ) : null;
+
   const deleteBtn = (
     <button
       onClick={() => onDelete(table.id)}
@@ -708,6 +728,7 @@ export default function TableNode({
                 {seatControls}
               </div>
               <div className="flex items-center gap-0.5">
+                {flipBtn}
                 {rotateBtn}
                 {deleteBtn}
               </div>
@@ -722,6 +743,7 @@ export default function TableNode({
             <div className="w-px h-3 bg-white/30 shrink-0" />
             {labelEl}
             <div className="flex items-center gap-0.5 shrink-0 ml-auto">
+              {flipBtn}
               {rotateBtn}
               {deleteBtn}
             </div>
@@ -880,8 +902,16 @@ export default function TableNode({
 
         {/* SINGLE-SIDED */}
         {table.type === "single-sided" && !isRotated && (
-          <div className="px-3 pt-2 pb-3">
-            <div className="flex gap-1.5 justify-center mb-2">
+          <div
+            className={`px-3 pt-2 pb-3 flex flex-col ${
+              table.flipped ? "flex-col-reverse" : ""
+            }`}
+          >
+            <div
+              className={`flex gap-1.5 justify-center ${
+                table.flipped ? "mt-2" : "mb-2"
+              }`}
+            >
               {table.assignments.map((a, i) => (
                 <Seat
                   key={i}
@@ -905,7 +935,11 @@ export default function TableNode({
 
         {/* SINGLE-SIDED — portrait (rotated 90°): one seat column + surface */}
         {table.type === "single-sided" && isRotated && (
-          <div className="flex items-start justify-center gap-2 px-2 pt-2 pb-2">
+          <div
+            className={`flex items-start justify-center gap-2 px-2 pt-2 pb-2 ${
+              table.flipped ? "flex-row-reverse" : ""
+            }`}
+          >
             <div className="flex flex-col gap-1.5">
               {table.assignments.map((a, i) => (
                 <Seat
