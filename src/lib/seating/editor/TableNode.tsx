@@ -485,6 +485,11 @@ interface Props {
   onTap?: (table: TableData) => void;
   /** Canvas zoom; passed to react-draggable so drag tracks the cursor 1:1. */
   scale?: number;
+  /** Raise this table above the others (z-index) — set on drag start. */
+  isFront?: boolean;
+  /** Ask the parent to bring this table to the front (so a buried table you
+   *  start dragging renders on top of the ones overlapping it). */
+  onBringToFront?: (id: string) => void;
 }
 
 export default function TableNode({
@@ -498,6 +503,8 @@ export default function TableNode({
   readOnly,
   onTap,
   scale = 1,
+  isFront,
+  onBringToFront,
 }: Props) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -770,8 +777,8 @@ export default function TableNode({
     <Draggable
       nodeRef={nodeRef as React.RefObject<HTMLElement>}
       defaultPosition={{ x: table.x, y: table.y }}
+      onStart={() => onBringToFront?.(table.id)}
       onStop={(_, data) => onUpdate(table.id, { x: data.x, y: data.y })}
-      handle=".drag-handle"
       scale={scale}
       cancel="button, input"
       disabled={readOnly}
@@ -784,12 +791,19 @@ export default function TableNode({
           userSelect: "none",
           borderRadius: 8,
           transition: "background-color 150ms",
-          cursor: readOnly ? "pointer" : undefined,
+          // Whole body is draggable (seats/buttons are excluded via `cancel`),
+          // so a table buried under another can be grabbed by its center.
+          cursor: readOnly ? "pointer" : "grab",
+          zIndex: isFront ? 30 : undefined,
         }}
         onClick={readOnly && onTap ? () => onTap(table) : undefined}
         onMouseEnter={readOnly ? undefined : (e) => {
           e.currentTarget.style.backgroundColor = "rgba(35,35,35,0.09)";
           e.currentTarget.querySelectorAll<HTMLElement>(".table-header").forEach(el => el.style.opacity = "1");
+          // Pointing at a table raises it above the others — so a table buried
+          // under another pops to the top (header + frame) the moment you hover
+          // its visible part, and stays there until you hover a different one.
+          onBringToFront?.(table.id);
         }}
         onMouseLeave={readOnly ? undefined : (e) => {
           e.currentTarget.style.backgroundColor = "transparent";

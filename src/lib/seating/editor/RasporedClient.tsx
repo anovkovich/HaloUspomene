@@ -181,6 +181,9 @@ export default function RasporedClient({
   // ── Desktop infinite canvas: cursor-anchored zoom (Ctrl+wheel) + space-drag
   //    pan over a large world. Separate from the PWA `zoom` above.
   const [canvasZoom, setCanvasZoom] = useState(1);
+  // Table raised above the others (set when you start dragging it) so a buried
+  // table renders on top once grabbed.
+  const [frontTableId, setFrontTableId] = useState<string | null>(null);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [spaceHeld, setSpaceHeld] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
@@ -1399,6 +1402,8 @@ export default function RasporedClient({
                       onUpdate={updateTable}
                       onDelete={deleteTable}
                       scale={canvasZoom}
+                      isFront={frontTableId === table.id}
+                      onBringToFront={setFrontTableId}
                     />
                   ))}
 
