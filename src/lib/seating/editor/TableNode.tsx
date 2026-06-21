@@ -579,9 +579,28 @@ export default function TableNode({
     } else {
       next = Math.max(4, Math.min(20, table.seats + delta * 2));
     }
-    const newAssignments: (SeatAssignment | null)[] = Array(next).fill(null);
-    for (let i = 0; i < Math.min(table.assignments.length, next); i++) {
-      newAssignments[i] = table.assignments[i];
+    let newAssignments: (SeatAssignment | null)[];
+    if (next >= table.assignments.length) {
+      // Growing: keep everyone in place, pad with empty seats.
+      newAssignments = [
+        ...table.assignments,
+        ...Array(next - table.assignments.length).fill(null),
+      ];
+    } else {
+      // Shrinking: drop empty seats first (from the end), and only remove
+      // assigned guests if there aren't enough empty seats to remove.
+      newAssignments = [...table.assignments];
+      let toRemove = newAssignments.length - next;
+      for (let i = newAssignments.length - 1; i >= 0 && toRemove > 0; i--) {
+        if (newAssignments[i] === null) {
+          newAssignments.splice(i, 1);
+          toRemove--;
+        }
+      }
+      while (toRemove > 0) {
+        newAssignments.pop();
+        toRemove--;
+      }
     }
     onUpdate(table.id, { seats: next, assignments: newAssignments });
   };
