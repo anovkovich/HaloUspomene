@@ -29,7 +29,7 @@ import {
   Sparkles,
   Pencil,
 } from "lucide-react";
-import GuestSidebar from "./GuestSidebar";
+import GuestSidebar, { guestMatchesFilter } from "./GuestSidebar";
 import MemberNamesModal from "./MemberNamesModal";
 import TableNode from "./TableNode";
 import Toolbar from "./Toolbar";
@@ -142,6 +142,11 @@ export default function RasporedClient({
     null,
   );
   const [selectedGuest, setSelectedGuest] = useState<RSVPEntry | null>(null);
+  // Guest-list category filter + name search (lifted from GuestSidebar so the
+  // auto-advance after seating a party picks the next guest from the *visible*
+  // filtered list, not the whole roster).
+  const [guestFilter, setGuestFilter] = useState("");
+  const [guestSearch, setGuestSearch] = useState("");
   const [hoverSeat, setHoverSeat] = useState<SeatAssignment | null>(null);
   const [hoverHint, setHoverHint] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -576,8 +581,10 @@ export default function RasporedClient({
       const willBeFull =
         (assignedCounts[selectedGuest.id] || 0) + 1 >= total;
       if (willBeFull) {
+        // Advance only within the currently visible (filtered/searched) list.
         const next = attending.find((g) => {
           if (g.id === selectedGuest.id) return false;
+          if (!guestMatchesFilter(g, guestFilter, guestSearch)) return false;
           const gTotal = parseInt(g.guestCount) || 1;
           return (assignedCounts[g.id] || 0) < gTotal;
         });
@@ -1257,6 +1264,10 @@ export default function RasporedClient({
           topAction={sidebarTopAction}
           members={members}
           onEditMembers={setMemberModalGuest}
+          filter={guestFilter}
+          onFilterChange={setGuestFilter}
+          search={guestSearch}
+          onSearchChange={setGuestSearch}
         />
       )}
 
@@ -1606,6 +1617,10 @@ export default function RasporedClient({
                   assignedCounts={assignedCounts}
                   onStartOver={handleStartOver}
                   topAction={sidebarTopAction}
+                  filter={guestFilter}
+                  onFilterChange={setGuestFilter}
+                  search={guestSearch}
+                  onSearchChange={setGuestSearch}
                 />
               </div>
             </div>

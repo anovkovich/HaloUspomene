@@ -14,6 +14,27 @@ const WEDDING_CATEGORY_LABELS: Record<string, string> = {
   Zajednicki: "Zajednički",
 };
 
+/** Whether a guest passes the sidebar's category + search filter. Exported so
+ *  the editor's auto-advance picks the next guest from the *visible* list. */
+export function guestMatchesFilter(
+  g: RSVPEntry,
+  filter: string,
+  search: string,
+): boolean {
+  if (filter === "Nekategorisani") {
+    if (g.category) return false;
+  } else if (filter) {
+    if (g.category !== filter) return false;
+  }
+  const q = search.trim();
+  if (q) {
+    const norm = (s: string) =>
+      s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    if (!norm(g.name).includes(norm(q))) return false;
+  }
+  return true;
+}
+
 interface Props {
   attending: RSVPEntry[];
   selectedGuest: RSVPEntry | null;
@@ -28,6 +49,12 @@ interface Props {
   members?: Record<string, string[]>;
   /** Open the modal to enter individual names for everyone on a party. */
   onEditMembers?: (guest: RSVPEntry) => void;
+  /** Category filter — controlled by the parent so auto-advance shares it. */
+  filter: string;
+  onFilterChange: (v: string) => void;
+  /** Name search — controlled by the parent for the same reason. */
+  search: string;
+  onSearchChange: (v: string) => void;
 }
 
 export default function GuestSidebar({
@@ -39,9 +66,11 @@ export default function GuestSidebar({
   topAction,
   members,
   onEditMembers,
+  filter,
+  onFilterChange,
+  search,
+  onSearchChange,
 }: Props) {
-  const [filter, setFilter] = useState("");
-  const [search, setSearch] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
 
   // Birthday RSVPs don't carry wedding-side categories (Mladini/Mladoženjini/…),
@@ -72,17 +101,9 @@ export default function GuestSidebar({
       : []),
   ];
 
-  const categoryFiltered = attending.filter((g) => {
-    if (filter === "") return true;
-    if (filter === "Nekategorisani") return !g.category;
-    return g.category === filter;
-  });
-
-  const filtered = search.trim()
-    ? categoryFiltered.filter((g) =>
-        g.name.toLowerCase().includes(search.toLowerCase()),
-      )
-    : categoryFiltered;
+  const filtered = attending.filter((g) =>
+    guestMatchesFilter(g, filter, search),
+  );
 
   // Unassigned / partially assigned first, fully assigned at bottom
   const sorted = [...filtered].sort((a, b) => {
@@ -159,7 +180,7 @@ export default function GuestSidebar({
         {hasCategorizedGuests && (
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={(e) => onFilterChange(e.target.value)}
             className="w-full text-xs font-raleway px-2 py-1.5 rounded outline-none"
             style={{
               backgroundColor: "var(--theme-background)",
@@ -178,7 +199,7 @@ export default function GuestSidebar({
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Pretraži..."
             className="w-full text-xs font-raleway px-2 py-1.5 rounded outline-none"
             style={{
@@ -190,7 +211,7 @@ export default function GuestSidebar({
           />
           {search && (
             <button
-              onClick={() => setSearch("")}
+              onClick={() => onSearchChange("")}
               className="absolute right-2 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-60"
               style={{ color: "var(--theme-text-light)" }}
             >
