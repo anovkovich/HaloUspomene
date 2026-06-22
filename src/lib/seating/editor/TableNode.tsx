@@ -31,6 +31,12 @@ const SEAT_SIZE = 30;
 const CIRCLE_TABLE_R = 52;
 const SEAT_ORBIT_R = CIRCLE_TABLE_R + 16;
 
+// Monotonic z-index handed out to the most-recently hovered/dragged table so it
+// renders above the others. Done via direct DOM (no React state) — raising a
+// table must not re-render the whole canvas, otherwise dragging lags badly once
+// there are many tables.
+let TABLE_Z_SEQ = 10;
+
 // Defaults for resizable zones
 const DECO_DEFAULT_W = 160;
 const DECO_DEFAULT_H = 80;
@@ -485,11 +491,6 @@ interface Props {
   onTap?: (table: TableData) => void;
   /** Canvas zoom; passed to react-draggable so drag tracks the cursor 1:1. */
   scale?: number;
-  /** Raise this table above the others (z-index) — set on drag start. */
-  isFront?: boolean;
-  /** Ask the parent to bring this table to the front (so a buried table you
-   *  start dragging renders on top of the ones overlapping it). */
-  onBringToFront?: (id: string) => void;
 }
 
 export default function TableNode({
@@ -503,10 +504,14 @@ export default function TableNode({
   readOnly,
   onTap,
   scale = 1,
-  isFront,
-  onBringToFront,
 }: Props) {
   const nodeRef = useRef<HTMLDivElement>(null);
+  // Bring this table above the others by bumping its z-index directly on the
+  // DOM node — no setState, so hovering/grabbing a table never re-renders the
+  // rest of the canvas.
+  const raiseSelf = () => {
+    if (nodeRef.current) nodeRef.current.style.zIndex = String(++TABLE_Z_SEQ);
+  };
   const [isEditing, setIsEditing] = useState(false);
   const [labelInput, setLabelInput] = useState(table.label);
   const isSelecting = readOnly ? false : !!selectedGuest;
@@ -796,7 +801,7 @@ export default function TableNode({
     <Draggable
       nodeRef={nodeRef as React.RefObject<HTMLElement>}
       defaultPosition={{ x: table.x, y: table.y }}
-      onStart={() => onBringToFront?.(table.id)}
+      onStart={readOnly ? undefined : raiseSelf}
       onStop={(_, data) => onUpdate(table.id, { x: data.x, y: data.y })}
       scale={scale}
       cancel="button, input"
@@ -813,7 +818,6 @@ export default function TableNode({
           // Whole body is draggable (seats/buttons are excluded via `cancel`),
           // so a table buried under another can be grabbed by its center.
           cursor: readOnly ? "pointer" : "grab",
-          zIndex: isFront ? 30 : undefined,
         }}
         onClick={readOnly && onTap ? () => onTap(table) : undefined}
         onMouseEnter={readOnly ? undefined : (e) => {
@@ -821,8 +825,8 @@ export default function TableNode({
           e.currentTarget.querySelectorAll<HTMLElement>(".table-header").forEach(el => el.style.opacity = "1");
           // Pointing at a table raises it above the others — so a table buried
           // under another pops to the top (header + frame) the moment you hover
-          // its visible part, and stays there until you hover a different one.
-          onBringToFront?.(table.id);
+          // its visible part. Pure DOM, no re-render.
+          raiseSelf();
         }}
         onMouseLeave={readOnly ? undefined : (e) => {
           e.currentTarget.style.backgroundColor = "transparent";
