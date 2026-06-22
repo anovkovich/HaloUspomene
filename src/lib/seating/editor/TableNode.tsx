@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Draggable from "react-draggable";
 import {
   Trash2,
   Plus,
@@ -36,6 +35,55 @@ const SEAT_ORBIT_R = CIRCLE_TABLE_R + 16;
 // table must not re-render the whole canvas, otherwise dragging lags badly once
 // there are many tables.
 let TABLE_Z_SEQ = 10;
+
+/**
+ * Drag a positioned node by writing its `transform` straight to the DOM on each
+ * pointer move (no React re-render per frame) and committing the final position
+ * once on release. The pointer delta is divided by `scale` so the node tracks
+ * the cursor exactly under the canvas's zoom. Drags that start on an interactive
+ * child (matched by `ignore`) are skipped so seats/buttons/inputs keep working.
+ */
+function beginNodeDrag(
+  e: React.PointerEvent,
+  opts: {
+    node: HTMLElement | null;
+    baseX: number;
+    baseY: number;
+    scale: number;
+    ignore: string;
+    onCommit: (x: number, y: number) => void;
+    onStart?: () => void;
+  },
+) {
+  const { node, baseX, baseY, scale, ignore, onCommit, onStart } = opts;
+  if (e.button !== 0) return;
+  if ((e.target as HTMLElement).closest(ignore)) return;
+  // No preventDefault: the cards set `userSelect: none` already, and calling it
+  // on pointerdown would suppress the compatibility dblclick used to rename a
+  // table. Drag starts only after the move threshold below.
+  onStart?.();
+  const startX = e.clientX;
+  const startY = e.clientY;
+  const s = scale || 1;
+  let moved = false;
+  let curX = baseX;
+  let curY = baseY;
+  const onMove = (ev: PointerEvent) => {
+    if (!moved && Math.hypot(ev.clientX - startX, ev.clientY - startY) < 3)
+      return;
+    moved = true;
+    curX = baseX + (ev.clientX - startX) / s;
+    curY = baseY + (ev.clientY - startY) / s;
+    if (node) node.style.transform = `translate(${curX}px, ${curY}px)`;
+  };
+  const onUp = () => {
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    if (moved) onCommit(curX, curY);
+  };
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
+}
 
 // Defaults for resizable zones
 const DECO_DEFAULT_W = 160;
@@ -229,21 +277,27 @@ function EntranceDecoration({
   );
 
   return (
-    <Draggable
-      nodeRef={nodeRef as React.RefObject<HTMLElement>}
-      defaultPosition={{ x: table.x, y: table.y }}
-      onStop={(_, data) => onUpdate(table.id, { x: data.x, y: data.y })}
-      cancel="button, input"
-      scale={scale}
+    <div
+      ref={nodeRef}
+      className="absolute cursor-grab active:cursor-grabbing"
+      style={{
+        userSelect: "none",
+        transform: `translate(${table.x}px, ${table.y}px)`,
+      }}
+      onPointerDown={(e) =>
+        beginNodeDrag(e, {
+          node: nodeRef.current,
+          baseX: table.x,
+          baseY: table.y,
+          scale,
+          ignore: "button, input",
+          onCommit: (x, y) => onUpdate(table.id, { x, y }),
+        })
+      }
+      onMouseEnter={() => onElementHover?.(wrapperHint)}
+      onMouseLeave={() => onElementHover?.(null)}
     >
-      <div
-        ref={nodeRef}
-        className="absolute cursor-grab active:cursor-grabbing"
-        style={{ userSelect: "none" }}
-        onMouseEnter={() => onElementHover?.(wrapperHint)}
-        onMouseLeave={() => onElementHover?.(null)}
-      >
-        {/* 3×3 grid: arrows + center box */}
+      {/* 3×3 grid: arrows + center box */}
         <div
           style={{
             display: "grid",
@@ -267,8 +321,7 @@ function EntranceDecoration({
           <ArrowBtn d="down" dir={dir} icon={ArrowDown} onSetDir={setDir} onElementHover={onElementHover} restoreHint={wrapperHint} />
           <div />
         </div>
-      </div>
-    </Draggable>
+    </div>
   );
 }
 
@@ -354,21 +407,28 @@ function ResizableZone({
   };
 
   return (
-    <Draggable
-      nodeRef={nodeRef as React.RefObject<HTMLElement>}
-      defaultPosition={{ x: table.x, y: table.y }}
-      onStop={(_, data) => onUpdate(table.id, { x: data.x, y: data.y })}
-      cancel="button, input, .resize-handle"
-      scale={scale}
+    <div
+      ref={nodeRef}
+      className="absolute cursor-grab active:cursor-grabbing"
+      style={{
+        userSelect: "none",
+        width: w,
+        transform: `translate(${table.x}px, ${table.y}px)`,
+      }}
+      onPointerDown={(e) =>
+        beginNodeDrag(e, {
+          node: nodeRef.current,
+          baseX: table.x,
+          baseY: table.y,
+          scale,
+          ignore: "button, input, .resize-handle",
+          onCommit: (x, y) => onUpdate(table.id, { x, y }),
+        })
+      }
+      onMouseEnter={() => onElementHover?.(wrapperHint)}
+      onMouseLeave={() => onElementHover?.(null)}
     >
-      <div
-        ref={nodeRef}
-        className="absolute cursor-grab active:cursor-grabbing"
-        style={{ userSelect: "none", width: w }}
-        onMouseEnter={() => onElementHover?.(wrapperHint)}
-        onMouseLeave={() => onElementHover?.(null)}
-      >
-        {/* Box — single dashed border, icon + label + delete */}
+      {/* Box — single dashed border, icon + label + delete */}
         <div
           className="relative flex flex-col rounded-lg overflow-hidden"
           style={{
@@ -471,8 +531,7 @@ function ResizableZone({
             </svg>
           </div>
         </div>
-      </div>
-    </Draggable>
+    </div>
   );
 }
 
@@ -798,15 +857,6 @@ export default function TableNode({
     );
 
   return (
-    <Draggable
-      nodeRef={nodeRef as React.RefObject<HTMLElement>}
-      defaultPosition={{ x: table.x, y: table.y }}
-      onStart={readOnly ? undefined : raiseSelf}
-      onStop={(_, data) => onUpdate(table.id, { x: data.x, y: data.y })}
-      scale={scale}
-      cancel="button, input"
-      disabled={readOnly}
-    >
       <div
         ref={nodeRef}
         className="absolute table-node-card"
@@ -815,10 +865,26 @@ export default function TableNode({
           userSelect: "none",
           borderRadius: 8,
           transition: "background-color 150ms",
-          // Whole body is draggable (seats/buttons are excluded via `cancel`),
-          // so a table buried under another can be grabbed by its center.
+          transform: `translate(${table.x}px, ${table.y}px)`,
+          // Whole body is draggable (seats/buttons are excluded via the drag
+          // helper's `ignore`), so a table buried under another can be grabbed
+          // by its center.
           cursor: readOnly ? "pointer" : "grab",
         }}
+        onPointerDown={
+          readOnly
+            ? undefined
+            : (e) =>
+                beginNodeDrag(e, {
+                  node: nodeRef.current,
+                  baseX: table.x,
+                  baseY: table.y,
+                  scale,
+                  ignore: "button, input",
+                  onCommit: (x, y) => onUpdate(table.id, { x, y }),
+                  onStart: raiseSelf,
+                })
+        }
         onClick={readOnly && onTap ? () => onTap(table) : undefined}
         onMouseEnter={readOnly ? undefined : (e) => {
           e.currentTarget.style.backgroundColor = "rgba(35,35,35,0.09)";
@@ -1046,6 +1112,5 @@ export default function TableNode({
           </div>
         )}
       </div>
-    </Draggable>
   );
 }
