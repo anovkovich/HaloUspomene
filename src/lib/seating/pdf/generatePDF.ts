@@ -47,6 +47,8 @@ export async function generateAndDownloadPDF(
         return { x: t.x, y: t.y, w: SURFACE_H + SEAT_ZONE * 2, h: long };
       return { x: t.x, y: t.y, w: long, h: SURFACE_H + SEAT_ZONE * 2 };
     }
+    // single-sided (one seat row) — obeys rotation like the rectangular table
+    if (t.rotated) return { x: t.x, y: t.y, w: SURFACE_H + SEAT_ZONE, h: long };
     return { x: t.x, y: t.y, w: long, h: SURFACE_H + SEAT_ZONE };
   };
 
@@ -108,43 +110,49 @@ export async function generateAndDownloadPDF(
       return `<rect x="${fx(r.x)}" y="${fy(r.y)}" width="${fs(r.w)}" height="${fs(r.h)}" rx="4" fill="#f0f0f0" stroke="#888" stroke-width="1.5" stroke-dasharray="5,4"/>\n<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${sz}" font-family="Arial" fill="#333">${icon} ${t.label}</text>`;
     }
 
+    const isSingle = t.type === "single-sided";
     let iW: number, iH: number, iXoff: number, iYoff: number;
     if (t.rotated) {
       iW = SURFACE_H;
       iH = r.h;
-      iXoff = (r.w - SURFACE_H) / 2;
+      iXoff = isSingle ? (t.flipped ? 0 : SEAT_ZONE) : (r.w - SURFACE_H) / 2;
       iYoff = 0;
     } else {
       iW = r.w;
       iH = SURFACE_H;
       iXoff = 0;
-      iYoff = (r.h - SURFACE_H) / 2;
+      iYoff = isSingle ? (t.flipped ? 0 : SEAT_ZONE) : (r.h - SURFACE_H) / 2;
     }
     const iX = (r.x - minX + PAD + iXoff) * sc;
     const iY = (r.y - minY + PAD + iYoff) * sc;
     const innerRx = (4 * sc).toFixed(1);
     const sz = Math.max(7, Math.round(10 * sc));
     const zrx = "4";
+    const zoneRect = (zx: string, zy: string, zw: string, zh: string) =>
+      `<rect x="${zx}" y="${zy}" width="${zw}" height="${zh}" rx="${zrx}" fill="#efefef" stroke="#bbb" stroke-width="1" stroke-dasharray="3,3"/>`;
     let zones = "";
     if (t.rotated) {
       const zW = (SEAT_ZONE * sc).toFixed(1),
         zH = (iH * sc).toFixed(1);
       const zLX = ((r.x - minX + PAD + iXoff - SEAT_ZONE) * sc).toFixed(1);
       const zRX = ((r.x - minX + PAD + iXoff + SURFACE_H) * sc).toFixed(1);
-      zones += `<rect x="${zLX}" y="${iY.toFixed(1)}" width="${zW}" height="${zH}" rx="${zrx}" fill="#efefef" stroke="#bbb" stroke-width="1" stroke-dasharray="3,3"/>`;
-      zones += `<rect x="${zRX}" y="${iY.toFixed(1)}" width="${zW}" height="${zH}" rx="${zrx}" fill="#efefef" stroke="#bbb" stroke-width="1" stroke-dasharray="3,3"/>`;
+      const left = zoneRect(zLX, iY.toFixed(1), zW, zH);
+      const right = zoneRect(zRX, iY.toFixed(1), zW, zH);
+      zones += isSingle ? (t.flipped ? right : left) : left + right;
     } else {
       const zW = (iW * sc).toFixed(1),
         zH = (SEAT_ZONE * sc).toFixed(1);
       const zX = iX.toFixed(1);
       const topZY = ((r.y - minY + PAD + iYoff - SEAT_ZONE) * sc).toFixed(1);
-      zones += `<rect x="${zX}" y="${topZY}" width="${zW}" height="${zH}" rx="${zrx}" fill="#efefef" stroke="#bbb" stroke-width="1" stroke-dasharray="3,3"/>`;
-      if (t.type === "rectangular") {
-        const botZY = ((r.y - minY + PAD + iYoff + SURFACE_H) * sc).toFixed(1);
-        zones += `<rect x="${zX}" y="${botZY}" width="${zW}" height="${zH}" rx="${zrx}" fill="#efefef" stroke="#bbb" stroke-width="1" stroke-dasharray="3,3"/>`;
-      }
+      const botZY = ((r.y - minY + PAD + iYoff + SURFACE_H) * sc).toFixed(1);
+      const top = zoneRect(zX, topZY, zW, zH);
+      const bot = zoneRect(zX, botZY, zW, zH);
+      zones += isSingle ? (t.flipped ? bot : top) : top + bot;
     }
-    return `${zones}\n<rect x="${iX.toFixed(1)}" y="${iY.toFixed(1)}" width="${(iW * sc).toFixed(1)}" height="${(iH * sc).toFixed(1)}" rx="${innerRx}" fill="#e0e0e0" stroke="#555" stroke-width="2"/>\n<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${sz}" font-family="Arial" fill="#222" font-weight="700">${t.label}</text>`;
+    // Centre the label on the surface (bbox centre is offset for single-sided).
+    const lcx = (iX + (iW * sc) / 2).toFixed(1);
+    const lcy = (iY + (iH * sc) / 2).toFixed(1);
+    return `${zones}\n<rect x="${iX.toFixed(1)}" y="${iY.toFixed(1)}" width="${(iW * sc).toFixed(1)}" height="${(iH * sc).toFixed(1)}" rx="${innerRx}" fill="#e0e0e0" stroke="#555" stroke-width="2"/>\n<text x="${lcx}" y="${lcy}" text-anchor="middle" dominant-baseline="middle" font-size="${sz}" font-family="Arial" fill="#222" font-weight="700">${t.label}</text>`;
   });
 
   const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" style="background:#fff">${shapes.join("\n")}</svg>`;

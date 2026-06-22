@@ -41,7 +41,8 @@ export function rectFor(t: TableData): Rect {
     return { x: t.x, y: t.y, w: long, h: SURFACE_H + SEAT_ZONE * 2 };
   }
 
-  // single-sided
+  // single-sided (one seat row) — also obeys rotation like the rectangular table
+  if (t.rotated) return { x: t.x, y: t.y, w: SURFACE_H + SEAT_ZONE, h: long };
   return { x: t.x, y: t.y, w: long, h: SURFACE_H + SEAT_ZONE };
 }
 

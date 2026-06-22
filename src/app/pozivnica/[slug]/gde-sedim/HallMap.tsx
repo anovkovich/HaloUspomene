@@ -115,88 +115,57 @@ export default function HallMap({ tables, highlightTableIds }: Props) {
     }
 
     // rectangular or single-sided
+    const isSingle = t.type === "single-sided";
     let iW: number, iH: number, iXoff: number, iYoff: number;
     if (t.rotated) {
       iW = SURFACE_H; iH = r.h;
-      iXoff = (r.w - SURFACE_H) / 2; iYoff = 0;
+      // single-sided has one zone: surface hugs left (seats right) when flipped,
+      // else surface is offset right to leave the one zone on the left.
+      iXoff = isSingle ? (t.flipped ? 0 : SEAT_ZONE) : (r.w - SURFACE_H) / 2;
+      iYoff = 0;
     } else {
       iW = r.w; iH = SURFACE_H;
-      iXoff = 0; iYoff = (r.h - SURFACE_H) / 2;
+      iXoff = 0;
+      iYoff = isSingle ? (t.flipped ? 0 : SEAT_ZONE) : (r.h - SURFACE_H) / 2;
     }
 
     const iX = r.x + iXoff;
     const iY = r.y + iYoff;
 
-    // Seat zones
-    const seatZoneElems: React.ReactNode[] = [];
+    // Seat-zone rectangles. Rectangular = two (both sides); single-sided = one
+    // (on the side opposite the surface, mirrored by `flipped`).
+    const zoneRects: { key: string; x: number; y: number; w: number; h: number }[] = [];
     if (t.rotated) {
-      // Left zone
-      seatZoneElems.push(
-        <rect
-          key="zl"
-          x={iX - SEAT_ZONE}
-          y={iY}
-          width={SEAT_ZONE}
-          height={iH}
-          rx={4}
-          fill={isHighlight ? "rgba(174,52,63,0.1)" : "#efefef"}
-          stroke={isHighlight ? "var(--theme-primary)" : "#bbb"}
-          strokeWidth={isHighlight ? 1.5 : 1}
-          strokeDasharray={isHighlight ? undefined : "3,3"}
-        />,
-      );
-      // Right zone
-      seatZoneElems.push(
-        <rect
-          key="zr"
-          x={iX + SURFACE_H}
-          y={iY}
-          width={SEAT_ZONE}
-          height={iH}
-          rx={4}
-          fill={isHighlight ? "rgba(174,52,63,0.1)" : "#efefef"}
-          stroke={isHighlight ? "var(--theme-primary)" : "#bbb"}
-          strokeWidth={isHighlight ? 1.5 : 1}
-          strokeDasharray={isHighlight ? undefined : "3,3"}
-        />,
-      );
+      const leftZone = { key: "zl", x: iX - SEAT_ZONE, y: iY, w: SEAT_ZONE, h: iH };
+      const rightZone = { key: "zr", x: iX + SURFACE_H, y: iY, w: SEAT_ZONE, h: iH };
+      if (isSingle) zoneRects.push(t.flipped ? rightZone : leftZone);
+      else zoneRects.push(leftZone, rightZone);
     } else {
-      // Top zone
-      seatZoneElems.push(
-        <rect
-          key="zt"
-          x={iX}
-          y={iY - SEAT_ZONE}
-          width={iW}
-          height={SEAT_ZONE}
-          rx={4}
-          fill={isHighlight ? "rgba(174,52,63,0.1)" : "#efefef"}
-          stroke={isHighlight ? "var(--theme-primary)" : "#bbb"}
-          strokeWidth={isHighlight ? 1.5 : 1}
-          strokeDasharray={isHighlight ? undefined : "3,3"}
-        />,
-      );
-      // Bottom zone (rectangular only)
-      if (t.type === "rectangular") {
-        seatZoneElems.push(
-          <rect
-            key="zb"
-            x={iX}
-            y={iY + SURFACE_H}
-            width={iW}
-            height={SEAT_ZONE}
-            rx={4}
-            fill={isHighlight ? "rgba(174,52,63,0.1)" : "#efefef"}
-            stroke={isHighlight ? "var(--theme-primary)" : "#bbb"}
-            strokeWidth={isHighlight ? 1.5 : 1}
-            strokeDasharray={isHighlight ? undefined : "3,3"}
-          />,
-        );
-      }
+      const topZone = { key: "zt", x: iX, y: iY - SEAT_ZONE, w: iW, h: SEAT_ZONE };
+      const botZone = { key: "zb", x: iX, y: iY + SURFACE_H, w: iW, h: SEAT_ZONE };
+      if (isSingle) zoneRects.push(t.flipped ? botZone : topZone);
+      else zoneRects.push(topZone, botZone);
     }
 
-    const cx = r.x + r.w / 2;
-    const cy = r.y + r.h / 2;
+    const seatZoneElems = zoneRects.map((z) => (
+      <rect
+        key={z.key}
+        x={z.x}
+        y={z.y}
+        width={z.w}
+        height={z.h}
+        rx={4}
+        fill={isHighlight ? "rgba(174,52,63,0.1)" : "#efefef"}
+        stroke={isHighlight ? "var(--theme-primary)" : "#bbb"}
+        strokeWidth={isHighlight ? 1.5 : 1}
+        strokeDasharray={isHighlight ? undefined : "3,3"}
+      />
+    ));
+
+    // Label sits on the surface centre (not the bbox centre, which is offset
+    // for the asymmetric single-sided table).
+    const cx = iX + iW / 2;
+    const cy = iY + iH / 2;
 
     elements.push(
       <g key={t.id}>
