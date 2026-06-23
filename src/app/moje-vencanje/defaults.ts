@@ -62,15 +62,21 @@ export function getDefaultChecklist(): ChecklistItem[] {
       "Potvrditi sve dobavljače",
       "Podići venčanicu i odelo",
       "Pripremiti koverte za isplatu dobavljača",
+      "Dogovoriti spisak grupnih fotografija sa fotografom",
+      "Pripremiti sitan novac za običaje i bakšiš",
     ]),
     ...items("day-before", [
       "Potvrditi satnicu sa kumom i deverima",
       "Pripremiti burme i dokumenta",
       "Odrediti kontakt osobu za dobavljače",
+      "Odrediti blagajnika (čuva koverte i novac)",
+      "Obezbediti kutiju za koverte (dogovoriti sa dekoraterom)",
+      "Dogovoriti ko čuva poklone i vraća iznajmljeno posle svadbe",
     ]),
     ...items("wedding-day", [
       "Predati burme kumu",
       "Poneti keš i dokumenta",
+      "Poneti punjač / power bank",
       "Poslati zahvalnice gostima (posle venčanja)",
     ]),
   ];
