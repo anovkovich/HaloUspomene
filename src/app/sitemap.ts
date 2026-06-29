@@ -33,7 +33,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${siteUrl}/izrada-pozivnica-online`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: `${siteUrl}/napravi-pozivnicu`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/pozivnica-za-prvi-rodjendan`,
       lastModified,
       changeFrequency: "weekly",
       priority: 0.8,
@@ -58,6 +70,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/planiranje-vencanja`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/iznajmljivanje-automobila-za-vencanje`,
       lastModified,
       changeFrequency: "weekly",
       priority: 0.9,

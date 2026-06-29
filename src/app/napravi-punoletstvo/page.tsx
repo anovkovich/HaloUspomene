@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import PunoletstvoQuestionnaireForm from "./PunoletstvoQuestionnaireForm";
+import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
 import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
 
 export const metadata: Metadata = {
@@ -16,6 +17,9 @@ export const metadata: Metadata = {
     "elegantna pozivnica za punoletstvo",
     "website pozivnica 18 rođendan",
     "pozivnica za osamnaesti rođendan",
+    "pozivnica za 18. rođendan online",
+    "izrada pozivnice za punoletstvo",
+    "napravi pozivnicu za punoletstvo",
   ],
   openGraph: {
     title: "Napravi Pozivnicu za Punoletstvo | HALO Uspomene",
@@ -81,6 +85,9 @@ export default function NapraviPunoletstvoPage() {
           </ul>
         </div>
       </main>
+      <section className="py-16 sm:py-20 bg-[#faf9f6] border-t border-[#232323]/5">
+        <InvitationClusterLinks current="punoletstvo" />
+      </section>
       <Footer />
     </>
   );

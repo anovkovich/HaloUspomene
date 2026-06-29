@@ -6,6 +6,7 @@ import FormPageWrapper, {
   type UpgradeInitialFormData,
   type BypassInfo,
 } from "./FormPageWrapper";
+import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
 import { getWeddingData } from "@/lib/couples";
 import {
   verifyBypassToken,
@@ -27,6 +28,10 @@ export const metadata: Metadata = {
     "elektronska pozivnica venčanje",
     "custom wedding invitation",
     "vencanje pozivnica online",
+    "pozivnica za svadbu",
+    "pozivnica za svadbu online",
+    "izrada pozivnica za venčanje",
+    "napravi pozivnicu za venčanje",
   ],
   openGraph: {
     title: "Napravi Website Pozivnicu za Venčanje | HALO Uspomene",
@@ -138,6 +143,9 @@ export default async function NapraviPozivnicuPage({
         initialFormData={initialFormData}
         bypassInfo={bypassInfo}
       />
+      <section className="py-16 sm:py-20 bg-[#faf9f6] border-t border-[#232323]/5">
+        <InvitationClusterLinks current="vencanje" />
+      </section>
       <Footer />
     </>
   );

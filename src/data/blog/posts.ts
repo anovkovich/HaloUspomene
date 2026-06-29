@@ -307,6 +307,30 @@ const allBlogPosts: BlogPost[] = [
     content: loadContent("moje-vencanje-planer"),
   },
   {
+    slug: "auto-za-vencanje-vodic",
+    title:
+      "Auto za Venčanje — Kako Izabrati Luksuzan Automobil za Mladence, Kuma i Barjaktara",
+    description:
+      "Kako izabrati auto za venčanje u Srbiji 2026 — luksuzni Mercedes E, S, GLE i G klasa sa šoferom za mladence, kuma i barjaktara. Cene po satu i za ceo dan, svadbena kolona i saveti kada rezervisati.",
+    category: "Vodič",
+    tags: [
+      "auto za venčanje",
+      "iznajmljivanje automobila za venčanje",
+      "mercedes za venčanje",
+      "auto za mladence",
+      "auto za kuma",
+      "auto za barjaktara",
+      "svadbena kolona",
+      "luksuzni automobil za svadbu",
+      "rent a car za venčanje",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-06-29",
+    readTime: 10,
+    featured: true,
+    content: loadContent("auto-za-vencanje-vodic"),
+  },
+  {
     slug: "premium-ai-pozivnice",
     title:
       "Premium Pozivnice za Venčanje 2026/2027 — Luksuzne Digitalne Pozivnice",

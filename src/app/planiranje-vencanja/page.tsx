@@ -448,7 +448,7 @@ export default function PlaniranjeVencanjaPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 href="/cene"
                 className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:border-[#AE343F]/20 hover:shadow-md transition-all group"
@@ -493,6 +493,20 @@ export default function PlaniranjeVencanjaPage() {
                 </p>
                 <span className="text-xs text-[#AE343F] font-medium inline-flex items-center gap-1">
                   2.500 din <ArrowRight size={12} />
+                </span>
+              </Link>
+              <Link
+                href="/iznajmljivanje-automobila-za-vencanje"
+                className="bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:border-[#AE343F]/20 hover:shadow-md transition-all group"
+              >
+                <p className="text-sm font-semibold text-[#232323] group-hover:text-[#AE343F] transition-colors mb-1">
+                  Auto za Venčanje
+                </p>
+                <p className="text-xs text-[#232323]/40 mb-3">
+                  Luksuzni Mercedes sa šoferom za mladence
+                </p>
+                <span className="text-xs text-[#AE343F] font-medium inline-flex items-center gap-1">
+                  od 50 € / sat <ArrowRight size={12} />
                 </span>
               </Link>
             </div>
@@ -575,8 +589,11 @@ export default function PlaniranjeVencanjaPage() {
             Planer za venčanje uključen uz pozivnicu. Registracija za 10
             sekundi. Pogledajte i naše <Link href="/cene">cene pozivnica</Link>,{" "}
             <Link href="/vendori">pregled vendora</Link>,{" "}
-            <Link href="/telefon-uspomena">telefon uspomena</Link> i{" "}
-            <Link href="/lokacije">dostupne gradove</Link>.
+            <Link href="/telefon-uspomena">telefon uspomena</Link>,{" "}
+            <Link href="/iznajmljivanje-automobila-za-vencanje">
+              iznajmljivanje automobila za venčanje
+            </Link>{" "}
+            i <Link href="/lokacije">dostupne gradove</Link>.
           </p>
         </section>
       </main>

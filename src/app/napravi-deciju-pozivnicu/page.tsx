@@ -10,6 +10,7 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import BirthdayQuestionnaireForm from "./BirthdayQuestionnaireForm";
 import PortalLink from "./PortalLink";
+import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
 import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
 
 const fredoka = Fredoka({
@@ -62,6 +63,12 @@ export const metadata: Metadata = {
     "šarena pozivnica za rođendan",
     "pozivnica za dečaka rođendan",
     "pozivnica za devojčicu rođendan",
+    "pozivnica za rođendan online",
+    "napravi pozivnicu za rođendan",
+    "izrada pozivnica za rođendan",
+    "pozivnica za drugi rođendan",
+    "pozivnica za treći rođendan",
+    "pozivnica za peti rođendan",
   ],
   openGraph: {
     title: "Napravi Pozivnicu za Dečiji Rođendan | HALO Uspomene",
@@ -126,6 +133,9 @@ export default function NapraviDecijuPozivnicuPage() {
           </ul>
         </div>
       </main>
+      <section className="py-16 sm:py-20 bg-[#faf9f6] border-t border-[#232323]/5">
+        <InvitationClusterLinks current="deciji" />
+      </section>
       <Footer />
     </>
   );
