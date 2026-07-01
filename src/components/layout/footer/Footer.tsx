@@ -264,11 +264,13 @@ const Footer: React.FC = () => {
         <div className="border-t border-white/5 pt-8 pb-6">
           <p className="text-[11px] text-[#F5F4DC]/25 leading-relaxed max-w-3xl">
             <span className="text-[#F5F4DC]/40 font-semibold uppercase tracking-widest text-[10px]">
-              Politika odustanka —{" "}
+              Politika odustanka (izrada pozivnica) —{" "}
             </span>
-            U slučaju odustanka nakon popunjenog i poslatog formulara, korisnik
-            je dužan da uplati 50% od ukupne vrednosti usluge na ime naknade za
-            obavljeni posao. Slanjem formulara prihvatate ove uslove.
+            U slučaju odustanka nakon popunjenog i poslatog formulara za izradu
+            pozivnice, korisnik je dužan da uplati 50% od ukupne vrednosti usluge
+            izrade pozivnice na ime naknade za obavljeni posao. Slanjem formulara
+            prihvatate ove uslove. Ova politika se odnosi isključivo na usluge
+            izrade pozivnica.
           </p>
         </div>
 
