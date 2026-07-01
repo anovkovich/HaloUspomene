@@ -1,6 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Car,
   Crown,
@@ -77,6 +78,7 @@ interface Vehicle {
   tagline: string;
   badge: string;
   icon: React.ReactNode;
+  image?: string;
   perHour: number;
   perDay: number;
   blurb: string;
@@ -88,6 +90,7 @@ const vehicles: Vehicle[] = [
     tagline: "Elegantna limuzina",
     badge: "Klasik",
     icon: <Car size={32} />,
+    image: "/images/cars/e.webp",
     perHour: 50,
     perDay: 350,
     blurb:
@@ -98,6 +101,7 @@ const vehicles: Vehicle[] = [
     tagline: "VIP limuzina",
     badge: "Najluksuznija",
     icon: <Crown size={32} />,
+    image: "/images/cars/s.webp",
     perHour: 80,
     perDay: 600,
     blurb:
@@ -108,6 +112,7 @@ const vehicles: Vehicle[] = [
     tagline: "Luksuzni SUV",
     badge: "Prostran",
     icon: <Car size={32} />,
+    image: "/images/cars/gle.webp",
     perHour: 65,
     perDay: 450,
     blurb:
@@ -118,6 +123,7 @@ const vehicles: Vehicle[] = [
     tagline: "Statusni terenac",
     badge: "Statement",
     icon: <Mountain size={32} />,
+    // Foto uskoro — do tada elegantan placeholder (vidi karticu ispod).
     perHour: 100,
     perDay: 700,
     blurb:
@@ -308,12 +314,39 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
               <p className="text-lg sm:text-xl text-[#232323]/60 max-w-2xl mx-auto mb-4 leading-relaxed">
                 Treba vam reprezentativan auto za mladence, kuma ili barjaktara
                 na svadbi? Mercedes E, S, GLE i G klasa sa profesionalnim
-                šoferom — po satu ili za ceo dan.
+                šoferom.
               </p>
-              <p className="text-sm text-[#232323]/50 max-w-xl mx-auto mb-10">
+              <p className="text-sm text-[#232323]/50 max-w-xl mx-auto mb-8">
                 Besprekorno čisto vozilo, iskusan šofer i dolazak tačno na vreme
                 — za venčanja širom Srbije.
               </p>
+              {/* Mercedes-Benz logo (transparentan) — bez okvira, sa mekim toplim sjajem */}
+              <div className="mb-8 flex flex-col items-center">
+                <div className="relative flex items-center justify-center">
+                  {/* meki topli sjaj — daje dubinu da logo ne „lebdi" na ravnom */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-56 w-56 sm:h-64 sm:w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(212,175,55,0.16),transparent_65%)] blur-2xl"
+                  />
+                  <Image
+                    src="/images/cars/logo.png"
+                    alt="Mercedes-Benz"
+                    width={320}
+                    height={320}
+                    priority
+                    className="relative z-10 h-auto w-48 sm:w-56 object-contain"
+                  />
+                </div>
+                {/* Natpis u brend „eyebrow" maniru — simetrične gold hairline linije */}
+                <div className="mt-3 flex items-center gap-3 text-[#232323]/45">
+                  <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#d4af37]/70" />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
+                    Flota sa profesionalnim šoferom
+                  </span>
+                  <span className="h-px w-8 bg-gradient-to-l from-transparent to-[#d4af37]/70" />
+                </div>
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
                   href="#kontakt"
@@ -381,26 +414,40 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
               {vehicles.map((v) => (
                 <div
                   key={v.name}
-                  className="flex flex-col bg-white rounded-3xl border border-[#232323]/8 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all"
+                  className="group flex flex-col bg-white rounded-3xl border border-[#232323]/8 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-[#232323]/10 hover:-translate-y-1.5 transition-all duration-300"
                 >
-                  <div className="p-6 pb-5 border-b border-[#232323]/5">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-14 h-14 rounded-2xl bg-[#232323] text-[#d4af37] flex items-center justify-center">
+                  {/* Foto vozila (G klasa: placeholder dok fotografija ne stigne) */}
+                  <div className="relative aspect-[16/11] overflow-hidden bg-[#232323]">
+                    {v.image ? (
+                      <Image
+                        src={v.image}
+                        alt={`${v.name} sa šoferom za venčanje`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#2c2c2c] to-[#151515] text-[#d4af37]">
                         {v.icon}
+                        <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#F5F4DC]/40">
+                          Fotografija uskoro
+                        </span>
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#AE343F] bg-[#AE343F]/10 px-3 py-1 rounded-full">
-                        {v.badge}
-                      </span>
-                    </div>
+                    )}
+                    {/* Blagi gradijent radi čitljivosti badge-a */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10" />
+                    <span className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-widest text-[#F5F4DC] bg-[#AE343F]/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg">
+                      {v.badge}
+                    </span>
+                  </div>
+
+                  <div className="p-6 pt-5 flex flex-col flex-1">
                     <h3 className="font-serif text-2xl text-[#232323] leading-tight">
                       {v.name}
                     </h3>
-                    <p className="text-sm text-[#232323]/45 mt-1">
+                    <p className="text-sm text-[#232323]/45 mt-1 mb-4">
                       {v.tagline}
                     </p>
-                  </div>
-
-                  <div className="p-6 flex flex-col flex-1">
                     <p className="text-sm text-[#232323]/55 leading-relaxed mb-6 flex-1">
                       {v.blurb}
                     </p>
