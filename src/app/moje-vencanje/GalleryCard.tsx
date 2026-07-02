@@ -29,6 +29,22 @@ function safeName(s: string): string {
   return s.replace(/[^a-zA-Z0-9Ѐ-ӿ-]+/g, "-").replace(/-+/g, "-");
 }
 
+/** Save a blob to disk. Cleanup is deferred — revoking the object URL or
+ * removing the anchor synchronously right after click() cancels the download
+ * in some browsers, especially for previewable types like images. */
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 2000);
+}
+
 export default function GalleryCard({ slug }: Props) {
   const [loading, setLoading] = useState(true);
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
@@ -123,14 +139,7 @@ export default function GalleryCard({ slug }: Props) {
         }
       }
       const content = await zip.generateAsync({ type: "blob" });
-      const url = URL.createObjectURL(content);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `galerija-${slug}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      triggerDownload(content, `galerija-${slug}.zip`);
     } finally {
       setZipping(false);
     }
@@ -140,14 +149,7 @@ export default function GalleryCard({ slug }: Props) {
     try {
       const res = await fetch(photo.url);
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${safeName(photo.guestName || "gost")}-${index + 1}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      triggerDownload(blob, `${safeName(photo.guestName || "gost")}-${index + 1}.jpg`);
     } catch {
       toast.error("Greška pri preuzimanju");
     }
