@@ -39,7 +39,7 @@ export default function MobileMenu({
       </button>
 
       <div
-        className={`fixed inset-0 bg-base-100 z-40 transition-transform duration-300 lg:hidden ${
+        className={`fixed inset-0 bg-base-200 z-40 transition-transform duration-300 lg:hidden ${
           isOpen ? "translate-y-0" : "-translate-y-full"
         }`}
       >

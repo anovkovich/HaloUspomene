@@ -1,5 +1,6 @@
 import React from "react";
-import { ArrowRight, Award, Phone } from "lucide-react";
+import Image from "next/image";
+import { Award } from "lucide-react";
 import Link from "next/link";
 import HeroInfoBadge from "./HeroInfoBadge";
 
@@ -12,14 +13,14 @@ function getSocialProofText(): string {
   const isPeakSeason = month >= 5 && month <= 8;
 
   if (day <= 7) {
-    return isPeakSeason ? "4 rezervacije" : "2 rezervacije";
+    return isPeakSeason ? "2 rezervacije" : "1 rezervacija";
   }
 
   if (day <= 22) {
-    return isPeakSeason ? "9 rezervacija" : "5 rezervacija";
+    return isPeakSeason ? "3 rezervacije" : "2 rezervacije";
   }
 
-  return isPeakSeason ? "10+ rezervacija" : "9+ rezervacija";
+  return isPeakSeason ? "5 rezervacija" : "4 rezervacije";
 }
 
 const Hero: React.FC = () => {
@@ -37,59 +38,46 @@ const Hero: React.FC = () => {
           from { opacity: 0; transform: scale(0.95); }
           to { opacity: 1; transform: scale(1); }
         }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-20px); }
-        }
         .hero-text { animation: fadeInLeft 0.8s ease-out both; }
         .hero-image { animation: fadeInScale 0.8s ease-out 0.2s both; }
-        .hero-badge { animation: float 5s ease-in-out infinite; }
       `}</style>
-
-      <div className="absolute top-[-10%] right-[-5%] w-[70%] sm:w-[60%] md:w-[50%] h-[70%] bg-[#AE343F]/5 rounded-full blur-[80px] sm:blur-[100px] md:blur-[120px] -z-10" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[60%] sm:w-[50%] md:w-[40%] h-[60%] bg-[#AE343F]/10 rounded-full blur-[60px] sm:blur-[80px] md:blur-[100px] -z-10" />
 
       <div className="container mx-auto px-4 md:px-8">
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           <div className="hero-text">
             <HeroInfoBadge />
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-serif text-[#232323] leading-none mb-8">
-              Reči koje postaju
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-[#232323] leading-[1.05] mb-6">
+              Sve za venčanje
               <br />
               <span className="italic text-[#AE343F] font-medium">
-                uspomena
+                na jednom mestu!
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg md:text-xl text-[#232323]/60 mb-8 sm:mb-10 md:mb-12 max-w-lg leading-relaxed font-light">
-              Zamislite da kroz nekoliko godina ponovo čujete kako vam baka
-              čestita venčanje. Mi brinemo o svakom detalju, a vi samo uživajte
-              u najlepšem danu svog života.
+            <p className="text-base sm:text-lg md:text-xl text-[#232323]/60 mb-8 sm:mb-10 max-w-lg leading-relaxed font-light">
+              Pozivnice koje gosti pamte. Raspored sedenja bez stresa. Glasovne
+              uspomene koje ćete slušati godinama.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5">
               <Link
-                href="/#kontakt"
+                href="/napravi-pozivnicu"
                 className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] btn-lg rounded-full px-12 shadow-2xl shadow-[#AE343F]/30 group border-none"
                 data-track="cta_click"
-                data-track-cta-name="zakazite_konsultacije"
+                data-track-cta-name="napravi_pozivnicu"
                 data-track-cta-location="hero"
               >
-                Proverite dostupnost
+                Napravite pozivnicu
               </Link>
               <Link
-                href="/#proces"
+                href="/cene"
                 className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] hover:border-[#232323] btn-lg rounded-full px-12"
                 data-track="cta_click"
-                data-track-cta-name="otkrijte_kako"
+                data-track-cta-name="pogledajte_cene"
                 data-track-cta-location="hero"
               >
-                Otkrijte kako
-                <ArrowRight
-                  size={20}
-                  className="group-hover:translate-x-1.5 transition-transform"
-                />
+                Pogledajte cene
               </Link>
             </div>
 
@@ -101,9 +89,9 @@ const Hero: React.FC = () => {
               </span>
               <span>
                 <strong className="text-[#232323] font-semibold">
-                  Najpovoljniji <i>AGB</i>
+                  Najtraženije pozivnice
                 </strong>{" "}
-                u Srbiji
+                za venčanja u Srbiji
               </span>
             </div>
             <div className="flex items-center gap-3 mt-2 text-sm text-[#232323]/60">
@@ -117,33 +105,24 @@ const Hero: React.FC = () => {
                 <strong className="text-[#232323] font-semibold">
                   {socialProofText}
                 </strong>{" "}
-                ovog meseca
+                retro telefona ovog meseca
               </span>
             </div>
           </div>
 
           <div className="relative hero-image">
             <div className="transform rotate-0 md:hover:rotate-2 md:hover:scale-[1.05] transition-transform duration-700">
-              <img
-                src="/images/phone.webp"
-                alt="HALO Uspomene vintage retro telefon sa rotirajućim brojčanikom — iznajmljivanje audio knjige utisaka za venčanja u Srbiji"
+              <Image
+                src="/images/retro-telefon-i-website-pozinica.webp"
+                alt="HALO Uspomene — retro telefon, digitalna pozivnica na mobilnom i raspored sedenja na laptopu"
+                width={1466}
+                height={597}
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 className="w-full h-auto object-cover"
+                priority
               />
             </div>
 
-            <div className="hero-badge absolute hidden lg:flex -bottom-10 -left-10 z-20 bg-[#F5F4DC] p-6 rounded-[2rem] shadow-2xl items-center gap-5 border border-white/20 backdrop-blur-sm">
-              <div className="w-16 h-16 bg-[#AE343F] rounded-2xl flex items-center justify-center text-[#F5F4DC] shadow-lg shadow-[#AE343F]/20">
-                <Phone size={32} />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-[#AE343F] uppercase tracking-[0.2em] mb-1">
-                  Model telefona:
-                </p>
-                <p className="text-lg font-serif font-bold text-[#232323]">
-                  Vintage - Rotary Black
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </div>

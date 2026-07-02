@@ -1,85 +1,216 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Calendar,
   User,
   MapPin,
-  Package,
   Send,
   CheckCircle2,
   Loader2,
   AlertCircle,
   Phone,
   MessageCircle,
+  HelpCircle,
+  ChevronDown,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
-import { analytics } from "@/utils/analytics";
+import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
+import {
+  useRecaptcha,
+  RecaptchaDisclosure,
+} from "@/components/forms/RecaptchaProvider";
 
-// Web3Forms access key - get yours free at https://web3forms.com
-const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+const HEARD_ABOUT_OPTIONS = [
+  { value: "Google pretraga", label: "Google pretraga" },
+  { value: "Preporuka AI agenta", label: "Preporuka AI agenta" },
+  { value: "Instagram reklama", label: "Instagram reklama" },
+  { value: "Instagram preporuka", label: "Instagram preporuka" },
+  { value: "Preporuka prijatelja", label: "Preporuka prijatelja" },
+  { value: "Drugo", label: "Drugo" },
+];
+
+interface CustomDropdownProps {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}
+
+const CustomDropdown: React.FC<CustomDropdownProps> = ({
+  value,
+  onChange,
+  disabled = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
+
+  const selectedLabel =
+    HEARD_ABOUT_OPTIONS.find((opt) => opt.value === value)?.label ||
+    "Izaberite opciju";
+
+  return (
+    <div ref={dropdownRef} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className="w-full flex items-center justify-between bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none hover:border-[#AE343F]/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
+      >
+        <span
+          className={`${
+            !value ? "text-white/50" : "text-[#F5F4DC]"
+          } transition-colors`}
+        >
+          {selectedLabel}
+        </span>
+        <ChevronDown
+          size={20}
+          className={`text-[#AE343F] transition-transform duration-300 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-[#232323] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 z-50 overflow-hidden">
+          {HEARD_ABOUT_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              className={`w-full text-left px-4 py-3 transition-all border-b border-white/5 last:border-b-0 ${
+                value === option.value
+                  ? "bg-[#AE343F]/20 text-[#AE343F] font-medium"
+                  : "text-[#F5F4DC]/80 hover:bg-white/5 hover:text-[#F5F4DC]"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ContactForm: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { execute: executeRecaptcha } = useRecaptcha();
 
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     date: "",
     location: "",
-    package: "Full Service",
+    howHeardAbout: "",
     acceptedTerms: false,
   });
+  const [phoneTrustToken, setPhoneTrustToken] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!phoneTrustToken) {
+      setError("Verifikujte broj telefona pre slanja zahteva.");
+      return;
+    }
+    const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+    if (!WEB3FORMS_KEY) {
+      setError("Forma trenutno nije dostupna. Pišite na halouspomene@gmail.com.");
+      return;
+    }
     setIsLoading(true);
 
     try {
-      const formattedDate = formData.date
-        ? new Date(formData.date).toLocaleDateString("sr-RS", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-        : "";
+      let recaptchaToken: string;
+      try {
+        recaptchaToken = await executeRecaptcha("contact");
+      } catch {
+        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setIsLoading(false);
+        return;
+      }
 
-      const response = await fetch("https://api.web3forms.com/submit", {
+      const verifyRes = await fetch("/api/contact", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `Nova rezervacija - ${formData.name} - ${formattedDate}`,
+          phone: `+381${formData.phone}`,
+          phoneTrustToken,
+          recaptchaToken,
+        }),
+      });
+
+      const verifyData = (await verifyRes.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+      };
+
+      if (!verifyRes.ok || !verifyData.ok) {
+        throw new Error(verifyData.error || "Provera nije uspela.");
+      }
+
+      const formattedDate = new Date(formData.date).toLocaleDateString(
+        "sr-Latn-RS",
+        {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        },
+      );
+
+      // Web3Forms is called from the client because Cloudflare blocks
+      // server-side requests to api.web3forms.com from Vercel.
+      const w3 = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: `Retro Telefon - Nova rezervacija - ${formData.name} - ${formattedDate}`,
           from_name: "HALO Uspomene",
           name: formData.name,
           telefon: `+381${formData.phone}`,
           datum_dogadjaja: formattedDate,
           lokacija: formData.location,
-          paket:
-            formData.package === "Full Service" ? "Full Service" : "Essential",
-          opsti_uslovi: formData.acceptedTerms
-            ? "Prihvaćeni"
-            : "Nisu prihvaćeni",
+          kako_je_cuo: formData.howHeardAbout || "Nije navedeno",
+          paket: "Audio Guest Book",
+          opsti_uslovi: formData.acceptedTerms ? "Prihvaćeni" : "Nisu prihvaćeni",
         }),
       });
 
-      const data = await response.json();
+      const w3Data = (await w3.json().catch(() => ({}))) as {
+        success?: boolean;
+        message?: string;
+      };
 
-      if (!data.success) {
-        throw new Error(data.message || "Došlo je do greške");
+      if (!w3.ok || !w3Data.success) {
+        throw new Error(w3Data.message || "Slanje nije uspelo. Pokušajte ponovo.");
       }
 
       setIsSubmitted(true);
-      analytics.formSubmit("contact");
-      analytics.packageClick(
-        formData.package === "Full Service" ? "Full Service" : "Essential",
-      );
     } catch (err) {
       setError(
         err instanceof Error
@@ -99,9 +230,10 @@ const ContactForm: React.FC = () => {
       phone: "",
       date: "",
       location: "",
-      package: "Full Service",
+      howHeardAbout: "",
       acceptedTerms: false,
     });
+    setPhoneTrustToken("");
   };
 
   if (isSubmitted) {
@@ -114,8 +246,8 @@ const ContactForm: React.FC = () => {
           Hvala Vam, {formData.name.split(" ")[0]}!
         </h3>
         <p className="text-[#F5F4DC]/60 text-lg mb-8">
-          Vaš upit za {new Date(formData.date).toLocaleDateString("sr-RS")} je
-          uspešno primljen. <br />
+          Vaš upit za {new Date(formData.date).toLocaleDateString("sr-Latn-RS")}{" "}
+          je uspešno primljen. <br />
           Odgovorićemo Vam u najkraćem roku sa potvrdom dostupnosti.
         </p>
         <button
@@ -134,6 +266,18 @@ const ContactForm: React.FC = () => {
         onSubmit={handleSubmit}
         className="space-y-10 bg-white/5 backdrop-blur-md p-6 sm:p-10 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/10 shadow-2xl relative"
       >
+        {/* Form context note */}
+        <div className="flex items-center gap-3 text-[#F5F4DC]/80 text-sm">
+          <MessageCircle size={16} className="text-[#AE343F] shrink-0" />
+          <span>
+            Ova forma je za rezervaciju{" "}
+            <strong className="text-white">
+              Retro Telefona Uspomena
+            </strong>{" "}
+            na Vašem venčanju.
+          </span>
+        </div>
+
         {/* Error Message */}
         {error && (
           <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400">
@@ -145,14 +289,14 @@ const ContactForm: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
           {/* Name Input */}
           <div className="space-y-3">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
               <User size={14} className="text-[#AE343F]" /> Vaše Ime
             </label>
             <input
               required
               type="text"
               placeholder="Ime i Prezime"
-              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -163,7 +307,7 @@ const ContactForm: React.FC = () => {
 
           {/* Date Input - Custom DatePicker */}
           <div className="space-y-3 mt-1">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
               <Calendar size={14} className="text-[#AE343F]" /> Datum Događaja
             </label>
             <DatePicker
@@ -175,33 +319,26 @@ const ContactForm: React.FC = () => {
 
           {/* Phone Input */}
           <div className="space-y-3">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
               <Phone size={14} className="text-[#AE343F]" /> Broj Telefona
             </label>
-            <div className="flex items-center border-b border-white/10 focus-within:border-[#AE343F] transition-colors">
-              <span className="py-3 pl-4 pr-2 text-[#F5F4DC]/50 text-lg select-none">
-                +381
-              </span>
-              <input
-                required
-                type="tel"
-                placeholder="6X XXX XXXX"
-                className="flex-1 bg-transparent py-3 pr-4 text-[#F5F4DC] text-lg focus:outline-none placeholder:text-white/20"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    phone: e.target.value.replace(/^\+?381/, ""),
-                  })
-                }
-                disabled={isLoading}
-              />
-            </div>
+            <PhoneVerificationField
+              variant="dark"
+              required
+              disabled={isLoading}
+              value={formData.phone}
+              onChange={(v) => {
+                setFormData((prev) => ({ ...prev, phone: v }));
+                if (phoneTrustToken) setPhoneTrustToken("");
+              }}
+              onVerified={(token) => setPhoneTrustToken(token)}
+              onUnverified={() => setPhoneTrustToken("")}
+            />
           </div>
 
           {/* Location Input */}
           <div className="space-y-3">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
+            <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
               <MapPin size={14} className="text-[#AE343F]" /> Lokacija /
               Restoran
             </label>
@@ -209,63 +346,35 @@ const ContactForm: React.FC = () => {
               required
               type="text"
               placeholder="npr. Beograd, Sala XY"
-              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/20"
+              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
               value={formData.location}
-              onChange={(e) => {
-                const newLocation = e.target.value;
-                const isNS =
-                  newLocation.toLowerCase().includes("novi sad") ||
-                  newLocation.toLowerCase().includes("novom sadu");
-                setFormData({
-                  ...formData,
-                  location: newLocation,
-                  package:
-                    !isNS && formData.package === "Full Service"
-                      ? "Essential"
-                      : formData.package,
-                });
-              }}
+              onChange={(e) =>
+                setFormData({ ...formData, location: e.target.value })
+              }
               disabled={isLoading}
             />
           </div>
 
-          {/* Package Select */}
-          <div className="md:col-span-2 space-y-3">
-            <label className="flex items-center gap-3 text-[#F5F4DC]/40 text-xs font-bold uppercase tracking-widest pl-1">
-              <Package size={14} className="text-[#AE343F]" /> Izaberite Paket
+          {/* How Heard About Dropdown */}
+          <div className="space-y-3 md:col-span-2">
+            <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
+              <HelpCircle size={14} className="text-[#AE343F]" /> Kako ste čuli
+              za nas
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {["Essential", "Full Service"].map((pkg) => {
-                const loc = formData.location.toLowerCase();
-                const isNoviSad = loc.includes("novi sad") || loc.includes("novom sadu");
-                const isDisabled =
-                  isLoading || (pkg === "Full Service" && !isNoviSad);
-                return (
-                  <div key={pkg} className="flex flex-col gap-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        !isDisabled &&
-                        setFormData({ ...formData, package: pkg })
-                      }
-                      disabled={isDisabled}
-                      className={`py-4 rounded-2xl border transition-all text-sm font-bold uppercase tracking-widest ${
-                        formData.package === pkg && !isDisabled
-                          ? "bg-[#AE343F] border-[#AE343F] text-[#F5F4DC] shadow-lg shadow-[#AE343F]/20"
-                          : "bg-white/5 border-white/10 text-[#F5F4DC]/40"
-                      } ${isDisabled ? "opacity-30 cursor-not-allowed" : "hover:border-white/20"}`}
-                    >
-                      {pkg} Paket
-                    </button>
-                    {pkg === "Full Service" && !isNoviSad && (
-                        <p className="text-[#F5F4DC]/30 text-xs text-center">
-                          Dostupno samo u Novom Sadu
-                        </p>
-                      )}
-                  </div>
-                );
-              })}
-            </div>
+            <CustomDropdown
+              value={formData.howHeardAbout}
+              onChange={(value) =>
+                setFormData({ ...formData, howHeardAbout: value })
+              }
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Package info */}
+          <div className="md:col-span-2">
+            <p className="text-[#F5F4DC]/70 text-xs pl-1">
+              Lična dostava i montaža dostupna je samo u Novom Sadu.
+            </p>
           </div>
         </div>
 
@@ -284,7 +393,7 @@ const ContactForm: React.FC = () => {
           />
           <label
             htmlFor="acceptedTerms"
-            className="text-[#F5F4DC]/60 text-sm cursor-pointer leading-relaxed"
+            className="text-[#F5F4DC]/90 text-sm cursor-pointer leading-relaxed"
           >
             Pročitao/la sam i prihvatam{" "}
             <a
@@ -300,7 +409,7 @@ const ContactForm: React.FC = () => {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !phoneTrustToken}
           className="btn bg-[#AE343F] hover:bg-[#8A2A32] btn-lg w-full min-h-[48px] h-16 sm:h-20 rounded-2xl text-[#F5F4DC] text-base sm:text-lg font-bold shadow-2xl shadow-[#AE343F]/40 group relative overflow-hidden border-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="relative z-10 flex items-center gap-3">
@@ -311,7 +420,7 @@ const ContactForm: React.FC = () => {
               </>
             ) : (
               <>
-                Pošalji upit za termin
+                Rezerviši termin
                 <Send
                   size={20}
                   className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
@@ -323,6 +432,7 @@ const ContactForm: React.FC = () => {
             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
           )}
         </button>
+        <RecaptchaDisclosure className="text-[10px] text-[#F5F4DC]/70 text-center" />
       </form>
     </div>
   );

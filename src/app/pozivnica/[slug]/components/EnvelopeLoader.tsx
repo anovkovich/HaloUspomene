@@ -1,12 +1,43 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Heart } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+import { THEME_CONFIGS } from "../constants";
 
 interface EnvelopeLoaderProps {
   onComplete: () => void;
   names: string;
   eventDate?: string;
+  stampColor?: string; // Custom wax seal color, overrides theme
+  /** Override auto-derived initials (e.g. "MP" for single-honoree invitations). */
+  initials?: string;
+  /** Override the pre-name label (e.g. translations.inviteYou). */
+  inviteLabel?: string;
+  /**
+   * Path to a 3D wax seal image. When provided, renders that PNG/WebP
+   * instead of the flat gradient circle — matches the premium hero
+   * medallion aesthetic.
+   */
+  waxImageSrc?: string;
+  /**
+   * CSS font-family for the seal initials. Defaults to serif; pass a
+   * script font variable (e.g. `var(--theme-script-font)`) for a more
+   * elegant, hand-lettered feel.
+   */
+  initialsFontFamily?: string;
+  /**
+   * When true, hold the open animation behind a tap. The tap is also the
+   * user gesture that unlocks background-music autoplay on mobile/Safari.
+   */
+  requireTap?: boolean;
+}
+
+function darkenHex(hex: string, factor = 0.72): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `#${Math.round(r * factor).toString(16).padStart(2, "0")}${Math.round(g * factor).toString(16).padStart(2, "0")}${Math.round(b * factor).toString(16).padStart(2, "0")}`;
 }
 
 // Extract initials from names (e.g., "Emilija & Aleksa" -> "E&A")
@@ -22,17 +53,28 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
   onComplete,
   names,
   eventDate = "Jun 06, 2026",
+  stampColor,
+  initials: initialsOverride,
+  inviteLabel,
+  waxImageSrc,
+  initialsFontFamily,
+  requireTap = false,
 }) => {
   const { config, t } = useTheme();
   const [stage, setStage] = useState<
     "sealed" | "opening" | "extracted" | "fadeout"
   >("sealed");
+  // When tap-gated, we hold at "sealed" until the visitor taps. The tap
+  // is the same gesture that unlocks BackgroundMusicPlayer's autoplay.
+  const [tapped, setTapped] = useState(!requireTap);
 
-  const initials = getInitials(names);
+  const initials = initialsOverride ?? getInitials(names);
+  const labelText = inviteLabel ?? t.inviteYou;
 
   useEffect(() => {
+    if (!tapped) return;
     const sequence = async () => {
-      await new Promise((r) => setTimeout(r, 800));
+      await new Promise((r) => setTimeout(r, requireTap ? 100 : 800));
       setStage("opening");
       await new Promise((r) => setTimeout(r, 1200));
       setStage("extracted");
@@ -42,21 +84,31 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
       onComplete();
     };
     sequence();
-  }, [onComplete]);
+  }, [tapped, requireTap, onComplete]);
 
   // Use theme colors
   const primaryColor = config.colors.primary;
-  const waxSealColor = config.colors.waxSeal;
-  const waxSealDark = config.colors.waxSealDark;
+  const waxSealColor = stampColor ?? config.colors.waxSeal;
+  const waxSealDark = stampColor ? darkenHex(stampColor) : config.colors.waxSealDark;
+
+  // For custom themes or custom stamp color, use gold for stamp text for better contrast
+  const presetThemePrimaries = Object.values(THEME_CONFIGS).map(
+    (t) => t.colors.primary
+  );
+  const isCustomTheme = !presetThemePrimaries.includes(primaryColor);
+  const stampTextColor = isCustomTheme || stampColor ? "#d4af37" : primaryColor;
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-[1200ms] cubic-bezier(0.4, 0, 0.2, 1) ${stage === "fadeout" ? "opacity-0 scale-110 blur-xl pointer-events-none" : "opacity-100"}`}
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center transition-all duration-[1200ms] cubic-bezier(0.4, 0, 0.2, 1) ${stage === "fadeout" ? "opacity-0 scale-110 blur-xl pointer-events-none" : "opacity-100"} ${!tapped ? "cursor-pointer" : ""}`}
       style={{ backgroundColor: "#ffffff" }}
+      onClick={!tapped ? () => setTapped(true) : undefined}
     >
 
       {/* 3D Scene - moved down slightly so card doesn't go off screen */}
-      <div className="relative w-[300px] h-[200px] sm:w-[480px] sm:h-[310px] perspective-[1500px] mt-8 sm:mt-0">
+      <div
+        className={`relative w-[300px] h-[200px] sm:w-[480px] sm:h-[310px] perspective-[1500px] mt-8 sm:mt-0 ${!tapped ? "animate-envelope-pulse" : ""}`}
+      >
         {/* ENVELOPE ASSEMBLY */}
         <div
           className={`relative w-full h-full preserve-3d transition-all duration-[1500ms] will-change-transform
@@ -115,7 +167,7 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
               className="font-elegant uppercase tracking-[0.2em] sm:tracking-[0.5em] text-[6px] sm:text-[10px] mb-2 sm:mb-4"
               style={{ color: config.colors.textLight }}
             >
-              {t.inviteYou}
+              {labelText}
             </p>
             <h2
               className="font-script text-2xl sm:text-6xl leading-tight px-2 sm:px-4 select-none drop-shadow-sm"
@@ -128,10 +180,18 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
                 className="w-5 sm:w-8 h-px"
                 style={{ background: `linear-gradient(to right, transparent, ${primaryColor}66)` }}
               ></div>
-              <div
-                className="w-1.5 h-1.5 sm:w-2 sm:h-2 rotate-45"
-                style={{ border: `1px solid ${primaryColor}66` }}
-              ></div>
+              <Heart
+                size={8}
+                className="sm:hidden"
+                style={{ color: `${primaryColor}99` }}
+                fill="currentColor"
+              />
+              <Heart
+                size={11}
+                className="hidden sm:block"
+                style={{ color: `${primaryColor}99` }}
+                fill="currentColor"
+              />
               <div
                 className="w-5 sm:w-8 h-px"
                 style={{ background: `linear-gradient(to left, transparent, ${primaryColor}66)` }}
@@ -163,29 +223,62 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
 
           {/* 4. WAX SEAL - Positioned at the bottom tip of the flap (56% height) */}
           <div
-            className={`absolute top-[56%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 sm:w-[70px] sm:h-[70px] z-[60] transition-all duration-1000 cubic-bezier(0.175, 0.885, 0.32, 1.275)
+            className={`absolute top-[56%] left-1/2 -translate-x-1/2 -translate-y-1/2 ${
+              waxImageSrc
+                ? "w-[110px] h-[110px] sm:w-[150px] sm:h-[150px]"
+                : "w-12 h-12 sm:w-[70px] sm:h-[70px]"
+            } z-[60] transition-all duration-1000 cubic-bezier(0.175, 0.885, 0.32, 1.275)
                  ${stage !== "sealed" ? "scale-0 opacity-0 blur-md" : "scale-100 opacity-100"}`}
           >
-            <div
-              className="relative w-full h-full rounded-full shadow-[0_8px_25px_rgba(0,0,0,0.4),inset_0_2px_4px_rgba(255,255,255,0.2),inset_0_-2px_4px_rgba(0,0,0,0.2)] flex items-center justify-center"
-              style={{
-                background: `linear-gradient(to bottom right, ${waxSealColor}, ${waxSealDark})`,
-                border: `1px solid ${waxSealDark}`,
-              }}
-            >
-              {/* Wax seal texture */}
+            {waxImageSrc ? (
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={waxImageSrc}
+                  alt=""
+                  fetchPriority="high"
+                  decoding="sync"
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+                  style={{ filter: "drop-shadow(0 8px 22px rgba(0,0,0,0.4))" }}
+                />
+                <span
+                  className={`relative select-none text-3xl sm:text-4xl font-semibold leading-none ${initialsFontFamily ? "" : "font-serif"}`}
+                  style={{
+                    color: "#7a5318",
+                    fontFamily: initialsFontFamily ?? undefined,
+                    textShadow:
+                      "0 1px 1px rgba(255,232,150,0.85), 0 0 6px rgba(90,55,10,0.35)",
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {initials}
+                </span>
+              </div>
+            ) : (
               <div
-                className="absolute inset-0.5 sm:inset-1 rounded-full"
-                style={{ border: `1px solid ${primaryColor}4d` }}
-              ></div>
-              <span
-                className="font-serif text-base sm:text-2xl select-none drop-shadow-md"
-                style={{ color: primaryColor }}
+                className="relative w-full h-full rounded-full shadow-[0_8px_25px_rgba(0,0,0,0.4),inset_0_2px_4px_rgba(255,255,255,0.2),inset_0_-2px_4px_rgba(0,0,0,0.2)] flex items-center justify-center"
+                style={{
+                  background: `linear-gradient(to bottom right, ${waxSealColor}, ${waxSealDark})`,
+                  border: `1px solid ${waxSealDark}`,
+                }}
               >
-                {initials}
-              </span>
-              <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.15),_transparent_50%)]"></div>
-            </div>
+                {/* Wax seal texture */}
+                <div
+                  className="absolute inset-0.5 sm:inset-1 rounded-full"
+                  style={{ border: `1px solid ${primaryColor}4d` }}
+                ></div>
+                <span
+                  className={`text-base sm:text-2xl select-none drop-shadow-md ${initialsFontFamily ? "" : "font-serif"}`}
+                  style={{
+                    color: stampTextColor,
+                    fontFamily: initialsFontFamily ?? undefined,
+                  }}
+                >
+                  {initials}
+                </span>
+                <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.15),_transparent_50%)]"></div>
+              </div>
+            )}
           </div>
 
           {/* 5. FLAP */}
@@ -221,6 +314,45 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Tap-to-open hint (only when music gating is active) */}
+      {requireTap && (
+        <p
+          className={`mt-8 sm:mt-12 font-elegant uppercase tracking-[0.3em] text-[10px] sm:text-xs transition-opacity duration-500 select-none ${
+            tapped ? "opacity-0" : "opacity-100 animate-hint-pulse"
+          }`}
+          style={{ color: primaryColor }}
+        >
+          {t.tapToOpen}
+        </p>
+      )}
+
+      <style jsx>{`
+        @keyframes envelope-pulse {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.03);
+          }
+        }
+        .animate-envelope-pulse {
+          animation: envelope-pulse 2s ease-in-out infinite;
+        }
+        @keyframes hint-pulse {
+          0%,
+          100% {
+            opacity: 0.55;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+        .animate-hint-pulse {
+          animation: hint-pulse 1.8s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };

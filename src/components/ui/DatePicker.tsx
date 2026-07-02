@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DatePickerProps {
@@ -10,6 +11,7 @@ interface DatePickerProps {
   placeholder?: string;
   variant?: "dark" | "light";
   showQuickActions?: boolean;
+  accentColor?: string;
 }
 
 const MONTHS = [
@@ -26,6 +28,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   placeholder = "Izaberite datum",
   variant = "dark",
   showQuickActions = true,
+  accentColor,
 }) => {
   const isLight = variant === "light";
   const [isOpen, setIsOpen] = useState(false);
@@ -44,28 +47,29 @@ const DatePicker: React.FC<DatePickerProps> = ({
   minDateObj.setHours(0, 0, 0, 0);
 
   // Colors based on variant
+  const ac = accentColor || "#AE343F";
   const colors = isLight
     ? {
-        accent: "#AE343F",
-        accentHover: "#8B2833",
+        accent: ac,
+        accentHover: accentColor ? accentColor : "#8B2833",
         text: "#1a1a1a",
         textMuted: "#78716c",
         textPlaceholder: "#a8a29e",
         bg: "#faf9f6",
         bgDropdown: "#ffffff",
         border: "#e7e5e4",
-        borderFocus: "#AE343F",
+        borderFocus: ac,
       }
     : {
-        accent: "#AE343F",
-        accentHover: "#8A2A32",
+        accent: ac,
+        accentHover: accentColor ? accentColor : "#8A2A32",
         text: "#F5F4DC",
         textMuted: "rgba(255,255,255,0.6)",
         textPlaceholder: "rgba(255,255,255,0.2)",
         bg: "transparent",
         bgDropdown: "#1a1a1a",
         border: "rgba(255,255,255,0.1)",
-        borderFocus: "#AE343F",
+        borderFocus: ac,
       };
 
   const formatDisplayDate = (dateStr: string) => {
@@ -103,11 +107,25 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const handleOpen = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      setDropdownPos({
-        top: rect.bottom + 8,
-        left: rect.left,
-        width: rect.width,
-      });
+      const calendarWidth = Math.max(rect.width, 320);
+      const overflowsRight = rect.left + calendarWidth > window.innerWidth - 8;
+      const left = overflowsRight
+        ? Math.max(8, rect.right - calendarWidth)
+        : rect.left;
+
+      // Estimated calendar height: header (~40) + day labels (~32) +
+      // 6 rows × 40 + paddings (~32). With quick actions add ~52.
+      const estimatedHeight = showQuickActions ? 440 : 390;
+      const spaceBelow = window.innerHeight - rect.bottom - 8;
+      const spaceAbove = rect.top - 8;
+      const flipAbove =
+        spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+
+      const top = flipAbove
+        ? Math.max(8, rect.top - 8 - estimatedHeight)
+        : rect.bottom + 8;
+
+      setDropdownPos({ top, left, width: calendarWidth });
     }
     setIsOpen(true);
   };
@@ -201,9 +219,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
         onClick={() => (isOpen ? setIsOpen(false) : handleOpen())}
         className={`w-full flex items-center justify-between py-3 px-4 text-left focus:outline-none transition-all group ${
           isLight
-            ? "bg-[#faf9f6] border border-stone-200 rounded-xl focus:border-[#AE343F] focus:ring-2 focus:ring-[#AE343F]/10"
-            : "bg-transparent border-b border-white/10 focus:border-[#AE343F]"
-        } ${isOpen && isLight ? "border-[#AE343F] ring-2 ring-[#AE343F]/10" : ""}`}
+            ? "bg-[#faf9f6] border border-stone-200 rounded-xl"
+            : "bg-transparent border-b border-white/10"
+        }`}
+        style={{
+          ...(isOpen || undefined
+            ? { borderColor: colors.accent, boxShadow: isLight ? `0 0 0 2px ${colors.accent}1a` : undefined }
+            : {}),
+        }}
       >
         <span style={{ color: value ? colors.text : colors.textPlaceholder }}>
           {value ? formatDisplayDate(value) : placeholder}
@@ -215,17 +238,18 @@ const DatePicker: React.FC<DatePickerProps> = ({
         />
       </button>
 
-      {/* Dropdown — fixed positioned to escape overflow-hidden parents */}
-      {isOpen && (
+      {/* Dropdown — portalled to body to escape backdrop-filter ancestors.
+          z-[100]/[110] sits above all app-level modals (which top out at z-[81]). */}
+      {isOpen && typeof document !== "undefined" && createPortal(
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[100]"
             onClick={() => setIsOpen(false)}
           />
 
           <div
-            className="fixed z-50 rounded-2xl shadow-2xl p-4"
+            className="fixed z-[110] rounded-2xl shadow-2xl p-4"
             style={{
               top: dropdownPos.top,
               left: dropdownPos.left,
@@ -331,7 +355,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
               </div>
             )}
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );

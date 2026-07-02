@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { locations, getLocation } from "@/data/locations";
 import { testimonials } from "@/data/testimonials";
+import { getAllVendors } from "@/lib/vendors";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
@@ -164,7 +165,7 @@ export default async function CityPage({
                 <p className="text-sm text-[#232323]/50">
                   {loc.deliveryType === "Kurirska dostava"
                     ? "telefon i uputstvo stižu sigurno upakovani spremni za korišćenje"
-                    : "telefon, a i govornicu ukoliko izaberete Full Service paket"}
+                    : "profesionalna montaža telefona na idealnom mestu u sali"}
                 </p>
               </div>
               <div className="text-center p-4">
@@ -262,7 +263,7 @@ export default async function CityPage({
                           {t.coupleName}
                         </p>
                         <p className="text-xs text-[#232323]/40">
-                          {t.date} — {t.packageType}
+                          {t.date} — {t.service}
                         </p>
                       </div>
                     </div>
@@ -316,7 +317,21 @@ export default async function CityPage({
             </h2>
             <p className="text-[#F5F4DC]/60 mb-6 max-w-lg mx-auto">
               Rezervišite vaš audio guest book na vreme i sačuvajte glasove sa
-              svog venčanja zauvek.
+              svog venčanja zauvek. Uz rezervaciju dobijate pristup besplatnom
+              planeru venčanja sa{" "}
+              {(await getAllVendors()).filter((v) => v.city === loc.name).length}+ vendora u{" "}
+              {loc.name === "Niš"
+                ? "Nišu"
+                : loc.name === "Beograd"
+                  ? "Beogradu"
+                  : loc.name === "Novi Sad"
+                    ? "Novom Sadu"
+                    : loc.name === "Kragujevac"
+                      ? "Kragujevcu"
+                      : loc.name === "Subotica"
+                        ? "Subotici"
+                        : loc.name}
+              .
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

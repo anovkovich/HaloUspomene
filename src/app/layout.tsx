@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Geist,
   Geist_Mono,
@@ -12,11 +12,14 @@ import {
   Bad_Script,
   Cormorant_Garamond,
   Josefin_Sans,
+  Raleway,
 } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";
-import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Toaster } from "sonner";
 import { testimonials } from "@/data/testimonials";
+import { RecaptchaProvider } from "@/components/forms/RecaptchaProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -101,86 +104,107 @@ const josefinSans = Josefin_Sans({
   display: "swap",
 });
 
+const raleway = Raleway({
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-raleway",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
+
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
-const gaId = process.env.NEXT_PUBLIC_GA_ID;
-const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
   title: {
     default:
-      "Website Pozivnice i Audio Knjiga Uspomena Srbija | Audio Guest Book + Website pozivnice | HALO Uspomene",
+      "HALO Uspomene — Sve za Venčanje: Pozivnice, QR Pano, Audio...",
     template: "%s | HALO Uspomene",
   },
 
   description:
-    "HALO Uspomene — website pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte personalizovane web pozivnice i iznajmite retro telefon za glasovne poruke gostiju. Audio guest book (telefon uspomena), i interaktivne pozivnice sa odbrojavanje. Dostava u Beograd, i sve gradove.",
+    "Sve za venčanje u Srbiji na jednom mestu: web i Premium AI pozivnice, QR Pano raspored sedenja, audio knjiga uspomena, planer i vendori.",
 
   keywords: [
-    // Audio uspomene / Audio Guest Book
-    "audio uspomene",
-    "audio guest book venčanje",
-    "audio guestbook Srbija",
-    "telefon uspomena",
-    "telefon uspomena Beograd",
-    "audio uspomene Beograd",
-    "audio uspomene Novi Sad",
-    "retro telefon",
-    "retro telefon za venčanje",
-    "retro telefon za svadbe",
-    "vintage telefon venčanje",
-    "telefon za glasovne poruke",
-    "audio guest book",
-    "iznajmljivanje retro telefona",
-    "audio poruke sa venčanja",
-    "sačuvaj glasove sa svadbe",
-    "telefon za poruke na svadbi",
-    "audio knjiga utisaka",
-    "audio knjiga uspomena",
-    "audio guestbook rental Serbia",
-    "retro phone guest book",
-    "audio guest book cena",
-    "cena iznajmljivanja telefona za svadbu",
-    "rezervacija audio telefona za venčanje",
-    "telefon sa rotirajućim brojčanikom za svadbe",
-    "svadbeni telefon za glasovne poruke",
-    "audio spomenar za venčanja",
-    "beli retro telefon za venčanje",
-    "telefon govornica za svadbe",
-    "dekorativni telefon za slikanje i poruke",
-    "audio guest book Beograd",
-    "audio guest book Novi Sad",
-    "retro telefon za poruke gostiju",
-    "audio uspomene sa venčanja",
-    "kjiga utisaka za venčanje",
-    "telefon za snimanje poruka na svadbi",
-    "vintage telefon za venčanje iznajmljivanje",
+    // Platform / brand
+    "halo uspomene",
+    "platforma za venčanje",
+    "sve za venčanje",
+    "organizacija venčanja Srbija",
+    "venčanje u Srbiji",
 
     // Website pozivnice / Web invitations
     "website pozivnice",
     "website pozivnice Srbija",
     "website pozivnice za venčanje",
     "web pozivnice",
-    "web invitations",
     "elektronske pozivnice",
     "pozivnice sa RSVP",
     "interaktivne pozivnice",
     "personalizovane pozivnice",
     "pozivnice sa odbrojavanje",
-    "dinamičke pozivnice",
     "online pozivnice",
-    "website pozivnice sa audio",
-    "pozivnice sa glasovnom porukom",
     "e-pozivnice",
-    "smernice za website pozivnice",
-    "originalne ideje za venčanja",
+    "digitalne pozivnice za venčanje",
 
-    // Combined / General
-    "moderne ideje za venčanja 2026",
-    "venčanje ideje Srbija",
-    "audio guest book za rođendan",
-    "wedding phone Serbia",
+    // Premium AI pozivnice
+    "premium pozivnice",
+    "AI pozivnice za venčanje",
+    "luksuzne pozivnice",
+    "pozivnice sa AI ilustracijom",
+    "akvarel pozivnice",
+
+    // QR Pano / Raspored sedenja
+    "QR pano dobrodošlice",
+    "raspored sedenja",
+    "raspored sedenja za venčanje",
+    "digitalni raspored sedenja",
+    "QR kod za salu",
+    "pametan raspored sedenja",
+    "vizuelni alat za raspored sedenja",
+
+    // Audio uspomene / Audio Guest Book
+    "audio guest book",
+    "audio guest book Srbija",
+    "audio guest book Beograd",
+    "audio knjiga uspomena",
+    "audio knjiga utisaka",
+    "audio spomenar",
+    "telefon uspomena",
+    "retro telefon za venčanje",
+    "vintage telefon za venčanje",
+    "iznajmljivanje retro telefona",
+    "telefon za glasovne poruke",
+    "digitalni audio guest book",
+
+    // Moje Venčanje planer
+    "planer za venčanje",
+    "online planer venčanje",
+    "checklista za venčanje",
+    "budžet kalkulator za venčanje",
+    "moje venčanje",
+    "besplatan planer venčanje",
+
+    // Vendori
+    "vendori za venčanje",
+    "vendori za venčanje Srbija",
+    "direktorijum vendora venčanje",
+
+    // Dečji rođendani / punoletstvo
+    "dečje pozivnice",
+    "pozivnice za dečji rođendan",
+    "pozivnice za punoletstvo",
+
+    // Geo
+    "venčanje Beograd",
+    "venčanje Novi Sad",
+    "venčanje Niš",
   ],
 
   authors: [{ name: "HALO Uspomene" }],
@@ -198,26 +222,25 @@ export const metadata: Metadata = {
     locale: "sr_RS",
     url: siteUrl,
     siteName: "HALO Uspomene",
-    title:
-      "Website Pozivnice i Audio Knjiga Uspomena za Venčanja | HALO Uspomene Srbija",
+    title: "HALO Uspomene — Sve za Venčanje na Jednom Mestu",
     description:
-      "HALO Uspomene — website pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte personalizovane web pozivnice i iznajmite retro telefon za glasovne poruke gostiju. Audio guest book (telefon uspomena), i interaktivne pozivnice sa odbrojavanje. Dostava u Beograd, i sve gradove.",
+      "Web i Premium AI pozivnice, QR Pano raspored sedenja, audio knjiga uspomena, planer venčanja i direktorijum vendora — sve za vaše venčanje u Srbiji.",
     images: [
       {
-        url: "/images/gallery/og-image.png",
+        url: "/images/og-image.png",
         width: 1200,
         height: 630,
-        alt: "HALO Uspomene - Audio Guest Book za Venčanja",
+        alt: "HALO Uspomene — platforma za venčanja u Srbiji",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Website Pozivnice i Audio Knjiga Uspomena | HALO Uspomene Srbija",
+    title: "HALO Uspomene — Sve za Venčanje na Jednom Mestu",
     description:
-      "Website pozivnice i telefon uspomena za venčanja u Srbiji. Kreirajte web pozivnice sa RSVP ili iznajmite retro telefon za glasovne poruke. Audio guest book dostava u Beograd, i sve gradove.",
-    images: ["/images/gallery/og-image.png"],
+      "Web i Premium AI pozivnice, QR Pano raspored sedenja, audio knjiga uspomena, planer i vendori — sve za venčanje u Srbiji.",
+    images: ["/images/og-image.png"],
   },
 
   robots: {
@@ -265,22 +288,24 @@ export default function RootLayout({
     "@id": `${siteUrl}/#business`,
     name: "HALO Uspomene",
     alternateName: [
-      "Audio Guest Book Srbija",
-      "Audio Knjiga Utisaka",
-      "Audio Knjiga Uspomena",
-      "Audio Uspomene",
-      "Telefon Uspomena",
-      "Telefon za Poruke na Svadbi",
-      "Retro Telefon za Venčanja",
+      "HALO Uspomene Platforma za Venčanja",
       "Website Pozivnice",
-      "Web Pozivnice",
-      "E-Pozivnice",
+      "Premium AI Pozivnice",
+      "QR Pano Dobrodošlice",
+      "Raspored Sedenja",
+      "Audio Guest Book Srbija",
+      "Audio Knjiga Uspomena",
+      "Audio Knjiga Utisaka",
+      "Telefon Uspomena",
+      "Retro Telefon za Venčanja",
+      "Moje Venčanje Planer",
+      "Direktorijum Vendora za Venčanje",
     ],
     description:
-      "HALO Uspomene — premium servisi za venčanja: kreirajte website pozivnice sa RSVP ili iznajmite audio guest book za glasovne poruke gostiju. Audio uspomene, web pozivnice, telefon uspomena sa dostavom u celoj Srbiji.",
+      "HALO Uspomene — sveobuhvatna platforma za venčanja u Srbiji: web i Premium AI pozivnice sa RSVP, QR Pano raspored sedenja, audio knjiga uspomena (digitalna i preko retro telefona), planer venčanja i direktorijum vendora.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
-    image: `${siteUrl}/images/gallery/og-image.png`,
+    image: `${siteUrl}/images/og-image.png`,
     // telephone: "+381601234567",
     // email: "info@halouspomene.rs",
     email: "halouspomene@gmail.com",
@@ -341,18 +366,18 @@ export default function RootLayout({
             "@type": "Offer",
             itemOffered: {
               "@type": "Service",
-              name: "Essential Paket",
+              name: "Audio Guest Book Paket",
               description:
-                "Iznajmljivanje retro telefona sa rotirajućim brojčanikom za venčanja. Audio knjiga uspomena, audio uspomene sa kurirskom dostavom, elegantno uputstvo i svi audio snimci u digitalnom formatu.",
+                "Iznajmljivanje retro telefona sa brojčanikom za venčanja. Audio knjiga uspomena, audio uspomene sa kurirskom dostavom, elegantno uputstvo i svi audio snimci u digitalnom formatu.",
             },
           },
           {
             "@type": "Offer",
             itemOffered: {
               "@type": "Service",
-              name: "Full Service Paket",
+              name: "Audio Guest Book — Lična dostava u Novom Sadu",
               description:
-                "Premium audio guest book sa telefon govornicom — lična dostava, profesionalna montaža, audio spomenar sa personalizovanom dobrodošlicom. Svadbeni telefon za glasovne poruke gostiju. Telefon uspomena sa stojaćom pozicijom.",
+                "Audio guest book sa kurirskom dostavom u celoj Srbiji. Lična dostava i montaža dostupna u Novom Sadu. Personalizovana audio dobrodošlica kao dodatna opcija. Svadbeni telefon za glasovne poruke gostiju.",
             },
           },
           {
@@ -390,43 +415,127 @@ export default function RootLayout({
           },
         ],
       },
+      {
+        "@type": "OfferCatalog",
+        name: "Premium AI Pozivnice za Venčanja",
+        itemListElement: [
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "Premium AI Pozivnica — Akvarel Tema",
+              description:
+                "Luksuzna pozivnica za venčanje sa AI generisanom akvarel ilustracijom para, parallax hero sekcijom, animiranim envelope-om i vintage automobilima.",
+            },
+          },
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "Premium AI Pozivnica — Line-Art Tema",
+              description:
+                "Luksuzna pozivnica sa line-art AI ilustracijom para i glassmorphism dizajnom. Personalizovan grad i sakralni spomenici uključeni.",
+            },
+          },
+        ],
+      },
+      {
+        "@type": "OfferCatalog",
+        name: "QR Pano Dobrodošlice — Pametan Raspored Sedenja",
+        itemListElement: [
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "QR Pano Dobrodošlice",
+              description:
+                "Pametan raspored sedenja za venčanja kroz štampani QR pano za ulaz u salu. Gosti sami pronalaze svoje mesto skeniranjem koda — bez hostesa i spiskova. Vizuelni editor za stolove uključen.",
+            },
+          },
+        ],
+      },
+      {
+        "@type": "OfferCatalog",
+        name: "Moje Venčanje — Besplatan Planer Venčanja",
+        itemListElement: [
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "Moje Venčanje Planer",
+              description:
+                "Besplatan online planer za venčanje uz svaku pozivnicu: checklista zadataka po vremenskim grupama, budžet kalkulator sa EUR/RSD konverzijom, RSVP praćenje i pristup direktorijumu vendora.",
+            },
+            price: "0",
+            priceCurrency: "RSD",
+          },
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "Direktorijum Vendora za Venčanje",
+              description:
+                "Pregled proverenih vendora za venčanje u Srbiji: sale, muzika (bendovi i DJ), fotografi, torte, dekoracija, cveće, vatromet, venčanice, šminka, burme i pokloni za goste.",
+            },
+          },
+        ],
+      },
     ],
     knowsAbout: [
-      // Audio memories service
-      "Audio uspomene",
-      "Audio guest book",
-      "Audio knjiga utisaka",
-      "Audio knjiga uspomena",
-      "Audio spomenar",
-      "Telefon uspomena",
-      "Telefon za poruke na svadbi",
-      "Vintage telefon sa rotirajućim brojčanikom",
-      "Telefon govornica za svadbe",
-      "Svadbeni telefon za glasovne poruke",
-      "Dekorativni telefon za venčanja",
-      "Retro phone guest book",
-      "Retro telefon",
-      "Iznajmljivanje retro telefona za svadbe",
-      "Beli retro telefon za venčanje",
-
-      // Digital invitations service
+      // Website / digital invitations
       "Website pozivnice",
       "Web pozivnice",
       "E-pozivnice",
       "Elektronske pozivnice",
-      "RSVP forma",
+      "Pozivnice sa RSVP",
       "Pozivnice sa odbrojavanje",
       "Interaktivne pozivnice",
       "Personalizovane pozivnice",
       "Online pozivnice",
-      "Digital wedding invitations",
-      "Web invitations with RSVP",
+
+      // Premium AI pozivnice
+      "Premium AI pozivnice",
+      "Pozivnice sa AI ilustracijom",
+      "Luksuzne pozivnice",
+      "Akvarel pozivnice",
+      "Line-art pozivnice",
+
+      // Raspored sedenja / QR Pano
+      "QR Pano dobrodošlice",
+      "Raspored sedenja",
+      "Digitalni raspored sedenja",
+      "Vizuelni alat za raspored sedenja",
+      "Pametan raspored sedenja",
+
+      // Audio guest book
+      "Audio guest book",
+      "Audio knjiga uspomena",
+      "Audio knjiga utisaka",
+      "Audio spomenar",
+      "Telefon uspomena",
+      "Retro telefon za venčanje",
+      "Vintage telefon sa brojčanikom",
+      "Iznajmljivanje retro telefona",
+      "Digitalni audio guest book",
+
+      // Moje Venčanje planer
+      "Planer za venčanje",
+      "Online planer venčanje",
+      "Checklista za venčanje",
+      "Budžet kalkulator za venčanje",
+      "Direktorijum vendora za venčanje",
+
+      // Dečje pozivnice / punoletstvo
+      "Dečje pozivnice",
+      "Pozivnice za rođendan",
+      "Pozivnice za punoletstvo",
 
       // General
       "Wedding services",
+      "Wedding planning",
       "Event planning",
       "Audio recording",
-      "Vintage telephone rental",
+      "Digital wedding invitations",
     ],
   };
 
@@ -438,7 +547,7 @@ export default function RootLayout({
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
     description:
-      "HALO Uspomene — kreirajte website pozivnice sa RSVP formom i audio uspomene (audio guest book) za venčanja u Srbiji. Telefon uspomena, web pozivnice sa odbrojavanje i interaktivnim mogućnostima. Dostava u celoj Srbiji.",
+      "HALO Uspomene — sveobuhvatna platforma za organizaciju venčanja u Srbiji: web i Premium AI pozivnice, QR Pano raspored sedenja, audio knjiga uspomena, planer venčanja i direktorijum vendora.",
     sameAs: ["https://www.instagram.com/halo_uspomene"],
     contactPoint: {
       "@type": "ContactPoint",
@@ -454,7 +563,7 @@ export default function RootLayout({
     name: "HALO Uspomene",
     url: siteUrl,
     description:
-      "HALO Uspomene — kreirajte website pozivnice sa RSVP formom ili iznajmite audio guest book za venčanja. Audio uspomene i web pozivnice u Srbiji.",
+      "HALO Uspomene — platforma za organizaciju venčanja u Srbiji: web i Premium AI pozivnice, QR Pano raspored sedenja, audio knjiga uspomena, planer i vendori.",
     potentialAction: {
       "@type": "SearchAction",
       target: {
@@ -502,39 +611,30 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchemas) }}
         />
-        {gaId && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              strategy="afterInteractive"
-            />
-            <Script id="ga4-init" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${gaId}');
-              `}
-            </Script>
-          </>
-        )}
-        {clarityId && (
-          <Script id="clarity-init" strategy="afterInteractive">
-            {`
-              (function(c,l,a,r,i){
-                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                  let t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                  let y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-              })(window, document, "clarity", "script", "${clarityId}");
-            `}
-          </Script>
-        )}
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} antialiased`}
+        suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} ${raleway.variable} antialiased`}
       >
-        {children}
-        {gaId && <AnalyticsProvider />}
+        <RecaptchaProvider>{children}</RecaptchaProvider>
+        <Toaster
+          position="bottom-center"
+          toastOptions={{
+            style: {
+              background: "#232323",
+              color: "#fff",
+              fontSize: "0.75rem",
+              fontWeight: 500,
+              borderRadius: "0.75rem",
+              padding: "0.625rem 1rem",
+              boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+              maxWidth: "20rem",
+              textAlign: "center",
+            },
+          }}
+        />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

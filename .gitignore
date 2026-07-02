@@ -7,6 +7,9 @@ node_modules
 
 .idea/
 
+# Claude Code local state (scheduled tasks, run locks, etc.)
+.claude/
+
 # macOS junk
 .DS_Store
 .AppleDouble

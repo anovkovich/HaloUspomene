@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { getAllBlogSlugs } from "@/data/blog/posts";
 import { getAllLocationSlugs } from "@/data/locations";
+import { CATEGORY_SLUGS } from "@/data/vendori/categories";
 
 // Required for static export
 export const dynamic = "force-static";
@@ -20,10 +21,82 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${siteUrl}/napravi-pozivnicu`,
+      url: `${siteUrl}/cene`,
       lastModified,
       changeFrequency: "weekly",
       priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/pozivnice`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/izrada-pozivnica-online`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/napravi-pozivnicu`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/pozivnica-za-prvi-rodjendan`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/telefon-uspomena`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/qr-pano-dobrodoslice`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/raspored-sedenja`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/planiranje-vencanja`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/iznajmljivanje-automobila-za-vencanje`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/napravi-deciju-pozivnicu`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/napravi-punoletstvo`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/moje-vencanje`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
       url: `${siteUrl}/blog`,
@@ -48,6 +121,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "monthly" as const,
       priority: 0.7,
+    })),
+    {
+      url: `${siteUrl}/vendori`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    ...Object.values(CATEGORY_SLUGS).map((slug) => ({
+      url: `${siteUrl}/vendori/${slug}`,
+      lastModified,
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
     })),
   ];
 }

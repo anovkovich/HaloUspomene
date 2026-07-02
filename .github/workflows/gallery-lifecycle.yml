@@ -1,0 +1,80 @@
+# QR photo gallery lifecycle triggers for HaloUspomene
+#
+# Calls the /api/cron/gallery endpoint on a schedule (GitHub Actions cron,
+# same pattern as db-backup.yml). The endpoint itself holds all the logic and
+# is idempotent; this workflow only decides WHEN and WHICH task.
+#
+#   remind  → 08:00 UTC (~10:00 Belgrade CEST): SMS #1 (d4) + SMS #2 (d5)
+#   purge   → 00:00 UTC (~01:00-02:00 Belgrade, start of d6): delete photos
+#
+# Task selection is by Belgrade calendar day inside the endpoint, so the exact
+# firing minute / DST does not affect which couples are processed.
+#
+# ── REQUIRED REPO SECRETS ──
+#   CRON_SECRET     same value as the Vercel env var CRON_SECRET
+#   SITE_URL        (optional) base URL; defaults to https://halouspomene.rs
+#
+# ── FAILURE ALERTS ──
+#   Handled by GitHub's native notifications: when this run fails, GitHub emails
+#   the account (enable Settings → Notifications → Actions → "Send notifications
+#   for failed workflows only"). No custom email step (Web3Forms blocks
+#   server-side POST on the free plan).
+#
+# ── MANUAL TRIGGER ──
+#   Actions tab → "Gallery Lifecycle" → "Run workflow" → pick task.
+#
+# NOTE: scheduled workflows only run from the repository's DEFAULT branch, and
+# only once this file + the /api/cron/gallery route are deployed to production.
+
+name: Gallery Lifecycle
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # remind
+    - cron: "0 0 * * *" # purge
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Task to run"
+        required: true
+        default: remind
+        type: choice
+        options:
+          - remind
+          - purge
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine task
+        id: task
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TASK="${{ github.event.inputs.task }}"
+          elif [ "${{ github.event.schedule }}" = "0 8 * * *" ]; then
+            TASK="remind"
+          else
+            TASK="purge"
+          fi
+          echo "task=$TASK" >> "$GITHUB_OUTPUT"
+          echo "Selected task: $TASK"
+
+      - name: Call gallery cron endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          set -e
+          BASE="${SITE_URL:-https://halouspomene.rs}"
+          URL="$BASE/api/cron/gallery?task=${{ steps.task.outputs.task }}"
+          echo "Calling $URL"
+          code=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+            -H "Authorization: Bearer $CRON_SECRET" "$URL")
+          echo "HTTP $code"
+          cat /tmp/resp.json || true
+          echo
+          if [ "$code" != "200" ]; then
+            echo "Cron call failed with HTTP $code"
+            exit 1
+          fi

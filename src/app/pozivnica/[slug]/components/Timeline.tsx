@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import {
   Church,
   Users,
@@ -12,6 +13,13 @@ import {
   HouseHeart,
 } from "lucide-react";
 import { TimelineItem } from "../types";
+import type { Lang } from "../translations";
+
+const localized = (
+  base: string | undefined,
+  de: string | undefined,
+  lang: Lang,
+): string => (lang === "de" ? (de ?? base ?? "") : (base ?? ""));
 
 const IconMap: Record<
   string,
@@ -32,24 +40,35 @@ const IconMap: Record<
   Sparkles,
   CalendarHeart,
   HouseHeart,
+  // "Home" is what older form submissions persisted for the
+  // "Polazak od kuće" timeline step; alias it to the wedding-themed
+  // HouseHeart so existing records render with a real house icon
+  // instead of falling through to Heart.
+  Home: HouseHeart,
+};
+
+const slideInItem = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
 interface TimelineProps {
   items: TimelineItem[];
+  lang?: Lang;
 }
 
-export const Timeline: React.FC<TimelineProps> = ({ items }) => {
+export const Timeline: React.FC<TimelineProps> = ({ items, lang = "sr-Latn" }) => {
   return (
     <div className="relative max-w-3xl mx-auto px-6 py-12">
-      {/* Central Line with gradient */}
-      <div className="absolute left-8 md:left-1/2 transform -translate-x-1/2 h-full w-px top-0">
-        <div
-          className="h-full w-full"
-          style={{
-            background: `linear-gradient(to bottom, transparent, var(--theme-primary), transparent)`,
-          }}
-        />
-      </div>
+      {/* Central Line */}
+      <div
+        className="absolute left-8 md:left-1/2 -translate-x-1/2 w-px"
+        style={{
+          top: 0,
+          bottom: 0,
+          background: `linear-gradient(to bottom, transparent, var(--theme-primary) 12%, var(--theme-primary) 88%, transparent)`,
+        }}
+      />
 
       <div className="space-y-12 sm:space-y-16">
         {items.map((item, index) => {
@@ -57,10 +76,14 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
           const isEven = index % 2 === 0;
 
           return (
-            <div
+            <motion.div
               key={index}
               className={`relative flex items-center w-full md:justify-between ${isEven ? "md:flex-row-reverse" : ""}`}
-              style={{ animationDelay: `${index * 150}ms` }}
+              variants={slideInItem}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ delay: index * 0.08 }}
             >
               {/* Desktop Spacer */}
               <div className="hidden md:block md:w-5/12"></div>
@@ -141,53 +164,47 @@ export const Timeline: React.FC<TimelineProps> = ({ items }) => {
                       {item.time}
                     </span>
 
+                    {/* What */}
+                    {(() => {
+                      const whatText = localized(item.what, item.what_de, lang);
+                      return whatText ? (
+                        <p
+                          className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1.5"
+                          style={{ color: "var(--theme-primary)", opacity: 0.6 }}
+                        >
+                          {whatText}
+                        </p>
+                      ) : null;
+                    })()}
+
                     {/* Title */}
                     <h4
                       className="text-xl sm:text-2xl font-serif mb-2 leading-tight"
                       style={{ color: "var(--theme-text)" }}
                     >
-                      {item.title}
+                      {localized(item.title, item.title_de, lang)}
                     </h4>
 
                     {/* Description */}
-                    {item.description && (
-                      <p
-                        className="text-sm sm:text-base font-light leading-relaxed tracking-wide"
-                        style={{ color: "var(--theme-text-muted)" }}
-                      >
-                        {item.description}
-                      </p>
-                    )}
+                    {(() => {
+                      const descText = localized(item.description, item.description_de, lang);
+                      return descText ? (
+                        <p
+                          className="text-sm sm:text-base font-light leading-relaxed tracking-wide"
+                          style={{ color: "var(--theme-text-muted)" }}
+                        >
+                          {descText}
+                        </p>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
-      {/* End ornament */}
-      <div className="flex justify-center mt-16">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-12 h-px"
-            style={{
-              background: `linear-gradient(to right, transparent, var(--theme-border))`,
-            }}
-          />
-          <Heart
-            size={16}
-            style={{ color: "var(--theme-primary)", opacity: 0.4 }}
-            strokeWidth={1}
-          />
-          <div
-            className="w-12 h-px"
-            style={{
-              background: `linear-gradient(to left, transparent, var(--theme-border))`,
-            }}
-          />
-        </div>
-      </div>
     </div>
   );
 };

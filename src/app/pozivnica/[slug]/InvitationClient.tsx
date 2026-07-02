@@ -1,20 +1,37 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Heart, Calendar, MapPin, Clock } from "lucide-react";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { Heart, Calendar, MapPin, Mic, Church } from "lucide-react";
+// MapPin retained for Feature Cards section below
 import { WeddingData } from "./types";
-import { getThemeConfig } from "./constants";
-import { getTranslations } from "./translations";
+import { getTranslations, type Lang } from "./translations";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { EnvelopeLoader } from "./components/EnvelopeLoader";
 import { Countdown } from "./components/Countdown";
 import { Timeline } from "./components/Timeline";
 import { RSVPForm } from "./components/RSVPFrom";
+import { generateInvitationPDF } from "./generateInvitationPDF";
+import PolaroidGallery from "./PolaroidGallery";
+import CallCTA from "@/components/CallCTA";
+import AddToCalendar from "@/components/ui/AddToCalendar";
+import {
+  type CalendarEvent,
+  parseLocalDate,
+  hasTimeComponent,
+  planRsvpReminder,
+} from "@/lib/calendar";
 import Link from "next/link";
-import { link } from "fs";
+import { Download } from "lucide-react";
 
 interface InvitationClientProps {
   data: WeddingData;
+  slug: string;
+  /** Optional explicit language override. When omitted, derived from
+   *  `data.useCyrillic` (true → "sr-Cyrl", false → "sr-Latn"). The
+   *  /hochzeitseinladung/[slug]/ route passes "de" to render German. */
+  lang?: Lang;
 }
 
 // Helper to format date with translation support
@@ -22,6 +39,7 @@ function formatEventDate(
   dateStr: string,
   months: string[],
   days: string[],
+  numericShort = false,
 ): {
   display: string;
   short: string;
@@ -31,12 +49,17 @@ function formatEventDate(
 
   const day = date.getDate().toString().padStart(2, "0");
   const month = date.getMonth();
+  const monthNum = (month + 1).toString().padStart(2, "0");
   const year = date.getFullYear();
   const dayName = days[date.getDay()];
 
   return {
-    display: `${day} . ${(month + 1).toString().padStart(2, "0")} . ${year}`,
-    short: `${day}. ${months[month]} ${year}.`,
+    display: `${day} . ${monthNum} . ${year} .`,
+    // BA/HR/ME couples prefer numeric months ("26. 07. 2026.") instead of
+    // Serbian month names; numericShort flips us into that format.
+    short: numericShort
+      ? `${day}. ${monthNum}. ${year}.`
+      : `${day}. ${months[month]} ${year}.`,
     dayName,
   };
 }
@@ -49,20 +72,199 @@ function scrollTo(elementId: string) {
   }
 }
 
-export default function InvitationClient({ data }: InvitationClientProps) {
+// Countdown animation - bigger and more visible
+const countdownAnim = {
+  hidden: { opacity: 0, scale: 0.9, y: 30 },
+  show: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.7 } },
+};
+
+const LOCATION_TYPE_LABELS: Record<
+  string,
+  { latin: string; cyrillic: string; german: string; icon: React.ReactNode }
+> = {
+  hall: {
+    latin: "Svečana sala",
+    cyrillic: "Свечана сала",
+    german: "Festsaal",
+    icon: <MapPin size={14} />,
+  },
+  church: {
+    latin: "Crkva",
+    cyrillic: "Црква",
+    german: "Kirche",
+    icon: <Church size={14} />,
+  },
+};
+
+function pickLocationLabel(
+  meta: { latin: string; cyrillic: string; german: string } | undefined,
+  lang: Lang,
+): string | undefined {
+  if (!meta) return undefined;
+  if (lang === "sr-Cyrl") return meta.cyrillic;
+  if (lang === "de") return meta.german;
+  return meta.latin;
+}
+
+/** Returns the German variant of a free-form text field when `lang === "de"`,
+ *  otherwise returns the base (Serbian) value. Falls back to base if German
+ *  variant is missing — graceful degradation lets us ship even if the couple
+ *  hasn't filled in every translation. */
+function localized(
+  base: string | undefined,
+  de: string | undefined,
+  lang: Lang,
+): string {
+  if (lang === "de") return (de ?? base ?? "").toString();
+  return (base ?? "").toString();
+}
+
+function LocationMapSection({
+  locations,
+  singleLabel,
+  pluralLabel,
+  lang,
+}: {
+  locations: import("./types").Location[];
+  singleLabel: string;
+  pluralLabel: string;
+  lang: Lang;
+}) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const active = locations[activeIdx];
+  const hasMultiple = locations.length > 1;
+
+  return (
+    <section id="mapa" className="py-24 sm:py-40 px-6 max-w-6xl mx-auto">
+      <div className="text-center mb-16">
+        <h2
+          className="text-5xl sm:text-8xl font-script mb-4"
+          style={{ color: "var(--theme-primary)" }}
+        >
+          {hasMultiple ? pluralLabel : singleLabel}
+        </h2>
+
+        {/* Tabs */}
+        {hasMultiple ? (
+          <div className="flex items-center justify-center gap-3 mt-6">
+            {locations.map((loc, i) => {
+              const isActive = i === activeIdx;
+              const meta = LOCATION_TYPE_LABELS[loc.type];
+              return (
+                <button
+                  key={i}
+                  onClick={() => setActiveIdx(i)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full font-elegant text-xs uppercase tracking-[0.15em] transition-all cursor-pointer"
+                  style={{
+                    backgroundColor: isActive
+                      ? "var(--theme-primary)"
+                      : "transparent",
+                    color: isActive ? "#fff" : "var(--theme-text-light)",
+                    border: isActive
+                      ? "1px solid var(--theme-primary)"
+                      : "1px solid var(--theme-border)",
+                  }}
+                >
+                  {meta?.icon}
+                  {pickLocationLabel(meta, lang) || localized(loc.name, loc.name_de, lang) || loc.type}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p
+            className="font-elegant text-xs uppercase tracking-[0.3em]"
+            style={{ color: "var(--theme-text-light)" }}
+          >
+            {localized(active?.address, active?.address_de, lang)}
+          </p>
+        )}
+      </div>
+
+      {/* Address (shown below tabs for multi) */}
+      {hasMultiple && (
+        <p
+          className="text-center font-elegant text-xs uppercase tracking-[0.3em] mb-8 transition-opacity duration-300"
+          style={{ color: "var(--theme-text-light)" }}
+          key={activeIdx}
+        >
+          {localized(active?.address, active?.address_de, lang)}
+        </p>
+      )}
+
+      {/* Map with slide animation */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          borderRadius: "var(--theme-radius)",
+          boxShadow: "var(--theme-shadow)",
+          border: "1px solid var(--theme-border-light)",
+        }}
+      >
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{
+            width: `${locations.length * 100}%`,
+            transform: `translateX(-${(activeIdx * 100) / locations.length}%)`,
+          }}
+        >
+          {locations.map((loc, i) => (
+            <div key={i} style={{ width: `${100 / locations.length}%` }}>
+              {loc.map_url && (
+                <iframe
+                  src={loc.map_url}
+                  className="w-full h-[400px] sm:h-[600px] grayscale-[0.3] hover:grayscale-0 transition-all duration-1000"
+                  style={{ border: 0 }}
+                  allowFullScreen={true}
+                  loading="lazy"
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function InvitationClient({
+  data,
+  slug,
+  lang: langProp,
+}: InvitationClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
 
-  const useCyrillic = data.useCyrillic ?? false;
-  const t = useMemo(() => getTranslations(useCyrillic), [useCyrillic]);
+  const lang: Lang =
+    langProp ?? (data.useCyrillic ? "sr-Cyrl" : "sr-Latn");
+  const useCyrillic = lang === "sr-Cyrl"; // legacy flag kept for sub-components / fonts
+  // Auto-detect non-Serbian couples and switch the Latin translations to
+  // ijekavica + numeric month rendering. We prefer `phone_country` when
+  // it's set, but fall back to the phone-number prefix so legacy records
+  // (created before the bypass-token feature added `phone_country`) are
+  // also covered. BA = +387, HR = +385, ME = +382. RS = +381.
+  const useIjekavica = (() => {
+    if (useCyrillic) return false;
+    if (data.phone_country && data.phone_country !== "RS") return true;
+    if (data.phone_country === "RS") return false;
+    const primaryPhone = (data.contact_phone || "").split(",")[0]?.trim() ?? "";
+    return /^\+(387|385|382)/.test(primaryPhone);
+  })();
+  const t = useMemo(
+    () => getTranslations(lang, useIjekavica),
+    [lang, useIjekavica],
+  );
 
-  const themeConfig = useMemo(() => getThemeConfig(data.theme), [data.theme]);
   const formattedDate = useMemo(
-    () => formatEventDate(data.event_date, t.months, t.days_week),
-    [data.event_date, t.months, t.days_week],
+    () => formatEventDate(data.event_date, t.months, t.days_week, useIjekavica),
+    [data.event_date, t.months, t.days_week, useIjekavica],
   );
   const mainLocation = useMemo(
     () => data.locations.find((l) => l.type === "hall"),
+    [data],
+  );
+  const mapLocations = useMemo(
+    () => data.locations.filter((l) => l.map_url),
     [data],
   );
   const eventTime = useMemo(
@@ -72,6 +274,74 @@ export default function InvitationClient({ data }: InvitationClientProps) {
       data.event_date.split("T")[1]?.split(":")[1],
     [data.event_date],
   );
+
+  // "Add to calendar" event for the wedding (used on the RSVP success screen).
+  const weddingCalendarEvent = useMemo<CalendarEvent | null>(() => {
+    const start = parseLocalDate(data.event_date);
+    if (!start) return null;
+    const loc = mainLocation ?? data.locations[0];
+    const location = loc
+      ? [loc.name, loc.address].filter(Boolean).join(", ")
+      : undefined;
+    return {
+      title: data.couple_names.full_display
+        ? `${t.calendarWeddingTitle} — ${data.couple_names.full_display}`
+        : t.calendarWeddingTitle,
+      start,
+      allDay: !hasTimeComponent(data.event_date),
+      location,
+      description: `${t.calendarWeddingDesc} https://halouspomene.rs/pozivnica/${slug}`,
+    };
+  }, [data.event_date, data.couple_names.full_display, data.locations, mainLocation, t, slug]);
+
+  // RSVP reminder (calendar event for the "podseti me" link below the deadline).
+  const rsvpReminder = useMemo(() => {
+    const plan = planRsvpReminder(data.submit_until);
+    if (!plan) return null;
+    const event: CalendarEvent = {
+      title: t.reminderEventTitle,
+      start: plan.remindDate,
+      allDay: true,
+      description: `${t.reminderEventDesc} https://halouspomene.rs/pozivnica/${slug}`,
+    };
+    return {
+      event,
+      label: plan.mode === "in15" ? t.reminderIn15 : t.reminderDayBefore,
+    };
+  }, [data.submit_until, t, slug]);
+
+  // RSVP deadline & seating lookup availability
+  const { isPastDeadline, showGdeSedimLink, isWeddingDay, submitUntilDisplay } =
+    useMemo(() => {
+      const now = new Date();
+      const deadline = new Date(data.submit_until);
+      deadline.setHours(23, 59, 59, 999); // inclusive of the deadline day
+      const eventDate = new Date(data.event_date);
+      const dayBefore = new Date(eventDate);
+      dayBefore.setDate(dayBefore.getDate() - 1);
+      dayBefore.setHours(0, 0, 0, 0);
+      // Wedding day gate: event day + day after
+      const eventStart = new Date(eventDate);
+      eventStart.setHours(0, 0, 0, 0);
+      const dayAfterEnd = new Date(eventStart);
+      dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
+      dayAfterEnd.setHours(23, 59, 59, 999);
+      // Format submit_until as "DD. MMMM YYYY." (or "DD. MM. YYYY." for
+      // ijekavica/non-RS couples that prefer numeric months).
+      const d = new Date(data.submit_until);
+      const day = d.getDate().toString().padStart(2, "0");
+      const monthNum = (d.getMonth() + 1).toString().padStart(2, "0");
+      const month = t.months_genitive[d.getMonth()];
+      const year = d.getFullYear();
+      return {
+        isPastDeadline: now > deadline,
+        showGdeSedimLink: now >= dayBefore,
+        isWeddingDay: now >= eventStart && now <= dayAfterEnd,
+        submitUntilDisplay: useIjekavica
+          ? `${day}. ${monthNum}. ${year}.`
+          : `${day}. ${month} ${year}.`,
+      };
+    }, [data.submit_until, data.event_date, t.months_genitive, useIjekavica]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -83,64 +353,108 @@ export default function InvitationClient({ data }: InvitationClientProps) {
   // Grand full-width ornamental SVG divider
   const renderDivider = (position: "top" | "bottom" = "top") => {
     const shift = position === "top" ? "-translate-y-1/2" : "translate-y-1/2";
-    const gid  = `dg-${position}`;
+    const gid = `dg-${position}`;
     return (
       <>
-      <div
-        className={`absolute ${position}-0 left-0 w-full pointer-events-none`}
-        style={{ height: "2px", backgroundColor: "var(--theme-primary)", opacity: 0.22, zIndex: 2 }}
-      />
-      <div
-        className={`absolute ${position}-0 left-0 w-full ${shift} pointer-events-none`}
-        style={{ zIndex: 1, overflow: "visible" }}
-      >
-        <svg
-          viewBox="0 0 1200 120"
-          preserveAspectRatio="xMidYMid meet"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full"
-          style={{ height: "120px", overflow: "visible" }}
+        <div
+          className={`absolute ${position}-0 left-0 w-full pointer-events-none`}
+          style={{
+            height: "2px",
+            backgroundColor: "var(--theme-primary)",
+            opacity: 0.22,
+            zIndex: 2,
+          }}
+        />
+        <div
+          className={`absolute ${position}-0 left-0 w-full ${shift} pointer-events-none`}
+          style={{ zIndex: 1, overflow: "visible" }}
         >
-          <defs>
-            {/* Gradient: fade in from edges, dip to 0 at center (behind flower) */}
-            <linearGradient id={gid} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%"   stopColor="var(--theme-primary)" stopOpacity="0"/>
-              <stop offset="5%"   stopColor="var(--theme-primary)" stopOpacity="0.55"/>
-              <stop offset="38%"  stopColor="var(--theme-primary)" stopOpacity="0.6"/>
-              <stop offset="44%"  stopColor="var(--theme-primary)" stopOpacity="0"/>
-              <stop offset="56%"  stopColor="var(--theme-primary)" stopOpacity="0"/>
-              <stop offset="62%"  stopColor="var(--theme-primary)" stopOpacity="0.6"/>
-              <stop offset="95%"  stopColor="var(--theme-primary)" stopOpacity="0.55"/>
-              <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity="0"/>
-            </linearGradient>
-          </defs>
+          <svg
+            viewBox="0 0 1200 120"
+            preserveAspectRatio="xMidYMid meet"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full"
+            style={{ height: "120px", overflow: "visible" }}
+          >
+            <defs>
+              {/* Gradient: fade in from edges, dip to 0 at center (behind flower) */}
+              <linearGradient id={gid} x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop
+                  offset="0%"
+                  stopColor="var(--theme-primary)"
+                  stopOpacity="0"
+                />
+                <stop
+                  offset="5%"
+                  stopColor="var(--theme-primary)"
+                  stopOpacity="0.55"
+                />
+                <stop
+                  offset="38%"
+                  stopColor="var(--theme-primary)"
+                  stopOpacity="0.6"
+                />
+                <stop
+                  offset="44%"
+                  stopColor="var(--theme-primary)"
+                  stopOpacity="0"
+                />
+                <stop
+                  offset="56%"
+                  stopColor="var(--theme-primary)"
+                  stopOpacity="0"
+                />
+                <stop
+                  offset="62%"
+                  stopColor="var(--theme-primary)"
+                  stopOpacity="0.6"
+                />
+                <stop
+                  offset="95%"
+                  stopColor="var(--theme-primary)"
+                  stopOpacity="0.55"
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--theme-primary)"
+                  stopOpacity="0"
+                />
+              </linearGradient>
+            </defs>
 
-          {/* ══ Single clean horizontal line ══ */}
-          <line x1="0" y1="60" x2="1200" y2="60" stroke={`url(#${gid})`} strokeWidth="1"/>
+            {/* ══ Single clean horizontal line ══ */}
+            <line
+              x1="0"
+              y1="60"
+              x2="1200"
+              y2="60"
+              stroke={`url(#${gid})`}
+              strokeWidth="1"
+            />
+          </svg>
 
-
-        </svg>
-
-        {/* ══ Flower illustration — CSS mask colors it with --theme-primary ══ */}
-        <div style={{
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "min(600px, 90vw)",
-          aspectRatio: "842 / 232",
-          backgroundColor: "var(--theme-primary)",
-          maskImage: "url(/flower-divider.svg)",
-          WebkitMaskImage: "url(/flower-divider.svg)",
-          maskSize: "100% 100%",
-          WebkitMaskSize: "100% 100%",
-          maskRepeat: "no-repeat",
-          WebkitMaskRepeat: "no-repeat",
-          opacity: 0.78,
-          zIndex: 2,
-          pointerEvents: "none",
-        }}/>
-      </div>
+          {/* ══ Flower illustration — CSS mask colors it with --theme-primary ══ */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "min(600px, 90vw)",
+              aspectRatio: "842 / 232",
+              backgroundColor: "var(--theme-primary)",
+              maskImage: "url(/flower-divider.svg)",
+              WebkitMaskImage: "url(/flower-divider.svg)",
+              maskSize: "100% 100%",
+              WebkitMaskSize: "100% 100%",
+              maskRepeat: "no-repeat",
+              WebkitMaskRepeat: "no-repeat",
+              opacity: 0.78,
+              zIndex: 2,
+              pointerEvents: "none",
+            }}
+          />
+        </div>
       </>
     );
   };
@@ -151,11 +465,17 @@ export default function InvitationClient({ data }: InvitationClientProps) {
         theme={data.theme}
         scriptFont={data.scriptFont}
         useCyrillic={useCyrillic}
+        lang={lang}
+        useIjekavica={useIjekavica}
+        customPrimaryColor={data.custom_primary_color}
+        customBackgroundColor={data.custom_background_color}
       >
         <EnvelopeLoader
           names={data.couple_names.full_display}
           eventDate={formattedDate.short}
           onComplete={() => setIsLoading(false)}
+          stampColor={data.stamp_color}
+          requireTap={!!(data.paid_for_music && data.music_url)}
         />
       </ThemeProvider>
     );
@@ -166,6 +486,9 @@ export default function InvitationClient({ data }: InvitationClientProps) {
       theme={data.theme}
       scriptFont={data.scriptFont}
       useCyrillic={useCyrillic}
+      lang={lang}
+      customPrimaryColor={data.custom_primary_color}
+      customBackgroundColor={data.custom_background_color}
     >
       <div
         className={`invitation-page min-h-screen transition-all duration-[2000ms] ease-out ${isRevealed ? "opacity-100" : "opacity-0"}`}
@@ -179,15 +502,14 @@ export default function InvitationClient({ data }: InvitationClientProps) {
           className="relative min-h-[100svh] flex flex-col items-center justify-center text-center px-4 overflow-hidden"
           style={{ backgroundColor: "var(--theme-surface)" }}
         >
-
           <div className="relative z-10 w-full my-10 max-h-full max-w-5xl mx-auto flex flex-col items-center space-y-10 sm:space-y-16">
             {/* Subtitle */}
             <div
               className={`flex items-center gap-3 transition-all duration-1000 delay-300 ${isRevealed ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
             >
               <p
-                className="font-elegant uppercase tracking-[0.4em] text-[9px] sm:text-[11px]"
-                style={{ color: "var(--theme-text-light)" }}
+                className="font-elegant uppercase tracking-[0.4em] text-[10px] sm:text-[12px] font-semibold"
+                style={{ color: "var(--theme-text)", opacity: 0.6 }}
               >
                 {t.celebrateLove}
               </p>
@@ -235,12 +557,19 @@ export default function InvitationClient({ data }: InvitationClientProps) {
             </div>
 
             {/* Tagline */}
-            <p
-              className={`font-serif italic text-base sm:text-2xl max-w-2xl mx-auto leading-relaxed font-light px-10 transition-all duration-[1500ms] delay-1000 ${isRevealed ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
-              style={{ color: "var(--theme-text-muted)", opacity: 0.7 }}
+            <div
+              className={`font-serif italic text-lg sm:text-2xl max-w-2xl mx-auto leading-tight font-normal px-10 transition-all duration-[1500ms] delay-1000 ${isRevealed ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
+              style={{ color: "var(--theme-text-muted)", opacity: 0.9 }}
             >
-              {data.tagline}
-            </p>
+              {localized(data.tagline, data.tagline_de, lang)
+                .split(/\\n|\n/)
+                .map((line, i, arr) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < arr.length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+            </div>
 
             {/* Date display */}
             <div
@@ -255,41 +584,59 @@ export default function InvitationClient({ data }: InvitationClientProps) {
                 </span>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-y-4 gap-x-12 sm:gap-x-20">
-                <span
-                  className="flex items-center gap-3 px-6 py-3 rounded-full backdrop-blur-sm"
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.5)",
-                    border: `1px solid var(--theme-border-light)`,
-                  }}
-                >
-                  <MapPin size={16} style={{ color: "var(--theme-primary)" }} />
-                  <span
-                    className="font-elegant text-sm tracking-[0.2em]"
-                    style={{ color: "var(--theme-text-muted)" }}
+              <div className="flex justify-center">
+                {showGdeSedimLink ? (
+                  data.paid_for_raspored ? (
+                    <Link
+                      href={`/pozivnica/${slug}/gde-sedim`}
+                      className="flex items-center justify-center gap-2 sm:gap-3 px-5 sm:px-8 py-3.5 rounded-full font-elegant text-xs sm:text-sm tracking-[0.12em] sm:tracking-[0.2em] uppercase transition-all hover:opacity-80 whitespace-nowrap"
+                      style={{
+                        backgroundColor: "var(--theme-primary)",
+                        color: "#fff",
+                        boxShadow: "var(--theme-shadow)",
+                      }}
+                    >
+                      {t.findSeating}
+                    </Link>
+                  ) : null
+                ) : (
+                  <button
+                    onClick={() => scrollTo("rsvp")}
+                    className="flex items-center justify-center gap-2 sm:gap-3 px-5 sm:px-8 py-3.5 rounded-full font-elegant text-xs sm:text-sm tracking-[0.12em] sm:tracking-[0.2em] uppercase transition-all hover:opacity-80 cursor-pointer whitespace-nowrap"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.5)",
+                      border: `1px solid var(--theme-border-light)`,
+                      color: "var(--theme-text-muted)",
+                    }}
                   >
-                    {mainLocation?.name}
-                  </span>
-                </span>
-                <span
-                  className="flex items-center gap-3 px-6 py-3 rounded-full backdrop-blur-sm"
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.5)",
-                    border: `1px solid var(--theme-border-light)`,
-                  }}
-                >
-                  <Clock size={16} style={{ color: "var(--theme-primary)" }} />
-                  <span
-                    className="font-elegant text-sm tracking-[0.2em]"
-                    style={{ color: "var(--theme-text-muted)" }}
-                  >
-                    {t.when} {eventTime}
-                  </span>
-                </span>
+                    <Heart
+                      size={14}
+                      style={{ color: "var(--theme-primary)" }}
+                      fill="currentColor"
+                    />
+                    <span className="flex mt-1">
+                      {t.confirmAttendance ?? "Potvrdite dolazak"}
+                    </span>
+                    <Heart
+                      size={14}
+                      style={{ color: "var(--theme-primary)" }}
+                      fill="currentColor"
+                    />
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </section>
+
+        {/* Polaroid Gallery — paid add-on */}
+        {data.paid_for_images && data.images && data.images.length > 0 && (
+          <PolaroidGallery
+            images={data.images}
+            useCyrillic={data.useCyrillic}
+            imageLayout={data.image_layout}
+          />
+        )}
 
         {/* Countdown Section */}
         {data.countdown_enabled && (
@@ -302,21 +649,21 @@ export default function InvitationClient({ data }: InvitationClientProps) {
           >
             {renderDivider("top")}
             {renderDivider("bottom")}
-            <div className="max-w-4xl mx-auto text-center">
+            <motion.div
+              className="max-w-4xl mx-auto text-center"
+              variants={countdownAnim}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-100px" }}
+            >
               <h2
                 className="text-5xl sm:text-8xl font-script mb-4"
                 style={{ color: "var(--theme-primary)" }}
               >
                 {t.countdown}
               </h2>
-              <p
-                className="font-elegant text-xs uppercase tracking-[0.4em] mb-12"
-                style={{ color: "var(--theme-text-light)" }}
-              >
-                -
-              </p>
               <Countdown targetDate={data.event_date} />
-            </div>
+            </motion.div>
           </section>
         )}
 
@@ -339,12 +686,12 @@ export default function InvitationClient({ data }: InvitationClientProps) {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="relative p-10 sm:p-14 text-center group overflow-hidden transition-all duration-500"
+                className="relative p-10 sm:p-14 text-center group overflow-hidden transition-all duration-500 hover:shadow-xl"
                 style={{
                   background: `linear-gradient(to bottom, var(--theme-background), var(--theme-surface))`,
                   borderRadius: "var(--theme-radius)",
                   border: `1px solid var(--theme-border-light)`,
-                  boxShadow: "var(--theme-shadow)",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
                 }}
               >
                 <div
@@ -355,31 +702,53 @@ export default function InvitationClient({ data }: InvitationClientProps) {
                 />
 
                 <div
-                  className="relative w-16 h-16 mx-auto mb-8 rounded-full flex items-center justify-center transition-colors"
+                  className="relative w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-7 sm:mb-10 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-105"
                   onClick={() => {
                     scrollTo(item.link!);
                   }}
                   style={{
                     backgroundColor: "var(--theme-surface)",
-                    border: `1px solid var(--theme-border)`,
+                    border: `1.5px solid var(--theme-border)`,
+                    boxShadow: "0 2px 12px rgba(0, 0, 0, 0.06)",
                   }}
                 >
                   <item.icon
-                    size={24}
-                    strokeWidth={1}
+                    size={28}
+                    strokeWidth={1.2}
                     style={{ color: "var(--theme-primary)" }}
                   />
                 </div>
 
-                <h3
-                  className="font-elegant text-sm mb-6 tracking-[0.4em] uppercase"
-                  style={{ color: "var(--theme-primary)" }}
-                >
-                  {item.title}
-                </h3>
+                <div className="flex items-center justify-center gap-3 mb-6 sm:mb-8">
+                  <div
+                    style={{
+                      width: "24px",
+                      height: "1px",
+                      backgroundColor: "var(--theme-primary)",
+                      opacity: 0.4,
+                    }}
+                  />
+                  <h3
+                    className="font-elegant text-sm sm:text-base tracking-[0.4em] uppercase font-semibold"
+                    style={{
+                      color: "var(--theme-primary)",
+                      letterSpacing: "0.15em",
+                    }}
+                  >
+                    {item.title}
+                  </h3>
+                  <div
+                    style={{
+                      width: "24px",
+                      height: "1px",
+                      backgroundColor: "var(--theme-primary)",
+                      opacity: 0.4,
+                    }}
+                  />
+                </div>
                 <p
-                  className="font-serif text-base sm:text-lg leading-[2.2] whitespace-pre-line"
-                  style={{ color: "var(--theme-text-muted)" }}
+                  className="font-serif text-lg sm:text-xl leading-[1.6] whitespace-pre-line font-light"
+                  style={{ color: "var(--theme-text)", opacity: 0.95 }}
                 >
                   {item.content}
                 </p>
@@ -406,56 +775,47 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               >
                 {t.protocol}
               </h2>
-              <p
-                className="font-serif text-sm sm:text-base leading-relaxed"
-                style={{ color: "var(--theme-text-light)" }}
-              >
-                {t.ourDayPlan}
-              </p>
             </div>
-            <Timeline items={data.timeline} />
+            <Timeline items={data.timeline} lang={lang} />
             {renderDivider("bottom")}
           </section>
         )}
 
         {/* Map */}
-        {data.map_enabled && mainLocation?.map_url && (
-          <section id="mapa" className="py-24 sm:py-40 px-6 max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2
-                className="text-5xl sm:text-8xl font-script mb-4"
+        {data.map_enabled && mapLocations.length > 0 && (
+          <LocationMapSection
+            locations={mapLocations}
+            singleLabel={t.location}
+            pluralLabel={t.locations}
+            lang={lang}
+          />
+        )}
+
+        {/* Optional free-form note (admin-edited). No surrounding section
+            wrapper — slots into the existing flow only when the field
+            is present. */}
+        {(() => {
+          const noteText = localized(data.note, data.note_de, lang);
+          return noteText.trim() ? (
+            <div className="max-w-2xl mx-auto px-6 py-12 sm:py-16 text-center">
+              <p
+                className="font-serif italic text-lg sm:text-2xl leading-tight"
                 style={{ color: "var(--theme-primary)" }}
               >
-                {t.location}
-              </h2>
-              <p
-                className="font-elegant text-xs uppercase tracking-[0.3em]"
-                style={{ color: "var(--theme-text-light)" }}
-              >
-                {mainLocation.address}
+                {noteText.split(/\\n|\n/).map((line, i, arr) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < arr.length - 1 && <br />}
+                  </React.Fragment>
+                ))}
               </p>
             </div>
-            <div
-              className="relative overflow-hidden"
-              style={{
-                borderRadius: "var(--theme-radius)",
-                boxShadow: "var(--theme-shadow)",
-                border: `1px solid var(--theme-border-light)`,
-              }}
-            >
-              <iframe
-                src={mainLocation.map_url}
-                className="w-full h-[400px] sm:h-[600px] grayscale-[0.3] hover:grayscale-0 transition-all duration-1000"
-                style={{ border: 0 }}
-                allowFullScreen={true}
-                loading="lazy"
-              />
-            </div>
-          </section>
-        )}
+          ) : null;
+        })()}
 
         {/* RSVP */}
         <section
+          id="rsvp"
           className="relative py-24 sm:py-40 px-6 overflow-hidden"
           style={{
             background: `linear-gradient(to bottom, var(--theme-background), var(--theme-surface-alt), var(--theme-background))`,
@@ -469,19 +829,102 @@ export default function InvitationClient({ data }: InvitationClientProps) {
               {t.rsvpTitle}
             </h2>
             <p
-              className="font-serif text-sm sm:text-base leading-relaxed"
-              style={{ color: "var(--theme-text-muted)" }}
+              className="font-serif text-base sm:text-lg leading-none max-w-xl mx-auto"
+              style={{ color: "var(--theme-text)", opacity: 0.9 }}
             >
               {t.rsvpSubtitle}{" "}
               <span
-                className="font-semibold"
-                style={{ color: "var(--theme-text)" }}
+                className="font-semibold block mt-2"
+                style={{ color: "var(--theme-primary)" }}
               >
-                {data.submit_until}
+                {submitUntilDisplay}
               </span>
             </p>
+            {!isPastDeadline && rsvpReminder && (
+              <div className="mt-4 flex justify-center">
+                <AddToCalendar
+                  event={rsvpReminder.event}
+                  label={rsvpReminder.label}
+                  dialogTitle={t.calendarDialogTitle}
+                  googleLabel={t.calendarGoogle}
+                  appleLabel={t.calendarApple}
+                  icsFilename={`podsetnik-${slug}.ics`}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-70 cursor-pointer"
+                  style={{ color: "var(--theme-text-light)" }}
+                />
+              </div>
+            )}
           </div>
-          <RSVPForm formUrl={data.rsvp_form_url} entry_IDs={data.entry_IDs} />
+          {isPastDeadline ? (
+            <div
+              className="max-w-xl mx-auto text-center py-12 px-8 rounded-[var(--theme-radius)]"
+              style={{
+                backgroundColor: "var(--theme-surface)",
+                border: "1px solid var(--theme-border-light)",
+                boxShadow: "var(--theme-shadow)",
+              }}
+            >
+              <p
+                className="font-serif text-2xl mb-3"
+                style={{ color: "var(--theme-text)" }}
+              >
+                {t.rsvpClosed}
+              </p>
+              <p
+                className="font-elegant text-sm"
+                style={{ color: "var(--theme-text-light)" }}
+              >
+                {t.rsvpClosedSub}
+              </p>
+            </div>
+          ) : (
+            <RSVPForm slug={slug} calendarEvent={weddingCalendarEvent} />
+          )}
+
+          {/* Optional per-couple call-CTA below the RSVP form. Renders
+              nothing when no phone has show_numbers[i] = true. */}
+          <CallCTA
+            contactPhone={data.contact_phone}
+            showNumbers={data.show_numbers}
+            numberNames={data.number_names}
+            useCyrillic={data.useCyrillic}
+          />
+
+          {/* Seating lookup note / link — only shown when paid_for_raspored */}
+          {data.paid_for_raspored && (
+            <div className="max-w-xl mx-auto mt-6 text-center">
+              {showGdeSedimLink ? (
+                <Link
+                  href={`/pozivnica/${slug}/gde-sedim`}
+                  className="inline-flex items-center gap-2 font-elegant text-sm uppercase tracking-widest transition-opacity hover:opacity-70"
+                  style={{ color: "var(--theme-primary)" }}
+                >
+                  {t.findSeating}
+                </Link>
+              ) : (
+                <p
+                  className="font-elegant text-xs leading-relaxed"
+                  style={{ color: "var(--theme-text-light)", opacity: 0.7 }}
+                >
+                  {t.seatingAvailableNote}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Audio guest book link — wedding day only */}
+          {isWeddingDay && data.paid_for_audio && (
+            <div className="max-w-xl mx-auto mt-6 text-center">
+              <Link
+                href={`/pozivnica/${slug}/audio-knjiga`}
+                className="inline-flex items-center gap-2 font-elegant text-sm uppercase tracking-widest transition-opacity hover:opacity-70"
+                style={{ color: "var(--theme-primary)" }}
+              >
+                <Mic size={14} />
+                {t.audioGuestBook}
+              </Link>
+            </div>
+          )}
         </section>
 
         {/* Footer */}
@@ -497,6 +940,21 @@ export default function InvitationClient({ data }: InvitationClientProps) {
             >
               {data.couple_names.full_display}
             </p>
+
+            <div
+              className="font-serif italic text-lg sm:text-2xl tracking-wide px-3 mb-8"
+              style={{ color: "var(--theme-primary)", opacity: 0.9 }}
+            >
+              {(localized(data.thankYouFooter, data.thankYouFooter_de, lang) ||
+                t.thankYouFooter)
+                .split(/\\n|\n/)
+                .map((line, i, arr) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < arr.length - 1 && <div className="h-6" />}
+                  </React.Fragment>
+                ))}
+            </div>
 
             <div className="flex items-center justify-center gap-4 mb-8">
               <div
@@ -521,13 +979,6 @@ export default function InvitationClient({ data }: InvitationClientProps) {
             </div>
 
             <p
-              className="font-elegant text-xs uppercase tracking-[0.3em] px-3"
-              style={{ color: "var(--theme-text-light)" }}
-            >
-              {data.thankYouFooter ? data.thankYouFooter : t.thankYouFooter}
-            </p>
-
-            <p
               className="mt-12 font-elegant text-[10px] uppercase tracking-[0.3em]"
               style={{ color: "var(--theme-text-light)", opacity: 0.5 }}
             >
@@ -538,20 +989,38 @@ export default function InvitationClient({ data }: InvitationClientProps) {
             href="/"
             className="mt-8 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
           >
-            <img
+            <Image
               src="/images/logo.png"
               alt="Halo Uspomene LOGO"
-              className="h-6 mb-1"
+              width={3519}
+              height={1301}
+              className="h-6 mb-1 w-auto"
             />
           </Link>
 
           <Link
             href="/"
-            className="w-full flex font-serif text-center gap-1 mb-5 justify-center items-center text-[10px] sm:text-xs mt-0 sm:mt-2 opacity-50"
+            className="w-full flex font-serif text-center gap-1 mb-3 justify-center items-center text-[10px] sm:text-xs mt-0 sm:mt-2 opacity-50"
           >
             Made with <Heart size={10} className="text-[#AE343F]" /> | Halo
             Pozivnice
           </Link>
+
+          <button
+            onClick={() =>
+              generateInvitationPDF(
+                data,
+                slug,
+                data.paid_for_pdf ?? false,
+                useCyrillic,
+              )
+            }
+            className="flex items-center gap-1 mb-5 mx-auto text-[9px] uppercase tracking-[0.2em] transition-opacity hover:opacity-40 cursor-pointer"
+            style={{ color: "var(--theme-text-light)", opacity: 0.15 }}
+          >
+            <Download size={9} />
+            {t.downloadPDF}
+          </button>
         </footer>
       </div>
     </ThemeProvider>

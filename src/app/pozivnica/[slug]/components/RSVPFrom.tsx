@@ -2,46 +2,70 @@
 
 import React, { useState } from "react";
 import { Heart, Check, Send, Users, MessageSquare, User } from "lucide-react";
-import { Entry_IDs } from "../types";
 import { useTheme } from "./ThemeProvider";
+import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import AddToCalendar from "@/components/ui/AddToCalendar";
+import type { CalendarEvent } from "@/lib/calendar";
 
 interface RSVPFormProps {
-  formUrl: string;
-  entry_IDs: Entry_IDs;
+  slug: string;
+  /** Wedding event for the "Add to calendar" button on the success screen. */
+  calendarEvent?: CalendarEvent | null;
 }
 
-export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
+export const RSVPForm: React.FC<RSVPFormProps> = ({ slug, calendarEvent }) => {
   const { t } = useTheme();
+  const { execute: executeRecaptcha } = useRecaptcha();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     attending: "Da",
-    plusOnes: "1",
+    guestCount: "1",
     details: "",
   });
 
   const isAttending = formData.attending === "Da";
 
+  const [error, setError] = useState("");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    const params = new URLSearchParams();
-    params.append(entry_IDs.name, formData.name);
-    params.append(entry_IDs.attending, formData.attending);
-    params.append(entry_IDs.plusOnes, isAttending ? formData.plusOnes : "0");
-    params.append(entry_IDs.details, isAttending ? formData.details || "-" : "-");
+    setError("");
 
     try {
-      await fetch(formUrl, {
+      let recaptchaToken = "";
+      try {
+        recaptchaToken = await executeRecaptcha("rsvp");
+      } catch {
+        setError(t.rsvpRecaptchaFailed);
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`/api/pozivnica/${slug}/rsvp`, {
         method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          attending: formData.attending,
+          guestCount: isAttending ? parseInt(formData.guestCount) : 0,
+          details: isAttending ? formData.details || "" : "",
+          recaptcha_token: recaptchaToken,
+        }),
       });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || t.rsvpSendError);
+        setLoading(false);
+        return;
+      }
     } catch {
-      // no-cors responses are opaque, submission still goes through
+      setError(t.rsvpSendError);
+      setLoading(false);
+      return;
     }
 
     setLoading(false);
@@ -50,7 +74,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
 
   const resetForm = () => {
     setSubmitted(false);
-    setFormData({ name: "", attending: "Da", plusOnes: "1", details: "" });
+    setFormData({ name: "", attending: "Da", guestCount: "1", details: "" });
   };
 
   // Helper for pluralization
@@ -155,10 +179,28 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
             </p>
             <p className="text-xs" style={{ color: "var(--theme-text-light)" }}>
               {isAttending
-                ? `${formData.plusOnes} ${getPersonLabel(parseInt(formData.plusOnes))}`
+                ? `${formData.guestCount} ${getPersonLabel(parseInt(formData.guestCount))}`
                 : t.notAttending}
             </p>
           </div>
+
+          {isAttending && calendarEvent && (
+            <div className="mb-6 flex justify-center animate-[fade-in-up_0.5s_ease-out_0.65s_both]">
+              <AddToCalendar
+                event={calendarEvent}
+                label={t.addToCalendar}
+                dialogTitle={t.calendarDialogTitle}
+                googleLabel={t.calendarGoogle}
+                appleLabel={t.calendarApple}
+                icsFilename={`vencanje-${slug}.ics`}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-[var(--theme-radius)] text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                style={{
+                  backgroundColor: "var(--theme-primary)",
+                  boxShadow: "var(--theme-shadow)",
+                }}
+              />
+            </div>
+          )}
 
           <button
             onClick={resetForm}
@@ -352,9 +394,9 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                   onClick={() =>
                     setFormData({
                       ...formData,
-                      plusOnes: Math.max(
+                      guestCount: Math.max(
                         1,
-                        parseInt(formData.plusOnes) - 1,
+                        parseInt(formData.guestCount) - 1,
                       ).toString(),
                     })
                   }
@@ -370,14 +412,14 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                   className="text-4xl font-elegant w-16 text-center"
                   style={{ color: "var(--theme-text)" }}
                 >
-                  {formData.plusOnes}
+                  {formData.guestCount}
                 </span>
                 <button
                   type="button"
                   onClick={() =>
                     setFormData({
                       ...formData,
-                      plusOnes: (parseInt(formData.plusOnes) + 1).toString(),
+                      guestCount: (parseInt(formData.guestCount) + 1).toString(),
                     })
                   }
                   className="w-12 h-12 rounded-full flex items-center justify-center transition-colors"
@@ -403,7 +445,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
                 {t.additionalNotes}
               </label>
               <textarea
-                className="w-full p-4 h-25 md:h-15 font-light outline-none transition-all duration-300 resize-none"
+                className="w-full p-4 h-28 md:h-20 font-light outline-none transition-all duration-300 resize-none"
                 style={{
                   backgroundColor: "var(--theme-surface)",
                   color: "var(--theme-text-muted)",
@@ -427,6 +469,13 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
             </div>
           )}
 
+          {/* Error message */}
+          {error && (
+            <p className="text-sm text-center" style={{ color: "#c0392b" }}>
+              {error}
+            </p>
+          )}
+
           {/* Submit button */}
           <button
             disabled={loading}
@@ -436,7 +485,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ formUrl, entry_IDs }) => {
               borderRadius: "var(--theme-radius)",
               backgroundColor: loading
                 ? "var(--theme-text-light)"
-                : "var(--theme-text)",
+                : "var(--theme-primary)",
               boxShadow: loading ? "none" : "var(--theme-shadow)",
             }}
           >

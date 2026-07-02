@@ -9,7 +9,7 @@ function loadContent(slug: string): string {
     "data",
     "blog",
     "content",
-    `${slug}.md`,
+    `${slug}.mdx`,
   );
   return fs.readFileSync(filePath, "utf-8");
 }
@@ -202,6 +202,29 @@ const allBlogPosts: BlogPost[] = [
     content: loadContent("website-pozivnica-audio-guest-book"),
   },
   {
+    slug: "website-pozivnica-kompletan-vodic",
+    title:
+      "Od Pozivnice do Rasporeda Sedenja: Kako smo rešili celu organizaciju venčanja",
+    description:
+      "Kompletan vodič kroz HALO Uspomene — od slanja linka gostima, RSVP-a, rasporeda sedenja, PDF pozivnice za štampu, do Audio Knjige Utisaka i Retro Telefona Uspomena.",
+    category: "Vodič",
+    tags: [
+      "website pozivnica venčanje",
+      "online pozivnica",
+      "RSVP forma venčanje",
+      "raspored sedenja venčanje",
+      "audio guest book venčanje",
+      "retro telefon uspomena",
+      "PDF pozivnica",
+      "organizacija venčanja",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-03-15",
+    readTime: 14,
+    featured: true,
+    content: loadContent("website-pozivnica-kompletan-vodic"),
+  },
+  {
     slug: "srpske-svadbene-tradicije-moderni-trendovi",
     title: "Srpske Svadbene Tradicije i Moderni Trendovi",
     description:
@@ -218,36 +241,159 @@ const allBlogPosts: BlogPost[] = [
     featured: true,
     content: loadContent("srpske-svadbene-tradicije-moderni-trendovi"),
   },
+  {
+    slug: "raspored-sedenja-za-svadbu-vodic",
+    title: "Raspored Sedenja za Svadbu — Kompletan Vodič 2026",
+    description:
+      "Kako napraviti raspored sedenja za svadbu — od konačne liste gostiju i šeme sale do QR Panoa dobrodošlice za ulaz. Korak po korak vodič, česte greške, cene i saveti iz prakse u Srbiji 2026.",
+    category: "Vodič",
+    tags: [
+      "raspored sedenja",
+      "raspored sedenja za svadbu",
+      "raspored sedenja online",
+      "raspored sedenja za venčanje",
+      "QR pano dobrodošlice",
+      "kako napraviti raspored sedenja",
+      "alat za raspored sedenja",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-05-08",
+    readTime: 12,
+    featured: true,
+    content: loadContent("raspored-sedenja-za-svadbu-vodic"),
+  },
+  {
+    slug: "qr-pano-dobrodoslice-trend",
+    title:
+      "QR Pano Dobrodošlice — Najbrže Rastući Svadbeni Trend u Srbiji 2026",
+    description:
+      "Šta je QR Pano dobrodošlice, kako funkcioniše, zašto je najbrže rastući svadbeni trend u Srbiji 2026 i koliko košta. Estetika, štampa, stilski saveti i pravila postavljanja u sali.",
+    category: "Trendovi",
+    tags: [
+      "QR pano dobrodošlice",
+      "qr pano za venčanje",
+      "qr pano za svadbu",
+      "pano za salu",
+      "raspored sedenja online",
+      "moderna svadba",
+      "trendovi venčanja 2026",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-05-09",
+    readTime: 10,
+    featured: true,
+    content: loadContent("qr-pano-dobrodoslice-trend"),
+  },
+  {
+    slug: "moje-vencanje-planer",
+    title:
+      "Moje Venčanje — Besplatan Online Planer Venčanja sa Checklistom, Budžetom i Vendorima",
+    description:
+      "Online planer venčanja koji objedinjuje checklistu, budžet, listu gostiju, vendor direktorijum i audio guest book na jednom mestu. Besplatno uz HALO Uspomene pozivnicu, lokalizovano za Srbiju.",
+    category: "Vodič",
+    tags: [
+      "planer venčanja",
+      "online planer venčanja",
+      "moje venčanje",
+      "planiranje venčanja Srbija",
+      "checklista venčanje",
+      "budžet venčanje",
+      "vendor direktorijum",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-05-10",
+    readTime: 11,
+    featured: true,
+    content: loadContent("moje-vencanje-planer"),
+  },
+  {
+    slug: "auto-za-vencanje-vodic",
+    title:
+      "Auto za Venčanje — Kako Izabrati Luksuzan Automobil za Mladence, Kuma i Barjaktara",
+    description:
+      "Kako izabrati auto za venčanje u Srbiji 2026 — luksuzni Mercedes E, S, GLE i G klasa sa šoferom za mladence, kuma i barjaktara. Cene po satu i za ceo dan, svadbena kolona i saveti kada rezervisati.",
+    category: "Vodič",
+    tags: [
+      "auto za venčanje",
+      "iznajmljivanje automobila za venčanje",
+      "mercedes za venčanje",
+      "auto za mladence",
+      "auto za kuma",
+      "auto za barjaktara",
+      "svadbena kolona",
+      "luksuzni automobil za svadbu",
+      "rent a car za venčanje",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-06-29",
+    readTime: 10,
+    featured: true,
+    content: loadContent("auto-za-vencanje-vodic"),
+  },
+  {
+    slug: "premium-ai-pozivnice",
+    title:
+      "Premium Pozivnice za Venčanje 2026/2027 — Luksuzne Digitalne Pozivnice",
+    description:
+      "Premium digitalne pozivnice za venčanje sa parallax hero animacijama, animiranim kovertom i tri tematska doživljaja: akvarelna pozadina vašeg venčanog mesta, papirni svet sa AI ilustracijom para, ili scena sa animiranim parom belih golubova. Lokalizovano za Srbiju.",
+    category: "Trendovi",
+    tags: [
+      "premium pozivnica",
+      "luksuzne pozivnice",
+      "premium pozivnice za venčanje",
+      "moderne pozivnice 2026",
+      "parallax pozivnica",
+      "akvarel pozivnica",
+      "watercolor pozivnica",
+      "fountain pozivnica",
+      "burgundy pozivnica",
+      "pozivnica sa golubovima",
+      "animirana pozivnica",
+      "AI ilustracija para",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-05-11",
+    readTime: 12,
+    featured: true,
+    content: loadContent("premium-ai-pozivnice"),
+  },
 ];
 
-// Published posts: only those with publishDate <= current build date
-const now = new Date();
-export const blogPosts: BlogPost[] = (
-  process.env.NODE_ENV === "development"
-    ? allBlogPosts
-    : allBlogPosts.filter((post) => new Date(post.publishDate) <= now)
-).sort(
-  (a, b) =>
-    new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime(),
-);
+// Published posts, newest first. Dev shows everything; production hides
+// posts whose publishDate is still in the future.
+//
+// Computed PER-CALL (not a build-time constant) so that with ISR revalidation
+// on the blog pages, a scheduled post surfaces automatically once its
+// publishDate arrives — no rebuild/redeploy needed.
+export function getPublishedPosts(): BlogPost[] {
+  const now = new Date();
+  const visible =
+    process.env.NODE_ENV === "development"
+      ? allBlogPosts
+      : allBlogPosts.filter((post) => new Date(post.publishDate) <= now);
+  return [...visible].sort(
+    (a, b) =>
+      new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime(),
+  );
+}
 
 export function getBlogPost(slug: string): BlogPost | undefined {
-  return blogPosts.find((post) => post.slug === slug);
+  return getPublishedPosts().find((post) => post.slug === slug);
 }
 
 export function getAllBlogSlugs(): string[] {
-  return blogPosts.map((post) => post.slug);
+  return getPublishedPosts().map((post) => post.slug);
 }
 
 export function getPostsByCategory(category: BlogPost["category"]): BlogPost[] {
-  return blogPosts.filter((post) => post.category === category);
+  return getPublishedPosts().filter((post) => post.category === category);
 }
 
 export function getRelatedPosts(currentSlug: string, limit = 2): BlogPost[] {
   const current = getBlogPost(currentSlug);
   if (!current) return [];
 
-  return blogPosts
+  return getPublishedPosts()
     .filter((post) => post.slug !== currentSlug)
     .sort((a, b) => {
       const aSharedTags = a.tags.filter((t) => current.tags.includes(t)).length;

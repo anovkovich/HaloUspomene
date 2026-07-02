@@ -1,0 +1,235 @@
+"use client";
+
+import type { TableData } from "@/lib/seating";
+import { rectFor, computeBoundingBox, SURFACE_H, SEAT_ZONE } from "@/lib/seating/geometry";
+
+interface Props {
+  tables: TableData[];
+  highlightTableIds: string[];
+}
+
+const PAD = 32;
+
+export default function HallMap({ tables, highlightTableIds }: Props) {
+  if (tables.length === 0) return null;
+
+  const bbox = computeBoundingBox(tables);
+  const vbX = bbox.minX - PAD;
+  const vbY = bbox.minY - PAD;
+  const vbW = bbox.width + PAD * 2;
+  const vbH = bbox.height + PAD * 2;
+
+  const elements: React.ReactNode[] = [];
+
+  tables.forEach((t) => {
+    const r = rectFor(t);
+    const isHighlight = highlightTableIds.includes(t.id);
+
+    if (t.type === "decoration") {
+      elements.push(
+        <g key={t.id} opacity={0.45}>
+          <rect
+            x={r.x}
+            y={r.y}
+            width={r.w}
+            height={r.h}
+            rx={5}
+            fill="#f5f5f5"
+            stroke="#ccc"
+            strokeWidth={1}
+            strokeDasharray="5,4"
+          />
+          <text
+            x={r.x + r.w / 2}
+            y={r.y + r.h / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize={11}
+            fill="#aaa"
+            fontFamily="sans-serif"
+          >
+            {t.label}
+          </text>
+        </g>,
+      );
+      return;
+    }
+
+    if (t.type === "circle") {
+      const cx = r.x + r.w / 2;
+      const cy = r.y + r.h / 2;
+      const outerR = r.w / 2;
+      const innerR = outerR * 0.58;
+
+      elements.push(
+        <g key={t.id}>
+          {/* Outer zone (seats) */}
+          <circle
+            cx={cx}
+            cy={cy}
+            r={outerR}
+            fill={isHighlight ? "rgba(174,52,63,0.12)" : "#efefef"}
+            stroke={isHighlight ? "var(--theme-primary)" : "#bbb"}
+            strokeWidth={isHighlight ? 2 : 1}
+            strokeDasharray={isHighlight ? undefined : "3,3"}
+          />
+          {/* Inner surface */}
+          <circle
+            cx={cx}
+            cy={cy}
+            r={innerR}
+            fill={isHighlight ? "rgba(174,52,63,0.2)" : "#e0e0e0"}
+            stroke={isHighlight ? "var(--theme-primary)" : "#555"}
+            strokeWidth={isHighlight ? 2 : 1.5}
+          />
+          {/* Label */}
+          <text
+            x={cx}
+            y={cy + 5}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize={13}
+            fontWeight="700"
+            fontFamily="sans-serif"
+            fill={isHighlight ? "var(--theme-primary)" : "#222"}
+          >
+            {t.label}
+          </text>
+          {/* "Vi ste ovde" badge */}
+          {isHighlight && (
+            <text
+              x={cx}
+              y={r.y + r.h + 14}
+              textAnchor="middle"
+              fontSize={11}
+              fontWeight="700"
+              fontFamily="sans-serif"
+              fill="var(--theme-primary)"
+            >
+              Vi ste ovde
+            </text>
+          )}
+        </g>,
+      );
+      return;
+    }
+
+    // rectangular or single-sided
+    const isSingle = t.type === "single-sided";
+    let iW: number, iH: number, iXoff: number, iYoff: number;
+    if (t.rotated) {
+      iW = SURFACE_H; iH = r.h;
+      // single-sided has one zone: surface hugs left (seats right) when flipped,
+      // else surface is offset right to leave the one zone on the left.
+      iXoff = isSingle ? (t.flipped ? 0 : SEAT_ZONE) : (r.w - SURFACE_H) / 2;
+      iYoff = 0;
+    } else {
+      iW = r.w; iH = SURFACE_H;
+      iXoff = 0;
+      iYoff = isSingle ? (t.flipped ? 0 : SEAT_ZONE) : (r.h - SURFACE_H) / 2;
+    }
+
+    const iX = r.x + iXoff;
+    const iY = r.y + iYoff;
+
+    // Seat-zone rectangles. Rectangular = two (both sides); single-sided = one
+    // (on the side opposite the surface, mirrored by `flipped`).
+    const zoneRects: { key: string; x: number; y: number; w: number; h: number }[] = [];
+    if (t.rotated) {
+      const leftZone = { key: "zl", x: iX - SEAT_ZONE, y: iY, w: SEAT_ZONE, h: iH };
+      const rightZone = { key: "zr", x: iX + SURFACE_H, y: iY, w: SEAT_ZONE, h: iH };
+      if (isSingle) zoneRects.push(t.flipped ? rightZone : leftZone);
+      else zoneRects.push(leftZone, rightZone);
+    } else {
+      const topZone = { key: "zt", x: iX, y: iY - SEAT_ZONE, w: iW, h: SEAT_ZONE };
+      const botZone = { key: "zb", x: iX, y: iY + SURFACE_H, w: iW, h: SEAT_ZONE };
+      if (isSingle) zoneRects.push(t.flipped ? botZone : topZone);
+      else zoneRects.push(topZone, botZone);
+    }
+
+    const seatZoneElems = zoneRects.map((z) => (
+      <rect
+        key={z.key}
+        x={z.x}
+        y={z.y}
+        width={z.w}
+        height={z.h}
+        rx={4}
+        fill={isHighlight ? "rgba(174,52,63,0.1)" : "#efefef"}
+        stroke={isHighlight ? "var(--theme-primary)" : "#bbb"}
+        strokeWidth={isHighlight ? 1.5 : 1}
+        strokeDasharray={isHighlight ? undefined : "3,3"}
+      />
+    ));
+
+    // Label sits on the surface centre (not the bbox centre, which is offset
+    // for the asymmetric single-sided table).
+    const cx = iX + iW / 2;
+    const cy = iY + iH / 2;
+
+    elements.push(
+      <g key={t.id}>
+        {seatZoneElems}
+        {/* Table surface */}
+        <rect
+          x={iX}
+          y={iY}
+          width={iW}
+          height={iH}
+          rx={5}
+          fill={isHighlight ? "rgba(174,52,63,0.22)" : "#e0e0e0"}
+          stroke={isHighlight ? "var(--theme-primary)" : "#555"}
+          strokeWidth={isHighlight ? 2 : 1.5}
+        />
+        {/* Label */}
+        <text
+          x={cx}
+          y={cy}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontSize={12}
+          fontWeight="700"
+          fontFamily="sans-serif"
+          fill={isHighlight ? "var(--theme-primary)" : "#222"}
+        >
+          {t.label}
+        </text>
+        {/* "Vi ste ovde" badge */}
+        {isHighlight && (
+          <text
+            x={cx}
+            y={r.y + r.h + 14}
+            textAnchor="middle"
+            fontSize={11}
+            fontWeight="700"
+            fontFamily="sans-serif"
+            fill="var(--theme-primary)"
+          >
+            Vi ste ovde
+          </text>
+        )}
+      </g>,
+    );
+  });
+
+  return (
+    <div
+      className="w-full overflow-auto rounded-xl"
+      style={{
+        maxHeight: "60vh",
+        backgroundColor: "var(--theme-surface)",
+        border: "1px solid var(--theme-border-light)",
+      }}
+    >
+      <svg
+        width="100%"
+        height="auto"
+        viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
+        preserveAspectRatio="xMidYMid meet"
+        style={{ display: "block", minWidth: 280 }}
+      >
+        {elements}
+      </svg>
+    </div>
+  );
+}
