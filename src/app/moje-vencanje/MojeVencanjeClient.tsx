@@ -770,6 +770,22 @@ export default function MojeVencanjeClient() {
               <Mic size={20} />
               <span className="text-[10px] font-medium">Audio</span>
             </button>
+            {coupleInfo.paidForGallery && (
+              <button
+                onClick={() => {
+                  setActiveView("galerija");
+                  window.scrollTo({ top: 0 });
+                }}
+                className={`flex flex-col items-center gap-0.5 py-1 ${
+                  activeView === "galerija"
+                    ? "text-[#AE343F]"
+                    : "text-[#232323]/60"
+                }`}
+              >
+                <Images size={20} />
+                <span className="text-[10px] font-medium">Galerija</span>
+              </button>
+            )}
             <Link
               href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
               target="_blank"
