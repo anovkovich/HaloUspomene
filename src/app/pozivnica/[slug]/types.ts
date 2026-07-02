@@ -105,6 +105,11 @@ export interface WeddingData {
   paid_for_images?: boolean; // Unlocks photo gallery add-on
   images?: Array<{ url: string; pathname: string }>; // Up to 3 uploaded photos
   image_layout?: "line" | "triangle"; // Gallery layout: "line" (default) or "triangle"
+  paid_for_gallery?: boolean; // Unlocks the QR guest photo gallery (/galerija). Sellable standalone, independent of the invitation.
+  gallery_sms_last_access_sent?: boolean; // Gallery lifecycle: SMS #1 (last couple-access day, d4) sent
+  gallery_sms_purge_warning_sent?: boolean; // Gallery lifecycle: SMS #2 (deletion warning, d5) sent
+  gallery_purged_at?: string; // Gallery lifecycle: ISO timestamp when photos were system-purged (end of d5)
+  gallery_extra_days?: number; // Gallery lifecycle: admin-granted extra days of couple access before purge (default 0)
   paid_for_music?: boolean; // Unlocks background music add-on (1000 din)
   music_url?: string; // Vercel Blob URL of the audio file (.m4a/.mp3)
   music_pathname?: string; // Blob pathname — required for cleanup on delete

@@ -14,6 +14,7 @@ import {
   Users,
   LayoutDashboard,
   Mic,
+  Images,
   Star,
   ArrowLeftCircle,
   Home,
@@ -44,6 +45,7 @@ import {
 
 const VendorDirectory = React.lazy(() => import("./VendorDirectory"));
 const AudioCard = React.lazy(() => import("./AudioCard"));
+const GalleryCard = React.lazy(() => import("./GalleryCard"));
 const GuestsCard = React.lazy(() => import("./GuestsCard"));
 import OverviewCard from "./OverviewCard";
 
@@ -94,6 +96,7 @@ export default function MojeVencanjeClient() {
     hasInvitationData: boolean;
     premium: boolean;
     premiumPaid: boolean;
+    paidForGallery: boolean;
   } | null>(null);
 
   // Portal data
@@ -116,6 +119,7 @@ export default function MojeVencanjeClient() {
     if (tab === "budget") setActiveView("budget");
     if (tab === "vendors") setActiveView("vendors");
     if (tab === "audio") setActiveView("audio");
+    if (tab === "galerija") setActiveView("galerija");
     if (tab === "guests") setActiveView("guests");
   }, []);
 
@@ -147,6 +151,7 @@ export default function MojeVencanjeClient() {
             hasInvitationData: result.hasInvitationData ?? false,
             premium: result.premium ?? false,
             premiumPaid: result.premium_paid ?? false,
+            paidForGallery: result.paid_for_gallery ?? false,
           });
           const [data, highlighted, vendorData, endorsements] =
             await Promise.all([
@@ -248,6 +253,7 @@ export default function MojeVencanjeClient() {
           hasInvitationData: json.couple.hasInvitationData ?? false,
           premium: json.couple.premium ?? false,
           premiumPaid: json.couple.premium_paid ?? false,
+          paidForGallery: json.couple.paid_for_gallery ?? false,
         });
 
         const [data, highlighted, vendorData2, endorsements2] =
@@ -677,6 +683,17 @@ export default function MojeVencanjeClient() {
                   />
                 </React.Suspense>
               )}
+              {activeView === "galerija" && coupleInfo && (
+                <React.Suspense
+                  fallback={
+                    <div className="flex justify-center py-12">
+                      <span className="loading loading-spinner loading-lg text-[#AE343F]" />
+                    </div>
+                  }
+                >
+                  <GalleryCard slug={coupleInfo.slug} />
+                </React.Suspense>
+              )}
               {activeView === "guests" && coupleInfo && (
                 <React.Suspense
                   fallback={
@@ -819,6 +836,15 @@ export default function MojeVencanjeClient() {
                   label: "Audio knjiga",
                   icon: <Mic size={18} />,
                 },
+                ...(coupleInfo.paidForGallery
+                  ? [
+                      {
+                        view: "galerija" as const,
+                        label: "Galerija",
+                        icon: <Images size={18} />,
+                      },
+                    ]
+                  : []),
                 {
                   view: "guests" as const,
                   label: "Gosti",

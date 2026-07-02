@@ -359,34 +359,41 @@ const allBlogPosts: BlogPost[] = [
   },
 ];
 
-// Published posts: only those with publishDate <= current build date
-const now = new Date();
-export const blogPosts: BlogPost[] = (
-  process.env.NODE_ENV === "development"
-    ? allBlogPosts
-    : allBlogPosts.filter((post) => new Date(post.publishDate) <= now)
-).sort(
-  (a, b) =>
-    new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime(),
-);
+// Published posts, newest first. Dev shows everything; production hides
+// posts whose publishDate is still in the future.
+//
+// Computed PER-CALL (not a build-time constant) so that with ISR revalidation
+// on the blog pages, a scheduled post surfaces automatically once its
+// publishDate arrives — no rebuild/redeploy needed.
+export function getPublishedPosts(): BlogPost[] {
+  const now = new Date();
+  const visible =
+    process.env.NODE_ENV === "development"
+      ? allBlogPosts
+      : allBlogPosts.filter((post) => new Date(post.publishDate) <= now);
+  return [...visible].sort(
+    (a, b) =>
+      new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime(),
+  );
+}
 
 export function getBlogPost(slug: string): BlogPost | undefined {
-  return blogPosts.find((post) => post.slug === slug);
+  return getPublishedPosts().find((post) => post.slug === slug);
 }
 
 export function getAllBlogSlugs(): string[] {
-  return blogPosts.map((post) => post.slug);
+  return getPublishedPosts().map((post) => post.slug);
 }
 
 export function getPostsByCategory(category: BlogPost["category"]): BlogPost[] {
-  return blogPosts.filter((post) => post.category === category);
+  return getPublishedPosts().filter((post) => post.category === category);
 }
 
 export function getRelatedPosts(currentSlug: string, limit = 2): BlogPost[] {
   const current = getBlogPost(currentSlug);
   if (!current) return [];
 
-  return blogPosts
+  return getPublishedPosts()
     .filter((post) => post.slug !== currentSlug)
     .sort((a, b) => {
       const aSharedTags = a.tags.filter((t) => current.tags.includes(t)).length;

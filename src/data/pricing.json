@@ -24,6 +24,10 @@
       "label": "Digitalna audio knjiga",
       "price": 3000
     },
+    "galerija": {
+      "label": "QR galerija fotografija",
+      "price": 3500
+    },
     "bundlePrice": 8500,
     "bundleFullPrice": 10500
   },

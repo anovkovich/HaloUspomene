@@ -10,6 +10,8 @@
     "export": "echo 'Static export removed — project is now deployed on Vercel'"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1078.0",
+    "@aws-sdk/s3-request-presigner": "^3.1078.0",
     "@distube/ytdl-core": "^4.16.12",
     "@sentry/nextjs": "^10.44.0",
     "@types/qrcode": "^1.5.6",
@@ -18,9 +20,11 @@
     "@vercel/speed-insights": "^2.0.0",
     "daisyui": "^5.5.14",
     "framer-motion": "^12.29.2",
+    "heic2any": "^0.0.4",
     "jose": "^6.1.2",
     "js-cookie": "^3.0.5",
     "jspdf": "^4.2.0",
+    "jszip": "^3.10.1",
     "libphonenumber-js": "^1.12.42",
     "lucide-react": "^0.562.0",
     "mongodb": "^7.1.0",

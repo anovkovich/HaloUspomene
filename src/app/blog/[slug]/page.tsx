@@ -4,15 +4,19 @@ import type { Metadata } from "next";
 import { Clock, ArrowLeft, ArrowRight, Tag, Sparkles } from "lucide-react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
-import { blogPosts, getBlogPost, getRelatedPosts } from "@/data/blog/posts";
+import { getPublishedPosts, getBlogPost, getRelatedPosts } from "@/data/blog/posts";
 import { mdxComponents } from "@/components/blog/mdx-components";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import { notFound } from "next/navigation";
 
+// Re-render hourly; render not-yet-built (scheduled) posts on demand once live.
+export const revalidate = 3600;
+export const dynamicParams = true;
+
 export function generateStaticParams() {
-  return blogPosts.map((post) => ({ slug: post.slug }));
+  return getPublishedPosts().map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({

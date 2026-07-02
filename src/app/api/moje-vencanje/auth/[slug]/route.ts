@@ -45,6 +45,7 @@ export async function POST(
       hasInvitationData: (weddingData.locations ?? []).length > 0,
       premium: weddingData.premium ?? false,
       premium_paid: weddingData.premium_paid ?? false,
+      paid_for_gallery: weddingData.paid_for_gallery ?? false,
     },
   });
 

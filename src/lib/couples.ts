@@ -43,6 +43,47 @@ export async function getAllCouples(): Promise<CoupleDocument[]> {
   return c.find({}, { projection: { _id: 0 } }).sort({ created_at: -1, _id: -1 }).toArray();
 }
 
+/** Couples with the QR gallery enabled — minimal fields for the lifecycle cron. */
+export async function getGalleryCouples(): Promise<
+  Array<{
+    slug: string;
+    event_date: string;
+    contact_phone?: string;
+    gallery_sms_last_access_sent?: boolean;
+    gallery_sms_purge_warning_sent?: boolean;
+    gallery_purged_at?: string;
+    gallery_extra_days?: number;
+  }>
+> {
+  const c = await col();
+  const docs = await c
+    .find(
+      { paid_for_gallery: true },
+      {
+        projection: {
+          _id: 0,
+          slug: 1,
+          event_date: 1,
+          contact_phone: 1,
+          gallery_sms_last_access_sent: 1,
+          gallery_sms_purge_warning_sent: 1,
+          gallery_purged_at: 1,
+          gallery_extra_days: 1,
+        },
+      }
+    )
+    .toArray();
+  return docs as Array<{
+    slug: string;
+    event_date: string;
+    contact_phone?: string;
+    gallery_sms_last_access_sent?: boolean;
+    gallery_sms_purge_warning_sent?: boolean;
+    gallery_purged_at?: string;
+    gallery_extra_days?: number;
+  }>;
+}
+
 export async function upsertCouple(
   slug: string,
   data: WeddingData

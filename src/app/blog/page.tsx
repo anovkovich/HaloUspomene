@@ -1,11 +1,14 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { blogPosts } from "@/data/blog/posts";
+import { getPublishedPosts } from "@/data/blog/posts";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import BlogClient from "./BlogClient";
+
+// Re-render hourly so scheduled posts appear once their publishDate arrives.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Blog — Audio Guest Book Saveti i Vodiči",
@@ -17,10 +20,11 @@ export const metadata: Metadata = {
 };
 
 export default function BlogPage() {
-  const categories = [...new Set(blogPosts.map((p) => p.category))];
+  const publishedPosts = getPublishedPosts();
+  const categories = [...new Set(publishedPosts.map((p) => p.category))];
 
   // Strip content to keep client bundle small
-  const posts = blogPosts.map(({ content: _, ...rest }) => rest);
+  const posts = publishedPosts.map(({ content: _, ...rest }) => rest);
 
   return (
     <>

@@ -74,6 +74,7 @@ export async function GET(
     paidForAudio: data.paid_for_audio ?? false,
     paidForAudioUSB: data.paid_for_audio_USB ?? "",
     paidForImages: data.paid_for_images ?? false,
+    paidForGallery: data.paid_for_gallery ?? false,
     customColors: !!(data.custom_primary_color || data.custom_background_color),
     couple: data.couple_names.full_display,
     eventDate: data.event_date,

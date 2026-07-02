@@ -159,6 +159,28 @@ export async function sendVerificationCode(phoneE164: string): Promise<string> {
 }
 
 /**
+ * Send a plain notification SMS (not an OTP) via the Infobip SMS API.
+ * Used for gallery lifecycle reminders. Reuses INFOBIP_API_KEY / _BASE_URL /
+ * _SMS_SENDER — does NOT require the 2FA app/message config.
+ * @param phoneE164 — E.164 phone, e.g. "+38161234567"
+ */
+export async function sendSms(phoneE164: string, text: string): Promise<void> {
+  if (!BASE_URL || !API_KEY) {
+    throw new InfobipError(
+      "INFOBIP_BASE_URL or INFOBIP_API_KEY missing",
+      "missing_config"
+    );
+  }
+  const to = phoneE164.replace(/^\+/, "");
+  await infobipFetch("/sms/2/text/advanced", {
+    method: "POST",
+    body: JSON.stringify({
+      messages: [{ from: SMS_SENDER, destinations: [{ to }], text }],
+    }),
+  });
+}
+
+/**
  * Verify a 4-digit PIN against an active session.
  * @returns true on success, false otherwise.
  */

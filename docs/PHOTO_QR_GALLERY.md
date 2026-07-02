@@ -6,9 +6,48 @@ Guests upload photos from the wedding day via QR code → browser. Couple gets a
 
 ## Business Model
 
-- **Paid feature** (`paid_for_QR_gallery?: boolean`) — no free tier
+- **Paid feature** (`paid_for_gallery?: boolean` on the couple record) — no free tier
 - Upsell alongside audio guest book and seating chart
 - Storage cost is near-zero on Cloudflare R2
+- **Sellable standalone** — a user can buy ONLY the gallery, without a full invitation (see below)
+
+---
+
+## ⭐ Architecture Decision (2026-07-02)
+
+Decided after auditing how `paid_for_raspored` (seating) and `paid_for_audio` are built. **This section supersedes any conflicting detail further down** (the original draft assumed the gallery was bolted onto a real invitation page — it is not).
+
+### 1. Gallery is a STANDALONE product, peer with `/gde-sedim`
+
+The guest-facing gallery route gates **only** on its own flag, exactly like `gde-sedim/page.tsx` gates only on `paid_for_raspored`:
+
+```typescript
+// src/app/pozivnica/[slug]/galerija/page.tsx
+if (!weddingData) notFound();
+if (!weddingData.paid_for_gallery) notFound();   // ← the only gate
+```
+
+It does **not** depend on the invitation existing, being published, or `draft` being false. Same code serves a full-invitation couple AND a planner-only user who bought only the gallery.
+
+### 2. Sell to a planner-only user (no invitation) — already supported
+
+The `couples` collection already holds "planner-only" records created by the self-signup at `/planiranje-vencanja` (`signupAction`): `draft: true`, `locations: []`, all `paid_for_* = false`, a user-chosen `potvrde_password`, and a unique slug. These users get the `moje_vencanje_auth` cookie and go straight into the planner.
+
+**End-to-end sell flow for gallery-only:**
+
+1. User self-registers at `/planiranje-vencanja` → gets slug + password, lands in `moje-vencanje`. *(already works)*
+2. User pays → admin flips **`paid_for_gallery`** via the same PATCH toggle used for Raspored/Audio. *(new toggle)*
+3. Guests scan QR → `/pozivnica/[slug]/galerija` — public, gated only on `paid_for_gallery`, works even for a draft/planner-only couple. *(new route)*
+4. Couple views/downloads photos from a new gallery card in `moje-vencanje`, shown when `paid_for_gallery === true` (independent of `draft`, unlike the seating link which is hidden for drafts). *(new card)*
+
+### 3. Two integration points verified in current code (do NOT skip)
+
+- **`EventPassedGuard`** (`src/app/pozivnica/[slug]/EventPassedGuard.tsx:25`) shows an "event is over" landing after `event_date + 1`. The gallery is used **on and after** the wedding day — its route MUST be added to the `isManagementRoute` bypass list (alongside `raspored-sedenja`, `audio-knjiga`), or guests hit the dead-end screen exactly when they want to upload.
+- **Cascade delete** (`src/app/api/admin/couples/[slug]/route.ts:63`) must also delete `gallery_photos` metadata AND the R2 objects for the slug (list-by-prefix + batch delete).
+
+### 4. Storage: Cloudflare R2 (confirmed) — mirrors the Vercel Blob pattern
+
+Audio stores `{ blobUrl, blobPathname }` per record and cleans up with `del(url)`. Gallery mirrors this with R2: store `{ key, url }` per photo; upload via presigned PUT (browser → R2 direct); delete via `DeleteObjectCommand`. New wrapper `src/lib/r2.ts`; deps `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`.
 
 ---
 
@@ -182,19 +221,23 @@ src/
 
 ### Modified Files
 
-| File                                            | Change                                          |
-| ----------------------------------------------- | ----------------------------------------------- |
-| `src/app/pozivnica/[slug]/types.ts`             | Add `paid_for_gallery?: boolean`                |
-| `src/app/pozivnica/[slug]/InvitationClient.tsx` | Add gallery link (conditional)                  |
-| `src/app/pozivnica/[slug]/translations.ts`      | Add gallery-related translation keys            |
-| `src/app/api/admin/couples/[slug]/route.ts`     | Add `deleteGallery(slug)` to cascade delete     |
-| `src/middleware.ts`                             | No change needed (gallery is public for guests) |
-| `src/app/admin/nova/page.tsx`                   | Add `paid_for_gallery` to template              |
+| File                                            | Change                                                                    |
+| ----------------------------------------------- | ------------------------------------------------------------------------- |
+| `src/app/pozivnica/[slug]/types.ts`             | Add `paid_for_gallery?: boolean`                                          |
+| `src/app/pozivnica/[slug]/EventPassedGuard.tsx` | Add `galerija` to `isManagementRoute` bypass                              |
+| `src/app/api/admin/couples/[slug]/route.ts`     | Cascade: delete `gallery_photos` + R2 objects for slug                    |
+| `src/app/admin/page.tsx`                        | Add `paid_for_gallery` toggle (mirror Raspored/Audio)                     |
+| `src/app/moje-vencanje/*`                       | New gallery card + Sidebar nav (shown when `paid_for_gallery`, incl. drafts) |
+| `src/app/admin/nova/page.tsx`                   | Add `paid_for_gallery: false` to template                                 |
+| `src/data/pricing.json` / `racun`               | Gallery price + receipt line item (billing phase)                         |
+| `src/middleware.ts`                             | No change needed (gallery guest routes are public)                        |
+
+> Note: NOT modifying `InvitationClient.tsx` — the gallery is standalone (peer with `gde-sedim`), not a link on the invitation page. The QR code (printed on the thank-you card) points directly at `/pozivnica/[slug]/galerija`.
 
 ### New Dependency
 
 ```bash
-npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner   # ✅ installed 2026-07-02
 ```
 
 Only the S3-compatible SDK pieces (~lightweight, tree-shakeable). R2 uses S3 API.

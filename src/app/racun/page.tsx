@@ -241,6 +241,7 @@ interface ReceiptPayload {
   pd?: number; // personalizovana dobrodoslica
   cc?: number; // custom colors
   ig?: number; // images
+  g?: number; // qr photo gallery
   mu?: number; // background music
   p?: number; // premium invitation
   t18?: number; // punoletstvo (only meaningful when kind === "rodjendan")
@@ -391,6 +392,11 @@ function ReceiptContent() {
       items.push({
         label: "Polaroid galerija slika",
         amount: pricing.addons.find((a) => a.id === "custom_color")!.price,
+      });
+    if (payload.g)
+      items.push({
+        label: "QR galerija fotografija",
+        amount: pricing.pozivnica.galerija.price,
       });
     if (payload.mu)
       items.push({

@@ -6,13 +6,21 @@ import {
   Star,
   Users,
   Mic,
+  Images,
   LayoutDashboard,
   LogOut,
   ExternalLink,
   Home,
 } from "lucide-react";
 
-export type ActiveView = "overview" | "checklist" | "budget" | "vendors" | "audio" | "guests";
+export type ActiveView =
+  | "overview"
+  | "checklist"
+  | "budget"
+  | "vendors"
+  | "audio"
+  | "galerija"
+  | "guests";
 
 interface SidebarProps {
   activeView: ActiveView;
@@ -24,6 +32,7 @@ interface SidebarProps {
     eventDate: string;
     scriptFont: string;
     draft: boolean;
+    paidForGallery?: boolean;
   };
   checklistStats: { completed: number; total: number };
   budgetStats: { spent: number; planned: number };
@@ -50,6 +59,7 @@ const NAV_ITEMS: {
   { view: "budget", label: "Budžet", icon: <Wallet size={18} /> },
   { view: "vendors", label: "Vendori", icon: <Star size={18} /> },
   { view: "audio", label: "Audio knjiga", icon: <Mic size={18} /> },
+  { view: "galerija", label: "Galerija", icon: <Images size={18} /> },
   { view: "guests", label: "Gosti", icon: <Users size={18} /> },
 ];
 
@@ -89,7 +99,9 @@ export default function Sidebar({
 
       {/* Main nav */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.filter(
+          (item) => item.view !== "galerija" || coupleInfo.paidForGallery
+        ).map((item) => {
           const isActive = activeView === item.view;
           return (
             <button

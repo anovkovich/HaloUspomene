@@ -6,6 +6,8 @@ import { deleteRSVPResponses } from "@/lib/rsvp";
 import { deleteSeatingLayout } from "@/lib/seating";
 import { deletePortalData } from "@/lib/portal";
 import { getAudioMessages, deleteAllAudioMessages } from "@/lib/audio";
+import { deleteAllGalleryPhotos } from "@/lib/gallery";
+import { deleteByPrefix } from "@/lib/r2";
 import { deleteShareLinksForProduct } from "@/lib/share-links";
 import { del } from "@vercel/blob";
 
@@ -96,12 +98,16 @@ export async function DELETE(
     // Continue with deletion even if blob cleanup fails
   }
 
+  // Delete gallery photo objects from R2 (best-effort; never throws)
+  await deleteByPrefix(`gallery/${slug}/`);
+
   await Promise.all([
     deleteCouple(slug),
     deleteRSVPResponses(slug),
     deleteSeatingLayout(slug),
     deletePortalData(slug),
     deleteAllAudioMessages(slug),
+    deleteAllGalleryPhotos(slug),
     deleteShareLinksForProduct("couple", slug),
   ]);
   revalidateCouplePaths(slug);

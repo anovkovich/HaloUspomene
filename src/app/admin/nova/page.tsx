@@ -41,6 +41,7 @@ const TEMPLATE = `{
   "paid_for_raspored": false,
   "paid_for_audio": false,
   "paid_for_audio_USB": "",
+  "paid_for_gallery": false,
   "paid_for_pdf": false,
   "draft": false,
   "receipt_valid": false,
@@ -101,6 +102,7 @@ export default function NovaPage() {
         paid_for_raspored: false,
         paid_for_audio: false,
         paid_for_audio_USB: "",
+        paid_for_gallery: false,
         paid_for_pdf: false,
         ...(isPremium
           ? {

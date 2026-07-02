@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search, QrCode, CalendarPlus } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
 import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
@@ -42,6 +42,8 @@ interface Couple {
   theme: string;
   paid_for_raspored?: boolean;
   paid_for_audio?: boolean;
+  paid_for_gallery?: boolean;
+  gallery_extra_days?: number;
   paid_for_images?: boolean;
   paid_for_music?: boolean;
   paid_for_audio_USB?: "" | "kaseta" | "bocica";
@@ -276,6 +278,73 @@ export default function AdminPage() {
     }
   }
 
+  async function handleToggleGallery(slug: string, current: boolean) {
+    const newVal = !current;
+    setCouples((prev) =>
+      prev.map((c) =>
+        c.slug === slug ? { ...c, paid_for_gallery: newVal } : c
+      )
+    );
+    const res = await fetch(`/api/admin/couples/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paid_for_gallery: newVal }),
+    });
+    if (!res.ok) {
+      setCouples((prev) =>
+        prev.map((c) =>
+          c.slug === slug ? { ...c, paid_for_gallery: current } : c
+        )
+      );
+    }
+  }
+
+  // Grant the couple +1 day of gallery access before the system purge.
+  async function handleExtendGallery(slug: string, current: number) {
+    const newVal = current + 1;
+    setCouples((prev) =>
+      prev.map((c) =>
+        c.slug === slug ? { ...c, gallery_extra_days: newVal } : c
+      )
+    );
+    const res = await fetch(`/api/admin/couples/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gallery_extra_days: newVal }),
+    });
+    if (res.ok) {
+      alert(`Pristup galeriji produžen — ukupno +${newVal} dan(a).`);
+    } else {
+      setCouples((prev) =>
+        prev.map((c) =>
+          c.slug === slug ? { ...c, gallery_extra_days: current } : c
+        )
+      );
+    }
+  }
+
+  // QR PNG to the PUBLIC gallery page (production domain — it gets printed on
+  // the thank-you card). Generated client-side via the `qrcode` package.
+  async function downloadGalleryQR(slug: string) {
+    try {
+      const QRCode = (await import("qrcode")).default;
+      const url = `https://halouspomene.rs/pozivnica/${slug}/galerija/`;
+      const dataUrl = await QRCode.toDataURL(url, {
+        width: 1024,
+        margin: 2,
+        color: { dark: "#232323", light: "#ffffff" },
+      });
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `galerija-qr-${slug}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch {
+      alert("Greška pri generisanju QR koda");
+    }
+  }
+
   function buildReceiptUrl(c: Couple, extras?: { retro_phone?: boolean; dobrodoslica?: boolean; customItems?: Array<{l: string; p: number}> }) {
     const data: Record<string, unknown> = {
       s: c.slug,
@@ -289,6 +358,7 @@ export default function AdminPage() {
       pd: extras?.dobrodoslica ? 1 : 0,
       cc: (c as any).custom_primary_color || (c as any).custom_background_color ? 1 : 0,
       ig: (c as any).paid_for_images ? 1 : 0,
+      g: c.paid_for_gallery ? 1 : 0,
       mu: c.paid_for_music ? 1 : 0,
       p: c.premium ? 1 : 0,
       d: c.custom_discount ?? 0,
@@ -693,6 +763,35 @@ export default function AdminPage() {
                       slug={c.slug}
                       directUrl={`https://halouspomene.rs/${c.premium ? 'premium-pozivnica' : 'pozivnica'}/${c.slug}/`}
                     />
+                    {c.paid_for_gallery && (
+                      <>
+                        <button
+                          onClick={() => downloadGalleryQR(c.slug)}
+                          className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white"
+                          title="Preuzmi QR za galeriju"
+                        >
+                          <QrCode size={14} />
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleExtendGallery(c.slug, c.gallery_extra_days ?? 0)
+                          }
+                          className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white relative"
+                          title={`Produži pristup galeriji +1 dan${
+                            c.gallery_extra_days
+                              ? ` (trenutno +${c.gallery_extra_days})`
+                              : ""
+                          }`}
+                        >
+                          <CalendarPlus size={14} />
+                          {c.gallery_extra_days ? (
+                            <span className="absolute -top-1 -right-1 text-[9px] bg-green-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                              {c.gallery_extra_days}
+                            </span>
+                          ) : null}
+                        </button>
+                      </>
+                    )}
                     <button
                       onClick={() => router.push(`/admin/${c.slug}`)}
                       className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/40 hover:text-white"
@@ -756,9 +855,10 @@ export default function AdminPage() {
                     </span>
                   </div>
                 )}
+              </div>
 
-                {/* Toggles */}
-                <div className="flex items-center gap-4 sm:ml-auto">
+              {/* Toggles — own row so the 4 switches don't cram the stats line on mobile */}
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-2 sm:justify-end">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-white/30">Draft</span>
                     <button
@@ -810,8 +910,24 @@ export default function AdminPage() {
                       />
                     </button>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-white/30">Galerija</span>
+                    <button
+                      onClick={() =>
+                        handleToggleGallery(c.slug, !!c.paid_for_gallery)
+                      }
+                      className={`relative w-9 h-5 rounded-full transition-colors ${
+                        c.paid_for_gallery ? "bg-green-500" : "bg-white/10"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                          c.paid_for_gallery ? "translate-x-4" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
-              </div>
 
               {/* Receipt dropdown — own row, mirrors the Rođendani card */}
               <ReceiptDropdown

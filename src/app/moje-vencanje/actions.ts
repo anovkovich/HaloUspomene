@@ -15,6 +15,15 @@ import {
 import { getAudioMessages, deleteAudioMessage as dbDeleteAudio } from "@/lib/audio";
 import type { AudioMessage } from "@/lib/audio";
 import {
+  getGalleryPhotos,
+  getGalleryPhoto,
+  getGalleryPhotoCount,
+  deleteGalleryPhoto as dbDeleteGalleryPhoto,
+  type GalleryPhoto,
+} from "@/lib/gallery";
+import { deleteObject as r2Delete } from "@/lib/r2";
+import { galleryPhase, canCoupleAccess, type GalleryPhase } from "@/lib/gallery-lifecycle";
+import {
   getRSVPResponses,
   addRSVPResponse,
   updateRSVPCategory,
@@ -64,6 +73,7 @@ export async function verifyAuth(): Promise<{
   hasInvitationData?: boolean;
   premium?: boolean;
   premium_paid?: boolean;
+  paid_for_gallery?: boolean;
 } | null> {
   const slug = await getAuthSlug();
   if (!slug) return null;
@@ -82,6 +92,7 @@ export async function verifyAuth(): Promise<{
     hasInvitationData: (data.locations ?? []).length > 0,
     premium: data.premium ?? false,
     premium_paid: data.premium_paid ?? false,
+    paid_for_gallery: data.paid_for_gallery ?? false,
   };
 }
 
@@ -201,6 +212,65 @@ export async function deleteAudioMsgAction(
   try {
     try { await del(blobUrl); } catch { /* blob may be gone */ }
     await dbDeleteAudio(id);
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
+}
+
+/* ── Gallery ────────────────────────────────────────────────── */
+
+export async function loadGalleryAction(
+  skip = 0,
+  limit = 60
+): Promise<{
+  photos: GalleryPhoto[];
+  total: number;
+  paidForGallery: boolean;
+  canAccess: boolean;
+  phase: GalleryPhase;
+} | null> {
+  const slug = await getAuthSlug();
+  if (!slug) return null;
+  const data = await getWeddingData(slug);
+  if (!data) return null;
+
+  const paidForGallery = data.paid_for_gallery ?? false;
+  const extra = data.gallery_extra_days ?? 0;
+  const phase = galleryPhase(data.event_date, extra);
+  const canAccess = canCoupleAccess(data.event_date, extra);
+
+  if (!paidForGallery || !canAccess) {
+    return { photos: [], total: 0, paidForGallery, canAccess, phase };
+  }
+  try {
+    const [photos, total] = await Promise.all([
+      getGalleryPhotos(slug, { includeUnapproved: true, skip, limit }),
+      getGalleryPhotoCount(slug),
+    ]);
+    return { photos, total, paidForGallery, canAccess, phase };
+  } catch {
+    return { photos: [], total: 0, paidForGallery, canAccess, phase };
+  }
+}
+
+export async function deleteGalleryPhotoAction(
+  id: string
+): Promise<{ success: boolean }> {
+  const slug = await getAuthSlug();
+  if (!slug) return { success: false };
+  const data = await getWeddingData(slug);
+  if (!data?.paid_for_gallery) return { success: false };
+  try {
+    const photo = await getGalleryPhoto(id);
+    // Only allow deleting a photo that belongs to this couple.
+    if (!photo || photo.slug !== slug) return { success: false };
+    try {
+      await r2Delete(photo.key);
+    } catch {
+      /* object may already be gone */
+    }
+    await dbDeleteGalleryPhoto(id);
     return { success: true };
   } catch {
     return { success: false };
