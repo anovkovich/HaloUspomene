@@ -34,16 +34,14 @@ export default function GdeSedimClient({
         enterYourName: "Unesite va\u0161e ime",
         yourSeatSingular: "Va\u0161e mjesto",
         yourSeatPlural: "Va\u0161a mjesta",
-        seatsOccupied: (occupied: number, total: number) =>
-          `${occupied} od ${total} mjesta popunjeno`,
+        welcome: "Smjestite se i u\u017eivajte \u2014 hvala \u0161to ste tu",
         seatUnit: (n: number) => (n === 1 ? "mjesto" : "mjesta"),
       }
     : {
         enterYourName: "Unesite va\u0161e ime",
         yourSeatSingular: "Va\u0161e mesto",
         yourSeatPlural: "Va\u0161a mesta",
-        seatsOccupied: (occupied: number, total: number) =>
-          `${occupied} od ${total} mesta popunjeno`,
+        welcome: "Smestite se i u\u017eivajte \u2014 hvala \u0161to ste tu",
         seatUnit: (n: number) => (n === 1 ? "mesto" : "mesta"),
       };
 
@@ -305,10 +303,7 @@ export default function GdeSedimClient({
                     className="font-raleway text-xs pt-2"
                     style={{ color: "var(--theme-text-muted)" }}
                   >
-                    {tr.seatsOccupied(
-                      selected.tables[0].occupiedCount,
-                      selected.tables[0].seatCount,
-                    )}
+                    {tr.welcome}
                   </p>
                 </>
               ) : (
