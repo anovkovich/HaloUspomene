@@ -63,6 +63,7 @@ export default function NovaPage() {
   const [groom, setGroom] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [isPremium, setIsPremium] = useState(false);
 
   async function handleSave() {
@@ -114,6 +115,13 @@ export default function NovaPage() {
       };
       if (eventDate) {
         body.event_date = `${eventDate}T16:00:00`;
+      }
+      // Optional phone → contact_phone (E.164). Used for gallery SMS reminders.
+      const rawPhone = phone.trim();
+      if (rawPhone) {
+        body.contact_phone = rawPhone.startsWith("+")
+          ? rawPhone.replace(/[^\d+]/g, "")
+          : `+381${rawPhone.replace(/\D/g, "").replace(/^0/, "")}`;
       }
     } else {
       let parsed;
@@ -257,6 +265,19 @@ export default function NovaPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="ostavi prazno za bez lozinke"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/20 focus:outline-none focus:border-[#AE343F]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-white/60 mb-1">
+                  Telefon <span className="text-white/25">(opciono — za SMS opomene galerije)</span>
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="npr. 064 8290961 ili +381648290961"
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/20 focus:outline-none focus:border-[#AE343F]"
                 />
               </div>
