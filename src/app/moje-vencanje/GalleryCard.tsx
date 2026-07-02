@@ -130,13 +130,21 @@ export default function GalleryCard({ slug }: Props) {
       let i = 0;
       for (const p of chosen) {
         try {
-          const res = await fetch(p.url);
+          // same-origin proxy (no CORS); the R2 fetch happens server-side
+          const res = await fetch(
+            `/api/pozivnica/${slug}/galerija/download?id=${p._id}`
+          );
+          if (!res.ok) continue;
           const blob = await res.blob();
           i++;
           zip.file(`${safeName(p.guestName || "gost")}-${i}.jpg`, blob);
         } catch {
-          /* skip a failed fetch, keep zipping the rest */
+          /* skip a failed one, keep zipping the rest */
         }
+      }
+      if (i === 0) {
+        toast.error("Greška pri preuzimanju");
+        return;
       }
       const content = await zip.generateAsync({ type: "blob" });
       triggerDownload(content, `galerija-${slug}.zip`);
@@ -145,15 +153,18 @@ export default function GalleryCard({ slug }: Props) {
     }
   }, [selected, photos, slug]);
 
-  const downloadOne = useCallback(async (photo: GalleryPhoto, index: number) => {
-    try {
-      const res = await fetch(photo.url);
-      const blob = await res.blob();
-      triggerDownload(blob, `${safeName(photo.guestName || "gost")}-${index + 1}.jpg`);
-    } catch {
-      toast.error("Greška pri preuzimanju");
-    }
-  }, []);
+  const downloadOne = useCallback(
+    (photo: GalleryPhoto, index: number) => {
+      // Same-origin proxy → forces a download, no CORS, works on iOS.
+      const a = document.createElement("a");
+      a.href = `/api/pozivnica/${slug}/galerija/download?id=${photo._id}`;
+      a.download = `${safeName(photo.guestName || "gost")}-${index + 1}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => a.remove(), 2000);
+    },
+    [slug]
+  );
 
   const handleDelete = useCallback(async (photo: GalleryPhoto) => {
     setDeleting(photo._id);
@@ -348,7 +359,7 @@ export default function GalleryCard({ slug }: Props) {
       {/* Lightbox */}
       {lightbox !== null && photos[lightbox] && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
           onClick={() => setLightbox(null)}
           onTouchStart={(e) => {
             touchStartX.current = e.touches[0].clientX;
