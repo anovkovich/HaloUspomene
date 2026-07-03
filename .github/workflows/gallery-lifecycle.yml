@@ -67,9 +67,12 @@ jobs:
         run: |
           set -e
           BASE="${SITE_URL:-https://halouspomene.rs}"
-          URL="$BASE/api/cron/gallery?task=${{ steps.task.outputs.task }}"
+          # Trailing slash before the query: the site uses trailingSlash:true, so
+          # the no-slash form 308-redirects. -L follows it (same host keeps the
+          # Authorization header) as a belt-and-suspenders safety.
+          URL="$BASE/api/cron/gallery/?task=${{ steps.task.outputs.task }}"
           echo "Calling $URL"
-          code=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+          code=$(curl -sSL -o /tmp/resp.json -w "%{http_code}" \
             -H "Authorization: Bearer $CRON_SECRET" "$URL")
           echo "HTTP $code"
           cat /tmp/resp.json || true
