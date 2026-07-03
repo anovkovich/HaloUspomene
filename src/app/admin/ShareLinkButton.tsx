@@ -35,23 +35,44 @@ export default function ShareLinkButton({
     return () => document.removeEventListener("mousedown", h);
   }, [open]);
 
+  // Generate the share-page URL (creates/returns a token server-side).
+  async function fetchShareUrl(): Promise<string> {
+    const res = await fetch("/api/admin/share-links", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product_kind: productKind, slug }),
+    });
+    if (!res.ok) throw new Error("Failed to create share link");
+    const data = (await res.json()) as { token: string };
+    return `${window.location.origin}/pristup/${data.token}/`;
+  }
+
   async function copyShareLink() {
     if (busy) return;
     setBusy(true);
     try {
-      const res = await fetch("/api/admin/share-links", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_kind: productKind, slug }),
-      });
-      if (!res.ok) throw new Error("Failed to create share link");
-      const data = (await res.json()) as { token: string };
-      const url = `${window.location.origin}/pristup/${data.token}/`;
-      await navigator.clipboard.writeText(url);
+      // On mobile Safari, navigator.clipboard.writeText() after an `await fetch`
+      // fails silently — the user gesture (transient activation) expires during
+      // the async gap. The fix: call clipboard.write() SYNCHRONOUSLY within the
+      // gesture, passing a Promise<Blob> as the item content, so the browser
+      // keeps the copy pending until the fetch resolves.
+      if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/plain": fetchShareUrl().then(
+              (url) => new Blob([url], { type: "text/plain" })
+            ),
+          }),
+        ]);
+      } else {
+        // Desktop fallback: gesture is lenient here.
+        const url = await fetchShareUrl();
+        await navigator.clipboard.writeText(url);
+      }
       setCopied("share");
       setTimeout(() => setCopied(null), 2500);
     } catch {
-      // Fallback: copy direct URL so the admin doesn't end up with nothing.
+      // Last resort: copy the direct URL so the admin isn't left with nothing.
       try {
         await navigator.clipboard.writeText(directUrl);
         setCopied("direct");
