@@ -64,7 +64,9 @@ jobs:
         run: |
           TAG="backup-${{ steps.date.outputs.DATE }}"
           ARCHIVE="halouspomene-${{ steps.date.outputs.DATE }}.archive.gz"
+          # --repo: this job has no checkout, so gh can't infer the repo from git.
           gh release create "$TAG" \
+            --repo "${{ github.repository }}" \
             --title "DB Backup ${{ steps.date.outputs.DATE }}" \
             --notes "Automated daily MongoDB backup of the halouspomene database." \
             "$ARCHIVE"
@@ -75,7 +77,7 @@ jobs:
         run: |
           set -e
           TODAY=$(date -u +%s)
-          gh release list --limit 1000 --json tagName --jq '.[].tagName' \
+          gh release list --repo "${{ github.repository }}" --limit 1000 --json tagName --jq '.[].tagName' \
             | grep '^backup-' \
             | while read -r tag; do
                 date_str="${tag#backup-}"
@@ -94,6 +96,6 @@ jobs:
 
                 if [ "$keep" = "false" ]; then
                   echo "Pruning old backup: $tag (age ${age_days}d)"
-                  gh release delete "$tag" --yes --cleanup-tag
+                  gh release delete "$tag" --repo "${{ github.repository }}" --yes --cleanup-tag
                 fi
               done
