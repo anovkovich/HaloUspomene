@@ -45,6 +45,12 @@ export interface BirthdayData {
   event_date: string;
   submit_until: string;
   tagline?: string;
+  /**
+   * Twins / multiple children — flips the invitation label from
+   * "Vas pozivaju na MOJ ... rođendan" to "... NAŠ ... rođendan".
+   * Optional; added by hand in the admin JSON. Defaults to singular.
+   */
+  twins?: boolean;
   location: BirthdayLocation;
   countdown_enabled: boolean;
   map_enabled: boolean;

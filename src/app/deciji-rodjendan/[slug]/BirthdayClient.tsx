@@ -128,7 +128,7 @@ export default function BirthdayClient({ data, slug }: Props) {
               className="text-xs sm:text-sm uppercase tracking-[0.3em] font-medium"
               style={{ color: "var(--theme-text-muted)" }}
             >
-              Vas pozivaju na moj
+              Vas pozivaju na {data.twins ? "naš" : "moj"}
             </p>
 
             {/* Age badge */}
