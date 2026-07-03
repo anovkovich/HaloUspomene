@@ -154,11 +154,34 @@ export default function GalleryCard({ slug }: Props) {
   }, [selected, photos, slug]);
 
   const downloadOne = useCallback(
-    (photo: GalleryPhoto, index: number) => {
-      // Same-origin proxy → forces a download, no CORS, works on iOS.
+    async (photo: GalleryPhoto, index: number) => {
+      const proxyUrl = `/api/pozivnica/${slug}/galerija/download?id=${photo._id}`;
+      const filename = `${safeName(photo.guestName || "gost")}-${index + 1}.jpg`;
+
+      // iOS can't save a web download straight to Photos — use the native share
+      // sheet instead, which offers "Save Image" (→ Photos).
+      const isIOS =
+        /iP(hone|ad|od)/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      if (isIOS && navigator.canShare) {
+        try {
+          const res = await fetch(proxyUrl);
+          const blob = await res.blob();
+          const file = new File([blob], filename, { type: "image/jpeg" });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file] });
+            return;
+          }
+        } catch (err) {
+          if ((err as Error)?.name === "AbortError") return; // user cancelled
+          // otherwise fall through to a plain download
+        }
+      }
+
+      // Desktop / Android: direct download.
       const a = document.createElement("a");
-      a.href = `/api/pozivnica/${slug}/galerija/download?id=${photo._id}`;
-      a.download = `${safeName(photo.guestName || "gost")}-${index + 1}.jpg`;
+      a.href = proxyUrl;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       setTimeout(() => a.remove(), 2000);
