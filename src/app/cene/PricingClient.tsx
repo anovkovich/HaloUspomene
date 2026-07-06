@@ -59,9 +59,9 @@ const FEATURES: Feature[] = [
   },
   {
     id: "pdf",
-    label: "PDF pozivnica",
+    label: "PDF pozivnica + popust na štampu",
     description:
-      "Elegantna pozivnica spremna za štampu u A5 formatu sa svim detaljima venčanja i QR kodom za potvrdu dolaska!",
+      "Besplatna PDF pozivnica spremna za štampu, sa QR kodom za potvrdu dolaska. Uz to — poseban popust na ručno rađene štampane pozivnice i zahvalnice sa QR kodovima.",
     price: pricing.pozivnica.pdf.price,
     included: true,
     icon: <FileDown size={20} />,
@@ -156,7 +156,7 @@ export default function PricingClient() {
   });
   const [infoOpen, setInfoOpen] = useState<FeatureInfoKey>(null);
 
-  const openInfo = (id: "raspored" | "audio") => setInfoOpen(id);
+  const openInfo = (id: "raspored" | "audio" | "pdf") => setInfoOpen(id);
 
   const toggle = (id: string) => {
     if (id === "website" || id === "pdf") return;
@@ -410,21 +410,24 @@ export default function PricingClient() {
                             {feature.label}
                           </span>
                           {(feature.id === "raspored" ||
-                            feature.id === "audio") && (
+                            feature.id === "audio" ||
+                            feature.id === "pdf") && (
                             <span
                               role="button"
                               tabIndex={0}
                               aria-label={`Saznajte više o ${feature.label}`}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                openInfo(feature.id as "raspored" | "audio");
+                                openInfo(
+                                  feature.id as "raspored" | "audio" | "pdf",
+                                );
                               }}
                               onKeyDown={(e) => {
                                 if (e.key === "Enter" || e.key === " ") {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   openInfo(
-                                    feature.id as "raspored" | "audio",
+                                    feature.id as "raspored" | "audio" | "pdf",
                                   );
                                 }
                               }}

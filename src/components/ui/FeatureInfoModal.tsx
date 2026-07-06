@@ -16,9 +16,11 @@ import {
   Sparkles,
   Clock,
   Gift,
+  Images,
+  Heart,
 } from "lucide-react";
 
-export type FeatureInfoKey = "raspored" | "audio" | null;
+export type FeatureInfoKey = "raspored" | "audio" | "pdf" | null;
 
 interface Props {
   feature: FeatureInfoKey;
@@ -78,6 +80,7 @@ export default function FeatureInfoModal({ feature, onClose }: Props) {
             <div className="overflow-y-auto px-6 sm:px-8 pt-7 pb-7">
               {feature === "raspored" && <RasporedContent />}
               {feature === "audio" && <AudioContent />}
+              {feature === "pdf" && <PdfContent />}
             </div>
           </motion.div>
         </motion.div>
@@ -374,6 +377,86 @@ function AudioContent() {
         href="/pozivnica/ana-dejan/audio-knjiga"
         label="Pogledajte primer stranice uživo"
       />
+    </>
+  );
+}
+
+function PdfContent() {
+  return (
+    <>
+      <div className="flex items-center gap-3 mb-3 pr-10">
+        <span
+          className="w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{
+            backgroundColor: "rgba(var(--cene-accent-rgb),0.1)",
+            color: "var(--cene-accent)",
+          }}
+        >
+          <FileDown size={20} />
+        </span>
+        <h2
+          id="feature-info-title"
+          className="text-xl sm:text-2xl font-serif text-[#232323] leading-tight"
+        >
+          Besplatan PDF{" "}
+          <span className="text-[var(--cene-accent)]">
+            + štampane pozivnice i zahvalnice
+          </span>
+        </h2>
+      </div>
+
+      <p className="text-sm sm:text-[15px] text-[#232323]/70 leading-relaxed">
+        Uz svaku digitalnu pozivnicu dobijate <strong>besplatan PDF</strong>{" "}
+        spreman za štampu, sa QR kodom za potvrdu dolaska. A ako želite nešto
+        opipljivo za goste — mi <strong>ručno izrađujemo</strong> štampane
+        pozivnice i zahvalnice sa QR kodovima, uz{" "}
+        <span className="text-[var(--cene-accent)] font-semibold">
+          poseban popust
+        </span>{" "}
+        za naše korisnike.
+      </p>
+
+      <SectionTitle>Šta dobijate</SectionTitle>
+      <ul className="space-y-3">
+        <Bullet icon={<FileDown size={14} />} title="Besplatna PDF pozivnica">
+          Elegantan dizajn u A5 formatu sa svim detaljima venčanja i QR kodom za
+          potvrdu dolaska — spremna za štampu ili slanje odmah, bez doplate.
+        </Bullet>
+        <Bullet
+          icon={<Heart size={14} />}
+          title="Štampane ručno rađene pozivnice"
+        >
+          Fizičke pozivnice sa QR kodom za potvrdu dolaska — pored klasičnog
+          broja telefona, gost jednim skeniranjem potvrđuje dolazak za par
+          sekundi, bez poziva.
+        </Bullet>
+        <Bullet icon={<Images size={14} />} title="Zahvalnice sa QR za galeriju">
+          Štampane zahvalnice sa QR kodom koji vodi na vašu foto galeriju — gosti
+          skeniraju, dodaju svoje fotografije sa venčanja, a vi ih sve dobijate
+          na jednom mestu.
+        </Bullet>
+      </ul>
+
+      <div
+        className="mt-6 flex items-start gap-3 px-4 py-3 rounded-xl text-sm"
+        style={{
+          backgroundColor: "rgba(var(--cene-accent-rgb),0.06)",
+          border: "1px solid rgba(var(--cene-accent-rgb),0.12)",
+        }}
+      >
+        <Sparkles
+          size={16}
+          className="text-[var(--cene-accent)] flex-shrink-0 mt-0.5"
+        />
+        <p className="text-[#232323]/70 leading-relaxed">
+          <span className="font-semibold text-[var(--cene-accent)]">
+            Poseban popust za korisnike.
+          </span>{" "}
+          Kao naš korisnik, na sve ručno rađene štampane pozivnice i zahvalnice
+          sa QR kodovima dobijate popust — javite se i dogovaramo detalje po
+          vašoj želji.
+        </p>
+      </div>
     </>
   );
 }
