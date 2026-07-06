@@ -74,7 +74,7 @@ export default function AdminPage() {
   const [needsLogin, setNeedsLogin] = useState(false);
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
-  const [bankAccountIdx, setBankAccountIdx] = useState(2);
+  const [bankAccountIdx, setBankAccountIdx] = useState(0); // default: Erste (340)
   const [showPhoneRental, setShowPhoneRental] = useState(false);
   const [showCustomReceipt, setShowCustomReceipt] = useState(false);
   const [showBypassLink, setShowBypassLink] = useState(false);
