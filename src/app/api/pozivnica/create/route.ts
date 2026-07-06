@@ -156,6 +156,7 @@ export async function POST(request: NextRequest) {
       paid_for_pdf: false,
       paid_for_images: body.paid_for_images ?? false,
       images: [],
+      paid_for_gallery: body.paid_for_gallery ?? false,
       paid_for_music: body.paid_for_music ?? false,
       ...(body.custom_primary_color
         ? { custom_primary_color: body.custom_primary_color }

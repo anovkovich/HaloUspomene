@@ -81,6 +81,17 @@ const Hero: React.FC = () => {
               </Link>
             </div>
 
+            <Link
+              href="/qr-galerija-slika-sa-vencanja"
+              className="inline-flex items-center gap-1.5 mt-5 text-sm text-[#232323]/60 hover:text-[#AE343F] transition-colors"
+              data-track="cta_click"
+              data-track-cta-name="qr_galerija"
+              data-track-cta-location="hero"
+            >
+              <span className="font-medium text-[#AE343F]">✨ Novo</span>
+              <span>— QR galerija slika sa venčanja →</span>
+            </Link>
+
             {/* Trust signals */}
             <div className="flex items-center gap-3 mt-8 text-sm text-[#232323]/60">
               <span className="relative flex w-4 h-4 items-center justify-center flex-shrink-0">

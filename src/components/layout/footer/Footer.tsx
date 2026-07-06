@@ -106,6 +106,10 @@ const Footer: React.FC = () => {
                   href: "/izrada-pozivnica-online",
                 },
                 { name: "QR Pano dobrodošlice", href: "/qr-pano-dobrodoslice" },
+                {
+                  name: "QR Foto Galerija",
+                  href: "/qr-galerija-slika-sa-vencanja",
+                },
                 { name: "Telefon Uspomena", href: "/telefon-uspomena" },
                 {
                   name: "Auto za venčanje",

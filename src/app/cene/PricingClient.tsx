@@ -9,6 +9,7 @@ import {
   FileDown,
   LayoutDashboard,
   Mic,
+  Images,
   Phone,
   Heart,
   Sparkles,
@@ -72,6 +73,14 @@ const FEATURES: Feature[] = [
       "Alat za raspored stolova i raspored gostiju. Gosti mogu da pronađu sebe putem QR koda ili linka.",
     price: pricing.pozivnica.raspored.price,
     icon: <LayoutDashboard size={20} />,
+  },
+  {
+    id: "galerija",
+    label: "QR galerija fotografija",
+    description:
+      "Gosti skeniraju QR kod i dodaju svoje fotografije sa venčanja — sve slike na jednom mestu, a vi preuzmete celu galeriju.",
+    price: pricing.pozivnica.galerija.price,
+    icon: <Images size={20} />,
   },
   {
     id: "audio",
@@ -139,6 +148,7 @@ export default function PricingClient() {
     pdf: true,
     raspored: false,
     audio: false,
+    galerija: false,
   });
   const [selectedSubs, setSelectedSubs] = useState<Record<string, boolean>>({
     usb_kaseta: false,
@@ -160,7 +170,13 @@ export default function PricingClient() {
   };
 
   const selectAll = () => {
-    setSelected({ website: true, pdf: true, raspored: true, audio: true });
+    setSelected({
+      website: true,
+      pdf: true,
+      raspored: true,
+      audio: true,
+      galerija: true,
+    });
   };
 
   const toggleSub = (id: string) => {
@@ -184,6 +200,7 @@ export default function PricingClient() {
         pdf: true,
         raspored: true,
         audio: true,
+        galerija: false,
       });
     } else {
       setSelected({
@@ -191,6 +208,7 @@ export default function PricingClient() {
         pdf: true,
         raspored: false,
         audio: false,
+        galerija: false,
       });
       setSelectedSubs({ usb_kaseta: false, usb_bocica: false });
     }
@@ -250,18 +268,19 @@ export default function PricingClient() {
       }
     }
 
-    const allMainSelected =
-      selected.website && selected.raspored && selected.audio;
-    // Bundle discount applies only in Classic mode — Premium prices already
-    // encode the bundle discount, so there's no extra saving to apply.
+    // Promo: raspored sedenja + (QR galerija OR digitalna audio knjiga) → -2000.
+    const bundleQualifies =
+      selected.raspored && (selected.galerija || selected.audio);
+    // Applies only in Classic mode — Premium prices already encode their own
+    // discounts.
     const bundleDiscount =
-      mode === "classic" && allMainSelected ? FULL_PRICE - BUNDLE_PRICE : 0;
+      mode === "classic" && bundleQualifies ? FULL_PRICE - BUNDLE_PRICE : 0;
     const total = subtotal - bundleDiscount + subitemsTotal;
 
     return {
       subtotal: subtotal + subitemsTotal,
       total,
-      isBundle: mode === "classic" && allMainSelected,
+      isBundle: mode === "classic" && bundleQualifies,
       subitemsTotal,
     };
   }, [features, selected, selectedSubs, mode]);
@@ -539,9 +558,8 @@ export default function PricingClient() {
                   size={16}
                   className="inline-block mr-2 -mt-0.5 align-middle"
                 />
-                Izaberite sve i uštedite{" "}
-                {formatPrice(FULL_PRICE - BUNDLE_PRICE)} — kompletni paket za
-                samo {formatPrice(BUNDLE_PRICE)}
+                Izaberite raspored sedenja + QR galeriju ili audio knjigu i
+                uštedite {formatPrice(FULL_PRICE - BUNDLE_PRICE)}
               </p>
             </div>
           )}
@@ -558,7 +576,7 @@ export default function PricingClient() {
               <div className="flex items-center gap-2 mb-4 text-sm">
                 <Sparkles size={16} className="text-[#d4af37]" />
                 <span className="font-semibold text-[var(--cene-accent)]">
-                  Kompletni paket — ušteda{" "}
+                  Paket ušteda —{" "}
                   {formatPrice(FULL_PRICE - BUNDLE_PRICE)}!
                 </span>
               </div>
@@ -591,7 +609,7 @@ export default function PricingClient() {
                   ))}
               {isBundle && (
                 <div className="flex justify-between text-sm text-green-600 font-medium">
-                  <span>Popust na kompletni paket</span>
+                  <span>Paket popust (raspored + galerija/audio)</span>
                   <span>-{formatPrice(FULL_PRICE - BUNDLE_PRICE)}</span>
                 </div>
               )}
@@ -619,6 +637,7 @@ export default function PricingClient() {
                 ...(mode === "premium" ? { premium: "1" } : {}),
                 ...(selected.raspored ? { raspored: "1" } : {}),
                 ...(selected.audio ? { audio: "1" } : {}),
+                ...(selected.galerija ? { galerija: "1" } : {}),
                 ...(selectedSubs.usb_kaseta ? { usb_kaseta: "1" } : {}),
                 ...(selectedSubs.usb_bocica ? { usb_bocica: "1" } : {}),
               }).toString()}`}

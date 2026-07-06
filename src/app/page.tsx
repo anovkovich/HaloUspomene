@@ -6,6 +6,7 @@ import HowItWorks from "../components/landing/HowItWorks";
 import SectionInvitations from "../components/landing/SectionInvitations";
 import SectionRaspored from "../components/landing/SectionRaspored";
 import SectionAudio from "../components/landing/SectionAudio";
+import SectionGalerija from "../components/landing/SectionGalerija";
 import SectionPremium from "../components/landing/SectionPremium";
 import Concept from "../components/landing/Concept";
 import SectionRodjendani from "../components/landing/SectionRodjendani";
@@ -28,6 +29,7 @@ export default function Home() {
         <SectionPremium />
         <SectionPlaner />
         <SectionAudio />
+        <SectionGalerija />
         <Concept />
         <SectionRodjendani />
         <CTABar />
@@ -101,6 +103,18 @@ export default function Home() {
             digitalna audio knjiga preko QR koda za stolovima (3.000 din uz
             pozivnicu). Opcioni USB suveniri: retro kaseta sa USB-om i
             uspomene u bočici.
+          </p>
+          <p>
+            QR galerija slika sa venčanja — gosti skeniraju QR kod (na
+            zahvalnici ili stolu) i dodaju svoje fotografije direktno sa
+            telefona, bez aplikacije. Sve slike gostiju sa svadbe slivaju se na
+            jedno mesto, a mladenci preuzimaju celu galeriju — pojedinačno ili
+            kao ZIP. Radi na iPhone (HEIC) i Android uređajima. Deljena galerija
+            fotografija za prikupljanje slika gostiju.{" "}
+            <Link href="/qr-galerija-slika-sa-vencanja">
+              QR galerija slika sa venčanja
+            </Link>
+            .
           </p>
           <p>
             Premium AI Pozivnice — luksuzna pozivnica sa AI generisanom

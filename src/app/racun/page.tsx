@@ -437,7 +437,9 @@ function ReceiptContent() {
   // Classic bundle discount only applies to non-premium wedding receipts;
   // Premium already encodes its own bundled discount via getPremiumRasporedPrice /
   // getPremiumAudioPrice, and rodjendan has no bundle pricing yet.
-  const isBundle = isWedding && !payload.p && !!payload.r && !!payload.a;
+  // Promo bundle: raspored sedenja + (QR galerija OR digitalna audio knjiga).
+  const isBundle =
+    isWedding && !payload.p && !!payload.r && (!!payload.g || !!payload.a);
   const bundleDiscount = isBundle
     ? pricing.pozivnica.bundleFullPrice - pricing.pozivnica.bundlePrice
     : 0;
@@ -530,7 +532,7 @@ function ReceiptContent() {
                 {bundleDiscount > 0 && (
                   <div className="flex justify-between text-[12px]">
                     <span className="text-green-700">
-                      Popust (kompletni paket)
+                      Popust na paket
                     </span>
                     <span className="text-green-700 font-bold">
                       -{formatPrice(bundleDiscount)}

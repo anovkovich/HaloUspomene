@@ -115,6 +115,8 @@ export async function POST(request: NextRequest) {
       // on the Fountain step. Other premium themes never set this.
       paid_for_images: body.paid_for_images ?? false,
       images: [],
+      // QR guest photo gallery — flat standalone add-on, available in both tiers.
+      paid_for_gallery: body.paid_for_gallery ?? false,
       // Background music is a flat 1000 din add-on across both tiers.
       paid_for_music: body.paid_for_music ?? false,
       draft: true,

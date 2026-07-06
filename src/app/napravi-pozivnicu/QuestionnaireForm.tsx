@@ -172,6 +172,7 @@ interface FormData {
   extra_usb_kaseta: boolean;
   extra_usb_bocica: boolean;
   extra_images: boolean;
+  extra_galerija: boolean;
   // File handles for user-uploaded gallery photos. Held in memory only;
   // pushed to Vercel Blob in handleSubmit after the couple is created.
   pendingImages: File[];
@@ -273,6 +274,7 @@ const defaultFormData: FormData = {
   extra_usb_kaseta: false,
   extra_usb_bocica: false,
   extra_images: false,
+  extra_galerija: false,
   pendingImages: [],
   extra_music: false,
   pendingMusic: null,
@@ -826,6 +828,7 @@ function ExtrasAccordion({
     : pricing.pozivnica.audio.price;
 
   const imagesAddonPrice = pricing.addons.find((a) => a.id === "images")!.price;
+  const galerijaPrice = pricing.pozivnica.galerija.price;
   const musicAddonPrice = pricing.addons.find(
     (a) => a.id === "background_music",
   )!.price;
@@ -834,9 +837,10 @@ function ExtrasAccordion({
   // original classic price struck through; USBs keep their regular pricing.
   // extra_images is classic-only — premium Fountain offers a free 2-photo
   // gallery rendered in the Fountain step, other premium themes have none.
-  // Galerija + Music render first so USBs (nested-rendered after the map)
-  // stay directly under Audio knjiga. Music is available for both tiers;
-  // Galerija stays classic-only.
+  // QR galerija is a standalone add-on available in BOTH tiers (flat price,
+  // no premium bundling) and sits directly below Raspored, above Audio.
+  // Music renders before Raspored for both tiers; USBs are nested-rendered
+  // after the map so they stay directly under Audio knjiga.
   const extras = [
     ...(!isPremium
       ? [
@@ -862,6 +866,12 @@ function ExtrasAccordion({
         isPremium && pricing.pozivnica.raspored.price > rasporedPrice
           ? pricing.pozivnica.raspored.price
           : undefined,
+    },
+    {
+      key: "extra_galerija" as const,
+      label: "QR galerija fotografija",
+      price: `+${formatPrice(galerijaPrice)}`,
+      originalPrice: undefined,
     },
     {
       key: "extra_audio" as const,
@@ -1148,14 +1158,18 @@ function ExtrasAccordion({
               sum += pricing.addons.find((a) => a.id === "usb_kaseta")!.price;
             if (formData.extra_usb_bocica)
               sum += pricing.addons.find((a) => a.id === "usb_bocica")!.price;
-            // Galerija fotografija — classic-only add-on. Premium Fountain
-            // bundles it free; other premium themes don't offer it.
+            // Galerija fotografija (polaroid) — classic-only add-on. Premium
+            // Fountain bundles it free; other premium themes don't offer it.
             if (!isPremium && formData.extra_images) sum += imagesAddonPrice;
+            // QR galerija — flat standalone add-on for both tiers.
+            if (formData.extra_galerija) sum += galerijaPrice;
             // Muzika u pozadini — flat add-on for both tiers.
             if (formData.extra_music) sum += musicAddonPrice;
             // Classic bundle discount only — Premium prices already encode it.
             const isFullBundle =
-              !isPremium && formData.extra_raspored && formData.extra_audio;
+              !isPremium &&
+              formData.extra_raspored &&
+              (formData.extra_galerija || formData.extra_audio);
             const discount = isFullBundle
               ? pricing.pozivnica.bundleFullPrice -
                 pricing.pozivnica.bundlePrice
@@ -1166,7 +1180,7 @@ function ExtrasAccordion({
                 {isFullBundle && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-green-600">
-                      Popust (kompletni paket)
+                      Popust na paket
                     </span>
                     <span className="text-[10px] text-green-600 font-medium">
                       -{formatPrice(discount)}
@@ -2641,6 +2655,8 @@ export default function QuestionnaireForm({
         useCyrillic: wantsPremium ? false : prev.useCyrillic,
         extra_raspored: params.get("raspored") === "1" || prev.extra_raspored,
         extra_audio: params.get("audio") === "1" || prev.extra_audio,
+        extra_galerija:
+          params.get("galerija") === "1" || prev.extra_galerija,
         extra_usb_kaseta:
           params.get("usb_kaseta") === "1" || prev.extra_usb_kaseta,
         extra_usb_bocica:
@@ -3152,6 +3168,7 @@ export default function QuestionnaireForm({
           ...(phoneShowNumbers ? { show_numbers: phoneShowNumbers } : {}),
           ...(phoneNumberNames ? { number_names: phoneNumberNames } : {}),
           paid_for_images: isFountainGallery,
+          paid_for_gallery: formData.extra_galerija,
           paid_for_music: formData.extra_music,
           ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
           recaptcha_token: recaptchaToken,
@@ -3304,6 +3321,7 @@ export default function QuestionnaireForm({
             ? "bocica"
             : "",
         paid_for_images: isClassicGallery,
+        paid_for_gallery: formData.extra_galerija,
         paid_for_music: formData.extra_music,
         custom_primary_color: formData.custom_primary_color || undefined,
         custom_background_color: formData.custom_background_color || undefined,
@@ -3360,6 +3378,7 @@ export default function QuestionnaireForm({
             "Kontakt telefon": combinedPhone,
             "Raspored sedenja": formData.extra_raspored ? "✅ DA" : "❌ Ne",
             "Audio knjiga": formData.extra_audio ? "✅ DA" : "❌ Ne",
+            "QR galerija": formData.extra_galerija ? "✅ DA" : "❌ Ne",
             "USB suvenir": formData.extra_usb_kaseta
               ? "USB retro kaseta"
               : formData.extra_usb_bocica
