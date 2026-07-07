@@ -513,7 +513,7 @@ export default function RasporedSedenjaLanding() {
               <div className="text-center pt-4 border-t border-stone-200">
                 {standalonePromoActive && (
                   <span className="inline-block mb-3 px-3 py-1 rounded-full bg-[#AE343F]/10 text-[#AE343F] text-[10px] font-bold uppercase tracking-[0.2em]">
-                    Majska akcija
+                    Julska akcija
                   </span>
                 )}
                 <div className="flex items-baseline justify-center gap-3 mb-5">
