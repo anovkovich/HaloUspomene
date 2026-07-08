@@ -14,9 +14,9 @@ import {
 } from "@/lib/bypass-token";
 
 export const metadata: Metadata = {
-  title: "Napravi Website Pozivnicu za Venčanje | Personalizovana Online Pozivnica",
+  title: "Napravi Pozivnicu za Venčanje Online",
   description:
-    "Napravite svoju website pozivnicu za venčanje za 24h. Popunite kratki upitnik — mi biramo temu, font i dizajn. RSVP forma, odbrojavanje i program dana su uključeni.",
+    "Napravite svoju digitalnu pozivnicu za venčanje online za 24h — popunite kratki upitnik, mi dizajniramo. RSVP forma, odbrojavanje i besplatna PDF uključeni.",
   keywords: [
     "website venčana pozivnica",
     "napravi pozivnicu online",

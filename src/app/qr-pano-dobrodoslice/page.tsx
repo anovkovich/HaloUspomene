@@ -25,7 +25,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
   title:
-    "QR Pano Dobrodošlice — Pametan Raspored Sedenja za Svadbu | HALO Uspomene",
+    "QR Pano Dobrodošlice — Pametan Raspored Sedenja za Svadbu",
   description:
     "QR Pano dobrodošlice za venčanje, svadbu ili drugi događaj — gosti skeniraju QR kod na ulazu u salu, ukucaju ime i telefon ih vodi do njihovog stola. Alat za raspored sedenja, B1 pano spreman za štampu. Bez gužve, bez spiskova, bez hostese.",
   keywords: [

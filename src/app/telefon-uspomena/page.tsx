@@ -34,7 +34,7 @@ const priceLabel = (n: number) => (n === 0 ? "GRATIS" : formatPrice(n));
 
 export const metadata: Metadata = {
   title:
-    "Telefon Uspomena za Venčanje — Retro Telefon za Audio Poruke | HALO Uspomene",
+    "Telefon Uspomena za Venčanje — Retro Telefon za Audio Poruke",
   description:
     "Telefon uspomena za venčanja u Srbiji. Iznajmite retro telefon sa brojčanikom — gosti ostavljaju glasovne poruke. Audio guest book sa dostavom u Beograd, Novi Sad i celu Srbiju.",
   keywords: [

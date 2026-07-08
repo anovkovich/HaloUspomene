@@ -30,10 +30,9 @@ import RasporedKontaktForm from "./RasporedKontaktForm";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
-  title:
-    "Raspored sedenja za svadbu ili događaj — Online alat sa QR Panoom | HALO Uspomene",
+  title: "Raspored Sedenja za Svadbu — Online Alat",
   description:
-    "Raspored sedenja online — alat za raspoređivanje stolova i gostiju za svadbu, konferenciju, korporativni event ili veću proslavu. Excel/CSV uvoz gostiju, QR Pano dobrodošlice, lično „gde sedim?” pretraga. Cena, demo i pristup po upitu.",
+    "Raspored sedenja i stolova za svadbu online — raspoređivanje gostiju, QR pano dobrodošlice i „gde sedim?” pretraga. Uvoz gostiju, demo i cena po upitu.",
   keywords: [
     "raspored sedenja",
     "raspored sedenja online",

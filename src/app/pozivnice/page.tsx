@@ -43,8 +43,7 @@ import type { ThemeType, ThemeConfig } from "@/app/pozivnica/[slug]/types";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
-  title:
-    "Website Pozivnica za Venčanje — Digitalna Pozivnica + PDF za Štampu | HALO Uspomene",
+  title: "Digitalna Pozivnica za Venčanje + PDF za Štampu",
   description:
     "Website pozivnica za venčanje sa RSVP potvrdom, odbrojavanjem, mapom i besplatnom PDF pozivnicom za štampu sa QR kodom. 5 tema, latinica i ćirilica. Od 5.000 din. Gotova za 24h.",
   keywords: [

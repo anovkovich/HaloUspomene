@@ -20,7 +20,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
   title:
-    "Izrada Pozivnica Online — Napravi Digitalnu Pozivnicu za Svaku Priliku | HALO Uspomene",
+    "Izrada Pozivnica Online — Napravi Digitalnu Pozivnicu za Svaku Priliku",
   description:
     "Napravite pozivnicu online za venčanje, dečiji rođendan, prvi rođendan ili punoletstvo. Personalizovana digitalna pozivnica sa RSVP-om, odbrojavanjem i mapom — gotova za 24h.",
   keywords: [

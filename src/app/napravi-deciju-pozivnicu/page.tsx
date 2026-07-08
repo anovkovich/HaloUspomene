@@ -49,9 +49,9 @@ const chewy = Chewy({
 const fontVars = `${fredoka.variable} ${bubblegumSans.variable} ${baloo2.variable} ${patrickHand.variable} ${chewy.variable}`;
 
 export const metadata: Metadata = {
-  title: "Napravi Pozivnicu za Dečiji Rođendan | Digitalna Pozivnica za Proslavu",
+  title: "Napravi Pozivnicu za Dečiji Rođendan Online",
   description:
-    "Napravite šarenu digitalnu pozivnicu za dečiji rođendan. Izaberite temu za dečaka ili devojčicu, dodajte RSVP formu i podelite sa gostima.",
+    "Napravite sami digitalnu pozivnicu za dečiji rođendan online — izaberite temu, dodajte RSVP i podelite jednim linkom. Uz besplatnu PDF pozivnicu za štampu.",
   keywords: [
     "pozivnica za dečiji rođendan",
     "digitalna pozivnica rođendan",

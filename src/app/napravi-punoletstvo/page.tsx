@@ -6,9 +6,9 @@ import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
 import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
 
 export const metadata: Metadata = {
-  title: "Napravi Pozivnicu za Punoletstvo | Digitalna 18. Rođendan Pozivnica",
+  title: "Pozivnice za 18. Rođendan i Punoletstvo",
   description:
-    "Napravite elegantnu digitalnu pozivnicu za 18. rođendan — klasičan stil sa script fontom, RSVP formom, mapom i odbrojavanjem. Gotovo za 24h.",
+    "Elegantna digitalna pozivnica za 18. rođendan (punoletstvo) — script font, RSVP forma, odbrojavanje i mapa. Gotova za 24h, deli se jednim linkom.",
   keywords: [
     "pozivnica za punoletstvo",
     "pozivnica za 18 rođendan",
