@@ -3,6 +3,8 @@
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { getWeddingData } from "@/data/pozivnice";
+import { patchCouple } from "@/lib/couples";
+import type { MeniData } from "@/app/pozivnica/[slug]/types";
 import {
   loadPortalData as dbLoadPortal,
   saveChecklist as dbSaveChecklist,
@@ -126,6 +128,23 @@ export async function saveVendorFavoritesAction(vendorFavorites: string[]) {
   const slug = await getAuthSlug();
   if (!slug) return { error: "Niste prijavljeni" };
   await dbSaveVendorFavorites(slug, vendorFavorites);
+  return { ok: true };
+}
+
+/* ── Meni (free value-add: food/drinks shown in the guest hub) ────────── */
+
+export async function loadMeniAction(): Promise<MeniData | null> {
+  const slug = await getAuthSlug();
+  if (!slug) return null;
+  const data = await getWeddingData(slug);
+  return data?.meni ?? null;
+}
+
+export async function saveMeniAction(meni: MeniData) {
+  const slug = await getAuthSlug();
+  if (!slug) return { error: "Niste prijavljeni" };
+  // Meni lives on the couple record (WeddingData) so the guest hub can read it.
+  await patchCouple(slug, { meni });
   return { ok: true };
 }
 

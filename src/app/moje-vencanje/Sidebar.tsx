@@ -7,6 +7,7 @@ import {
   Users,
   Mic,
   Images,
+  UtensilsCrossed,
   LayoutDashboard,
   LogOut,
   ExternalLink,
@@ -20,6 +21,7 @@ export type ActiveView =
   | "vendors"
   | "audio"
   | "galerija"
+  | "meni"
   | "guests";
 
 interface SidebarProps {
@@ -60,6 +62,7 @@ const NAV_ITEMS: {
   { view: "vendors", label: "Vendori", icon: <Star size={18} /> },
   { view: "audio", label: "Audio knjiga", icon: <Mic size={18} /> },
   { view: "galerija", label: "Galerija", icon: <Images size={18} /> },
+  { view: "meni", label: "Meni", icon: <UtensilsCrossed size={18} /> },
   { view: "guests", label: "Gosti", icon: <Users size={18} /> },
 ];
 

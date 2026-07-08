@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Mic,
   Images,
+  UtensilsCrossed,
   Star,
   ArrowLeftCircle,
   Home,
@@ -47,6 +48,7 @@ const VendorDirectory = React.lazy(() => import("./VendorDirectory"));
 const AudioCard = React.lazy(() => import("./AudioCard"));
 const GalleryCard = React.lazy(() => import("./GalleryCard"));
 const GuestsCard = React.lazy(() => import("./GuestsCard"));
+const MeniCard = React.lazy(() => import("./MeniCard"));
 import OverviewCard from "./OverviewCard";
 
 type AppState = "loading" | "guest" | "auth";
@@ -120,6 +122,7 @@ export default function MojeVencanjeClient() {
     if (tab === "vendors") setActiveView("vendors");
     if (tab === "audio") setActiveView("audio");
     if (tab === "galerija") setActiveView("galerija");
+    if (tab === "meni") setActiveView("meni");
     if (tab === "guests") setActiveView("guests");
   }, []);
 
@@ -694,6 +697,17 @@ export default function MojeVencanjeClient() {
                   <GalleryCard slug={coupleInfo.slug} />
                 </React.Suspense>
               )}
+              {activeView === "meni" && coupleInfo && (
+                <React.Suspense
+                  fallback={
+                    <div className="flex justify-center py-12">
+                      <span className="loading loading-spinner loading-lg text-[#AE343F]" />
+                    </div>
+                  }
+                >
+                  <MeniCard />
+                </React.Suspense>
+              )}
               {activeView === "guests" && coupleInfo && (
                 <React.Suspense
                   fallback={
@@ -786,6 +800,18 @@ export default function MojeVencanjeClient() {
                 <span className="text-[10px] font-medium">Galerija</span>
               </button>
             )}
+            <button
+              onClick={() => {
+                setActiveView("meni");
+                window.scrollTo({ top: 0 });
+              }}
+              className={`flex flex-col items-center gap-0.5 py-1 ${
+                activeView === "meni" ? "text-[#AE343F]" : "text-[#232323]/60"
+              }`}
+            >
+              <UtensilsCrossed size={20} />
+              <span className="text-[10px] font-medium">Meni</span>
+            </button>
             <Link
               href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
               target="_blank"
@@ -861,6 +887,11 @@ export default function MojeVencanjeClient() {
                       },
                     ]
                   : []),
+                {
+                  view: "meni" as const,
+                  label: "Meni",
+                  icon: <UtensilsCrossed size={18} />,
+                },
                 {
                   view: "guests" as const,
                   label: "Gosti",
