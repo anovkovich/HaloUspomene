@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import { MultilineText } from "@/lib/multiline";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
+import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
 import PremiumCallCTA from "../components/PremiumCallCTA";
 
 const HeroSection = dynamic(() => import("../components/HeroSection"), {
@@ -548,6 +549,8 @@ function LineArtRSVPForm({ slug, submitUntil, formattedDeadline, calendar }: { s
         <button type="button" onClick={() => { setIsSubmitted(false); setName(""); setDetails(""); }} className="mt-6 block mx-auto text-xs text-[#8B7355]/50 underline hover:text-[#8B7355]">
           Pošalji još jednu potvrdu
         </button>
+
+        <InvitationOfferCTA inline tone="onLight" className="mt-6" />
       </motion.div>
     );
   }

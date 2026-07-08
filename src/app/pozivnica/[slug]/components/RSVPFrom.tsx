@@ -5,6 +5,7 @@ import { Heart, Check, Send, Users, MessageSquare, User } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
+import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
 import type { CalendarEvent } from "@/lib/calendar";
 
 interface RSVPFormProps {
@@ -146,22 +147,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ slug, calendarEvent }) => {
             </p>
           </div>
 
-          {/* Decorative divider */}
-          <div className="flex items-center justify-center gap-4 my-8 animate-[fade-in_0.5s_ease-out_0.5s_both]">
-            <div
-              className="h-px w-16"
-              style={{ backgroundColor: "var(--theme-border)" }}
-            />
-            <Heart
-              size={16}
-              className="animate-pulse"
-              style={{ color: "var(--theme-primary)" }}
-            />
-            <div
-              className="h-px w-16"
-              style={{ backgroundColor: "var(--theme-border)" }}
-            />
-          </div>
+          <div className="mt-8" />
 
           {/* Guest info summary */}
           <div
@@ -209,6 +195,8 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ slug, calendarEvent }) => {
           >
             {t.submitAnother}
           </button>
+
+          <InvitationOfferCTA inline className="mt-8" />
         </div>
 
         <style jsx>{`

@@ -13,6 +13,7 @@ import { Clock, Heart, Send } from "lucide-react";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import TornPaperDivider from "../components/TornPaperDivider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
+import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
 import type {
   ThemeInvitationProps,
   PremiumCalendarBundle,
@@ -911,6 +912,8 @@ function FountainRSVPForm({
         >
           Pošalji još jednu potvrdu
         </button>
+
+        <InvitationOfferCTA inline tone="onDark" className="mt-6" />
       </motion.div>
     );
   }

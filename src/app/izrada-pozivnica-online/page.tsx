@@ -232,6 +232,42 @@ export default function IzradaPozivnicaOnline() {
           />
         </section>
 
+        {/* ŠTAMPANE POZIVNICE + QR */}
+        <section className="py-8 sm:py-12">
+          <div className="container mx-auto px-4 max-w-5xl">
+            <div className="relative overflow-hidden rounded-3xl bg-[#232323] text-[#F5F4DC] p-8 sm:p-12">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#AE343F]/15 rounded-full blur-3xl -translate-y-1/3 translate-x-1/4 pointer-events-none" />
+              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-8">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#d4af37]/15 text-[#d4af37] flex items-center justify-center shrink-0">
+                  <QrCode size={40} strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#d4af37] mb-3">
+                    Volite nešto u ruci?
+                  </p>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif leading-tight mb-4">
+                    Štampane pozivnice i zahvalnice{" "}
+                    <span className="italic text-[#d4af37]">sa QR kodom</span>
+                  </h2>
+                  <p className="text-[#F5F4DC]/60 leading-relaxed mb-6 max-w-2xl">
+                    Pored digitalne, ručno izrađujemo i štampane pozivnice sa QR
+                    kodom za potvrdu dolaska — pored klasičnog broja telefona — i
+                    zahvalnice sa QR kodom koji vodi na foto galeriju venčanja.
+                    Uz poseban popust za naše korisnike.
+                  </p>
+                  <Link
+                    href="/napravi-pozivnicu"
+                    className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#AE343F] hover:bg-[#8B2833] text-white text-sm uppercase tracking-widest font-medium rounded-full transition-all shadow-xl shadow-[#AE343F]/20"
+                  >
+                    Zatražite štampane pozivnice
+                    <ArrowRight size={16} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* BENEFITS */}
         <section className="py-16 sm:py-20 bg-white">
           <div className="container mx-auto px-4 max-w-6xl">

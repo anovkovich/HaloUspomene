@@ -16,6 +16,7 @@ import type {
 import { MultilineText } from "@/lib/multiline";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
+import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
 import PremiumCallCTA from "../components/PremiumCallCTA";
 
 /*
@@ -256,6 +257,8 @@ function WatercolorRSVPForm({
         >
           Pošalji još jednu potvrdu
         </button>
+
+        <InvitationOfferCTA inline tone="onDark" className="mt-6" />
       </motion.div>
     );
   }

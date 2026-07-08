@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Loader2, CheckCircle2, Minus, Plus } from "lucide-react";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
+import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
 import {
   type CalendarEvent,
   type CalendarLabels,
@@ -75,6 +76,8 @@ export default function StandaloneRSVPForm({
             />
           </div>
         )}
+
+        <InvitationOfferCTA inline className="mt-8" />
       </motion.div>
     );
   }

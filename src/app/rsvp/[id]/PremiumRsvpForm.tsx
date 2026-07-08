@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Send, X } from "lucide-react";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
+import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
 import type { CalendarEvent, CalendarLabels } from "@/lib/calendar";
 
 /* Luxe premium RSVP form — glassmorphism + gold, matching the Watercolor
@@ -191,6 +192,8 @@ export default function PremiumRsvpForm({
         >
           {t.another}
         </button>
+
+        <InvitationOfferCTA inline tone="onDark" className="mt-6" />
       </motion.div>
     );
   }
