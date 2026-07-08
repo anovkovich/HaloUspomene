@@ -17,6 +17,46 @@ function loadContent(slug: string): string {
 // All posts including scheduled/unpublished ones
 const allBlogPosts: BlogPost[] = [
   {
+    slug: "audio-knjiga-utisaka-cena-kako-funkcionise",
+    title: "Audio Knjiga Utisaka — Cena i Kako Funkcioniše 2026",
+    description:
+      "Šta je audio knjiga utisaka, kako funkcioniše i koliko košta u Srbiji 2026. Digitalna QR audio knjiga uz pozivnicu ili retro telefon uspomena — cene, koraci i saveti.",
+    category: "Vodič",
+    tags: [
+      "audio knjiga utisaka",
+      "audio knjiga utisaka cena",
+      "digitalna audio knjiga",
+      "knjiga utisaka venčanje",
+      "audio guest book",
+      "retro telefon uspomena",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-07-08",
+    readTime: 8,
+    featured: true,
+    content: loadContent("audio-knjiga-utisaka-cena-kako-funkcionise"),
+  },
+  {
+    slug: "qr-galerija-slika-sa-vencanja-kako-gosti-dele",
+    title: "QR Galerija Slika sa Venčanja — Kako Gosti Dele Slike",
+    description:
+      "Kako gosti dele fotografije sa venčanja skeniranjem QR koda. Šta je QR galerija slika sa venčanja, kako funkcioniše, privatnost, životni ciklus i cena u Srbiji 2026.",
+    category: "Vodič",
+    tags: [
+      "qr galerija slika sa venčanja",
+      "galerija slika sa venčanja",
+      "kako gosti dele slike sa venčanja",
+      "zajednička galerija venčanje",
+      "qr kod za slike venčanje",
+      "foto galerija venčanje",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-07-08",
+    readTime: 9,
+    featured: true,
+    content: loadContent("qr-galerija-slika-sa-vencanja-kako-gosti-dele"),
+  },
+  {
     slug: "sta-je-audio-guest-book",
     title: "Šta je Audio Guest Book i Zašto je Hit na Venčanjima u Srbiji?",
     description:
