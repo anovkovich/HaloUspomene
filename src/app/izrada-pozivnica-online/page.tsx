@@ -14,6 +14,7 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
+import StampaneLeadForm from "./StampaneLeadForm";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
@@ -255,13 +256,13 @@ export default function IzradaPozivnicaOnline() {
                     zahvalnice sa QR kodom koji vodi na foto galeriju venčanja.
                     Uz poseban popust za naše korisnike.
                   </p>
-                  <Link
-                    href="/napravi-pozivnicu"
+                  <a
+                    href="#kontakt"
                     className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#AE343F] hover:bg-[#8B2833] text-white text-sm uppercase tracking-widest font-medium rounded-full transition-all shadow-xl shadow-[#AE343F]/20"
                   >
                     Zatražite štampane pozivnice
                     <ArrowRight size={16} />
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
@@ -331,6 +332,25 @@ export default function IzradaPozivnicaOnline() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* KONTAKT — štampane pozivnice / zahvalnice */}
+        <section id="kontakt" className="py-16 sm:py-24 bg-[#232323]">
+          <div className="container mx-auto px-4 max-w-3xl">
+            <div className="text-center mb-10">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#d4af37] mb-4">
+                Štampane pozivnice i zahvalnice
+              </p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#F5F4DC] mb-4">
+                Zatražite ponudu
+              </h2>
+              <p className="text-[#F5F4DC]/60 max-w-2xl mx-auto">
+                Ručno izrađujemo štampane pozivnice i zahvalnice sa QR kodom —
+                pošaljite upit bez obaveze, javljamo se sa ponudom i detaljima.
+              </p>
+            </div>
+            <StampaneLeadForm />
           </div>
         </section>
 
