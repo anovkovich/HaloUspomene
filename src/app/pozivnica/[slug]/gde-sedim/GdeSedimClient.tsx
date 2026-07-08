@@ -13,6 +13,14 @@ interface Props {
   /** When true, render the BA/HR/ME ijekavica variant of all copy
    *  ("mjesto" instead of "mesto", etc.). */
   ijekavica?: boolean;
+  /** Controlled selected guest. When provided (with onSelectChange), the guest
+   *  hub owns the selection so the "Plan sale" tab can highlight the same
+   *  table. Omit for standalone (uncontrolled) use. */
+  selected?: GuestLookupEntry | null;
+  onSelectChange?: (entry: GuestLookupEntry | null) => void;
+  /** When false, the inline hall map is not rendered — the hub shows the map
+   *  in its own "Plan sale" tab instead. Defaults to true (standalone page). */
+  showMap?: boolean;
 }
 
 const normalize = (s: string) =>
@@ -25,20 +33,23 @@ export default function GdeSedimClient({
   guestLookup,
   tables,
   ijekavica = false,
+  selected: controlledSelected,
+  onSelectChange,
+  showMap = true,
 }: Props) {
   // All BA/HR/ME-aware copy in one place \u2014 keeps the JSX below readable
   // and avoids 6+ inline ternaries. Named `tr` not `t` to avoid shadowing
   // the existing iterator variable in `.map((t: GuestTableEntry) => ...)`.
   const tr = ijekavica
     ? {
-        enterYourName: "Unesite va\u0161e ime",
+        enterYourName: "Unesite ime i prona\u0111ite svoje mjesto",
         yourSeatSingular: "Va\u0161e mjesto",
         yourSeatPlural: "Va\u0161a mjesta",
         welcome: "Smjestite se i u\u017eivajte \u2014 hvala \u0161to ste tu",
         seatUnit: (n: number) => (n === 1 ? "mjesto" : "mjesta"),
       }
     : {
-        enterYourName: "Unesite va\u0161e ime",
+        enterYourName: "Unesite ime i prona\u0111ite svoje mesto",
         yourSeatSingular: "Va\u0161e mesto",
         yourSeatPlural: "Va\u0161a mesta",
         welcome: "Smestite se i u\u017eivajte \u2014 hvala \u0161to ste tu",
@@ -46,7 +57,15 @@ export default function GdeSedimClient({
       };
 
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<GuestLookupEntry | null>(null);
+  const [internalSelected, setInternalSelected] =
+    useState<GuestLookupEntry | null>(null);
+  // Controlled when the hub passes onSelectChange; otherwise self-managed.
+  const selected =
+    controlledSelected !== undefined ? controlledSelected : internalSelected;
+  const setSelected = (entry: GuestLookupEntry | null) => {
+    if (onSelectChange) onSelectChange(entry);
+    else setInternalSelected(entry);
+  };
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
 
@@ -347,8 +366,9 @@ export default function GdeSedimClient({
       </AnimatePresence>
 
       {/* Hall map — fixed top margin so it always sits 32px below the
-          previous element (search input, or the result card when present). */}
-      {tables.length > 0 && (
+          previous element (search input, or the result card when present).
+          Hidden when the hub renders the map in its own "Plan sale" tab. */}
+      {showMap && tables.length > 0 && (
         <div className="mt-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div

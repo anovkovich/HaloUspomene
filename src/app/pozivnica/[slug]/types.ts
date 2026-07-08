@@ -110,6 +110,7 @@ export interface WeddingData {
   gallery_sms_purge_warning_sent?: boolean; // Gallery lifecycle: SMS #2 (deletion warning, d5) sent
   gallery_purged_at?: string; // Gallery lifecycle: ISO timestamp when photos were system-purged (end of d5)
   gallery_extra_days?: number; // Gallery lifecycle: admin-granted extra days of couple access before purge (default 0)
+  meni?: MeniData; // Free value-add: food and/or drink menu shown in the guest hub. Either group may be present independently.
   paid_for_music?: boolean; // Unlocks background music add-on (1000 din)
   music_url?: string; // Vercel Blob URL of the audio file (.m4a/.mp3)
   music_pathname?: string; // Blob pathname — required for cleanup on delete
@@ -145,6 +146,23 @@ export interface WeddingData {
   phone_verified?: boolean;
   /** UUID of the bypass token that authorized this submission. Audit-only; absent for normal SMS-verified submissions. */
   bypass_token_id?: string;
+}
+
+// ── Guest-hub menu (free value-add) ─────────────────────────────────────────
+// Food and drinks are two independent groups: a couple may add only drinks, only
+// food, or both. Rendered as a "Meni" tab in the guest hub when non-empty.
+export interface MeniItem {
+  id: string;
+  /** Sub-category within the group. Food: "predjelo"|"glavno"|"desert"|"ostalo".
+   *  Drinks: "alkoholno"|"bezalkoholno"|"toplo"|"ostalo". */
+  kategorija: string;
+  naziv: string;
+  opis?: string;
+}
+
+export interface MeniData {
+  food?: MeniItem[];
+  drinks?: MeniItem[];
 }
 
 // Comprehensive theme configuration

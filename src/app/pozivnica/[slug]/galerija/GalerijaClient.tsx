@@ -13,6 +13,9 @@ interface Props {
   useCyrillic: boolean;
   phase: GalleryPhase;
   initialPhotos: GalleryPhoto[];
+  /** When true, render without the full-page chrome (no min-h-screen / gradient
+   *  background / couple-names header) so it can be embedded as a hub tab. */
+  embedded?: boolean;
 }
 
 const ALLOWED_MIME = new Set([
@@ -105,6 +108,7 @@ export default function GalerijaClient({
   useCyrillic,
   phase,
   initialPhotos,
+  embedded = false,
 }: Props) {
   const t = useMemo(() => strings(useCyrillic), [useCyrillic]);
 
@@ -331,11 +335,20 @@ export default function GalerijaClient({
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6]"
+      className={
+        embedded
+          ? ""
+          : "min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6]"
+      }
       style={{ color: "var(--theme-text)" }}
     >
-      <div className="max-w-3xl mx-auto px-4 py-10 sm:py-14">
-        {/* Header */}
+      <div
+        className={
+          embedded ? "max-w-3xl mx-auto" : "max-w-3xl mx-auto px-4 py-10 sm:py-14"
+        }
+      >
+        {/* Header — hidden when embedded (the hub provides its own). */}
+        {!embedded && (
         <div className="text-center mb-8">
           <h1
             className="text-4xl sm:text-5xl mb-2"
@@ -355,6 +368,7 @@ export default function GalerijaClient({
             </p>
           )}
         </div>
+        )}
 
         {/* Upload CTA (upload phase only) */}
         {canUpload && (
