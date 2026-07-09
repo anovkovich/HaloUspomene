@@ -28,6 +28,53 @@ export default async function OGImage() {
   const premium = getTier("premium")?.price ?? 13900;
   const savings = kompletnoFull - kompletnoPrice;
 
+  // Faint skeleton "bullet list" (dot + bar) to fill the empty lower half of a
+  // card so it reads as a feature list rather than blank space.
+  const bulletLines = (
+    innerWidth: number,
+    barColor: string,
+    dotColor: string,
+    widths: number[],
+    marginTop: number,
+  ) => (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 13,
+        width: innerWidth,
+        marginTop,
+      }}
+    >
+      {widths.map((w, i) => (
+        <div
+          key={i}
+          style={{ display: "flex", alignItems: "center", gap: 8 }}
+        >
+          <div
+            style={{
+              display: "flex",
+              width: 5,
+              height: 5,
+              borderRadius: 3,
+              background: dotColor,
+              flexShrink: 0,
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              height: 6,
+              width: w,
+              borderRadius: 3,
+              background: barColor,
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+
   return new ImageResponse(
     (
       <div
@@ -144,6 +191,13 @@ export default async function OGImage() {
               >
                 din
               </span>
+              {bulletLines(
+                116,
+                "rgba(35,35,35,0.10)",
+                "rgba(174,52,63,0.35)",
+                [96, 78, 88, 68],
+                24,
+              )}
             </div>
 
             {/* Kompletan — highlighted, tallest */}
@@ -221,6 +275,13 @@ export default async function OGImage() {
               >
                 ušteda {din(savings)}
               </span>
+              {bulletLines(
+                140,
+                "rgba(35,35,35,0.10)",
+                "rgba(174,52,63,0.5)",
+                [116, 96, 108, 84],
+                16,
+              )}
             </div>
 
             {/* Premium — dark/gold */}
@@ -268,6 +329,13 @@ export default async function OGImage() {
               >
                 din
               </span>
+              {bulletLines(
+                116,
+                "rgba(245,244,220,0.16)",
+                "rgba(212,175,55,0.55)",
+                [96, 78, 88, 68],
+                24,
+              )}
             </div>
           </div>
 
