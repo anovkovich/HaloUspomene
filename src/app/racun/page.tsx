@@ -2,20 +2,9 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
-import {
-  pricing,
-  formatPrice,
-  getAudioPrice,
-  getPremiumPrice,
-  getPremiumRasporedPrice,
-  getPremiumAudioPrice,
-  isPremiumPromoActive,
-  getRodjendanPozivnicaPrice,
-  getRodjendanPozivnicaLabel,
-  getRodjendanRasporedPrice,
-  getStandaloneSeatingPrice,
-} from "@/data/pricing";
+import { formatPrice } from "@/data/pricing";
 import { decodeFromBase64 } from "@/lib/encoding";
+import { buildReceiptItems, LEGACY_PRICE_TABLE } from "@/lib/receipt-items";
 
 const CYR_TO_LAT: Record<string, string> = {
   А: "A",
@@ -249,6 +238,9 @@ interface ReceiptPayload {
   ba?: number; // bank account index (0, 1, 2)
   t: number; // timestamp
   ci?: Array<{l: string; p: number}>; // custom line items
+  v?: 2; // payload version (2 = carries a frozen line-item snapshot)
+  li?: Array<{ l: string; p: number; f?: 1 }>; // snapshotted line items (f:1 = GRATIS)
+  bd?: number; // snapshotted bundle discount
 }
 
 function ReceiptContent() {
@@ -321,128 +313,23 @@ function ReceiptContent() {
     );
   }
 
-  // Build line items
-  const items: { label: string; amount: number; free?: boolean }[] = [];
-
-  const isRodjendan = payload.kind === "rodjendan";
-  const isRaspored = payload.kind === "raspored";
-  const isPhoneRental = payload.s?.startsWith("tel-") ?? false;
-  const isWedding =
-    !isRodjendan && !isRaspored && !isPhoneRental && !payload.custom;
-
-  // Wedding retro-phone add-ons (always allowed alongside any wedding/phone receipt).
-  if (!isRodjendan && !isRaspored) {
-    if (payload.rp)
-      items.push({
-        label: "Audio Guest Book — telefon",
-        amount: getAudioPrice(),
-      });
-    if (payload.pd)
-      items.push({
-        label: "Personalizovana audio dobrodošlica",
-        amount: pricing.addons.find(
-          (a) => a.id === "personalizovana_dobrodoslica",
-        )!.price,
-      });
-  }
-
-  if (isWedding) {
-    if (payload.p) {
-      items.push({
-        label: isPremiumPromoActive() ? "Premium pozivnica — PROMO" : "Premium pozivnica",
-        amount: getPremiumPrice(),
-      });
-    } else {
-      items.push(
-        { label: "Website pozivnica", amount: pricing.pozivnica.website.price },
-        { label: "PDF pozivnica za štampu", amount: 0, free: true },
-      );
-    }
-
-    if (payload.r)
-      items.push({
-        label: "Raspored sedenja",
-        amount: payload.p
-          ? getPremiumRasporedPrice()
-          : pricing.pozivnica.raspored.price,
-      });
-    if (payload.a)
-      items.push({
-        label: "Audio knjiga utisaka",
-        amount: payload.p
-          ? getPremiumAudioPrice()
-          : pricing.pozivnica.audio.price,
-      });
-    if (payload.uk)
-      items.push({
-        label: "USB retro kaseta",
-        amount: pricing.addons.find((a) => a.id === "usb_kaseta")!.price,
-      });
-    if (payload.ub)
-      items.push({
-        label: "USB u bočici",
-        amount: pricing.addons.find((a) => a.id === "usb_bocica")!.price,
-      });
-    if (payload.cc)
-      items.push({
-        label: "Prilagođena boja teme",
-        amount: pricing.addons.find((a) => a.id === "custom_color")!.price,
-      });
-    if (payload.ig)
-      items.push({
-        label: "Polaroid galerija slika",
-        amount: pricing.addons.find((a) => a.id === "custom_color")!.price,
-      });
-    if (payload.g)
-      items.push({
-        label: "QR galerija fotografija",
-        amount: pricing.pozivnica.galerija.price,
-      });
-    if (payload.mu)
-      items.push({
-        label: "Muzika u pozadini",
-        amount: pricing.addons.find((a) => a.id === "background_music")!.price,
-      });
-  }
-
-  if (isRodjendan) {
-    const isPunoletstvo = !!payload.t18;
-    items.push({
-      label: getRodjendanPozivnicaLabel(isPunoletstvo),
-      amount: getRodjendanPozivnicaPrice(isPunoletstvo),
-    });
-    if (payload.r) {
-      items.push({
-        label: "Raspored sedenja",
-        amount: getRodjendanRasporedPrice(),
-      });
-    }
-  }
-
-  if (isRaspored) {
-    items.push({
-      label: "Raspored sedenja za organizatore",
-      amount: getStandaloneSeatingPrice(),
-    });
-  }
-
-  // Custom line items added manually by admin
-  if (payload.ci?.length) {
-    for (const ci of payload.ci) {
-      items.push({ label: ci.l, amount: ci.p });
-    }
-  }
+  // Line items + bundle discount. v2 receipts carry a frozen snapshot (li/bd)
+  // taken at generation time, so /racun just renders it — editing pricing.json
+  // or flipping a promo can never change an already-sent receipt (the IPS QR
+  // amount stays put). Legacy receipts (no `v`) are priced with the frozen
+  // LEGACY table so links already in customers' hands never move.
+  const built =
+    payload.v === 2 && payload.li
+      ? { items: payload.li, bundleDiscount: payload.bd ?? 0 }
+      : buildReceiptItems(payload, LEGACY_PRICE_TABLE);
+  const items = built.items.map((x) => ({
+    label: x.l,
+    amount: x.p,
+    free: x.f === 1,
+  }));
+  const bundleDiscount = built.bundleDiscount;
 
   const subtotal = items.reduce((s, i) => s + i.amount, 0);
-  // Classic bundle discount only applies to non-premium wedding receipts;
-  // Premium already encodes its own bundled discount via getPremiumRasporedPrice /
-  // getPremiumAudioPrice, and rodjendan has no bundle pricing yet.
-  // Promo bundle: raspored sedenja + (QR galerija OR digitalna audio knjiga).
-  const isBundle =
-    isWedding && !payload.p && !!payload.r && (!!payload.g || !!payload.a);
-  const bundleDiscount = isBundle
-    ? pricing.pozivnica.bundleFullPrice - pricing.pozivnica.bundlePrice
-    : 0;
   const customDiscount = payload.d ?? 0;
   const totalDiscount = bundleDiscount + customDiscount;
   const total = subtotal - totalDiscount;

@@ -9,6 +9,7 @@ import {
 } from "@/data/pozivnice";
 import { loadSeatingLayout } from "@/lib/seating";
 import { getGalleryPhotos } from "@/lib/gallery";
+import { getAudioMessages } from "@/lib/audio";
 import { galleryPhase } from "@/lib/gallery-lifecycle";
 import { getThemeCSSVariables } from "../constants";
 import type { TableData } from "@/lib/seating";
@@ -80,9 +81,10 @@ export default async function GdeSedimPage({ params }: PageProps) {
 
   const hasSeating = !!weddingData.paid_for_raspored;
   const hasGallery = !!weddingData.paid_for_gallery;
+  const hasAudio = !!weddingData.paid_for_audio;
   // The hub lives at the welcome-pano QR URL; show it if the couple enabled at
-  // least one tabbed feature (seating, gallery, and/or menu).
-  if (!hasSeating && !hasGallery && !weddingData.meni) notFound();
+  // least one tabbed feature (seating, gallery, menu, and/or audio).
+  if (!hasSeating && !hasGallery && !hasAudio && !weddingData.meni) notFound();
 
   const cssVars = getThemeCSSVariables(weddingData.theme, weddingData.scriptFont);
   const ijekavica = inferUseIjekavica(weddingData);
@@ -153,6 +155,28 @@ export default async function GdeSedimPage({ params }: PageProps) {
     }
   }
 
+  // ── Audio (guest book) ────────────────────────────────────────────────────
+  let audioRecent: {
+    guestName: string;
+    durationMs: number;
+    createdAt: string;
+  }[] = [];
+  if (hasAudio) {
+    try {
+      const msgs = await getAudioMessages(slug);
+      audioRecent = msgs
+        .slice(-10)
+        .reverse()
+        .map((m) => ({
+          guestName: m.guestName,
+          durationMs: m.durationMs,
+          createdAt: m.createdAt,
+        }));
+    } catch {
+      // non-critical
+    }
+  }
+
   // ── Meni (free value-add — shown only if the couple added items) ──────────
   const meni = weddingData.meni;
   const hasMeni = !!(
@@ -176,6 +200,9 @@ export default async function GdeSedimPage({ params }: PageProps) {
         galleryPhotos={galleryPhotos}
         hasMeni={hasMeni}
         meni={meni ?? null}
+        hasAudio={hasAudio}
+        audioRecentMessages={audioRecent}
+        eventDate={weddingData.event_date}
       />
     </div>
   );

@@ -33,6 +33,8 @@ import {
   formatPrice,
   getAudioPrice,
   isAudioDiscountActive,
+  getTier,
+  getKompletnoSavings,
 } from "@/data/pricing";
 import {
   THEME_CONFIGS,
@@ -216,7 +218,7 @@ const faqItems = [
   },
   {
     q: "Koliko košta website pozivnica?",
-    a: `Website pozivnica košta ${formatPrice(pricing.pozivnica.website.price)}. U cenu je uključena i besplatna PDF pozivnica za štampu sa QR kodom. Kompletni paket (pozivnica + raspored sedenja + audio knjiga) košta ${formatPrice(pricing.pozivnica.bundlePrice)} umesto ${formatPrice(pricing.pozivnica.bundleFullPrice)}.`,
+    a: `Website pozivnica košta ${formatPrice(pricing.pozivnica.website.price)}. U cenu je uključena i besplatna PDF pozivnica za štampu sa QR kodom. Kompletno Venčanje (pozivnica + raspored sedenja + audio knjiga + QR galerija) košta ${formatPrice(getTier("kompletno")?.price ?? 9900)} umesto ${formatPrice(getTier("kompletno")?.fullPrice ?? 14000)}.`,
   },
   {
     q: "Da li je PDF pozivnica za štampu zaista besplatna?",
@@ -922,28 +924,32 @@ export default function PozivnicePage() {
                     {formatPrice(pricing.pozivnica.audio.price)}
                   </span>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#232323]/70">
+                    + QR galerija fotografija
+                  </span>
+                  <span className="text-sm text-[#232323]/50">
+                    {formatPrice(pricing.pozivnica.galerija.price)}
+                  </span>
+                </div>
                 <div className="h-px bg-[#232323]/5" />
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm font-bold text-[#232323]">
-                      Kompletni paket
+                      Kompletno Venčanje
                     </span>
                     <span className="text-xs text-[#232323]/30 line-through ml-2">
-                      {formatPrice(pricing.pozivnica.bundleFullPrice)}
+                      {formatPrice(getTier("kompletno")?.fullPrice ?? 14000)}
                     </span>
                   </div>
                   <span className="text-lg font-bold text-[#AE343F]">
-                    {formatPrice(pricing.pozivnica.bundlePrice)}
+                    {formatPrice(getTier("kompletno")?.price ?? 9900)}
                   </span>
                 </div>
               </div>
 
               <span className="inline-block mb-5 px-3 py-1 bg-[#d4af37]/10 text-[#d4af37] text-xs font-bold rounded-full">
-                Uštedite{" "}
-                {formatPrice(
-                  pricing.pozivnica.bundleFullPrice -
-                    pricing.pozivnica.bundlePrice,
-                )}
+                Uštedite {formatPrice(getKompletnoSavings())}
               </span>
 
               <Link
@@ -1067,8 +1073,9 @@ export default function PozivnicePage() {
             pozivnica za venčanje Subotica. Dostupno u celoj Srbiji.
           </p>
           <p>
-            Kompletni paket uključuje website pozivnicu, raspored sedenja,
-            digitalnu audio knjigu utisaka i besplatnu PDF pozivnicu za štampu.
+            Kompletno Venčanje uključuje website pozivnicu, raspored sedenja,
+            digitalnu audio knjigu utisaka, QR galeriju fotografija i besplatnu
+            PDF pozivnicu za štampu.
             Pogledajte <Link href="/cene">cene pozivnica</Link>,{" "}
             <Link href="/telefon-uspomena">telefon uspomena</Link>,{" "}
             <Link href="/planiranje-vencanja">planer za venčanje</Link> i{" "}

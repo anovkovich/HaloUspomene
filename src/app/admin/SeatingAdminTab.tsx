@@ -18,6 +18,11 @@ import {
 } from "lucide-react";
 import type { StandaloneSeating } from "@/lib/standalone-seating";
 import { encodeToBase64 } from "@/lib/encoding";
+import {
+  buildReceiptItems,
+  currentPriceTable,
+  type ReceiptFlags,
+} from "@/lib/receipt-items";
 import DatePicker from "@/components/ui/DatePicker";
 import ShareLinkButton from "./ShareLinkButton";
 
@@ -173,7 +178,11 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
       ba: bankAccountIdx,
       t: Date.now(),
     };
-    return `${SITE_URL}/racun?d=${encodeToBase64(data)}`;
+    const { items, bundleDiscount } = buildReceiptItems(
+      data as unknown as ReceiptFlags,
+      currentPriceTable(),
+    );
+    return `${SITE_URL}/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
   }
 
   async function patchSeating(slug: string, body: Record<string, unknown>) {

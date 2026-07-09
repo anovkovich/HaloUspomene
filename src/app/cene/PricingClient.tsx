@@ -29,10 +29,11 @@ import {
   formatPrice,
   getPremiumPrice,
   getPremiumRegularPrice,
-  getPremiumRasporedPrice,
-  getPremiumAudioPrice,
   isPremiumPromoActive,
+  getKompletnoSavings,
+  getPremiumTierSavings,
 } from "@/data/pricing";
+import TierCards from "./TierCards";
 
 interface Feature {
   id: string;
@@ -137,6 +138,8 @@ const FEATURES: Feature[] = [
 
 const FULL_PRICE = pricing.pozivnica.bundleFullPrice;
 const BUNDLE_PRICE = pricing.pozivnica.bundlePrice;
+// Premium partial bundle discount (premium + raspored + galerija OR audio).
+const PREMIUM_PARTIAL_DISCOUNT = 2500;
 
 export default function PricingClient() {
   const searchParams = useSearchParams();
@@ -155,8 +158,10 @@ export default function PricingClient() {
     usb_bocica: false,
   });
   const [infoOpen, setInfoOpen] = useState<FeatureInfoKey>(null);
+  const [openTip, setOpenTip] = useState<string | null>(null);
 
-  const openInfo = (id: "raspored" | "audio" | "pdf") => setInfoOpen(id);
+  const openInfo = (id: "raspored" | "audio" | "galerija" | "pdf") =>
+    setInfoOpen(id);
 
   const toggle = (id: string) => {
     if (id === "website" || id === "pdf") return;
@@ -191,27 +196,17 @@ export default function PricingClient() {
     });
   };
 
-  // Premium preselects both add-ons with bundled discounts.
-  // Classic resets to the base selection.
+  // Switching mode resets to the base selection — no add-ons forced. This is
+  // "sastavi svoj paket": the user picks. Only the invitation type differs.
   useEffect(() => {
-    if (mode === "premium") {
-      setSelected({
-        website: true,
-        pdf: true,
-        raspored: true,
-        audio: true,
-        galerija: false,
-      });
-    } else {
-      setSelected({
-        website: true,
-        pdf: true,
-        raspored: false,
-        audio: false,
-        galerija: false,
-      });
-      setSelectedSubs({ usb_kaseta: false, usb_bocica: false });
-    }
+    setSelected({
+      website: true,
+      pdf: true,
+      raspored: false,
+      audio: false,
+      galerija: false,
+    });
+    setSelectedSubs({ usb_kaseta: false, usb_bocica: false });
   }, [mode]);
 
   // Mode-reactive feature list: Premium swaps the Website row into a
@@ -233,25 +228,13 @@ export default function PricingClient() {
             : undefined,
         };
       }
-      if (f.id === "raspored") {
-        return {
-          ...f,
-          price: getPremiumRasporedPrice(),
-          originalPrice: pricing.pozivnica.raspored.price,
-        };
-      }
-      if (f.id === "audio") {
-        return {
-          ...f,
-          price: getPremiumAudioPrice(),
-          originalPrice: pricing.pozivnica.audio.price,
-        };
-      }
+      // Premium add-ons (raspored / audio / galerija) are billed at the standard
+      // price — the Premium bundle discount is shown on the tier card, not here.
       return f;
     });
   }, [mode]);
 
-  const { subtotal, total, isBundle, subitemsTotal } = useMemo(() => {
+  const { subtotal, total, bundleDiscount, isBundle, subitemsTotal } = useMemo(() => {
     let subtotal = 0;
     for (const f of features) {
       if (selected[f.id] && !f.included) subtotal += f.price;
@@ -268,19 +251,33 @@ export default function PricingClient() {
       }
     }
 
-    // Promo: raspored sedenja + (QR galerija OR digitalna audio knjiga) → -2000.
+    // Tier / bundle discount:
+    //  Premium + all three  → Premium paket (−5.100)
+    //  Classic + all three  → Kompletno (−4.100)
+    //  Classic + raspored + one → partial promo (−2.000)
+    const allThree =
+      selected.raspored && selected.audio && selected.galerija;
     const bundleQualifies =
       selected.raspored && (selected.galerija || selected.audio);
-    // Applies only in Classic mode — Premium prices already encode their own
-    // discounts.
     const bundleDiscount =
-      mode === "classic" && bundleQualifies ? FULL_PRICE - BUNDLE_PRICE : 0;
+      mode === "premium"
+        ? allThree
+          ? getPremiumTierSavings()
+          : bundleQualifies
+            ? PREMIUM_PARTIAL_DISCOUNT
+            : 0
+        : allThree
+          ? getKompletnoSavings()
+          : bundleQualifies
+            ? FULL_PRICE - BUNDLE_PRICE
+            : 0;
     const total = subtotal - bundleDiscount + subitemsTotal;
 
     return {
       subtotal: subtotal + subitemsTotal,
       total,
-      isBundle: mode === "classic" && bundleQualifies,
+      bundleDiscount,
+      isBundle: bundleDiscount > 0,
       subitemsTotal,
     };
   }, [features, selected, selectedSubs, mode]);
@@ -317,45 +314,54 @@ export default function PricingClient() {
           {/* Header */}
           <div className="text-center mb-6">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[var(--cene-accent)] mb-3 leading-tight">
-              Premium pozivnica za venčanje
+              Cene i paketi naših usluga
             </h1>
             <h2 className="text-base sm:text-lg font-serif text-[#232323]/60 max-w-2xl mx-auto mb-6 leading-relaxed">
-              Uz našu digitalnu pozivnicu dobijate{" "}
+              Tri jednostavna paketa — od osnovne digitalne pozivnice do{" "}
               <strong className="text-[#232323]/80">
-                besplatnu PDF pozivnicu za štampu
+                kompletne organizacije venčanja
               </strong>
-              , sa QR kodom za potvrdu dolaska — bez poziva, nikad lakše!
+              . Izaberite gotov paket, ili sastavite svoj.
             </h2>
             <div className="flex items-center justify-center gap-4 mb-6">
               <div className="h-px w-10 bg-[#d4af37]/50" />
               <Heart size={14} className="text-[#d4af37]" fill="currentColor" />
               <div className="h-px w-10 bg-[#d4af37]/50" />
             </div>
+          </div>
 
+          {/* Three-tier bundle block + standalone offers. Breaks out of the
+              max-w-3xl column into a wider viewport-centered block so the cards
+              have room; the configurator below stays narrow. */}
+          <div className="relative left-1/2 -translate-x-1/2 w-[64rem] max-w-[calc(100vw_-_2rem)] text-left mb-4">
+            <TierCards onOpenInfo={setInfoOpen} />
+          </div>
+
+          <div className="text-center mb-6">
             {/* Classic / Premium tab switcher */}
             <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white/70 border border-[#232323]/10 shadow-sm">
               <button
                 type="button"
                 onClick={() => setMode("classic")}
-                className={`px-5 sm:px-7 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                   mode === "classic"
                     ? "bg-[var(--cene-accent)] text-white shadow-md shadow-[rgba(var(--cene-accent-rgb),0.25)]"
                     : "text-[#232323]/60 hover:text-[#232323]"
                 }`}
               >
-                Classic
+                Standardna pozivnica
               </button>
               <button
                 type="button"
                 onClick={() => setMode("premium")}
-                className={`inline-flex items-center gap-1.5 px-5 sm:px-7 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`inline-flex items-center gap-1.5 px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                   mode === "premium"
                     ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white shadow-md shadow-[#d4af37]/25"
                     : "text-[#d4af37] hover:text-[#c5a028]"
                 }`}
               >
                 <Sparkles size={14} />
-                Premium
+                Premium pozivnica
               </button>
             </div>
           </div>
@@ -411,6 +417,7 @@ export default function PricingClient() {
                           </span>
                           {(feature.id === "raspored" ||
                             feature.id === "audio" ||
+                            feature.id === "galerija" ||
                             feature.id === "pdf") && (
                             <span
                               role="button"
@@ -419,7 +426,11 @@ export default function PricingClient() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openInfo(
-                                  feature.id as "raspored" | "audio" | "pdf",
+                                  feature.id as
+                                    | "raspored"
+                                    | "audio"
+                                    | "galerija"
+                                    | "pdf",
                                 );
                               }}
                               onKeyDown={(e) => {
@@ -427,7 +438,11 @@ export default function PricingClient() {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   openInfo(
-                                    feature.id as "raspored" | "audio" | "pdf",
+                                    feature.id as
+                                    | "raspored"
+                                    | "audio"
+                                    | "galerija"
+                                    | "pdf",
                                   );
                                 }
                               }}
@@ -546,8 +561,8 @@ export default function PricingClient() {
             })}
           </div>
 
-          {/* Bundle nudge — classic-only */}
-          {mode === "classic" && !isBundle && (
+          {/* Bundle nudge — encourages the tier bundle in both modes */}
+          {!isBundle && (
             <div
               className="w-full my-5 px-5 py-4 rounded-xl"
               style={{
@@ -562,7 +577,12 @@ export default function PricingClient() {
                   className="inline-block mr-2 -mt-0.5 align-middle"
                 />
                 Izaberite raspored sedenja + QR galeriju ili audio knjigu i
-                uštedite {formatPrice(FULL_PRICE - BUNDLE_PRICE)}
+                uštedite{" "}
+                {formatPrice(
+                  mode === "premium"
+                    ? PREMIUM_PARTIAL_DISCOUNT
+                    : FULL_PRICE - BUNDLE_PRICE,
+                )}
               </p>
             </div>
           )}
@@ -579,8 +599,7 @@ export default function PricingClient() {
               <div className="flex items-center gap-2 mb-4 text-sm">
                 <Sparkles size={16} className="text-[#d4af37]" />
                 <span className="font-semibold text-[var(--cene-accent)]">
-                  Paket ušteda —{" "}
-                  {formatPrice(FULL_PRICE - BUNDLE_PRICE)}!
+                  Paket ušteda — {formatPrice(bundleDiscount)}!
                 </span>
               </div>
             )}
@@ -612,8 +631,8 @@ export default function PricingClient() {
                   ))}
               {isBundle && (
                 <div className="flex justify-between text-sm text-green-600 font-medium">
-                  <span>Paket popust (raspored + galerija/audio)</span>
-                  <span>-{formatPrice(FULL_PRICE - BUNDLE_PRICE)}</span>
+                  <span>Popust na paket</span>
+                  <span>-{formatPrice(bundleDiscount)}</span>
                 </div>
               )}
             </div>
@@ -657,17 +676,19 @@ export default function PricingClient() {
             </Link>
           </div>
 
-          <p className="mt-4 text-center text-xs text-[#232323]/45 leading-relaxed">
-            Galeriju fotografija (do 3 slike) možete dodati tokom kreiranja
-            pozivnice{" "}
-            <span className="text-[#232323]/60 font-medium">
-              (+
-              {formatPrice(
-                pricing.addons.find((a) => a.id === "images")!.price,
-              )}
-              )
-            </span>
-          </p>
+          {mode === "classic" && (
+            <p className="mt-4 text-center text-xs text-[#232323]/45 leading-relaxed">
+              Galeriju fotografija (do 3 slike) možete dodati tokom kreiranja
+              pozivnice{" "}
+              <span className="text-[#232323]/60 font-medium">
+                (+
+                {formatPrice(
+                  pricing.addons.find((a) => a.id === "images")!.price,
+                )}
+                )
+              </span>
+            </p>
+          )}
 
           {/* Example links */}
           <div className="mt-10 space-y-3">
@@ -677,33 +698,42 @@ export default function PricingClient() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 {
-                  href: "/pozivnica/ana-dejan",
-                  label: "Primer pozivnice",
-                  tooltip:
-                    "Pogledajte kako izgleda personalizovana website pozivnica sa odbrojavanjem, lokacijom i formom za potvrdu dolaska.",
-                },
-                {
                   href: "/pozivnica/ana-dejan/gde-sedim",
                   label: "Primer /gde-sedim",
                   tooltip:
                     "Gosti ukucaju ime i odmah vide za kojim stolom sede, bez pitanja, bez gužve! Na ulazu možete postaviti samo QR kod.",
                 },
                 {
-                  href: "/pozivnica/ana-dejan/audio-knjiga",
-                  label: "Primer /ostavi-audio",
+                  href: "/pozivnica/ana-dejan",
+                  label: "Primer pozivnice",
                   tooltip:
-                    "Stranica na kojoj gosti snimaju glasovne poruke i čestitke upućene vama! Direktno sa telefona, bez aplikacije.",
+                    "Pogledajte kako izgleda personalizovana website pozivnica sa odbrojavanjem, lokacijom i formom za potvrdu dolaska.",
+                },
+                {
+                  href: "/premium-pozivnica/teodora-bojan",
+                  label: "Premium pozivnica",
+                  tooltip:
+                    "Luksuzna animirana premium pozivnica sa filmskim parallax scenama, animiranom kovertom dobrodošlice i personalizovanom ilustracijom para.",
                 },
               ].map((link) => (
                 <div
                   key={link.href}
                   className="group relative rounded-xl px-4 py-3 text-center transition-all border border-[rgba(var(--cene-accent-rgb),0.1)] sm:border-transparent sm:hover:border-[rgba(var(--cene-accent-rgb),0.1)] sm:hover:bg-white/80"
                 >
-                  <div className="peer flex items-center justify-center gap-1.5 mb-1">
-                    <Info
-                      size={14}
-                      className="text-[rgba(var(--cene-accent-rgb),0.4)] cursor-help"
-                    />
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <button
+                      type="button"
+                      aria-label="Prikaži opis"
+                      aria-expanded={openTip === link.href}
+                      onClick={() =>
+                        setOpenTip((cur) =>
+                          cur === link.href ? null : link.href,
+                        )
+                      }
+                      className="text-[rgba(var(--cene-accent-rgb),0.4)] hover:text-[var(--cene-accent)] cursor-pointer transition-colors"
+                    >
+                      <Info size={14} />
+                    </button>
                     <Link
                       href={link.href}
                       target="_blank"
@@ -712,10 +742,15 @@ export default function PricingClient() {
                       {link.label} <ExternalLink size={12} />
                     </Link>
                   </div>
+                  {/* Mobile: always visible. Desktop: hover OR ⓘ click. */}
                   <p className="text-[11px] text-[#232323]/40 leading-relaxed block sm:hidden">
                     {link.tooltip}
                   </p>
-                  <div className="hidden sm:group-hover:block absolute left-0 right-0 top-full mt-1 z-10 px-4 py-2.5 rounded-xl bg-white shadow-lg border border-[rgba(var(--cene-accent-rgb),0.1)]">
+                  <div
+                    className={`hidden ${
+                      openTip === link.href ? "sm:block" : ""
+                    } sm:group-hover:block absolute left-0 right-0 top-full mt-1 z-10 px-4 py-2.5 rounded-xl bg-white shadow-lg border border-[rgba(var(--cene-accent-rgb),0.1)]`}
+                  >
                     <p className="text-[11px] text-[#232323]/60 leading-relaxed">
                       {link.tooltip}
                     </p>

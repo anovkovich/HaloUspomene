@@ -31,6 +31,11 @@
     "bundlePrice": 8500,
     "bundleFullPrice": 10500
   },
+  "tiers": {
+    "osnovno": { "label": "Osnovni paket", "price": 5000 },
+    "kompletno": { "label": "Kompletan paket", "price": 9900, "fullPrice": 14000 },
+    "premium": { "label": "Premium paket", "price": 13900, "fullPrice": 19000, "includes": ["raspored", "audio", "galerija"] }
+  },
   "addons": [
     {
       "id": "usb_kaseta",
@@ -74,11 +79,8 @@
   ],
   "premium": {
     "label": "Premium AI Pozivnica",
-    "price": 12000,
-    "promoPrice": 10000,
-    "promoActive": true,
-    "rasporedPrice": 1000,
-    "audioPrice": 1000
+    "price": 10000,
+    "promoActive": false
   },
   "rodjendan": {
     "pozivnica": {

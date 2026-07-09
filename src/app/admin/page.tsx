@@ -4,6 +4,11 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search, QrCode, CalendarPlus } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
+import {
+  buildReceiptItems,
+  currentPriceTable,
+  type ReceiptFlags,
+} from "@/lib/receipt-items";
 import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
 import BirthdayAdminList from "./BirthdayAdminList";
@@ -366,7 +371,11 @@ export default function AdminPage() {
       t: Date.now(),
     };
     if (extras?.customItems?.length) data.ci = extras.customItems;
-    return `https://halouspomene.rs/racun?d=${encodeToBase64(data)}`;
+    const { items, bundleDiscount } = buildReceiptItems(
+      data as unknown as ReceiptFlags,
+      currentPriceTable(),
+    );
+    return `https://halouspomene.rs/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
   }
 
   async function handleGenerateReceipt(slug: string) {

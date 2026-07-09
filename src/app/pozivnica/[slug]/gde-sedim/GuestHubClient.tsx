@@ -1,18 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { Armchair, Map, Images, UtensilsCrossed } from "lucide-react";
+import { Armchair, Map, Images, UtensilsCrossed, Mic } from "lucide-react";
 import GdeSedimClient from "./GdeSedimClient";
 import HallMap from "./HallMap";
 import MeniTab from "./MeniTab";
 import GalerijaClient from "../galerija/GalerijaClient";
+import AudioKnjigaClient from "../audio-knjiga/AudioKnjigaClient";
 import type { GuestLookupEntry } from "./page";
 import type { TableData } from "@/lib/seating";
 import type { GalleryPhoto } from "@/lib/gallery";
 import type { GalleryPhase } from "@/lib/gallery-lifecycle";
 import type { MeniData } from "../types";
 
-type TabKey = "seating" | "map" | "meni" | "gallery";
+type TabKey = "seating" | "map" | "meni" | "gallery" | "audio";
 
 interface Props {
   slug: string;
@@ -27,6 +28,13 @@ interface Props {
   galleryPhotos: GalleryPhoto[];
   hasMeni: boolean;
   meni: MeniData | null;
+  hasAudio: boolean;
+  audioRecentMessages: {
+    guestName: string;
+    durationMs: number;
+    createdAt: string;
+  }[];
+  eventDate: string;
 }
 
 /**
@@ -50,6 +58,9 @@ export default function GuestHubClient({
   galleryPhotos,
   hasMeni,
   meni,
+  hasAudio,
+  audioRecentMessages,
+  eventDate,
 }: Props) {
   const [selected, setSelected] = useState<GuestLookupEntry | null>(null);
 
@@ -72,9 +83,18 @@ export default function GuestHubClient({
   if (hasGallery) {
     tabs.push({ key: "gallery", label: "Galerija", icon: <Images size={20} /> });
   }
+  if (hasAudio) {
+    tabs.push({ key: "audio", label: "Utisci", icon: <Mic size={20} /> });
+  }
 
   const [active, setActive] = useState<TabKey>(
-    hasSeating ? "seating" : hasMeni ? "meni" : "gallery",
+    hasSeating
+      ? "seating"
+      : hasGallery
+        ? "gallery"
+        : hasMeni
+          ? "meni"
+          : "audio",
   );
   const showBar = tabs.length > 1;
 
@@ -171,6 +191,19 @@ export default function GuestHubClient({
             useCyrillic={useCyrillic}
             phase={galleryPhase}
             initialPhotos={galleryPhotos}
+          />
+        )}
+
+        {active === "audio" && hasAudio && (
+          <AudioKnjigaClient
+            embedded
+            slug={slug}
+            coupleNames={coupleNames}
+            paidForAudio
+            eventDate={eventDate}
+            useCyrillic={useCyrillic}
+            useIjekavica={ijekavica}
+            recentMessages={audioRecentMessages}
           />
         )}
       </div>

@@ -3,10 +3,9 @@ import type { Metadata } from "next";
 import PricingClient from "./PricingClient";
 
 export const metadata: Metadata = {
-  title:
-    "Cenovnik standardne i premium pozivnice sa dodatnim opcijama | Halo Uspomene",
+  title: "Paketi i Cene za Venčanje — Pozivnica, Raspored, Galerija, Audio",
   description:
-    "Besplatna pozivnica za venčanje spremna za štampu uz našu digitalnu website pozivnicu. QR kod za potvrdu dolaska — bez poziva, nikad lakše! Raspored sedenja, audio knjiga utisaka. Od 5.000 din.",
+    "Tri jednostavna paketa za venčanje: Osnovno (5.000 din), Kompletno (9.900 din) i Premium. Website pozivnica, raspored sedenja, QR galerija fotografija, audio knjiga utisaka i besplatna PDF za štampu. Izaberite gotov paket ili sastavite svoj.",
   keywords: [
     "pozivnica za venčanje",
     "pozivnice za vencanje",
@@ -32,9 +31,9 @@ export const metadata: Metadata = {
     "pozivnica za vencanje beograd",
   ],
   openGraph: {
-    title: "Cenovnik standardne i premium pozivnice sa dodatnim opcijama",
+    title: "Paketi i Cene za Venčanje | HALO Uspomene",
     description:
-      "Digitalna pozivnica + besplatna PDF za štampu sa QR kodom za potvrdu dolaska. Raspored sedenja, audio knjiga utisaka — sve na jednom mestu.",
+      "Tri paketa za venčanje: Osnovno, Kompletno i Premium. Pozivnica, raspored sedenja, QR galerija i audio knjiga utisaka — izaberite gotov paket ili sastavite svoj.",
     type: "website",
     url: "https://halouspomene.rs/cene",
     siteName: "Halo Uspomene",
@@ -117,7 +116,7 @@ function PricingStructuredData() {
       {
         "@type": "Offer",
         name: "Raspored Sedenja",
-        price: "2000",
+        price: "2500",
         description:
           "Alat za raspored stolova. Gosti pronalaze svoje mesto putem linka.",
         ...offerDefaults,
@@ -132,10 +131,34 @@ function PricingStructuredData() {
       },
       {
         "@type": "Offer",
-        name: "Kompletni Paket",
-        price: "8000",
+        name: "Kompletno Venčanje",
+        price: "9900",
         description:
-          "Website pozivnica + raspored sedenja + digitalna audio knjiga — sve u jednom po sniženoj ceni.",
+          "Website pozivnica + raspored sedenja + audio knjiga utisaka + QR galerija fotografija — sve u jednom po sniženoj ceni.",
+        ...offerDefaults,
+      },
+      {
+        "@type": "Offer",
+        name: "Premium Pozivnica",
+        price: "10000",
+        description:
+          "Luksuzna animirana premium pozivnica u 3 stila, sa animiranim kovertom i filmskim parallax scenama.",
+        ...offerDefaults,
+      },
+      {
+        "@type": "Offer",
+        name: "Raspored Sedenja — samostalno",
+        price: "5000",
+        description:
+          "Raspored sedenja za organizatore događaja, bez digitalne pozivnice.",
+        ...offerDefaults,
+      },
+      {
+        "@type": "Offer",
+        name: "QR Galerija Fotografija — samostalno",
+        price: "3500",
+        description:
+          "Gosti skeniraju QR kod sa zahvalnice i dodaju svoje fotografije sa venčanja.",
         ...offerDefaults,
       },
     ],
@@ -167,7 +190,7 @@ function FAQStructuredData() {
         name: "Koliko košta digitalna pozivnica za venčanje?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Website pozivnica košta 5.000 dinara i uključuje besplatnu PDF pozivnicu za štampu. Kompletni paket sa rasporedom sedenja i audio knjigom utisaka košta 8.000 dinara.",
+          text: "Website pozivnica košta 5.000 dinara i uključuje besplatnu PDF pozivnicu za štampu. Kompletno Venčanje (pozivnica + raspored sedenja + audio knjiga utisaka + QR galerija fotografija) košta 9.900 dinara.",
         },
       },
       {
@@ -234,11 +257,13 @@ export default function CenePage() {
           Raspored sedenja za venčanje: 2.500 dinara — editor za stolove, gosti
           pronalaze svoje mesto putem linka. Digitalna audio knjiga utisaka:
           3.000 dinara — gosti skeniraju QR kod i snimaju audio poruke za
-          mladence direktno sa telefona. Kompletni paket (pozivnica + raspored +
-          audio knjiga): 8.500 dinara umesto 10.500 dinara. Premium AI pozivnica
-          sa animiranim kovertom, parallax scenama i AI ilustracijama mladenaca:
-          12.000 dinara (PROMO 10.000 dinara) — uključuje raspored sedenja i
-          audio knjigu po sniženoj ceni od 1.000 dinara svako.
+          mladence direktno sa telefona. Kompletno Venčanje (pozivnica +
+          raspored sedenja + audio knjiga utisaka + QR galerija fotografija):
+          9.900 dinara umesto 14.000 dinara. Premium paket — sve iz Kompletnog
+          paketa uz luksuznu animiranu premium pozivnicu u 3 stila: 13.900 dinara
+          umesto 19.000 dinara. Raspored sedenja za organizatore (samostalno, bez
+          pozivnice): 5.000 dinara. QR galerija fotografija (samostalno, uz
+          zahvalnice sa QR kodom): 3.500 dinara.
         </p>
         <h3>Pozivnice za venčanje — gradovi u Srbiji</h3>
         <p>

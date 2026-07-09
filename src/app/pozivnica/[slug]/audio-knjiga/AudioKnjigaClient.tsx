@@ -36,6 +36,9 @@ interface Props {
   /** BA/HR/ME couples — swap Latin strings to ijekavica. */
   useIjekavica?: boolean;
   recentMessages: RecentMessage[];
+  /** When true, render without full-page chrome (no min-h-screen / gradient /
+   *  couple-names header) so it can be embedded as a guest-hub tab. */
+  embedded?: boolean;
 }
 
 export default function AudioKnjigaClient({
@@ -46,6 +49,7 @@ export default function AudioKnjigaClient({
   useCyrillic,
   useIjekavica = false,
   recentMessages,
+  embedded = false,
 }: Props) {
   const t = useMemo(
     () => getTranslations(useCyrillic, useIjekavica),
@@ -260,11 +264,18 @@ export default function AudioKnjigaClient({
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6]"
+      className={
+        embedded ? "" : "min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6]"
+      }
       style={{ color: "var(--theme-text)" }}
     >
-      <div className="max-w-lg mx-auto px-4 py-12 sm:py-16">
-        {/* Header */}
+      <div
+        className={
+          embedded ? "max-w-lg mx-auto" : "max-w-lg mx-auto px-4 py-12 sm:py-16"
+        }
+      >
+        {/* Header — hidden when embedded (the hub provides its own). */}
+        {!embedded && (
         <div className="text-center mb-10">
           <h1
             className="font-script text-4xl sm:text-6xl mb-3"
@@ -288,6 +299,7 @@ export default function AudioKnjigaClient({
             {t.audioGuestBook}
           </p>
         </div>
+        )}
 
         {/* Browser not supported */}
         {!browserSupported && (

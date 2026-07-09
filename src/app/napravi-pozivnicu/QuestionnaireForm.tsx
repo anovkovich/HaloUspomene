@@ -30,6 +30,8 @@ import {
   getPremiumPrice,
   getPremiumRasporedPrice,
   getPremiumAudioPrice,
+  getKompletnoSavings,
+  getPremiumTierSavings,
 } from "@/data/pricing";
 import {
   THEME_CONFIGS,
@@ -65,6 +67,10 @@ const PremiumStepEnvelopeLab = dynamic(
 );
 
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+
+// Premium partial-bundle discount (raspored + galerija OR audio). Must match
+// PricingClient / currentPriceTable().premiumPartialDiscount.
+const PREMIUM_PARTIAL_DISCOUNT = 2500;
 
 // Whitened blobs from /api/premium-pozivnica/whiten-bg are written to
 // `premium/whitened/{slug}/...`, while raw generated blobs live at
@@ -896,8 +902,14 @@ function ExtrasAccordion({
     },
   ];
 
-  const count = extras.filter(({ key }) => formData[key]).length;
-  const [open, setOpen] = useState(() => count > 0);
+  // USB suveniri (kaseta / bočica) are secondary add-ons nested under Audio —
+  // they don't count toward the "IZABRANO X od Y" progress badge.
+  const primaryExtras = extras.filter(
+    ({ key }) => key !== "extra_usb_kaseta" && key !== "extra_usb_bocica",
+  );
+  const count = primaryExtras.filter(({ key }) => formData[key]).length;
+  const anyExtraSelected = extras.some(({ key }) => formData[key]);
+  const [open, setOpen] = useState(() => anyExtraSelected);
   const [infoOpen, setInfoOpen] = useState<FeatureInfoKey>(null);
   const [musicTipOpen, setMusicTipOpen] = useState(false);
 
@@ -906,16 +918,19 @@ function ExtrasAccordion({
 
   const openInfo = (
     e: React.MouseEvent | React.KeyboardEvent,
-    key: "raspored" | "audio",
+    key: "raspored" | "audio" | "galerija",
   ) => {
     e.preventDefault();
     e.stopPropagation();
     setInfoOpen(key);
   };
 
-  const infoKeyFor = (key: string): "raspored" | "audio" | null => {
+  const infoKeyFor = (
+    key: string,
+  ): "raspored" | "audio" | "galerija" | null => {
     if (key === "extra_raspored") return "raspored";
     if (key === "extra_audio") return "audio";
+    if (key === "extra_galerija") return "galerija";
     return null;
   };
 
@@ -949,7 +964,7 @@ function ExtrasAccordion({
               className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-white text-[10px] font-bold"
               style={{ backgroundColor: accentHex }}
             >
-              {count} izabrano
+              IZABRANO {count} od {primaryExtras.length}
             </span>
           ) : (
             <span className="text-[10px] text-stone-500 font-medium uppercase tracking-wider">
@@ -1165,15 +1180,27 @@ function ExtrasAccordion({
             if (formData.extra_galerija) sum += galerijaPrice;
             // Muzika u pozadini — flat add-on for both tiers.
             if (formData.extra_music) sum += musicAddonPrice;
-            // Classic bundle discount only — Premium prices already encode it.
-            const isFullBundle =
-              !isPremium &&
+            // Bundle discount — mirrors buildReceiptItems (single source of
+            // pricing truth). Full package (all three) beats the partial promo.
+            const allThree =
+              formData.extra_raspored &&
+              formData.extra_audio &&
+              formData.extra_galerija;
+            const partialBundle =
               formData.extra_raspored &&
               (formData.extra_galerija || formData.extra_audio);
-            const discount = isFullBundle
-              ? pricing.pozivnica.bundleFullPrice -
-                pricing.pozivnica.bundlePrice
-              : 0;
+            let discount = 0;
+            if (isPremium) {
+              if (allThree) discount = getPremiumTierSavings();
+              else if (partialBundle) discount = PREMIUM_PARTIAL_DISCOUNT;
+            } else {
+              if (allThree) discount = getKompletnoSavings();
+              else if (partialBundle)
+                discount =
+                  pricing.pozivnica.bundleFullPrice -
+                  pricing.pozivnica.bundlePrice;
+            }
+            const isFullBundle = discount > 0;
             const total = sum - discount;
             return (
               <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
@@ -3168,6 +3195,8 @@ export default function QuestionnaireForm({
           ...(phoneShowNumbers ? { show_numbers: phoneShowNumbers } : {}),
           ...(phoneNumberNames ? { number_names: phoneNumberNames } : {}),
           paid_for_images: isFountainGallery,
+          paid_for_raspored: formData.extra_raspored,
+          paid_for_audio: formData.extra_audio,
           paid_for_gallery: formData.extra_galerija,
           paid_for_music: formData.extra_music,
           ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
@@ -3235,6 +3264,15 @@ export default function QuestionnaireForm({
               Tip: isUpgrade
                 ? "Upgrade postojećeg draft-a (planiranje-vencanja)"
                 : "Novo kreiranje",
+              Paket:
+                formData.extra_raspored &&
+                formData.extra_audio &&
+                formData.extra_galerija
+                  ? "Premium paket (13.900)"
+                  : "Premium pozivnica + pojedinačni dodaci",
+              "Raspored sedenja": formData.extra_raspored ? "✅ DA" : "❌ Ne",
+              "Audio knjiga": formData.extra_audio ? "✅ DA" : "❌ Ne",
+              "QR galerija": formData.extra_galerija ? "✅ DA" : "❌ Ne",
               "AI Tema": formData.premium_theme || "(nije izabrana)",
               "Galerija (Fountain)": isFountainGallery
                 ? `✅ ${imagesToUpload.length} slika`
@@ -3375,6 +3413,12 @@ export default function QuestionnaireForm({
             Tip: isUpgrade
               ? "Upgrade postojećeg draft-a (planiranje-vencanja)"
               : "Novo kreiranje",
+            Paket:
+              formData.extra_raspored &&
+              formData.extra_audio &&
+              formData.extra_galerija
+                ? "Kompletan paket (9.900)"
+                : "Osnovna pozivnica + pojedinačni dodaci",
             "Kontakt telefon": combinedPhone,
             "Raspored sedenja": formData.extra_raspored ? "✅ DA" : "❌ Ne",
             "Audio knjiga": formData.extra_audio ? "✅ DA" : "❌ Ne",

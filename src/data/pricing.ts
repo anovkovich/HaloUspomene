@@ -82,3 +82,27 @@ export function isStandaloneSeatingPromoActive(): boolean {
 export function getStandaloneSeatingRegularPrice(): number {
   return (pricing as any).standalone_seating?.price ?? 0;
 }
+
+/** A /cene bundle tier (osnovno | kompletno | premium). */
+export function getTier(id: "osnovno" | "kompletno" | "premium"): {
+  label: string;
+  price: number;
+  fullPrice?: number;
+  includes?: string[];
+} | null {
+  return (pricing as any).tiers?.[id] ?? null;
+}
+
+/** Savings of the Kompletno tier vs à-la-carte full price (e.g. 14000 - 9900 = 4100). */
+export function getKompletnoSavings(): number {
+  const t = getTier("kompletno");
+  if (!t || !t.fullPrice) return 0;
+  return Math.max(0, t.fullPrice - t.price);
+}
+
+/** Savings of the Premium tier vs à-la-carte full price (e.g. 19000 - 13900 = 5100). */
+export function getPremiumTierSavings(): number {
+  const t = getTier("premium");
+  if (!t || !t.fullPrice) return 0;
+  return Math.max(0, t.fullPrice - t.price);
+}

@@ -20,7 +20,13 @@ import {
   Heart,
 } from "lucide-react";
 
-export type FeatureInfoKey = "raspored" | "audio" | "pdf" | null;
+export type FeatureInfoKey =
+  | "raspored"
+  | "audio"
+  | "galerija"
+  | "hub"
+  | "pdf"
+  | null;
 
 interface Props {
   feature: FeatureInfoKey;
@@ -80,6 +86,8 @@ export default function FeatureInfoModal({ feature, onClose }: Props) {
             <div className="overflow-y-auto px-6 sm:px-8 pt-7 pb-7">
               {feature === "raspored" && <RasporedContent />}
               {feature === "audio" && <AudioContent />}
+              {feature === "galerija" && <GalerijaContent />}
+              {feature === "hub" && <HubContent />}
               {feature === "pdf" && <PdfContent />}
             </div>
           </motion.div>
@@ -376,6 +384,174 @@ function AudioContent() {
       <ExampleLink
         href="/pozivnica/ana-dejan/audio-knjiga"
         label="Pogledajte primer stranice uživo"
+      />
+    </>
+  );
+}
+
+function GalerijaContent() {
+  return (
+    <>
+      <div className="flex items-center gap-3 mb-3 pr-10">
+        <span
+          className="w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{
+            backgroundColor: "rgba(var(--cene-accent-rgb),0.1)",
+            color: "var(--cene-accent)",
+          }}
+        >
+          <Images size={20} />
+        </span>
+        <h2
+          id="feature-info-title"
+          className="text-xl sm:text-2xl font-serif text-[#232323] leading-tight"
+        >
+          QR galerija fotografija
+        </h2>
+      </div>
+
+      <p className="text-sm sm:text-[15px] text-[#232323]/70 leading-relaxed">
+        Zajednička galerija u koju gosti dodaju svoje fotografije sa venčanja —
+        skeniranjem jednog QR koda, direktno sa telefona, bez aplikacije i bez
+        registracije. Sve slike koje gosti naprave tokom večeri slivaju se na{" "}
+        <strong>jedno mesto</strong>, a vi na kraju preuzimate celu galeriju.
+      </p>
+
+      <SectionTitle>Zašto je gostima super</SectionTitle>
+      <ul className="space-y-3">
+        <Bullet icon={<QrCode size={14} />} title="Jedno skeniranje">
+          Gost skenira QR kod sa stola ili zahvalnice i odmah otvara galeriju —
+          bez instaliranja aplikacije, bez pravljenja naloga.
+        </Bullet>
+        <Bullet icon={<Smartphone size={14} />} title="Sa svakog telefona">
+          Radi na iPhone (uključujući HEIC format) i Android uređajima. Gost
+          jednostavno izabere slike iz galerije telefona i pošalje ih.
+        </Bullet>
+        <Bullet icon={<Heart size={14} />} title="Uhvate ono što vi ne vidite">
+          Trenuci sa svih stolova, zakulisne fotke, iskreni osmesi — kadrovi
+          koje ni fotograf ne može da uhvati, jer gosti su svuda.
+        </Bullet>
+      </ul>
+
+      <SectionTitle>Šta vi dobijate</SectionTitle>
+      <ul className="space-y-3">
+        <Bullet icon={<Images size={14} />} title="Sve slike na jednom mestu">
+          Fotografije svih gostiju sakupljene u jednu galeriju — bez jurnjave po
+          Viber grupama i traženja „pošalji mi one slike“.
+        </Bullet>
+        <Bullet icon={<FileDown size={14} />} title="Preuzimanje cele galerije">
+          Preuzimate slike pojedinačno ili sve odjednom kao ZIP — u punoj
+          rezoluciji, spremne za čuvanje ili izradu foto-knjige.
+        </Bullet>
+        <Bullet icon={<QrCode size={14} />} title="QR na zahvalnicama">
+          Isti QR kod možete odštampati na zahvalnicama — gosti i posle venčanja
+          dodaju slike koje su kasnije pronašli na telefonu.
+        </Bullet>
+      </ul>
+
+      <div
+        className="mt-6 flex items-start gap-3 px-4 py-3 rounded-xl text-sm"
+        style={{
+          backgroundColor: "rgba(var(--cene-accent-rgb),0.06)",
+          border: "1px solid rgba(var(--cene-accent-rgb),0.12)",
+        }}
+      >
+        <Sparkles
+          size={16}
+          className="text-[var(--cene-accent)] flex-shrink-0 mt-0.5"
+        />
+        <p className="text-[#232323]/70 leading-relaxed">
+          <span className="font-semibold text-[var(--cene-accent)]">
+            Do stotine slika iz ugla gostiju.
+          </span>{" "}
+          Umesto nekoliko fotki koje vam neko pošalje, dobijate celu priču o
+          vašem danu — onako kako su je videli oni koji su vam najdraži.
+        </p>
+      </div>
+
+      <ExampleLink
+        href="/qr-galerija-slika-sa-vencanja"
+        label="Saznajte više o QR galeriji"
+      />
+    </>
+  );
+}
+
+function HubContent() {
+  return (
+    <>
+      <div className="flex items-center gap-3 mb-3 pr-10">
+        <span
+          className="w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{
+            backgroundColor: "rgba(var(--cene-accent-rgb),0.1)",
+            color: "var(--cene-accent)",
+          }}
+        >
+          <Smartphone size={20} />
+        </span>
+        <h2
+          id="feature-info-title"
+          className="text-xl sm:text-2xl font-serif text-[#232323] leading-tight"
+        >
+          Sve na jednom mestu{" "}
+          <span className="text-[var(--cene-accent)]">za goste</span>
+        </h2>
+      </div>
+
+      <p className="text-sm sm:text-[15px] text-[#232323]/70 leading-relaxed">
+        Jedna jedina stranica na koju gost dođe skeniranjem QR koda na ulazu u
+        salu — i tu je <strong>sve što mu treba te večeri</strong>, na jednom
+        mestu, bez aplikacije. Umesto pet različitih linkova i papira, jedan QR
+        vodi do svega.
+      </p>
+
+      <SectionTitle>Šta gost nalazi na toj stranici</SectionTitle>
+      <ul className="space-y-3">
+        <Bullet icon={<Smartphone size={14} />} title="Gde sedim">
+          Ukuca svoje ime i odmah vidi za kojim stolom sedi — bez liste na
+          vratima i pitanja „gde sam ja?“.
+        </Bullet>
+        <Bullet icon={<LayoutDashboard size={14} />} title="Plan sale">
+          Vizuelni raspored cele sale — gost vidi gde mu je sto u odnosu na
+          mladence, šank i binu.
+        </Bullet>
+        <Bullet icon={<Check size={14} />} title="Meni">
+          Jelovnik i piće za to veče — gosti unapred znaju šta se služi (i lako
+          proveravaju alergene). Besplatno, vi ga uređujete iz portala.
+        </Bullet>
+        <Bullet icon={<Images size={14} />} title="Galerija">
+          Gosti dodaju svoje fotografije sa venčanja u zajedničku galeriju —
+          direktno sa telefona.
+        </Bullet>
+        <Bullet icon={<Mic size={14} />} title="Audio">
+          Ostave glasovnu poruku i čestitku koju ćete čuvati godinama.
+        </Bullet>
+      </ul>
+
+      <div
+        className="mt-6 flex items-start gap-3 px-4 py-3 rounded-xl text-sm"
+        style={{
+          backgroundColor: "rgba(var(--cene-accent-rgb),0.06)",
+          border: "1px solid rgba(var(--cene-accent-rgb),0.12)",
+        }}
+      >
+        <QrCode
+          size={16}
+          className="text-[var(--cene-accent)] flex-shrink-0 mt-0.5"
+        />
+        <p className="text-[#232323]/70 leading-relaxed">
+          <span className="font-semibold text-[var(--cene-accent)]">
+            Jedan QR na ulazu — i to je to.
+          </span>{" "}
+          Kartice se pojavljuju samo za ono što ste uzeli: ako nemate audio
+          knjigu, tab Audio se ne prikazuje. Meni ide besplatno uz svaki paket.
+        </p>
+      </div>
+
+      <ExampleLink
+        href="/pozivnica/ana-dejan/gde-sedim"
+        label="Pogledajte primer uživo"
       />
     </>
   );

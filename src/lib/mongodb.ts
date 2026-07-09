@@ -7,6 +7,12 @@ let clientPromise: Promise<MongoClient>;
 const options = {
   serverSelectionTimeoutMS: 10000,
   connectTimeoutMS: 10000,
+  // Cap connections per client. The driver defaults to 100; during `next build`
+  // ~15 static-generation workers each open their own client, so the default
+  // bursts up to ~1500 simultaneous connections and exhausts the shared Atlas
+  // tier's limit (→ "server selection timed out"). 10 keeps the build well
+  // under the cap and is also correct for serverless (small pool per lambda).
+  maxPoolSize: 10,
 };
 
 if (process.env.NODE_ENV === "development") {

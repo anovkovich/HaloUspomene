@@ -115,8 +115,13 @@ export async function POST(request: NextRequest) {
       // on the Fountain step. Other premium themes never set this.
       paid_for_images: body.paid_for_images ?? false,
       images: [],
-      // QR guest photo gallery — flat standalone add-on, available in both tiers.
+      // Premium add-ons are billed at the standard price (no premium discount).
+      // The Premium package (invitation + raspored + audio + galerija) is
+      // delivered by the builder pre-selecting all add-ons — each flag comes
+      // straight from the form, same as the classic flow.
+      paid_for_raspored: body.paid_for_raspored ?? false,
       paid_for_gallery: body.paid_for_gallery ?? false,
+      paid_for_audio: body.paid_for_audio ?? false,
       // Background music is a flat 1000 din add-on across both tiers.
       paid_for_music: body.paid_for_music ?? false,
       draft: true,

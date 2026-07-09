@@ -4,6 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Copy, Check, Pencil, Users, Cake, Armchair, Receipt, Eye } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
+import {
+  buildReceiptItems,
+  currentPriceTable,
+  type ReceiptFlags,
+} from "@/lib/receipt-items";
 import ShareLinkButton from "./ShareLinkButton";
 
 interface Birthday {
@@ -137,7 +142,11 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
       ba: bankAccountIdx,
       t: Date.now(),
     };
-    return `https://halouspomene.rs/racun?d=${encodeToBase64(data)}`;
+    const { items, bundleDiscount } = buildReceiptItems(
+      data as unknown as ReceiptFlags,
+      currentPriceTable(),
+    );
+    return `https://halouspomene.rs/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
   }
 
   async function patchBirthday(slug: string, body: Record<string, unknown>) {

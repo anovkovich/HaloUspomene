@@ -1011,8 +1011,8 @@ export default function QRPanoLandingPage() {
             Alat za raspored stolova omogućava jednostavno pomeranje gostiju,
             dodavanje novih stolova različitih oblika (okrugli, pravougaoni,
             mladenački sto) i promene do poslednjeg trenutka. Cena rasporeda
-            sedenja: 2.500 din uz pozivnicu, ili 8.500 din za kompletni paket
-            (pozivnica + raspored + digitalna audio knjiga). Pogledajte{" "}
+            sedenja: 2.500 din uz pozivnicu, ili u Kompletnom Venčanju za 9.900
+            din (pozivnica + raspored + audio knjiga + QR galerija). Pogledajte{" "}
             <Link href="/cene">cene HALO Uspomene</Link> ili{" "}
             <Link href="/napravi-pozivnicu">
               napravite pozivnicu sa rasporedom

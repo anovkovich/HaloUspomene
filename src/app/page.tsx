@@ -120,7 +120,8 @@ export default function Home() {
             Premium AI Pozivnice — luksuzna pozivnica sa AI generisanom
             ilustracijom Vašeg para, parallax hero sekcijom, animiranim
             envelope-om, vintage automobilima i sakralnim spomenicima Vašeg
-            grada. Akvarel i line-art teme. Cena: 10.000 — 12.000 din.
+            grada. Tri stila: akvarel, papirni svet i burgundy scena. Cena: od
+            10.000 din.
           </p>
           <p>
             Moje Venčanje portal uključen uz svaku pozivnicu — checklist po

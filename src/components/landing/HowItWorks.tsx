@@ -109,7 +109,7 @@ const HowItWorks: React.FC = () => {
                 od 5.000 din
               </p>
               <p className="text-[#F5F4DC]/40 text-xs mb-4">
-                ili kompletni paket 8.500 din
+                ili kompletan paket 9.900 din
               </p>
               <div className="space-y-1.5">
                 {[

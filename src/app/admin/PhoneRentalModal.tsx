@@ -4,6 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import { Phone, Calendar, Trash2, Copy, Check, X } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
 import type { PhoneRental } from "@/lib/phone-rentals";
+import {
+  buildReceiptItems,
+  currentPriceTable,
+  type ReceiptFlags,
+} from "@/lib/receipt-items";
 
 interface PhoneRentalModalProps {
   onClose: () => void;
@@ -120,7 +125,12 @@ export default function PhoneRentalModal({ onClose, bankAccountIdx }: PhoneRenta
       ba: bankAccountIdx,
       t: Date.now(),
     };
-    return `https://halouspomene.rs/racun?d=${btoa(unescape(encodeURIComponent(JSON.stringify(data))))}`;
+    const { items, bundleDiscount } = buildReceiptItems(
+      data as unknown as ReceiptFlags,
+      currentPriceTable(),
+    );
+    const payload = { ...data, v: 2, li: items, bd: bundleDiscount };
+    return `https://halouspomene.rs/racun?d=${btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}`;
   }
 
   async function handleGenerateReceipt(id: string) {
