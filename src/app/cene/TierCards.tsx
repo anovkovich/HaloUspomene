@@ -65,7 +65,7 @@ export default function TierCards({
     <div className="max-w-5xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 items-stretch">
         {/* Osnovno */}
-        <div className="order-2 md:order-1 rounded-3xl bg-white border border-[#232323]/10 p-6 flex flex-col">
+        <div className="order-1 md:order-1 rounded-3xl bg-white border border-[#232323]/10 p-6 flex flex-col">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#232323]/50 mb-1">
             {osnovno?.label ?? "Osnovno"}
           </p>
@@ -94,7 +94,7 @@ export default function TierCards({
         </div>
 
         {/* Kompletno — highlighted, first on mobile */}
-        <div className="order-1 md:order-2 relative rounded-3xl bg-white p-6 flex flex-col ring-2 ring-[#AE343F] shadow-xl md:scale-[1.04]">
+        <div className="order-2 md:order-2 relative rounded-3xl bg-white p-6 flex flex-col ring-2 ring-[#AE343F] shadow-xl md:scale-[1.04]">
           <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide text-white bg-gradient-to-r from-[#AE343F] to-[#8A2A32] shadow">
             <Sparkles size={11} /> Najpopularnije
           </span>
