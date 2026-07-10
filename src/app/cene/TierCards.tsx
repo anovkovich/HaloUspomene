@@ -9,6 +9,8 @@ import {
   LayoutDashboard,
   Camera,
   HelpCircle,
+  Cake,
+  PartyPopper,
 } from "lucide-react";
 import type { FeatureInfoKey } from "@/components/ui/FeatureInfoModal";
 import {
@@ -20,6 +22,7 @@ import {
   getStandaloneSeatingPrice,
   getStandaloneSeatingRegularPrice,
   isStandaloneSeatingPromoActive,
+  getRodjendanPozivnicaPrice,
 } from "@/data/pricing";
 
 /**
@@ -271,6 +274,60 @@ export default function TierCards({
             </div>
             <span className="text-sm font-bold text-[#AE343F] shrink-0">
               {formatPrice(pricing.pozivnica.galerija.price)}
+            </span>
+            <ArrowRight
+              size={16}
+              className="shrink-0 text-[#AE343F] group-hover:translate-x-1 transition-transform"
+            />
+          </Link>
+        </div>
+      </div>
+
+      {/* Nije venčanje? — non-wedding invitations sold from /cene */}
+      <div className="mt-10">
+        <p className="text-center text-sm text-[#232323]/55 mb-5 max-w-2xl mx-auto">
+          Ne pravite venčanje? Imamo pozivnice i za{" "}
+          <strong className="text-[#232323]/75">dečji rođendan</strong> i{" "}
+          <strong className="text-[#232323]/75">punoletstvo</strong>:
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+          <Link
+            href="/napravi-deciju-pozivnicu"
+            className="group flex items-center gap-4 bg-white rounded-2xl border-2 border-[#AE343F]/20 p-5 hover:border-[#AE343F] hover:bg-[#AE343F]/[0.04] hover:shadow-lg transition-all"
+          >
+            <div className="w-11 h-11 rounded-xl bg-[#AE343F]/10 text-[#AE343F] flex items-center justify-center shrink-0">
+              <Cake size={20} />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-[#232323] text-sm group-hover:text-[#AE343F] transition-colors">
+                Dečja rođendanska pozivnica
+              </p>
+              <p className="text-xs text-[#232323]/50">Sa RSVP i QR kodom</p>
+            </div>
+            <span className="text-sm font-bold text-[#AE343F] shrink-0">
+              od {formatPrice(getRodjendanPozivnicaPrice(false))}
+            </span>
+            <ArrowRight
+              size={16}
+              className="shrink-0 text-[#AE343F] group-hover:translate-x-1 transition-transform"
+            />
+          </Link>
+
+          <Link
+            href="/napravi-punoletstvo"
+            className="group flex items-center gap-4 bg-white rounded-2xl border-2 border-[#AE343F]/20 p-5 hover:border-[#AE343F] hover:bg-[#AE343F]/[0.04] hover:shadow-lg transition-all"
+          >
+            <div className="w-11 h-11 rounded-xl bg-[#AE343F]/10 text-[#AE343F] flex items-center justify-center shrink-0">
+              <PartyPopper size={20} />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-[#232323] text-sm group-hover:text-[#AE343F] transition-colors">
+                Pozivnica za punoletstvo
+              </p>
+              <p className="text-xs text-[#232323]/50">Za 18. rođendan</p>
+            </div>
+            <span className="text-sm font-bold text-[#AE343F] shrink-0">
+              od {formatPrice(getRodjendanPozivnicaPrice(true))}
             </span>
             <ArrowRight
               size={16}

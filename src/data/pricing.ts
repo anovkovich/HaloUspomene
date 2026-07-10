@@ -7,6 +7,13 @@ export function formatPrice(price: number): string {
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " din";
 }
 
+/** Formats a number as a EUR price string, e.g. 85 → "85 €". EUR prices are a
+ *  separate fixed list (card / Lemon Squeezy), NOT a live FX conversion of the
+ *  RSD price — see `priceEur` fields in pricing.json. */
+export function formatEur(price: number): string {
+  return `${price} €`;
+}
+
 /** Returns effective price: discountPrice when active, otherwise regular price */
 export function getAudioPrice(): number {
   const { price, discountPrice, discountActive } = pricing.packages.essential as any;
@@ -87,6 +94,7 @@ export function getStandaloneSeatingRegularPrice(): number {
 export function getTier(id: "osnovno" | "kompletno" | "premium"): {
   label: string;
   price: number;
+  priceEur?: number;
   fullPrice?: number;
   includes?: string[];
 } | null {

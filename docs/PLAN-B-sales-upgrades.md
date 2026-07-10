@@ -1,5 +1,10 @@
 # Plan B — Remaining Sales Upgrades (promo code · instant IPS QR · freemium)
 
+> 📄 **Detaljna inženjerska specifikacija plaćanja (kartica + IPS)** je u
+> [`PLAN-B-payment-implementation.md`](./PLAN-B-payment-implementation.md) — data model,
+> `kind` registry, LS webhook, IPS rail, security invarijante, edge case-ovi, rollout.
+> Ovaj fajl ostaje strateški pregled (B1/B2/B3).
+
 > Deferred from the /cene overhaul (Plan A). Build order: **B1 → B2 → B3**.
 > Dependency: **B3's "publish" checkout IS the B2 instant-IPS-QR screen**, so B2 must land before B3. B1 is independent and highest-value-now (peak season: every wedding exposes the CTA to 50–300 guests).
 >

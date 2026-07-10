@@ -26,15 +26,16 @@
     },
     "galerija": {
       "label": "QR galerija fotografija",
-      "price": 3500
+      "price": 3500,
+      "priceEur": 30
     },
     "bundlePrice": 8500,
     "bundleFullPrice": 10500
   },
   "tiers": {
-    "osnovno": { "label": "Osnovni paket", "price": 5000 },
-    "kompletno": { "label": "Kompletan paket", "price": 9900, "fullPrice": 14000 },
-    "premium": { "label": "Premium paket", "price": 13900, "fullPrice": 19000, "includes": ["raspored", "audio", "galerija"] }
+    "osnovno": { "label": "Osnovni paket", "price": 5000, "priceEur": 45 },
+    "kompletno": { "label": "Kompletan paket", "price": 9900, "fullPrice": 14000, "priceEur": 85 },
+    "premium": { "label": "Premium paket", "price": 13900, "fullPrice": 19000, "priceEur": 120, "includes": ["raspored", "audio", "galerija"] }
   },
   "addons": [
     {
@@ -85,11 +86,13 @@
   "rodjendan": {
     "pozivnica": {
       "label": "Rođendanska pozivnica",
-      "price": 4000
+      "price": 4000,
+      "priceEur": 35
     },
     "punoletstvo": {
       "label": "Pozivnica za punoletstvo",
-      "price": 4000
+      "price": 4000,
+      "priceEur": 35
     },
     "raspored": {
       "label": "Raspored sedenja",
@@ -100,6 +103,7 @@
     "label": "Raspored sedenja za organizatore",
     "price": 5000,
     "promoPrice": 4000,
-    "promoActive": true
+    "promoActive": true,
+    "priceEur": 45
   }
 }
