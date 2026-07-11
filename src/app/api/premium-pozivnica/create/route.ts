@@ -91,11 +91,10 @@ export async function POST(request: NextRequest) {
       tagline: body.tagline || "",
       thankYouFooter: body.thankYouFooter || "",
       locations: (body.locations || []).map((loc: { name?: string; address?: string; time?: string; enabled?: boolean; map_url?: string }) => {
-        if (!loc.map_url && loc.address) {
-          const query = [loc.name, loc.address].filter(Boolean).join(", ");
-          return { ...loc, map_url: `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed` };
-        }
-        return loc;
+        if (loc.map_url) return loc;
+        const query = [loc.name, loc.address].filter(Boolean).join(", ");
+        if (!query) return loc;
+        return { ...loc, map_url: `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed` };
       }),
       timeline: body.timeline || [],
       countdown_enabled: body.countdown_enabled ?? true,
@@ -110,6 +109,13 @@ export async function POST(request: NextRequest) {
       premium_city: body.premium_city || undefined,
       premium_car: body.premium_car || undefined,
       couple_description: body.couple_description || undefined,
+      premium_custom_bg_note:
+        typeof body.premium_custom_bg_note === "string"
+          ? body.premium_custom_bg_note.trim().slice(0, 400) || undefined
+          : undefined,
+      // Fountain needs no manual asset → delivered at create; watercolor +
+      // line_art need a hand-crafted background / illustration → in production.
+      premium_status: premium_theme === "fountain" ? "isporuceno" : "u_izradi",
       // Fountain theme bundles a 2-photo gallery into the premium price; the
       // form sets paid_for_images: true whenever the user has queued any files
       // on the Fountain step. Other premium themes never set this.
@@ -152,6 +158,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       slug,
       preview_url: `/premium-pozivnica/${slug}`,
+      // Portal password revealed once on the self-serve success screen.
+      password: autoPassword,
     });
   } catch (err) {
     console.error("Premium creation error:", err);

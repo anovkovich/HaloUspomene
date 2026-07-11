@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search, QrCode, CalendarPlus } from "lucide-react";
+import Link from "next/link";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search, QrCode, CalendarPlus, Wallet } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
 import {
   buildReceiptItems,
@@ -15,12 +16,13 @@ import BirthdayAdminList from "./BirthdayAdminList";
 import VendorAdminTab from "./VendorAdminTab";
 import SeatingAdminTab from "./SeatingAdminTab";
 import PhoneRentalModal from "./PhoneRentalModal";
+import OrdersAdminTab from "./OrdersAdminTab";
 import AdminCalendar from "./AdminCalendar";
 import BypassLinkModal from "./BypassLinkModal";
 import ShareLinkButton from "./ShareLinkButton";
 import DatePicker from "@/components/ui/DatePicker";
 
-type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja";
+type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja" | "uplate";
 
 const TABS: ReadonlyArray<{
   id: AdminTab;
@@ -32,6 +34,7 @@ const TABS: ReadonlyArray<{
   { id: "rodjendani", label: "Rođendani", icon: Cake, activeBg: "bg-[#FF6B6B]" },
   { id: "vendori", label: "Vendori", icon: Star, activeBg: "bg-[#d4af37]" },
   { id: "raspored-sedenja", label: "Raspored sedenja", icon: Armchair, activeBg: "bg-[#2563eb]" },
+  { id: "uplate", label: "Uplate", icon: Wallet, activeBg: "bg-[#16a34a]" },
 ];
 
 const BANK_ACCOUNTS = [
@@ -52,8 +55,13 @@ interface Couple {
   paid_for_images?: boolean;
   paid_for_music?: boolean;
   paid_for_audio_USB?: "" | "kaseta" | "bocica";
+  custom_primary_color?: string;
+  custom_background_color?: string;
   premium?: boolean;
   premium_paid?: boolean;
+  premium_theme?: string;
+  premium_status?: "u_izradi" | "isporuceno";
+  premium_custom_bg_note?: string;
   draft?: boolean;
   receipt_valid?: boolean;
   receipt_created?: string;
@@ -86,6 +94,7 @@ export default function AdminPage() {
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [uplateCount, setUplateCount] = useState(0);
   const sortMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -150,7 +159,7 @@ export default function AdminPage() {
     if (!tabInitializedRef.current) {
       tabInitializedRef.current = true;
       const t = new URLSearchParams(window.location.search).get("tab");
-      if (t === "rodjendani" || t === "vendori" || t === "raspored-sedenja")
+      if (t === "rodjendani" || t === "vendori" || t === "raspored-sedenja" || t === "uplate")
         setActiveTab(t);
       return;
     }
@@ -199,6 +208,13 @@ export default function AdminPage() {
               if (m && typeof m === "object") setShareStats(m);
             })
             .catch(() => {});
+          // Load pending-payment count for the Uplate tab badge
+          fetch("/api/admin/orders?status=review")
+            .then((r) => r.json())
+            .then((d) => {
+              if (Array.isArray(d?.orders)) setUplateCount(d.orders.length);
+            })
+            .catch(() => {});
         }
         setLoading(false);
       })
@@ -234,6 +250,28 @@ export default function AdminPage() {
       setCouples((prev) =>
         prev.map((c) =>
           c.slug === slug ? { ...c, draft: current } : c
+        )
+      );
+    }
+  }
+
+  // Premium ops safety net: mark the hand-crafted asset (watercolor custom bg /
+  // line_art HQ illustration) as delivered once the admin swaps it in.
+  async function handleMarkDelivered(slug: string) {
+    setCouples((prev) =>
+      prev.map((c) =>
+        c.slug === slug ? { ...c, premium_status: "isporuceno" } : c
+      )
+    );
+    const res = await fetch(`/api/admin/couples/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ premium_status: "isporuceno" }),
+    });
+    if (!res.ok) {
+      setCouples((prev) =>
+        prev.map((c) =>
+          c.slug === slug ? { ...c, premium_status: "u_izradi" } : c
         )
       );
     }
@@ -361,8 +399,8 @@ export default function AdminPage() {
       ub: c.paid_for_audio_USB === "bocica" ? 1 : 0,
       rp: extras?.retro_phone ? 1 : 0,
       pd: extras?.dobrodoslica ? 1 : 0,
-      cc: (c as any).custom_primary_color || (c as any).custom_background_color ? 1 : 0,
-      ig: (c as any).paid_for_images ? 1 : 0,
+      cc: c.custom_primary_color || c.custom_background_color ? 1 : 0,
+      ig: c.paid_for_images ? 1 : 0,
       g: c.paid_for_gallery ? 1 : 0,
       mu: c.paid_for_music ? 1 : 0,
       p: c.premium ? 1 : 0,
@@ -554,16 +592,17 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Tab bar — 2×2 on mobile, single row on sm+ */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 mb-6 sm:mb-8 bg-white/5 rounded-xl p-1">
+      {/* Tab bar — 2-wide on mobile, single row on sm+ */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-1 mb-6 sm:mb-8 bg-white/5 rounded-xl p-1">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
+          const badge = tab.id === "uplate" && uplateCount > 0 ? uplateCount : null;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
+              className={`relative flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
                 isActive
                   ? `text-white ${tab.activeBg}`
                   : "text-white/50 hover:text-white/80"
@@ -571,20 +610,30 @@ export default function AdminPage() {
             >
               <Icon size={14} className="shrink-0" />
               <span className="truncate">{tab.label}</span>
+              {badge && (
+                <span className="absolute top-1 right-1 sm:static sm:ml-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold rounded-full bg-[#16a34a] text-white">
+                  {badge}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
-      {activeTab === "vendori" ? (
+      {activeTab === "uplate" ? (
+        <OrdersAdminTab
+          onNeedsLogin={() => setNeedsLogin(true)}
+          onCountChange={setUplateCount}
+        />
+      ) : activeTab === "vendori" ? (
         <>
           <div className="mb-4">
-            <a
+            <Link
               href="/admin/vendors"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-[#AE343F] text-white hover:bg-[#AE343F]/90 transition-colors"
             >
               <Star size={14} /> Upravljaj vendorima (DB)
-            </a>
+            </Link>
           </div>
           <VendorAdminTab />
         </>
@@ -746,6 +795,19 @@ export default function AdminPage() {
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 shrink-0">
                         {c.theme || "—"}
                       </span>
+                      {c.premium && c.premium_status === "u_izradi" && (
+                        <button
+                          onClick={() => handleMarkDelivered(c.slug)}
+                          title={
+                            c.premium_custom_bg_note
+                              ? `Pozadina po opisu: ${c.premium_custom_bg_note}\n\nKlik = označi finalnu verziju kao isporučenu`
+                              : "Finalna ilustracija/pozadina u izradi — klik = označi kao isporučeno"
+                          }
+                          className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 shrink-0 cursor-pointer transition-colors"
+                        >
+                          ⚙ finalna u izradi
+                        </button>
+                      )}
                       <span
                         className={`text-[10px] shrink-0 ${isExpired ? "text-red-400/60" : isPast ? "text-white/30" : "text-white/60"}`}
                       >

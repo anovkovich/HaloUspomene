@@ -85,7 +85,7 @@ export default function TierCards({
             <Li>Protokol dana venčanja</Li>
             <Li>Online potvrda dolaska (RSVP)</Li>
             <Li>QR kod za potvrdu na štampanim pozivnicama</Li>
-            <Li>Pristup „Moje Venčanje" portalu</Li>
+            <Li>Pristup {'„Moje Venčanje"'} portalu</Li>
             <Li>🎁 Gratis PDF pozivnica za štampu</Li>
           </ul>
           <Link

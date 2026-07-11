@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBirthdayData, getAllBirthdaySlugs } from "@/lib/birthday";
 import PunoletstvoInvitationClient from "./PunoletstvoInvitationClient";
+import PreviewWatermark from "@/components/PreviewWatermark";
 
 export const revalidate = 10;
 export const dynamicParams = true;
@@ -42,7 +43,16 @@ export default async function PunoletstvoInvitationPage({ params }: PageProps) {
 
   if (!data) notFound();
   if (data.type !== "eighteenth") notFound();
-  if (data.draft && process.env.NODE_ENV === "production") notFound();
 
-  return <PunoletstvoInvitationClient data={data} slug={slug} />;
+  // Freemium (B3): a draft renders a watermarked, RSVP-locked preview.
+  const isDraft = !!data.draft;
+
+  return (
+    <>
+      <PunoletstvoInvitationClient data={data} slug={slug} />
+      {isDraft && (
+        <PreviewWatermark payHref={`/placanje/punoletstvo/${slug}`} />
+      )}
+    </>
+  );
 }

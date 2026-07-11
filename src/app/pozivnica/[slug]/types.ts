@@ -133,6 +133,13 @@ export interface WeddingData {
   premium_city?: string; // Watercolor theme: city background key
   premium_car?: string; // Watercolor theme: car illustration key
   couple_description?: string; // Line art theme: AI couple description
+  /** Watercolor: couple's free-text description of a CUSTOM background to paint
+   *  (beyond the predefined premium_city list). Team-produced after payment. */
+  premium_custom_bg_note?: string;
+  /** Premium delivery state for the hand-crafted asset (watercolor custom bg /
+   *  line_art HQ illustration). "u_izradi" = final asset pending; "isporuceno"
+   *  = delivered (fountain needs no manual step, so it's isporuceno at create). */
+  premium_status?: "u_izradi" | "isporuceno";
   premium_paid?: boolean;
   /** Comma-separated E.164 phone numbers collected at submission (e.g. "+381638261775,+381615000363"). Optional. */
   contact_phone?: string;

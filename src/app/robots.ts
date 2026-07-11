@@ -44,6 +44,7 @@ const AI_BOT_DISALLOW = [
   "/punoletstvo/*/portal",
   "/punoletstvo/*/prijava",
   "/raspored-sedenja/*/",
+  "/placanje/",
   "/rsvp/",
 ];
 
@@ -97,6 +98,7 @@ export default function robots(): MetadataRoute.Robots {
           "/punoletstvo/*/portal",
           "/punoletstvo/*/prijava",
           "/raspored-sedenja/*/",
+          "/placanje/",
           "/rsvp/",
         ],
       },

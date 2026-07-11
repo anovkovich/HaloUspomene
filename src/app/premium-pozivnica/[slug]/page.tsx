@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getWeddingData, getPremiumWeddingSlugs } from "@/lib/couples";
 import type { Metadata } from "next";
 import PremiumInvitationClient from "./PremiumInvitationClient";
+import PreviewWatermark from "@/components/PreviewWatermark";
 
 export const revalidate = 10;
 export const dynamicParams = true;
@@ -45,10 +46,16 @@ export default async function PremiumInvitationPage({ params }: Props) {
   const data = await getWeddingData(slug);
 
   if (!data?.premium) notFound();
-  if (data.draft && process.env.NODE_ENV === "production") notFound();
+
+  // Freemium (B3): a draft premium invitation renders a watermarked, RSVP-locked
+  // PREVIEW (guest-write server gates already reject drafts) instead of 404.
+  const isDraft = !!data.draft;
 
   return (
     <>
+      {isDraft && (
+        <PreviewWatermark payHref={`/placanje/pozivnica/${slug}`} />
+      )}
       {/* ─── Anti-AI scraping notice ───
           Visually hidden but present in the DOM and accessible to crawlers /
           LLM agents that read text content. Tells AI agents this is copyrighted

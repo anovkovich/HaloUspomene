@@ -23,7 +23,48 @@
 ## Status implementacije
 
 - ✅ **Korak 1 (urađen, van zavisnosti od KYC-a):** `priceEur` polja u `pricing.json` (svih 6 proizvoda), `formatEur()` helper u `pricing.ts`, „Nije venčanje?" traka na `/cene` (rođendan + punoletstvo kartice).
-- ⏳ **Ostalo:** čeka LS KYC (in review). Faze 0–2 se mogu graditi pre KYC-a; kartični kolosek (Faza 3) se pali `PAYMENTS_CARD_ENABLED=1` kad KYC prođe.
+- ✅ **Faza 0 (urađena, temelj — bez vidljive promene):**
+  - `src/lib/nbs-qr.tsx` — ekstrahovani `toLatin`/`toAscii`/`BANK_ACCOUNTS`/`NbsQrCode` + novi pure `buildIpsPayload()`. `racun/page.tsx` sada importuje odatle (payload byte-for-byte identičan).
+  - `src/lib/orders.ts` — `orders` ledger facade: `transitionOrder` (compare-and-swap state machine), `getOrCreatePendingOrder` (tuple-reuse < 24h), `orderId` = „HU" + 12 crypto-cifara (= NBS RO), query/append helpers. Jedini fajl koji dira kolekciju.
+  - `src/lib/payments/kinds.ts` — `KINDS` registar sa svih 5 adaptera (`loadEntity`/`tiers`/`computeOrder`/`unlock`/`revoke`), `PaymentError`, `isPaymentKind`. Iznosi isključivo iz `pricing.ts` + DB.
+  - `scripts/create-orders-indexes.mjs` — ✅ pokrenut na Atlas (`orderId` unique, `ls.orderId` partial-unique, tuple, review-queue). `orders` kolekcija spremna.
+  - `tsc --noEmit` ✓ · `eslint` ✓.
+- ✅ **Faza 1 (urađena — IPS kolosek, pre-KYC, odmah monetizabilno):**
+  - `src/app/placanje/[kind]/[slug]/page.tsx` — server checkout: registry lookup, `getOrCreatePendingOrder`, `robots:noindex`, „Već aktivirano" stanje. `+ /hvala` status stranica.
+  - `src/components/payments/CheckoutPanel.tsx` — deljena klijentska ploča: RSD stavke + total, IPS QR (`NbsQrCode`), „Obavesti nas o uplati" forma (recaptcha `payment_notify` → notify API → order u `review`; email doorbell sa klijenta jer Cloudflare blokira server-side Web3Forms). Kartično dugme skriveno dok `PAYMENTS_CARD_ENABLED !== "1"`.
+  - `src/app/api/placanje/notify/route.ts` — recaptcha + 5/IP/h rate-limit + `transitionOrder(pending→review)`.
+  - `src/app/api/admin/orders/route.ts` (lista + dup-warning) · `src/app/api/admin/orders/[orderId]/route.ts` (approve `review|pending→unlocked`+`unlock()`+revalidate / reject `review→canceled`).
+  - `src/app/admin/OrdersAdminTab.tsx` + 5. tab „Uplate" u `admin/page.tsx` (badge sa brojem `review` ordera, Odobri/Odbij).
+  - `robots.ts` `Disallow: /placanje` · recaptcha akcija `payment_notify` · `src/lib/payments/product-urls.ts` (deep-link po tipu).
+  - Ulazne tačke se kače u Fazi 2 (preview publish-gate); za sad direktan URL.
+  - `tsc` ✓ · `eslint` ✓ (uz usput očišćenih 5 pre-existing errora u `admin/page.tsx`).
+- ✅ **Faza 2 (urađena — B3 freemium gate, JEDAN atomski deploy):**
+  - **Server gejt (pravi zid):** `api/pozivnica/[slug]/rsvp` i `.../audio` → `if (draft) return 403`. **Galerija NIJE dirana** — `paid_for_gallery` se otključava bez diranja `draft`, pa je `draft:true + paid_for_gallery:true` legitimno standalone stanje; draft→403 bi polomio standalone galeriju.
+  - **Preview render:** `pozivnica/[slug]/page.tsx` — draft više ne 404-uje u produkciji, renderuje watermarkovan preview (`InvitationClient preview` + `PreviewWatermark`). RSVP sekcija u preview modu → zaključan blok „Potvrde se otključavaju objavljivanjem" + „Objavi pozivnicu" CTA → `/placanje/pozivnica/[slug]`.
+  - `PreviewWatermark.tsx` — fiksna traka „Pregled · Plati i objavi / Plati nakon", dismiss → mali „PREGLED" pill.
+  - **Bezbednosno proverено:** premium teme koriste istu RSVP rutu, ali premium stranica i dalje 404-uje draft → svaki objavljen par (klasičan/premium) ima `draft:false` i prolazi gejt; `draft:true` = već nedostupno = nema živog RSVP toka. Nijedan plaćeni par se ne lomi.
+  - `robots:{index:false}` već postoji za sve parove (draft ostaje neindeksiran).
+  - `tsc` ✓ · `eslint` ✓.
+  - ✅ **Funnel entry (self-serve) zakačen:** `/napravi-pozivnicu` dugme → „Napravi pozivnicu"; posle `create` (koji sad vraća `{ slug, password }`) success ekran vodi par na NJEGOV preview (`/pozivnica/[slug]`) + otkriva portal lozinku jednom; copy prebačen iz „zahtev/javićemo se" u self-serve ton. Puna petlja: builder → preview (watermark, RSVP locked) → „Plati i objavi" → `/placanje` → IPS → admin Odobri → live.
+  - ✅ **Watermark lock SVUDA:** deljena `src/components/PreviewWatermark.tsx` (tiled katanac + „PREGLED — pozivnica je ZAKLJUČANA! · Plati i otključaj je!" traka, `payHref` po tipu). Primenjena na **premium** (`premium-pozivnica/[slug]`), **rođendan** (`deciji-rodjendan/[slug]` + uklonjen draft-404 iz layout-a) i **punoletstvo** (`punoletstvo/[slug]`) — svi renderuju watermarkovan preview umesto 404. Server gejt `draft→403` dodat na `deciji-rodjendan` i `punoletstvo` RSVP rute. (Premium/rođendan/punoletstvo za sad prikazuju RSVP formu koja server-side 403-uje; classic ima i vizuelno zaključanu RSVP karticu.)
+- ✅ **Multi-product funnel (svi tipovi + standalone alati):**
+  - **Entry points** — svaki builder success ekran vodi u self-serve preview + „Plati i otključaj":
+    - premium (`/napravi-pozivnicu`, premium grana) → `/premium-pozivnica/[slug]` preview → `/placanje/pozivnica/[slug]`; create vraća `password`, success ekran generalizovan (gold akcenat).
+    - rođendan (`/napravi-deciju-pozivnicu`) → `/deciji-rodjendan/[slug]` → `/placanje/rodjendan/[slug]`.
+    - punoletstvo (`/napravi-punoletstvo`) → `/punoletstvo/[slug]` → `/placanje/punoletstvo/[slug]`.
+    - Sve tri create rute sad vraćaju `{ slug, password }` + auto-generišu `map_url` (isti fix kao pozivnica).
+  - **Standalone raspored** (`/raspored-sedenja` lead) — record se već auto-kreira; success ekran „Plati i aktiviraj alat" → `/placanje/raspored/[slug]` + prikaz PIN-a (pay-first, PIN gejt je lock).
+  - **Standalone galerija** — `createGalleryCouple` server action koristi **deljeni QuickRegister mehanizam** (`src/lib/quick-register.ts`, isti kao planer signup): pravi PRAVI couples record + auto-login u portal (moje_vencanje cookies), `paid_for_gallery:false` do uplate. `signupAction` (planer) refaktorisan da deli isti helper (bez promene ponašanja). `GalleryLeadForm` grana: „uz pozivnicu" → lead; standalone → create → „Plati i aktiviraj galeriju" → `/placanje/galerija/[slug]`. Recaptcha akcija `create_gallery`.
+  - ⏳ **Preostalo (nije blocker):** premium/rođendan/punoletstvo preview prikazuju RSVP formu koja server-403-uje (nemaju vizuelno zaključanu RSVP karticu kao classic); gallery-only `couples` record kroz `/pozivnica/[slug]` daje prazan watermark preview (buyer ide na `/galerija`, ne tamo). **Pre objave:** ručna prod-verifikacija — kreiraj draft → `curl -X POST /api/pozivnica/<slug>/rsvp` (i rođendan/punoletstvo) mora 403 → published RSVP i dalje 200.
+- ✅ **Faza 3 (kartica) — KOD kompletan (čeka samo LS ključeve posle KYC-a):**
+  - `src/lib/payments/lemonsqueezy.ts` — `createCheckout` (API-hosted checkout), `verifySignature` (raw-body HMAC + timingSafeEqual), `parseWebhook` + tipovi.
+  - `src/app/placanje/[kind]/[slug]/actions.ts` — `createCardCheckout` server action: registry → computeOrder → order → LS checkout sa `custom_data {kind,slug,tier,order_id}` → redirect URL (`?locale=hr`). Gated `PAYMENTS_CARD_ENABLED`.
+  - `src/app/api/placanje/webhook/route.ts` — `order_created` (test-fence → order lookup → custom cross-check → EUR/iznos invarijanta → `pending|paid→paid` + merge `ls` → `unlock()` → `paid→unlocked`; unlock fail → 500 retry) i `order_refunded` (delimičan → adminNote; pun → `refunded→revoke→revoked`). Svaka isporuka → `webhookEvents` audit.
+  - `CheckoutPanel` — kartično dugme zove akciju + redirect (loading „Otvaramo plaćanje…"); IPS QR ispod „ili" razdelnika.
+  - `/hvala` — `Refresher` auto-osvežavanje (brojač u URL-u, max 6×5s) za redirect-pre-webhook prozor.
+  - Vidljivost gated `PAYMENTS_CARD_ENABLED=1`; LS var-ovi u `.env.local` (prazni dok KYC ne prođe → dugme gracefully „nije konfigurisano").
+  - `tsc` ✓ · `eslint` ✓.
+  - **Za go-live posle KYC-a:** u LS napravi 6 varijanti + „prices include tax" ON + webhook na `/api/placanje/webhook` (`order_created`, `order_refunded`); upiši `LEMONSQUEEZY_*` + `LS_VARIANT_*` (Vercel + lokal); `PAYMENTS_ALLOW_TEST=1` za test verifikaciju pa nazad 0; ostavi `PAYMENTS_CARD_ENABLED=1`.
 
 ---
 

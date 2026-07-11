@@ -1,8 +1,6 @@
 "use server";
 
-import { cookies, headers } from "next/headers";
-import { SignJWT } from "jose";
-import { upsertCouple } from "@/lib/couples";
+import { headers } from "next/headers";
 import { generateUniqueSlug, InvalidSlugInputError } from "@/lib/slug";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
@@ -10,10 +8,7 @@ import {
   ensurePhoneVerified,
   normalizePhone,
 } from "@/lib/phone-verification";
-
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? "dev-secret",
-);
+import { quickRegisterCouple } from "@/lib/quick-register";
 
 export type SignupResult =
   | { ok: true; slug: string }
@@ -130,48 +125,8 @@ export async function signupAction(formData: {
     contact_instagram: instagram ? `@${instagram}` : "",
   } as WeddingData & { contact_phone: string; contact_instagram: string };
 
-  await upsertCouple(slug, coupleData);
-
-  // Set auth cookies (same pattern as /api/moje-vencanje/auth/[slug])
-  const token = await new SignJWT({ slug, scope: "portal" })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("480d")
-    .sign(secret);
-
-  const jar = await cookies();
-
-  jar.set("moje_vencanje_auth", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 480 * 24 * 60 * 60,
-  });
-
-  jar.set("moje_vencanje_slug", slug, {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 480 * 24 * 60 * 60,
-  });
-
-  // Also set the pozivnica auth cookie — required by middleware to access
-  // /pozivnica/[slug]/raspored-sedenja and similar. Mirrors the behavior of
-  // /api/moje-vencanje/auth/[slug] so a draft couple who paid for raspored
-  // doesn't have to log in twice.
-  const pozivnicaToken = await new SignJWT({ slug })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("480d")
-    .sign(secret);
-
-  jar.set(`auth_${slug}`, pozivnicaToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: `/pozivnica/${slug}`,
-    maxAge: 480 * 24 * 60 * 60,
-  });
+  // Persist + auto-login to the portal (shared QuickRegister mechanism).
+  await quickRegisterCouple(slug, coupleData);
 
   return { ok: true, slug };
 }

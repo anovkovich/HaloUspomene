@@ -18,7 +18,9 @@ export type RecaptchaAction =
   | "create_punoletstvo"
   | "rsvp"
   | "contact"
-  | "quickstart";
+  | "quickstart"
+  | "payment_notify"
+  | "create_gallery";
 
 export class RecaptchaError extends Error {
   constructor(

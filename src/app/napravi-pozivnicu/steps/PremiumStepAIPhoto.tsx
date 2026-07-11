@@ -1,5 +1,10 @@
 "use client";
 
+/* This step is built from preview thumbnails (theme/city/car/AI-render) with
+   dynamic + blob/object src — next/image can't optimize those, so plain <img>
+   is correct throughout. */
+/* eslint-disable @next/next/no-img-element */
+
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import {
@@ -19,6 +24,7 @@ interface PremiumStepAIPhotoProps {
   premiumCity: string;
   premiumCar: string;
   coupleDescription: string;
+  customBgNote: string;
   aiCoupleImageUrl: string;
   bride: string;
   groom: string;
@@ -27,6 +33,7 @@ interface PremiumStepAIPhotoProps {
   onCityChange: (city: string) => void;
   onCarChange: (car: string) => void;
   onDescriptionChange: (desc: string) => void;
+  onCustomBgNoteChange: (note: string) => void;
   onImageGenerated: (url: string) => void;
   onPendingImagesChange: (files: File[]) => void;
 }
@@ -338,10 +345,8 @@ function DescSelect({
 }
 
 function CoupleDescriptionBuilder({
-  value,
   onChange,
 }: {
-  value: string;
   onChange: (desc: string) => void;
 }) {
   const [bhc, setBhc] = useState("");
@@ -425,6 +430,7 @@ export default function PremiumStepAIPhoto({
   premiumCity,
   premiumCar,
   coupleDescription,
+  customBgNote,
   aiCoupleImageUrl,
   bride,
   groom,
@@ -433,6 +439,7 @@ export default function PremiumStepAIPhoto({
   onCityChange,
   onCarChange,
   onDescriptionChange,
+  onCustomBgNoteChange,
   onImageGenerated,
   onPendingImagesChange,
 }: PremiumStepAIPhotoProps) {
@@ -663,6 +670,33 @@ export default function PremiumStepAIPhoto({
             onSelect={onCityChange}
             label="Izaberite pozadinu"
           />
+
+          {/* Custom background request — the team hand-paints the couple's own
+              place; the selected predefined background stays as the interim/live one. */}
+          <div className="mb-6 rounded-2xl border border-[#d4af37]/25 bg-[#d4af37]/[0.04] p-4">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles size={15} className="text-[#d4af37]" />
+              <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#d4af37]">
+                Želite svoje mesto na pozadini?
+              </p>
+              <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20">
+                Uključeno
+              </span>
+            </div>
+            <p className="text-[11px] text-[#8B7355] mb-3 leading-relaxed">
+              Opišite nam crkvu, salu, manastir ili grad — naš tim ručno oslikava
+              baš vašu pozadinu. Do tada je aktivna pozadina koju ste izabrali gore.
+            </p>
+            <textarea
+              value={customBgNote}
+              onChange={(e) => onCustomBgNoteChange(e.target.value)}
+              rows={3}
+              maxLength={400}
+              placeholder="npr. Crkva Svetog Đorđa u Oplencu, iz žablje perspektive, u sumrak…"
+              className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-[#232323] placeholder:text-stone-400 focus:outline-none focus:border-[#d4af37]/50 transition-colors resize-none"
+            />
+          </div>
+
           <ScrollableCards
             items={CARS}
             selected={premiumCar}
@@ -680,10 +714,7 @@ export default function PremiumStepAIPhoto({
           transition={{ duration: 0.3 }}
         >
           <div className="h-px bg-gradient-to-r from-transparent via-[#d4af37]/20 to-transparent mb-2" />
-          <CoupleDescriptionBuilder
-            value={coupleDescription}
-            onChange={onDescriptionChange}
-          />
+          <CoupleDescriptionBuilder onChange={onDescriptionChange} />
 
           {/* Generate / Regenerate button */}
           <button
@@ -807,6 +838,20 @@ export default function PremiumStepAIPhoto({
                 />
               )}
             </motion.div>
+          )}
+
+          {/* Expectation-setting: the rough render is a guideline, not the final. */}
+          {aiCoupleImageUrl && (
+            <div className="mt-3 rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.04] p-3">
+              <p className="text-[11px] text-[#8B7355] leading-relaxed">
+                <span className="font-bold text-[#d4af37]">
+                  Ovo je skica, ne finalna ilustracija.
+                </span>{" "}
+                Vaša slika služi našem ilustratoru kao smernica — finalnu, ručno
+                doteranu verziju izrađujemo nakon porudžbine i menjamo je na
+                pozivnici u roku od 3 radna dana.
+              </p>
+            </div>
           )}
         </motion.div>
       )}

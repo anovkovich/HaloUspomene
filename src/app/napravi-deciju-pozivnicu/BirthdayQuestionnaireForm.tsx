@@ -182,16 +182,13 @@ function BirthdayPreview({
   displayFont,
   childName,
   age,
-  gender,
 }: {
   theme: BirthdayThemeType;
   displayFont: BirthdayFontType;
   childName: string;
   age: number;
-  gender: BirthdayGender;
 }) {
   const cssVars = getBirthdayThemeCSSVariables(theme, displayFont);
-  const config = BIRTHDAY_THEME_CONFIGS[theme];
 
   return (
     <div
@@ -545,7 +542,6 @@ function Step3({
           displayFont={formData.displayFont}
           childName={formData.child_name}
           age={formData.age}
-          gender={formData.gender}
         />
       </div>
 
@@ -693,6 +689,9 @@ export default function BirthdayQuestionnaireForm() {
   const [formData, setFormData] = useState<FormData>(defaultFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  // B3 self-serve: preview link + one-time portal password after create.
+  const [createdSlug, setCreatedSlug] = useState<string | null>(null);
+  const [createdPassword, setCreatedPassword] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
   const formTopRef = useRef<HTMLDivElement>(null);
@@ -784,6 +783,8 @@ export default function BirthdayQuestionnaireForm() {
       const created = await res.json();
       if (!res.ok) throw new Error(created.error || "Greška pri kreiranju pozivnice");
 
+      setCreatedSlug(created.slug);
+      if (typeof created.password === "string") setCreatedPassword(created.password);
       setIsSubmitted(true);
 
       // 2) Notify admin from client (Web3Forms blocks server requests).
@@ -847,34 +848,42 @@ export default function BirthdayQuestionnaireForm() {
     };
   }, [currentThemeConfig.colors.background]);
 
-  // Success screen
+  // Success screen — B3 self-serve: preview + publish CTA + one-time password.
   if (isSubmitted) {
     return (
-      <div className="bg-white rounded-3xl shadow-sm border border-stone-100 p-12 text-center max-w-2xl mx-auto">
+      <div className="bg-white rounded-3xl shadow-sm border border-stone-100 p-10 sm:p-12 text-center max-w-2xl mx-auto">
         <div className="w-20 h-20 bg-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-[#FF6B6B]/25">
           <CheckCircle2 size={40} className="text-white" />
         </div>
         <h2 className="text-3xl font-serif text-[#FF6B6B] mb-4">
-          Hvala!
+          Pozivnica je spremna!
         </h2>
-        <p className="text-[#E55A5A] text-lg mb-3">
-          Uspešno smo primili podatke za pozivnicu za {formData.child_name}.
+        <p className="text-[#E55A5A] text-lg mb-8">
+          Pogledajte kako izgleda pozivnica za {formData.child_name} — pa je
+          objavite kad budete spremni.
         </p>
-        {formData.event_date_only && (
-          <p className="text-[#FF6B6B]/70 mb-8">
-            Proslava:{" "}
-            {new Date(
-              formData.event_date_only + "T12:00:00",
-            ).toLocaleDateString("sr-Latn-RS", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
+        {createdSlug && (
+          <a
+            href={`/deciji-rodjendan/${createdSlug}`}
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-semibold text-base transition-all hover:opacity-90 shadow-lg shadow-[#FF6B6B]/25 bg-[#FF6B6B]"
+          >
+            Pogledaj i objavi pozivnicu →
+          </a>
         )}
-        <p className="text-[#E55A5A] text-sm">
-          Uskoro ćemo napraviti pozivnicu i kontaktirati vas. 🎉
-        </p>
+        {createdPassword && (
+          <div className="mt-8 mx-auto max-w-sm rounded-2xl border border-[#FF6B6B]/30 bg-[#FF6B6B]/[0.06] p-5 text-left">
+            <p className="text-xs font-bold uppercase tracking-wider mb-1 text-[#E55A5A]">
+              Lozinka za pristup pozivnici
+            </p>
+            <p className="font-mono text-lg font-bold mb-2 text-[#FF6B6B]">
+              {createdPassword}
+            </p>
+            <p className="text-xs leading-relaxed text-[#E55A5A]">
+              Sačuvajte je — sa njom pristupate potvrdama dolaska i upravljanju
+              pozivnicom.
+            </p>
+          </div>
+        )}
       </div>
     );
   }

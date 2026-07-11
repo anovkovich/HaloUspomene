@@ -14,6 +14,17 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // Freemium gate (B3): a draft (unpublished) invitation must NOT accept RSVPs.
+  // This server check is the REAL wall — the page renders a watermarked preview
+  // with the client form disabled, but client-side disabling is decoration.
+  // Ships in the same deploy as the preview render (non-negotiable coupling).
+  if (weddingData.draft) {
+    return NextResponse.json(
+      { error: "Pozivnica još nije objavljena." },
+      { status: 403 },
+    );
+  }
+
   // Check deadline
   const deadline = new Date(weddingData.submit_until);
   deadline.setHours(23, 59, 59, 999);

@@ -77,6 +77,17 @@ export async function POST(request: NextRequest) {
     const digits = String(Math.floor(1000 + Math.random() * 9000));
     const autoPassword = `${childName.split(" ")[0]}${digits}`;
 
+    // Auto-generate the Google Maps embed URL so the preview shows the map
+    // immediately (mirrors the admin "Generiši map_url" button: name OR address).
+    const locName = (body.location?.name || "").trim();
+    const locAddr = (body.location?.address || "").trim();
+    const locQuery = [locName, locAddr].filter(Boolean).join(", ");
+    const locMapUrl =
+      body.location?.map_url ||
+      (locQuery
+        ? `https://maps.google.com/maps?q=${encodeURIComponent(locQuery)}&output=embed`
+        : "");
+
     const data: BirthdayData = {
       type: "child",
       theme: (body.theme || "boy_animals") as BirthdayThemeType,
@@ -89,9 +100,9 @@ export async function POST(request: NextRequest) {
       submit_until: body.submit_until || "",
       tagline: body.tagline || "",
       location: {
-        name: body.location?.name || "",
-        address: body.location?.address || "",
-        map_url: body.location?.map_url || "",
+        name: locName,
+        address: locAddr,
+        map_url: locMapUrl,
       },
       countdown_enabled: body.countdown_enabled ?? true,
       map_enabled: body.map_enabled ?? true,
@@ -101,7 +112,7 @@ export async function POST(request: NextRequest) {
 
     await upsertBirthday(slug, data);
 
-    return NextResponse.json({ slug });
+    return NextResponse.json({ slug, password: autoPassword });
   } catch (err) {
     console.error("Birthday creation error:", err);
     return NextResponse.json({ error: "Creation failed" }, { status: 500 });

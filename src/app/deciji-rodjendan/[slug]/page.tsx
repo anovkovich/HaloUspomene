@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBirthdayData, getAllBirthdaySlugs } from "@/data/rodjendani";
 import BirthdayClient from "./BirthdayClient";
+import PreviewWatermark from "@/components/PreviewWatermark";
 
 export const revalidate = 60;
 // Allow slugs not in generateStaticParams (new events added via admin)
@@ -39,7 +40,16 @@ export default async function BirthdayInvitationPage({ params }: PageProps) {
   const data = await getBirthdayData(slug);
 
   if (!data) notFound();
-  if (data.draft && process.env.NODE_ENV === "production") notFound();
 
-  return <BirthdayClient data={data} slug={slug} />;
+  // Freemium (B3): a draft renders a watermarked, RSVP-locked preview.
+  const isDraft = !!data.draft;
+
+  return (
+    <>
+      <BirthdayClient data={data} slug={slug} />
+      {isDraft && (
+        <PreviewWatermark payHref={`/placanje/rodjendan/${slug}`} />
+      )}
+    </>
+  );
 }

@@ -32,6 +32,10 @@ interface InvitationClientProps {
    *  `data.useCyrillic` (true → "sr-Cyrl", false → "sr-Latn"). The
    *  /hochzeitseinladung/[slug]/ route passes "de" to render German. */
   lang?: Lang;
+  /** Freemium preview (B3): the couple is a draft. RSVP is locked behind a
+   *  publish CTA — the server-side RSVP endpoint rejects drafts regardless,
+   *  this just makes the wall visible instead of throwing a 403 at the guest. */
+  preview?: boolean;
 }
 
 // Helper to format date with translation support
@@ -231,6 +235,7 @@ export default function InvitationClient({
   data,
   slug,
   lang: langProp,
+  preview = false,
 }: InvitationClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -855,7 +860,41 @@ export default function InvitationClient({
               </div>
             )}
           </div>
-          {isPastDeadline ? (
+          {preview ? (
+            <div
+              className="max-w-xl mx-auto text-center py-12 px-8 rounded-[var(--theme-radius)]"
+              style={{
+                backgroundColor: "var(--theme-surface)",
+                border: "1px solid var(--theme-border-light)",
+                boxShadow: "var(--theme-shadow)",
+              }}
+            >
+              <p
+                className="font-serif text-2xl mb-3"
+                style={{ color: "var(--theme-text)" }}
+              >
+                Potvrde dolaska se otključavaju objavljivanjem
+              </p>
+              <p
+                className="font-elegant text-sm mb-7"
+                style={{ color: "var(--theme-text-light)" }}
+              >
+                Ovo je pregled vaše pozivnice. Kada je objavite, gosti mogu da
+                potvrde dolazak i sve funkcije se aktiviraju.
+              </p>
+              <Link
+                href={`/placanje/pozivnica/${slug}`}
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-elegant text-sm uppercase tracking-[0.2em] transition-all hover:opacity-85"
+                style={{
+                  backgroundColor: "var(--theme-primary)",
+                  color: "#fff",
+                  boxShadow: "var(--theme-shadow)",
+                }}
+              >
+                Objavi pozivnicu
+              </Link>
+            </div>
+          ) : isPastDeadline ? (
             <div
               className="max-w-xl mx-auto text-center py-12 px-8 rounded-[var(--theme-radius)]"
               style={{

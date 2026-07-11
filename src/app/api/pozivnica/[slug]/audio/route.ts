@@ -37,6 +37,14 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // Freemium gate (B3): never accept guest audio for an unpublished draft.
+  if (weddingData.draft) {
+    return NextResponse.json(
+      { error: "Pozivnica još nije objavljena." },
+      { status: 403 },
+    );
+  }
+
   if (!weddingData.paid_for_audio) {
     return NextResponse.json(
       { error: "Audio guest book not enabled" },

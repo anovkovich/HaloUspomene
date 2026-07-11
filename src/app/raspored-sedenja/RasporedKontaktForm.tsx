@@ -33,6 +33,10 @@ export default function RasporedKontaktForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  // Pay-first self-serve: the record is created immediately; the couple pays to
+  // activate, then logs in with this PIN.
+  const [createdSlug, setCreatedSlug] = useState<string | null>(null);
+  const [createdPin, setCreatedPin] = useState<string | null>(null);
 
   const { execute: executeRecaptcha } = useRecaptcha();
 
@@ -86,6 +90,10 @@ export default function RasporedKontaktForm() {
         );
         return;
       }
+
+      setCreatedSlug(requestData.slug);
+      if (typeof requestData.password === "string")
+        setCreatedPin(requestData.password);
 
       const formattedDate = eventDate
         ? new Date(eventDate).toLocaleDateString("sr-Latn-RS", {
@@ -147,12 +155,37 @@ export default function RasporedKontaktForm() {
           <CheckCircle2 size={28} className="text-[#AE343F]" />
         </div>
         <h3 className="text-2xl sm:text-3xl font-serif text-[#F5F4DC] mb-3">
-          Hvala na upitu!
+          Vaš alat je spreman!
         </h3>
-        <p className="text-[#F5F4DC]/60 max-w-md mx-auto leading-relaxed">
-          Javljamo se u toku 24h sa detaljima i potrebnim koracima za pristup
-          alatu.
+        <p className="text-[#F5F4DC]/60 max-w-md mx-auto leading-relaxed mb-7">
+          Aktivirajte pristup uplatom — čim je obradimo, prijavljujete se PIN-om
+          i alat je vaš.
         </p>
+        {createdSlug && (
+          <a
+            href={`/placanje/raspored/${createdSlug}`}
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-[#AE343F] hover:bg-[#8A2A32] text-white font-semibold text-base transition-colors"
+          >
+            Plati i aktiviraj alat →
+          </a>
+        )}
+        {createdPin && (
+          <div className="mt-8 mx-auto max-w-sm rounded-2xl border border-[#F5F4DC]/15 bg-[#F5F4DC]/[0.04] p-5 text-left">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/40 mb-1">
+              PIN za prijavu
+            </p>
+            <p className="font-mono text-xl font-bold text-[#F5F4DC] mb-2 tracking-widest">
+              {createdPin}
+            </p>
+            <p className="text-xs leading-relaxed text-[#F5F4DC]/50">
+              Sačuvajte ga — posle uplate prijavljujete se ovim PIN-om na{" "}
+              <span className="font-semibold text-[#F5F4DC]/70">
+                /raspored-sedenja/{createdSlug}
+              </span>
+              .
+            </p>
+          </div>
+        )}
       </div>
     );
   }

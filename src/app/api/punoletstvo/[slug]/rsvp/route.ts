@@ -14,6 +14,14 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // Freemium gate (B3): a draft (unpublished) invitation must NOT accept RSVPs.
+  if (data.draft) {
+    return NextResponse.json(
+      { error: "Pozivnica još nije objavljena." },
+      { status: 403 },
+    );
+  }
+
   // Check deadline
   const deadline = new Date(data.submit_until);
   deadline.setHours(23, 59, 59, 999);

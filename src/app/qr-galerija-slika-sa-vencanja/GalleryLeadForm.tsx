@@ -18,11 +18,15 @@ import {
   useRecaptcha,
   RecaptchaDisclosure,
 } from "@/components/forms/RecaptchaProvider";
+import { createGalleryCouple } from "./actions";
 
 const GalleryLeadForm: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Self-serve gallery: created slug + one-time password → pay to activate.
+  const [createdSlug, setCreatedSlug] = useState<string | null>(null);
+  const [createdPassword, setCreatedPassword] = useState<string | null>(null);
   const { execute: executeRecaptcha } = useRecaptcha();
 
   const [formData, setFormData] = useState({
@@ -52,34 +56,6 @@ const GalleryLeadForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      let recaptchaToken: string;
-      try {
-        recaptchaToken = await executeRecaptcha("contact");
-      } catch {
-        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
-        setIsLoading(false);
-        return;
-      }
-
-      const verifyRes = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: `+381${formData.phone}`,
-          phoneTrustToken,
-          recaptchaToken,
-        }),
-      });
-
-      const verifyData = (await verifyRes.json().catch(() => ({}))) as {
-        ok?: boolean;
-        error?: string;
-      };
-
-      if (!verifyRes.ok || !verifyData.ok) {
-        throw new Error(verifyData.error || "Provera nije uspela.");
-      }
-
       const formattedDate = formData.date
         ? new Date(formData.date).toLocaleDateString("sr-Latn-RS", {
             weekday: "long",
@@ -89,34 +65,106 @@ const GalleryLeadForm: React.FC = () => {
           })
         : "Nije navedeno";
 
-      // Web3Forms is called from the client because Cloudflare blocks
-      // server-side requests to api.web3forms.com from Vercel.
-      const w3 = await fetch("https://api.web3forms.com/submit", {
+      // Buyer wants the full package (invitation + gallery) → keep the lead
+      // flow; the Kompletan paket already bundles the gallery, so we don't sell
+      // a standalone gallery here.
+      if (formData.withInvitation) {
+        let recaptchaToken: string;
+        try {
+          recaptchaToken = await executeRecaptcha("contact");
+        } catch {
+          setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+          setIsLoading(false);
+          return;
+        }
+
+        const verifyRes = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone: `+381${formData.phone}`,
+            phoneTrustToken,
+            recaptchaToken,
+          }),
+        });
+        const verifyData = (await verifyRes.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+        };
+        if (!verifyRes.ok || !verifyData.ok) {
+          throw new Error(verifyData.error || "Provera nije uspela.");
+        }
+
+        const w3 = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_KEY,
+            subject: `QR galerija + pozivnica - ${formData.name} - ${formattedDate}`,
+            from_name: "HALO Uspomene",
+            name: formData.name,
+            telefon: `+381${formData.phone}`,
+            datum_dogadjaja: formattedDate,
+            lokacija: formData.location || "Nije navedeno",
+            i_pozivnica: "Da",
+            paket: "QR galerija + zainteresovan za pozivnicu",
+          }),
+        });
+        const w3Data = (await w3.json().catch(() => ({}))) as {
+          success?: boolean;
+          message?: string;
+        };
+        if (!w3.ok || !w3Data.success) {
+          throw new Error(
+            w3Data.message || "Slanje nije uspelo. Pokušajte ponovo.",
+          );
+        }
+        setIsSubmitted(true);
+        return;
+      }
+
+      // Standalone gallery → self-serve create → pay to activate.
+      let recaptchaToken: string;
+      try {
+        recaptchaToken = await executeRecaptcha("create_gallery");
+      } catch {
+        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Reuses the same QuickRegister mechanism as the planner (proper couple
+      // + portal auto-login); gallery stays locked until payment.
+      const created = await createGalleryCouple({
+        name: formData.name,
+        phone: `+381${formData.phone}`,
+        eventDate: formData.date || undefined,
+        recaptchaToken,
+        phoneTrustToken,
+      });
+      if (!created.ok) {
+        throw new Error(created.error || "Slanje nije uspelo. Pokušajte ponovo.");
+      }
+
+      setCreatedSlug(created.slug);
+      setCreatedPassword(created.password);
+
+      // Admin awareness email (best-effort — the record already exists).
+      fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           access_key: WEB3FORMS_KEY,
-          subject: `QR galerija za venčanje - ${formData.name} - ${formattedDate}`,
+          subject: `QR galerija (self-serve) - ${formData.name} - ${formattedDate}`,
           from_name: "HALO Uspomene",
           name: formData.name,
           telefon: `+381${formData.phone}`,
           datum_dogadjaja: formattedDate,
           lokacija: formData.location || "Nije navedeno",
-          i_pozivnica: formData.withInvitation ? "Da" : "Ne",
-          paket: "QR galerija slika sa venčanja",
+          slug: created.slug,
+          paket: "QR galerija (self-serve — čeka uplatu)",
         }),
-      });
-
-      const w3Data = (await w3.json().catch(() => ({}))) as {
-        success?: boolean;
-        message?: string;
-      };
-
-      if (!w3.ok || !w3Data.success) {
-        throw new Error(
-          w3Data.message || "Slanje nije uspelo. Pokušajte ponovo.",
-        );
-      }
+      }).catch(() => {});
 
       setIsSubmitted(true);
     } catch (err) {
@@ -132,6 +180,8 @@ const GalleryLeadForm: React.FC = () => {
 
   const resetForm = () => {
     setIsSubmitted(false);
+    setCreatedSlug(null);
+    setCreatedPassword(null);
     setError(null);
     setFormData({
       name: "",
@@ -145,6 +195,43 @@ const GalleryLeadForm: React.FC = () => {
   };
 
   if (isSubmitted) {
+    // Self-serve gallery → pay to activate + reveal access password.
+    if (createdSlug) {
+      return (
+        <div className="bg-white/5 backdrop-blur-md p-8 sm:p-12 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/10 text-center">
+          <div className="w-24 h-24 bg-[#AE343F] rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-[#AE343F]/40">
+            <CheckCircle2 size={48} className="text-[#F5F4DC]" />
+          </div>
+          <h3 className="text-4xl font-serif text-[#F5F4DC] mb-4">
+            Vaša galerija je spremna!
+          </h3>
+          <p className="text-[#F5F4DC]/60 text-lg mb-8">
+            Aktivirajte je uplatom — čim je obradimo, QR galerija je vaša.
+          </p>
+          <a
+            href={`/placanje/galerija/${createdSlug}`}
+            className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full bg-[#AE343F] hover:bg-[#8A2A32] text-white font-bold text-lg transition-colors"
+          >
+            Plati i aktiviraj galeriju →
+          </a>
+          {createdPassword && (
+            <div className="mt-8 mx-auto max-w-sm rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-left">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/40 mb-1">
+                Lozinka za pristup
+              </p>
+              <p className="font-mono text-lg font-bold text-[#F5F4DC] mb-2">
+                {createdPassword}
+              </p>
+              <p className="text-xs leading-relaxed text-[#F5F4DC]/50">
+                Sačuvajte je — sa njom upravljate galerijom nakon aktivacije.
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Lead flow (wanted the full package too).
     return (
       <div className="bg-white/5 backdrop-blur-md p-8 sm:p-12 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/10 text-center">
         <div className="w-24 h-24 bg-[#AE343F] rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-[#AE343F]/40">
@@ -154,7 +241,7 @@ const GalleryLeadForm: React.FC = () => {
           Hvala Vam, {formData.name.split(" ")[0]}!
         </h3>
         <p className="text-[#F5F4DC]/60 text-lg mb-8">
-          Vaš upit za QR galeriju je uspešno primljen. <br />
+          Vaš upit je uspešno primljen. <br />
           Javljamo se u najkraćem roku sa svim informacijama i aktivacijom.
         </p>
         <button

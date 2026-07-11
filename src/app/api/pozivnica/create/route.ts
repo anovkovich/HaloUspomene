@@ -135,16 +135,19 @@ export async function POST(request: NextRequest) {
       submit_until: submit_until_date || "",
       tagline: body.tagline || "",
       thankYouFooter: body.thankYouFooter || "",
+      // Auto-generate the Google Maps embed URL at creation so the couple sees
+      // the map in their preview immediately (mirrors the admin "Generiši
+      // map_url" button: builds from name OR address, whichever is present —
+      // builder locations often carry only a venue name, no full address).
       locations: (body.locations || []).map(
         (loc: { name?: string; address?: string; map_url?: string }) => {
-          if (!loc.map_url && loc.address) {
-            const query = [loc.name, loc.address].filter(Boolean).join(", ");
-            return {
-              ...loc,
-              map_url: `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed`,
-            };
-          }
-          return loc;
+          if (loc.map_url) return loc;
+          const query = [loc.name, loc.address].filter(Boolean).join(", ");
+          if (!query) return loc;
+          return {
+            ...loc,
+            map_url: `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed`,
+          };
         },
       ),
       timeline: body.timeline || [],
@@ -182,7 +185,10 @@ export async function POST(request: NextRequest) {
 
     await upsertCouple(slug, weddingDataWithContact);
 
-    return NextResponse.json({ slug });
+    // Return the auto-generated portal password so the self-serve success
+    // screen can reveal it once to the couple (their own credential, over
+    // HTTPS). They need it to log in to /moje-vencanje later.
+    return NextResponse.json({ slug, password: autoPassword });
   } catch (err) {
     console.error("Classic invitation creation error:", err);
     return NextResponse.json({ error: "Creation failed" }, { status: 500 });

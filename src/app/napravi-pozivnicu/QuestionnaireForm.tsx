@@ -53,10 +53,7 @@ import dynamic from "next/dynamic";
 import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
 import { BypassPhoneInput } from "@/components/verification/BypassPhoneInput";
 import type { BypassInfo } from "./FormPageWrapper";
-import {
-  useRecaptcha,
-  RecaptchaDisclosure,
-} from "@/components/forms/RecaptchaProvider";
+import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 
 const PremiumStepAIPhoto = dynamic(() => import("./steps/PremiumStepAIPhoto"), {
   ssr: false,
@@ -115,20 +112,20 @@ const MONTHS_GEN = [
   "Decembra",
 ];
 
-const MONTHS_DISPLAY = [
-  "Januar",
-  "Februar",
-  "Mart",
-  "April",
-  "Maj",
-  "Jun",
-  "Jul",
-  "Avgust",
-  "Septembar",
-  "Oktobar",
-  "Novembar",
-  "Decembar",
-];
+// Single user-facing copy for every music-fetch failure mode. We deliberately
+// do not surface raw browser/API error text — users find it confusing.
+const FRIENDLY_ERROR =
+  "Preuzimanje nije uspelo. Pokušajte još jednom ili probajte drugu pesmu.";
+
+// Carries a retry hint up out of the inner attempt so the handler can decide
+// whether to retry. 5xx + network = retriable; 4xx = permanent.
+class FetchError extends Error {
+  retriable: boolean;
+  constructor(retriable: boolean) {
+    super(FRIENDLY_ERROR);
+    this.retriable = retriable;
+  }
+}
 
 function toSerbianDeadline(dateStr: string): string {
   if (!dateStr) return "";
@@ -169,6 +166,7 @@ interface FormData {
   premium_city: string;
   premium_car: string;
   couple_description: string;
+  premium_custom_bg_note: string;
   envelope_items: EnvelopeItem[];
   envelope_style: "classic" | "wing";
   envelope_rose_petals: boolean;
@@ -272,6 +270,7 @@ const defaultFormData: FormData = {
   premium_city: "",
   premium_car: "",
   couple_description: "",
+  premium_custom_bg_note: "",
   envelope_items: [],
   envelope_style: "classic",
   envelope_rose_petals: false,
@@ -455,6 +454,9 @@ export function ImagePicker({
             className="relative aspect-square rounded-lg overflow-hidden border bg-stone-50"
             style={{ borderColor: `rgba(${accentRgb}, 0.25)` }}
           >
+            {/* Local object-URL preview of a user upload — next/image can't
+                optimize a blob: URL, so a plain <img> is correct. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={src}
               alt={`Slika ${i + 1}`}
@@ -605,23 +607,6 @@ export function MusicPicker({
     setPreviewSrc(u);
     return () => URL.revokeObjectURL(u);
   }, [pending]);
-
-  // Single user-facing copy for every failure mode. We deliberately do
-  // not surface raw browser/API error text on this page — users find it
-  // confusing (often English, often technical).
-  const FRIENDLY_ERROR =
-    "Preuzimanje nije uspelo. Pokušajte još jednom ili probajte drugu pesmu.";
-
-  // Carries a retry hint up out of the inner attempt so handleFetch can
-  // decide whether to make a second attempt. 5xx + network = retriable,
-  // 4xx = permanent (video itself is broken/forbidden, or rate limit).
-  class FetchError extends Error {
-    retriable: boolean;
-    constructor(retriable: boolean) {
-      super(FRIENDLY_ERROR);
-      this.retriable = retriable;
-    }
-  }
 
   const attemptFetch = async (trimmed: string) => {
     let res: Response;
@@ -2542,22 +2527,22 @@ function Step6({
     <div>
       <StepHeading
         title="Poslednji korak!"
-        desc="Izaberite šta želite da se prikaže na pozivnici. RSVP formu za potvrdu dolaska ćemo podesiti mi."
+        desc="Izaberite šta želite da se prikaže na pozivnici. Potvrde dolaska se aktiviraju kada objavite pozivnicu."
       />
       <div className="space-y-6 -mt-4">
         {/* Info box */}
         <div>
           <p className="text-[11px] text-stone-400 leading-relaxed text-center mb-0">
-            Slanjem zahteva prihvatate politiku odustanka navedenu u podnožju
-            sajta.
+            Kreiranjem pozivnice prihvatate politiku odustanka navedenu u
+            podnožju sajta.
           </p>
           <div className="bg-[var(--accent,#AE343F)]/5 border border-[var(--accent,#AE343F)]/15 rounded-2xl px-5 py-4 text-sm text-[#8B2833] leading-relaxed">
             <p className="font-semibold mb-1">🎉 Skoro sve je spremno!</p>
             <p>
-              Nakon kreiranja pozivnice, na portalu{" "}
-              <strong>Moje Venčanje</strong> možete pratiti potvrde gostiju,
-              organizovati raspored sedenja, planirati budžet i još mnogo toga.
-              Kredencijale za prijavu ćete dobiti zajedno sa pozivnicom.
+              Čim je napravite, odmah vidite kako izgleda i možete je objaviti.
+              Na portalu <strong>Moje Venčanje</strong> pratite potvrde gostiju,
+              organizujete raspored sedenja, planirate budžet i još mnogo toga —
+              kredencijale za prijavu dobijate odmah nakon kreiranja.
             </p>
           </div>
         </div>
@@ -2616,6 +2601,10 @@ export default function QuestionnaireForm({
   }));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  // B3 self-serve funnel: after a classic create we drop the couple into their
+  // preview + publish CTA and reveal the portal password once.
+  const [createdSlug, setCreatedSlug] = useState<string | null>(null);
+  const [createdPassword, setCreatedPassword] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Drives the dynamic spinner copy on the submit button so the user knows
   // *what* we're doing during the multi-stage submit
@@ -3181,6 +3170,7 @@ export default function QuestionnaireForm({
           premium_city: formData.premium_city,
           premium_car: formData.premium_car,
           couple_description: formData.couple_description,
+          premium_custom_bg_note: formData.premium_custom_bg_note,
           envelope_items: formData.envelope_items,
           envelope_style: formData.envelope_style,
           envelope_rose_petals: formData.envelope_rose_petals,
@@ -3317,6 +3307,13 @@ export default function QuestionnaireForm({
         // Then push background music (if any). Single-file, similar pattern.
         await uploadPendingMusic(data.slug);
 
+        // B3 self-serve: send the couple into their premium preview + reveal
+        // the portal password (skipped for upgrades — those already exist).
+        if (!isUpgrade) {
+          setCreatedSlug(data.slug);
+          if (typeof data.password === "string") setCreatedPassword(data.password);
+        }
+
         setIsSubmitted(true);
         return;
       }
@@ -3452,6 +3449,11 @@ export default function QuestionnaireForm({
       // Then push background music (if any).
       await uploadPendingMusic(data.slug);
 
+      // B3 self-serve: remember slug + password so the success screen can send
+      // the couple straight into their preview and reveal the portal password.
+      setCreatedSlug(data.slug);
+      if (typeof data.password === "string") setCreatedPassword(data.password);
+
       setIsSubmitted(true);
     } catch (err) {
       setError(
@@ -3467,6 +3469,67 @@ export default function QuestionnaireForm({
 
   // Success screen
   if (isSubmitted) {
+    // B3 self-serve: a new creation (classic OR premium) drops the couple
+    // straight into their watermarked preview (with the publish/pay CTA) and
+    // reveals the portal password once. Upgrades keep the classic "javićemo se".
+    if (createdSlug && !isUpgrade) {
+      const isPremium = formData.premium;
+      const accent = isPremium ? "#d4af37" : "#AE343F";
+      const accentText = isPremium ? "#8B7355" : "#8B2833";
+      const previewHref = isPremium
+        ? `/premium-pozivnica/${createdSlug}`
+        : `/pozivnica/${createdSlug}`;
+      return (
+        <div
+          className={`p-10 sm:p-12 text-center max-w-2xl mx-auto ${getThemeClasses(isPremium).card}`}
+        >
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg"
+            style={{ backgroundColor: accent, boxShadow: `0 10px 25px ${accent}40` }}
+          >
+            <CheckCircle2 size={40} className="text-white" />
+          </div>
+          <h2 className="text-3xl font-serif mb-4" style={{ color: accent }}>
+            Vaša pozivnica je spremna!
+          </h2>
+          <p className="text-lg mb-8" style={{ color: accentText }}>
+            {formData.bride} i {formData.groom}, pogledajte kako izgleda — pa je
+            objavite kad budete spremni.
+          </p>
+          <a
+            href={previewHref}
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-semibold text-base transition-all hover:opacity-90 shadow-lg"
+            style={{ backgroundColor: accent, boxShadow: `0 10px 25px ${accent}40` }}
+          >
+            Pogledaj i objavi pozivnicu →
+          </a>
+          {createdPassword && (
+            <div
+              className="mt-8 mx-auto max-w-sm rounded-2xl border p-5 text-left"
+              style={{ borderColor: `${accent}30`, backgroundColor: `${accent}08` }}
+            >
+              <p
+                className="text-xs font-bold uppercase tracking-wider mb-1"
+                style={{ color: accentText }}
+              >
+                Lozinka za portal Moje Venčanje
+              </p>
+              <p
+                className="font-mono text-lg font-bold mb-2"
+                style={{ color: accent }}
+              >
+                {createdPassword}
+              </p>
+              <p className="text-xs leading-relaxed" style={{ color: accentText }}>
+                Sačuvajte je — sa njom se prijavljujete na{" "}
+                <span className="font-semibold">moje-vencanje</span> da pratite
+                potvrde dolaska, raspored sedenja i budžet.
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
     const successAccent = formData.premium ? "#d4af37" : "#AE343F";
     const successTextMuted = formData.premium ? "#8B7355" : "#8B2833";
     return (
@@ -3544,8 +3607,12 @@ export default function QuestionnaireForm({
             onThemeChange={(theme) => updateField("premium_theme", theme)}
             onCityChange={(city) => updateField("premium_city", city)}
             onCarChange={(car) => updateField("premium_car", car)}
+            customBgNote={formData.premium_custom_bg_note}
             onDescriptionChange={(desc) =>
               updateField("couple_description", desc)
+            }
+            onCustomBgNoteChange={(note) =>
+              updateField("premium_custom_bg_note", note)
             }
             onImageGenerated={(url) => updateField("ai_couple_image_url", url)}
             onPendingImagesChange={(files) =>
@@ -3759,7 +3826,7 @@ export default function QuestionnaireForm({
                     </>
                   ) : (
                     <>
-                      Pošalji zahtev
+                      {isUpgrade ? "Sačuvaj izmene" : "Napravi pozivnicu"}
                       <Send size={14} />
                     </>
                   )}

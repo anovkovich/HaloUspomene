@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { getBirthdayData } from "@/data/rodjendani";
 import BirthdayPassedGuard from "./BirthdayPassedGuard";
 
@@ -14,8 +13,7 @@ export default async function BirthdaySlugLayout({ children, params }: LayoutPro
   // Invalid slug → let the page handle the 404
   if (!birthdayData) return <>{children}</>;
 
-  // Draft events only visible in dev
-  if (birthdayData.draft && process.env.NODE_ENV === "production") notFound();
+  // Draft events now render a watermarked preview (B3) — the page handles it.
 
   return (
     <BirthdayPassedGuard eventDate={birthdayData.event_date}>
