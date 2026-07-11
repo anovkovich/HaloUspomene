@@ -38,7 +38,6 @@ import {
   WEDDING_THEME_KEYS,
   SCRIPT_FONT_CONFIGS,
   getThemeCSSVariables,
-  getThemeConfig,
   buildCustomColorOverrides,
   blendHex,
 } from "@/app/pozivnica/[slug]/constants";
@@ -1285,7 +1284,6 @@ function InvitationPreview({
           ),
         }
       : baseCssVars;
-  const config = getThemeConfig(theme);
 
   const brideName = bride || "Mladini";
   const groomName = groom || "Mladoženjini";
@@ -1612,86 +1610,6 @@ function TimePicker({
   );
 }
 
-function PhoneTagInput({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  const tags = value ? value.split(",").filter((t) => t.trim()) : [];
-  const [draft, setDraft] = useState("");
-
-  const commitTag = (raw: string) => {
-    const cleaned = raw.replace(/[^0-9 ]/g, "").trim();
-    if (!cleaned) return;
-    const next = tags.length ? `${value},${cleaned}` : cleaned;
-    onChange(next);
-    setDraft("");
-  };
-
-  const removeTag = (idx: number) => {
-    onChange(tags.filter((_, i) => i !== idx).join(","));
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    if (raw.includes(",")) {
-      commitTag(raw.replace(",", ""));
-      return;
-    }
-    setDraft(raw.replace(/^\+?381/, "").replace(/\D/g, ""));
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      commitTag(draft);
-    }
-    if (e.key === "Backspace" && !draft && tags.length) {
-      removeTag(tags.length - 1);
-    }
-  };
-
-  return (
-    <div className="flex flex-wrap items-center gap-1.5 border-b border-stone-200 focus-within:border-[var(--accent,#AE343F)] transition-colors py-1">
-      {tags.map((tag, i) => (
-        <span
-          key={i}
-          className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-1 text-sm text-stone-700"
-        >
-          +381 {tag.trim()}
-          <button
-            type="button"
-            onClick={() => removeTag(i)}
-            className="text-stone-400 hover:text-[var(--accent,#AE343F)] transition-colors"
-          >
-            <X size={12} />
-          </button>
-        </span>
-      ))}
-      {tags.length < 2 && (
-        <div className="flex items-center flex-1 min-w-[120px]">
-          <span className="py-1.5 pl-1 pr-2 text-stone-400 text-base select-none">
-            +381
-          </span>
-          <input
-            type="tel"
-            className="flex-1 bg-transparent py-1.5 pr-1 text-stone-800 text-base outline-none placeholder:text-stone-300"
-            placeholder={tags.length ? "Drugi broj" : "6X XXX XXXX"}
-            value={draft}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            onBlur={() => {
-              if (draft.trim()) commitTag(draft);
-            }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
 function Step2({
   formData,
   updateField,
@@ -1895,9 +1813,6 @@ function Step3({
   const [tempBackgroundColor, setTempBackgroundColor] = useState(
     formData.custom_background_color || "#F5F4DC",
   );
-
-  const colorInputRef = React.useRef<HTMLInputElement>(null);
-  const bgInputRef = React.useRef<HTMLInputElement>(null);
 
   const themes = WEDDING_THEME_KEYS.map(
     (key) =>
@@ -2324,9 +2239,6 @@ function Step4({
         {items.map(({ loc, def, idx, isDuplicate }) => {
           const active = loc.enabled;
           const homeLabel = isDuplicate ? "Polazak od kuće (2)" : def.title;
-          const homeSubtitle = isDuplicate
-            ? "Druga početna tačka (npr. mladina kuća)"
-            : def.subtitle;
 
           return (
             <div
@@ -2699,6 +2611,10 @@ export default function QuestionnaireForm({
         return { ...prev, locations };
       });
     }
+    // Runs only on event_time change and reads current locations via the
+    // closure; adding formData.locations would re-sync the hall time on every
+    // location edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.event_time]);
 
   const updateField = <K extends keyof FormData>(
