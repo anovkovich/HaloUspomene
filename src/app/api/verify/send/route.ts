@@ -73,6 +73,15 @@ export async function POST(req: NextRequest) {
     pinId = await sendVerificationCode(phoneE164);
   } catch (err) {
     if (err instanceof InfobipError) {
+      // Log the real reason server-side — the user-facing message is generic,
+      // but ops needs to know WHY (no_credit / missing_config / sender / etc.).
+      console.error(
+        "[verify/send] Infobip error:",
+        err.code,
+        `status=${err.status ?? "-"}`,
+        `messageId=${err.infobipMessageId ?? "-"}`,
+        err.message,
+      );
       const status = err.code === "invalid_phone" ? 400 : 502;
       const msg =
         err.code === "invalid_phone"
@@ -80,7 +89,22 @@ export async function POST(req: NextRequest) {
           : err.code === "rate_limit"
             ? "Previše pokušaja na ovom broju. Pokušajte kasnije."
             : "Slanje SMS-a trenutno nije moguće.";
-      return NextResponse.json({ error: msg }, { status });
+      return NextResponse.json(
+        {
+          error: msg,
+          ...(process.env.NODE_ENV !== "production"
+            ? {
+                _debug: {
+                  code: err.code,
+                  status: err.status,
+                  messageId: err.infobipMessageId,
+                  message: err.message,
+                },
+              }
+            : {}),
+        },
+        { status },
+      );
     }
     throw err;
   }

@@ -129,6 +129,7 @@ function mapErrorCode(messageId: string | undefined): InfobipError["code"] {
     case "WRONG_PIN":
       return "wrong_pin";
     case "TOO_MANY_REQUESTS":
+    case "THROTTLE_EXCEPTION":
       return "rate_limit";
     default:
       return "unknown";
