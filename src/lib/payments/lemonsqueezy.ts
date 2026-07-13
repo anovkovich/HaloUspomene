@@ -14,6 +14,9 @@ export interface CreateCheckoutParams {
   receiptButtonText?: string;
   receiptLinkUrl?: string;
   expiresAt: string; // ISO — the checkout dies with the frozen price
+  /** Pre-applies a Lemon Squeezy discount code (flat value). Passed only when
+   *  our server-side promo validation already passed. */
+  discountCode?: string;
 }
 
 export async function createCheckout(
@@ -33,7 +36,10 @@ export async function createCheckout(
       data: {
         type: "checkouts",
         attributes: {
-          checkout_data: { custom: p.custom },
+          checkout_data: {
+            custom: p.custom,
+            ...(p.discountCode ? { discount_code: p.discountCode } : {}),
+          },
           checkout_options: { embed: false, media: false, logo: true },
           product_options: {
             redirect_url: p.redirectUrl,

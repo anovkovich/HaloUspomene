@@ -76,13 +76,30 @@ export default function InvitationOfferCTA({
   inline = false,
   tone = "theme",
   className = "",
+  promoCode,
+  promoValidUntil,
 }: {
   headline?: string;
   inline?: boolean;
   tone?: Tone;
   className?: string;
+  /** Guest-referral promo code (Option A) — shown here + carried on the link. */
+  promoCode?: string;
+  promoValidUntil?: string;
 }) {
   const s = TONES[tone];
+
+  const href = promoCode
+    ? `/izrada-pozivnica-online?promo=${encodeURIComponent(promoCode)}`
+    : "/izrada-pozivnica-online";
+
+  const validUntil = promoValidUntil
+    ? new Date(promoValidUntil).toLocaleDateString("sr-Latn-RS", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
 
   const content = (
     <>
@@ -98,12 +115,36 @@ export default function InvitationOfferCTA({
       >
         {headline}
       </p>
+      {promoCode && (
+        <div
+          className="mx-auto mb-4 max-w-xs rounded-xl px-4 py-3"
+          style={{ backgroundColor: s.cardBg, border: s.cardBorder }}
+        >
+          <p
+            className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-1"
+            style={{ color: s.brand }}
+          >
+            🎁 Vaš poklon kôd
+          </p>
+          <p
+            className="font-mono text-base font-bold tracking-wider mb-1"
+            style={{ color: s.headline }}
+          >
+            {promoCode}
+          </p>
+          <p className="text-[11px]" style={{ color: s.brand }}>
+            Popust na vašu pozivnicu
+            {validUntil ? ` — važi do ${validUntil}` : ""}. Automatski se
+            primenjuje kad kliknete ispod.
+          </p>
+        </div>
+      )}
       <Link
-        href="/izrada-pozivnica-online"
+        href={href}
         className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-transform duration-300 hover:scale-[1.03]"
         style={{ backgroundColor: s.btnBg, color: s.btnText, boxShadow: s.btnShadow }}
       >
-        Pogledajte ponudu
+        {promoCode ? "Napravi svoju uz popust" : "Pogledajte ponudu"}
         <ArrowRight size={15} />
       </Link>
     </>

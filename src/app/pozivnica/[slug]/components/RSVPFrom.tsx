@@ -12,9 +12,17 @@ interface RSVPFormProps {
   slug: string;
   /** Wedding event for the "Add to calendar" button on the success screen. */
   calendarEvent?: CalendarEvent | null;
+  /** Guest-referral promo code shown on the success screen (Option A). */
+  promoCode?: string;
+  promoValidUntil?: string;
 }
 
-export const RSVPForm: React.FC<RSVPFormProps> = ({ slug, calendarEvent }) => {
+export const RSVPForm: React.FC<RSVPFormProps> = ({
+  slug,
+  calendarEvent,
+  promoCode,
+  promoValidUntil,
+}) => {
   const { t } = useTheme();
   const { execute: executeRecaptcha } = useRecaptcha();
   const [submitted, setSubmitted] = useState(false);
@@ -196,7 +204,12 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ slug, calendarEvent }) => {
             {t.submitAnother}
           </button>
 
-          <InvitationOfferCTA inline className="mt-8" />
+          <InvitationOfferCTA
+            inline
+            className="mt-8"
+            promoCode={promoCode}
+            promoValidUntil={promoValidUntil}
+          />
         </div>
 
         <style jsx>{`

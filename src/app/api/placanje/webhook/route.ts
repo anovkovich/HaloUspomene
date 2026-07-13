@@ -13,6 +13,7 @@ import {
   type OrderDocument,
 } from "@/lib/orders";
 import { KINDS } from "@/lib/payments/kinds";
+import { recordRedemption } from "@/lib/promo-redemptions";
 
 export const runtime = "nodejs"; // needs crypto.timingSafeEqual
 export const dynamic = "force-dynamic";
@@ -137,6 +138,14 @@ async function handleOrderCreated(evt: LsWebhook): Promise<Response> {
     approvedBy: "webhook",
     unlockedAt: new Date(),
   });
+  if (order.promo) {
+    await recordRedemption({
+      code: order.promo.code,
+      orderId,
+      slug: order.slug,
+      kind: order.kind,
+    }).catch((e) => console.error("[webhook] recordRedemption failed:", e));
+  }
   return ok();
 }
 

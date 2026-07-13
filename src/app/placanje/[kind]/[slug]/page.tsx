@@ -5,6 +5,8 @@ import { CheckCircle2 } from "lucide-react";
 import { KINDS, isPaymentKind, PaymentError } from "@/lib/payments/kinds";
 import { getOrCreatePendingOrder } from "@/lib/orders";
 import { productUrl } from "@/lib/payments/product-urls";
+import { verifyPromo, applyPromo, PROMO_CAP } from "@/lib/payments/promo";
+import { countRedemptions } from "@/lib/promo-redemptions";
 import CheckoutPanel from "@/components/payments/CheckoutPanel";
 
 export const dynamic = "force-dynamic";
@@ -48,10 +50,10 @@ export default async function PlacanjePage({
   searchParams,
 }: {
   params: Promise<{ kind: string; slug: string }>;
-  searchParams: Promise<{ tier?: string }>;
+  searchParams: Promise<{ tier?: string; promo?: string }>;
 }) {
   const { kind, slug } = await params;
-  const { tier: requestedTier } = await searchParams;
+  const { tier: requestedTier, promo: promoRaw } = await searchParams;
 
   if (!isPaymentKind(kind)) notFound();
 
@@ -95,6 +97,23 @@ export default async function PlacanjePage({
 
   const selectedTier = available.find((t) => t.id === tierId)!;
 
+  // Promo: verify the code (crypto + expiry + eligible kind), check the per-code
+  // redemption cap, then apply the discount BEFORE freezing so both rails carry it.
+  let appliedPromo:
+    | { code: string; discountEur: number; discountRsd: number }
+    | undefined;
+  if (promoRaw) {
+    const p = verifyPromo(promoRaw, kind);
+    if (p.valid && (await countRedemptions(p.code)) < PROMO_CAP) {
+      money = applyPromo(money, p);
+      appliedPromo = {
+        code: p.code,
+        discountEur: p.discountEur,
+        discountRsd: p.discountRsd,
+      };
+    }
+  }
+
   const order = await getOrCreatePendingOrder({
     kind,
     slug,
@@ -102,6 +121,7 @@ export default async function PlacanjePage({
     amountRsd: money.totalRsd,
     amountEur: money.totalEur,
     lines: money.lines,
+    promo: appliedPromo,
   });
 
   return (
@@ -117,6 +137,7 @@ export default async function PlacanjePage({
       lines={order.lines}
       tierId={tierId}
       cardEnabled={process.env.PAYMENTS_CARD_ENABLED === "1"}
+      promoCode={order.promo?.code}
     />
   );
 }

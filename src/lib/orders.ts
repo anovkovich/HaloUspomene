@@ -69,6 +69,11 @@ export interface OrderDocument {
   ipsAccountIdx: number; // index into BANK_ACCOUNTS (0 = Erste default)
   notify?: { at: Date; payerName: string; note?: string; ip: string };
 
+  // Promo code applied to this order (part of the order identity — a promo and
+  // non-promo checkout for the same tuple are DIFFERENT orders). The frozen
+  // amounts above already include the discount; this is the audit + redemption key.
+  promo?: { code: string; discountEur: number; discountRsd: number };
+
   webhookEvents?: Array<{
     eventName: string;
     lsEventId: string | null;
@@ -124,6 +129,7 @@ export interface CreateOrderInput {
   amountEur: number;
   lines: CheckoutLine[];
   ipsAccountIdx?: number;
+  promo?: { code: string; discountEur: number; discountRsd: number };
   meta?: { ip?: string; ua?: string };
 }
 
@@ -139,12 +145,20 @@ export async function getOrCreatePendingOrder(
   const c = await col();
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
+  // Promo is part of the order identity: a promo checkout and a non-promo
+  // checkout for the same (kind, slug, tier) resolve to DIFFERENT pending rows,
+  // so tuple-reuse never serves a stale full-price (or wrong-promo) frozen order.
+  const promoFilter = input.promo?.code
+    ? { "promo.code": input.promo.code }
+    : { "promo.code": { $exists: false } };
+
   const existing = await c.findOne({
     kind: input.kind,
     slug: input.slug,
     tier: input.tier,
     status: "pending",
     createdAt: { $gte: cutoff },
+    ...promoFilter,
   });
   if (existing) return existing;
 
@@ -165,6 +179,7 @@ export async function getOrCreatePendingOrder(
       lines: input.lines,
       ipsRef,
       ipsAccountIdx: input.ipsAccountIdx ?? 0,
+      promo: input.promo, // undefined → BSON omits it (matches the $exists:false reuse filter)
       webhookEvents: [],
       createdAt: now,
       updatedAt: now,

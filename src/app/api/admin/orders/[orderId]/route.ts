@@ -4,6 +4,7 @@ import { jwtVerify } from "jose";
 import { getOrder, transitionOrder, type PaymentKind } from "@/lib/orders";
 import { KINDS } from "@/lib/payments/kinds";
 import { productUrl } from "@/lib/payments/product-urls";
+import { recordRedemption } from "@/lib/promo-redemptions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -68,6 +69,16 @@ export async function POST(
         return NextResponse.json(
           { error: "Otključavanje nije uspelo — proverite entitet." },
           { status: 500 },
+        );
+      }
+      if (order.promo) {
+        await recordRedemption({
+          code: order.promo.code,
+          orderId,
+          slug: order.slug,
+          kind: order.kind,
+        }).catch((e) =>
+          console.error("[orders] recordRedemption failed:", orderId, e),
         );
       }
     }

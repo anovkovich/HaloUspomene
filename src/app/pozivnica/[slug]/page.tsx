@@ -4,6 +4,7 @@ import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import InvitationClient from "./InvitationClient";
 import PreviewWatermark from "@/components/PreviewWatermark";
 import BackgroundMusicPlayer from "@/components/BackgroundMusicPlayer";
+import { issuePromo } from "@/lib/payments/promo";
 
 // Allow slugs not in generateStaticParams (new couples added via admin)
 export const dynamicParams = true;
@@ -63,9 +64,19 @@ export default async function InvitationPage({ params }: PageProps) {
   // robots:{ index:false } for every couple, so drafts stay unindexed.
   const isDraft = !!weddingData.draft;
 
+  // Guest-referral promo: a code derived from this couple's event, shown on the
+  // RSVP success screen (only surfaces on published couples — drafts lock RSVP).
+  const promo = issuePromo(weddingData.event_date, slug);
+
   return (
     <>
-      <InvitationClient data={weddingData} slug={slug} preview={isDraft} />
+      <InvitationClient
+        data={weddingData}
+        slug={slug}
+        preview={isDraft}
+        promoCode={promo?.code}
+        promoValidUntil={promo?.validUntil}
+      />
       {isDraft && (
         <PreviewWatermark payHref={`/placanje/pozivnica/${slug}`} />
       )}

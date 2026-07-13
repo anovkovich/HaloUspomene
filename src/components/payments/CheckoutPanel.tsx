@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { CreditCard, Landmark, CheckCircle2, Loader2, AlertCircle, ChevronDown } from "lucide-react";
+import { useState, useEffect, type ReactNode } from "react";
+import { CreditCard, Landmark, CheckCircle2, Loader2, AlertCircle, ChevronDown, Tag } from "lucide-react";
 import { formatPrice, formatEur } from "@/data/pricing";
 import { NbsQrCode } from "@/lib/nbs-qr";
 import { useRecaptcha, RecaptchaDisclosure } from "@/components/forms/RecaptchaProvider";
@@ -26,6 +26,8 @@ interface CheckoutPanelProps {
   lines: CheckoutLine[];
   tierId: string;
   cardEnabled: boolean;
+  /** The promo code the server validated + applied (undefined = none). */
+  promoCode?: string;
 }
 
 export default function CheckoutPanel({
@@ -40,8 +42,48 @@ export default function CheckoutPanel({
   lines,
   tierId,
   cardEnabled,
+  promoCode,
 }: CheckoutPanelProps) {
   const { execute: executeRecaptcha } = useRecaptcha();
+
+  // Promo carry-over: a code enters via ?promo= (from the RSVP-success CTA). If
+  // the server applied one, remember it; if a stored code exists and none is in
+  // the URL, retry it once; if a URL code was rejected, drop the dead code.
+  useEffect(() => {
+    if (promoCode) {
+      try {
+        localStorage.setItem("hu_promo", promoCode);
+      } catch {}
+      return;
+    }
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("promo")) {
+      try {
+        localStorage.removeItem("hu_promo");
+      } catch {}
+      return;
+    }
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem("hu_promo");
+    } catch {}
+    if (stored) {
+      url.searchParams.set("promo", stored);
+      window.location.replace(url.toString());
+    }
+  }, [promoCode]);
+
+  const promoDiscountRsd = -(lines.find((l) => l.rsd < 0)?.rsd ?? 0);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+
+  const applyPromoCode = () => {
+    const code = promoInput.trim();
+    if (!code) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("promo", code);
+    window.location.href = url.toString();
+  };
 
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [payerName, setPayerName] = useState(displayName);
@@ -60,7 +102,7 @@ export default function CheckoutPanel({
     setCardError(null);
     setCardLoading(true);
     try {
-      const res = await createCardCheckout(kind, slug, tierId);
+      const res = await createCardCheckout(kind, slug, tierId, promoCode);
       if (res.url) {
         window.location.href = res.url;
         return;
@@ -153,7 +195,12 @@ export default function CheckoutPanel({
           {/* Line items */}
           <div className="space-y-2 mb-4">
             {lines.map((line, i) => (
-              <div key={i} className="flex justify-between text-sm text-[#232323]">
+              <div
+                key={i}
+                className={`flex justify-between text-sm ${
+                  line.rsd < 0 ? "text-green-700" : "text-[#232323]"
+                }`}
+              >
                 <span>{line.l}</span>
                 <span className="font-medium">{formatPrice(line.rsd)}</span>
               </div>
@@ -168,6 +215,46 @@ export default function CheckoutPanel({
               {formatPrice(amountRsd)}
             </span>
           </div>
+
+          {!done &&
+            (promoCode ? (
+              <div className="flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 mb-5">
+                <Tag size={15} className="text-green-600 shrink-0" />
+                <span className="text-[13px] text-green-800 font-medium">
+                  Promo kôd primenjen
+                  {promoDiscountRsd > 0
+                    ? ` — ušteda ${formatPrice(promoDiscountRsd)}`
+                    : ""}
+                </span>
+              </div>
+            ) : !promoOpen ? (
+              <button
+                type="button"
+                onClick={() => setPromoOpen(true)}
+                className="flex items-center gap-1.5 text-[12px] text-gray-500 hover:text-[#AE343F] transition-colors mb-5"
+              >
+                <Tag size={13} /> Imate promo kôd?
+              </button>
+            ) : (
+              <div className="flex gap-2 mb-5">
+                <input
+                  type="text"
+                  value={promoInput}
+                  onChange={(e) => setPromoInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && applyPromoCode()}
+                  placeholder="Promo kôd"
+                  className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm text-[#232323] uppercase placeholder:normal-case focus:outline-none focus:border-[#AE343F] transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={applyPromoCode}
+                  disabled={!promoInput.trim()}
+                  className="rounded-xl bg-[#AE343F] hover:bg-[#8A2A32] text-white px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Primeni
+                </button>
+              </div>
+            ))}
 
           {done ? (
             <div className="rounded-2xl bg-green-50 border border-green-200 p-5 text-center">

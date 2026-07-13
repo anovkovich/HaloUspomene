@@ -29,6 +29,14 @@ try {
   const r4 = await orders.createIndex({ status: 1, createdAt: -1 });
 
   console.log("orders indexes created:", { r1, r2, r3, r4 });
+
+  // Promo redemptions (abuse cap ledger).
+  const redemptions = client
+    .db("halouspomene")
+    .collection("promo_redemptions");
+  const p1 = await redemptions.createIndex({ code: 1 });
+  const p2 = await redemptions.createIndex({ orderId: 1 }, { unique: true });
+  console.log("promo_redemptions indexes created:", { p1, p2 });
 } finally {
   await client.close();
 }

@@ -4,6 +4,13 @@ import { KINDS, isPaymentKind, PaymentError } from "@/lib/payments/kinds";
 import { productUrl } from "@/lib/payments/product-urls";
 import { getOrCreatePendingOrder, setOrderRail } from "@/lib/orders";
 import { createCheckout } from "@/lib/payments/lemonsqueezy";
+import {
+  verifyPromo,
+  applyPromo,
+  PROMO_CAP,
+  PROMO_LS_CODE,
+} from "@/lib/payments/promo";
+import { countRedemptions } from "@/lib/promo-redemptions";
 
 /**
  * Creates a Lemon Squeezy hosted checkout for the (kind, slug, tier) and returns
@@ -15,6 +22,7 @@ export async function createCardCheckout(
   kind: string,
   slug: string,
   tierId: string,
+  promoCode?: string,
 ): Promise<{ url?: string; error?: string }> {
   if (process.env.PAYMENTS_CARD_ENABLED !== "1") {
     return { error: "Kartično plaćanje trenutno nije dostupno." };
@@ -38,6 +46,24 @@ export async function createCardCheckout(
     return { error: "Greška u obračunu." };
   }
 
+  // Re-validate the promo SERVER-SIDE (only the code string is trusted, never a
+  // client amount) so the frozen order matches the same (kind,slug,tier,promo)
+  // identity the page created — the card checkout reuses that exact row.
+  let appliedPromo:
+    | { code: string; discountEur: number; discountRsd: number }
+    | undefined;
+  if (promoCode) {
+    const p = verifyPromo(promoCode, kind);
+    if (p.valid && (await countRedemptions(p.code)) < PROMO_CAP) {
+      money = applyPromo(money, p);
+      appliedPromo = {
+        code: p.code,
+        discountEur: p.discountEur,
+        discountRsd: p.discountRsd,
+      };
+    }
+  }
+
   const order = await getOrCreatePendingOrder({
     kind,
     slug,
@@ -45,6 +71,7 @@ export async function createCardCheckout(
     amountRsd: money.totalRsd,
     amountEur: money.totalEur,
     lines: money.lines,
+    promo: appliedPromo,
   });
 
   const storeId = process.env.LEMONSQUEEZY_STORE_ID;
@@ -63,6 +90,10 @@ export async function createCardCheckout(
       receiptButtonText: "Nazad na pozivnicu",
       receiptLinkUrl: `${site}${productUrl(kind, slug)}`,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      // LS applies its flat discount code; the post-discount total must equal
+      // the frozen order.amountEur (both subtract the same flat €, or the
+      // webhook money invariant quarantines it).
+      discountCode: appliedPromo ? PROMO_LS_CODE : undefined,
     });
     await setOrderRail(order.orderId, "card", {
       ls: { ...order.ls, checkoutId },

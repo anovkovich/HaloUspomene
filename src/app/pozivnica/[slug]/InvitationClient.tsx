@@ -36,6 +36,9 @@ interface InvitationClientProps {
    *  publish CTA — the server-side RSVP endpoint rejects drafts regardless,
    *  this just makes the wall visible instead of throwing a 403 at the guest. */
   preview?: boolean;
+  /** Guest-referral promo code shown on the RSVP success screen (Option A). */
+  promoCode?: string;
+  promoValidUntil?: string;
 }
 
 // Helper to format date with translation support
@@ -236,6 +239,8 @@ export default function InvitationClient({
   slug,
   lang: langProp,
   preview = false,
+  promoCode,
+  promoValidUntil,
 }: InvitationClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -917,7 +922,12 @@ export default function InvitationClient({
               </p>
             </div>
           ) : (
-            <RSVPForm slug={slug} calendarEvent={weddingCalendarEvent} />
+            <RSVPForm
+              slug={slug}
+              calendarEvent={weddingCalendarEvent}
+              promoCode={promoCode}
+              promoValidUntil={promoValidUntil}
+            />
           )}
 
           {/* Optional per-couple call-CTA below the RSVP form. Renders

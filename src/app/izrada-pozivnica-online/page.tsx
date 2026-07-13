@@ -9,14 +9,27 @@ import {
   CheckCircle2,
   Wallet,
   ArrowRight,
+  Timer,
+  MapPin,
+  Heart,
+  PartyPopper,
+  Cake,
+  Sparkles,
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
+import { pricing, formatPrice, getRodjendanPozivnicaPrice } from "@/data/pricing";
 import StampaneLeadForm from "./StampaneLeadForm";
+import PromoCapture from "@/components/PromoCapture";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
+
+const fromPrice = Math.min(
+  pricing.pozivnica.website.price,
+  getRodjendanPozivnicaPrice(),
+);
 
 export const metadata: Metadata = {
   title:
@@ -63,6 +76,14 @@ export const metadata: Metadata = {
     canonical: `${siteUrl}/izrada-pozivnica-online`,
   },
 };
+
+const heroPills = [
+  { icon: <CheckCircle2 size={15} />, label: "RSVP" },
+  { icon: <Timer size={15} />, label: "Odbrojavanje" },
+  { icon: <MapPin size={15} />, label: "Mapa" },
+  { icon: <QrCode size={15} />, label: "PDF sa QR" },
+  { icon: <Clock size={15} />, label: "Gotova za 24h" },
+];
 
 const benefits = [
   {
@@ -112,6 +133,60 @@ const steps = [
     n: "03",
     title: "Dobijate pozivnicu za 24h",
     desc: "Mi dizajniramo i šaljemo vam link spreman za deljenje — plus PDF sa QR kodom.",
+  },
+];
+
+// Live-examples slots — one per occasion, linking to its spoke page. The
+// skeleton screen is a placeholder; when we record real invitation clips
+// (envelope opening, parallax, RSVP, countdown) they drop straight into the
+// phone frame — this is a separate task.
+const exampleSlots = [
+  {
+    initials: "M & J",
+    gradient: "linear-gradient(160deg, #AE343F, #7a1f27)",
+    label: "Venčanje",
+    desc: "Koverta se otvara, RSVP uživo",
+    href: "/napravi-pozivnicu",
+  },
+  {
+    initials: "5",
+    gradient: "linear-gradient(160deg, #5b8fb0, #7a9b6d)",
+    label: "Dečiji rođendan",
+    desc: "Šareno, sa odbrojavanjem",
+    href: "/napravi-deciju-pozivnicu",
+  },
+  {
+    initials: "1",
+    gradient: "linear-gradient(160deg, #e6c48f, #d4af37)",
+    label: "Prvi rođendan",
+    desc: "Nežno, za prvu svećicu",
+    href: "/pozivnica-za-prvi-rodjendan",
+  },
+  {
+    initials: "18",
+    gradient: "linear-gradient(160deg, #2b2b2b, #454545)",
+    label: "Punoletstvo",
+    desc: "Elegantno, sa mapom",
+    href: "/napravi-punoletstvo",
+  },
+];
+
+const clusterPills = [
+  { icon: <Heart size={15} />, label: "Venčanje", href: "/napravi-pozivnicu" },
+  {
+    icon: <PartyPopper size={15} />,
+    label: "Dečiji rođendan",
+    href: "/napravi-deciju-pozivnicu",
+  },
+  {
+    icon: <Cake size={15} />,
+    label: "Prvi rođendan",
+    href: "/pozivnica-za-prvi-rodjendan",
+  },
+  {
+    icon: <Sparkles size={15} />,
+    label: "Punoletstvo",
+    href: "/napravi-punoletstvo",
   },
 ];
 
@@ -184,9 +259,160 @@ const itemListSchema = {
   ],
 };
 
+/** Faint skeleton "text" bars used inside the decorative fan cards. */
+function Bars({ tone = "dark" }: { tone?: "dark" | "gold" }) {
+  const bar = tone === "gold" ? "bg-[#F5F4DC]/15" : "bg-[#232323]/10";
+  return (
+    <div className="flex flex-col gap-1 items-center mt-1.5">
+      <span className={`h-1 w-14 rounded-full ${bar}`} />
+      <span className={`h-1 w-10 rounded-full ${bar}`} />
+      <span className={`h-1 w-12 rounded-full ${bar}`} />
+    </div>
+  );
+}
+
+/** Decorative CSS "fan" of three occasion cards for the hero — Dečiji (left) ·
+ *  Punoletstvo gold (center, elevated) · Venčanje (right). No images → no LCP
+ *  cost; the h1 remains the LCP element. */
+function InvitationFan() {
+  return (
+    <div className="relative flex items-end justify-center py-6 select-none">
+      {/* Dečiji rođendan — left, playful */}
+      <div
+        className="relative z-10 w-28 sm:w-32 aspect-[3/4] rounded-2xl bg-white border border-[#232323]/8 shadow-xl flex flex-col items-center justify-center p-3 overflow-hidden"
+        style={{ transform: "rotate(-8deg) translateY(20px)" }}
+      >
+        <span className="absolute top-3 left-4 w-2 h-2 rounded-full bg-[#AE343F]/40" />
+        <span className="absolute top-4 right-5 w-1.5 h-1.5 rounded-full bg-[#d4af37]/70" />
+        <span className="absolute top-2.5 right-9 w-1.5 h-1.5 rounded-full bg-[#4a7ba6]/60" />
+        <span className="absolute top-10 left-6 w-1.5 h-1.5 rounded-full bg-[#7a9b6d]/60" />
+        <span className="absolute bottom-5 left-5 w-1.5 h-1.5 rounded-full bg-[#d4af37]/50" />
+        <span className="absolute bottom-6 right-6 w-2 h-2 rounded-full bg-[#AE343F]/30" />
+        <span className="font-serif text-4xl text-[#AE343F] leading-none">
+          5
+        </span>
+        <span className="text-[8px] uppercase tracking-[0.12em] text-[#232323]/50 mt-2">
+          Dečiji rođendan
+        </span>
+        <Bars />
+      </div>
+
+      {/* Punoletstvo — center, gold cream, elevated (on top) */}
+      <div
+        className="relative z-20 -ml-5 w-28 sm:w-36 aspect-[3/4] rounded-2xl bg-[#FDF6EC] border border-[#d4af37]/40 shadow-2xl flex flex-col items-center justify-center p-3"
+        style={{ transform: "rotate(0deg)" }}
+      >
+        <div className="flex gap-1.5 mb-1">
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="w-2 h-2 rounded-[2px] bg-[#d4af37]/70"
+            />
+          ))}
+        </div>
+        <span className="font-serif text-5xl text-[#d4af37] leading-none mt-1">
+          18
+        </span>
+        <span className="text-[8px] uppercase tracking-[0.16em] text-[#8a7a4a] mt-2">
+          Punoletstvo
+        </span>
+        <span className="w-12 h-0.5 bg-[#d4af37]/50 mt-3" />
+      </div>
+
+      {/* Venčanje — right, elegant / rich */}
+      <div
+        className="relative z-10 -ml-5 w-28 sm:w-32 aspect-[3/4] rounded-2xl bg-[#FDFBF5] border border-[#d4af37]/40 shadow-xl flex flex-col items-center justify-center p-3"
+        style={{ transform: "rotate(8deg) translateY(20px)" }}
+      >
+        <span className="absolute inset-2 rounded-xl border border-[#d4af37]/25 pointer-events-none" />
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className="w-4 h-px bg-[#d4af37]/60" />
+          <span className="w-1.5 h-1.5 rotate-45 bg-[#d4af37]/70" />
+          <span className="w-4 h-px bg-[#d4af37]/60" />
+        </div>
+        <span className="font-serif text-2xl text-[#232323] leading-none mt-1">
+          M <span className="text-[#d4af37]">&amp;</span> J
+        </span>
+        <span className="text-[8px] uppercase tracking-[0.16em] text-[#232323]/50 mt-2">
+          Venčanje
+        </span>
+        <span className="text-[8px] tracking-wider text-[#a08a4a] mt-1">
+          12 · 08 · 2025
+        </span>
+        <span className="mt-2.5 text-[8px] bg-[#AE343F] text-white px-2.5 py-0.5 rounded-full">
+          Potvrdi dolazak
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** A single phone-framed example slot. `media` is intentionally not wired yet —
+ *  the skeleton screen is the placeholder until real clips are recorded. */
+function PhoneSlot({
+  initials,
+  gradient,
+  label,
+  desc,
+  href,
+}: {
+  initials: string;
+  gradient: string;
+  label: string;
+  desc: string;
+  href: string;
+}) {
+  return (
+    <div className="snap-center shrink-0 flex flex-col items-center">
+      <div className="relative w-[178px] aspect-[9/19] rounded-[2rem] bg-[#0d0d0d] p-2.5 shadow-2xl">
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-14 h-1.5 rounded-full bg-white/15 z-10" />
+        {/* GIF/video ide ovde kasnije (media prop) — zaseban task */}
+        <div
+          className="w-full h-full rounded-[1.6rem] overflow-hidden flex flex-col items-center justify-center gap-3 px-5 text-center"
+          style={{ background: gradient }}
+        >
+          <span className="text-[9px] uppercase tracking-[0.2em] text-white/70">
+            Pozivnica
+          </span>
+          <span className="font-serif text-3xl text-white leading-none">
+            {initials}
+          </span>
+          <div className="flex flex-col items-center gap-1.5">
+            <span className="h-1.5 w-24 rounded-full bg-white/25" />
+            <span className="h-1.5 w-16 rounded-full bg-white/20" />
+          </div>
+          <div className="flex gap-1.5 mt-1">
+            {["12", "08", "45"].map((n) => (
+              <span
+                key={n}
+                className="w-7 h-8 rounded-md bg-white/15 flex items-center justify-center text-white text-xs font-medium"
+              >
+                {n}
+              </span>
+            ))}
+          </div>
+          <span className="mt-1 text-[9px] bg-white/90 text-[#232323] px-3 py-1 rounded-full">
+            Potvrdi dolazak
+          </span>
+        </div>
+      </div>
+      <p className="mt-4 font-serif text-lg text-[#F5F4DC]">{label}</p>
+      <p className="text-xs text-[#F5F4DC]/45 mb-2">{desc}</p>
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-[#d4af37] hover:gap-2.5 transition-all"
+      >
+        Pogledaj primer uživo
+        <ArrowRight size={14} />
+      </Link>
+    </div>
+  );
+}
+
 export default function IzradaPozivnicaOnline() {
   return (
     <>
+      <PromoCapture />
       <Header />
       <main className="min-h-screen bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6]">
         <script
@@ -199,38 +425,209 @@ export default function IzradaPozivnicaOnline() {
         />
 
         {/* HERO */}
-        <section className="pt-28 sm:pt-32 pb-12 sm:pb-16">
-          <div className="container mx-auto px-4 max-w-5xl">
+        <section className="relative pt-28 sm:pt-32 pb-14 sm:pb-20 overflow-hidden">
+          <div className="absolute top-10 right-0 w-96 h-96 bg-[#AE343F]/8 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-[#d4af37]/10 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="container mx-auto px-4 max-w-6xl relative z-10">
             <Breadcrumbs
               items={[
                 { label: "Početna", href: "/" },
                 { label: "Izrada pozivnica online" },
               ]}
             />
-            <div className="text-center mt-10">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-5">
-                Digitalna pozivnica za svaku priliku
-              </p>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#232323] leading-tight mb-6">
-                Izrada pozivnica{" "}
-                <span className="italic text-[#AE343F]">online</span>
-              </h1>
-              <p className="text-lg sm:text-xl text-[#232323]/60 max-w-2xl mx-auto leading-relaxed">
-                Napravite personalizovanu digitalnu pozivnicu za venčanje,
-                dečiji rođendan, prvi rođendan ili punoletstvo — sa RSVP-om,
-                odbrojavanjem i mapom. Gotova za 24h, deli se jednim linkom.
-              </p>
+
+            <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center mt-8">
+              {/* Text */}
+              <div className="lg:col-span-7">
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-5">
+                  Jedna platforma · četiri prilike
+                </p>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#232323] leading-[1.08] mb-6">
+                  Izrada pozivnica{" "}
+                  <span className="italic text-[#AE343F]">online</span>
+                </h1>
+                <p className="text-lg sm:text-xl text-[#232323]/60 max-w-xl leading-relaxed mb-8">
+                  Venčanje, dečiji rođendan, prva svećica ili punoletstvo —
+                  napravite pozivnicu koja se otvara kao doživljaj. RSVP potvrde
+                  uživo, odbrojavanje, mapa i PDF sa QR kodom. Gotova za 24h,
+                  deli se jednim linkom.
+                </p>
+
+                <div className="flex flex-wrap gap-2.5 mb-8">
+                  {heroPills.map((pill) => (
+                    <span
+                      key={pill.label}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#232323]/8 rounded-full text-sm text-[#232323]/60"
+                    >
+                      <span className="text-[#AE343F]">{pill.icon}</span>
+                      {pill.label}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <a
+                    href="#prilike"
+                    className="inline-flex items-center justify-center gap-2 px-9 py-4 bg-[#AE343F] hover:bg-[#8A2A32] text-white text-sm uppercase tracking-widest font-medium rounded-full shadow-xl shadow-[#AE343F]/30 transition-all"
+                  >
+                    Izaberite priliku
+                    <ArrowRight size={16} />
+                  </a>
+                  <a
+                    href="#primeri"
+                    className="inline-flex items-center justify-center gap-2 px-9 py-4 border-2 border-[#232323]/15 text-[#232323]/70 text-sm uppercase tracking-widest font-medium rounded-full hover:border-[#AE343F] hover:text-[#AE343F] transition-all"
+                  >
+                    Pogledajte primere
+                  </a>
+                </div>
+
+                <p className="mt-6 text-sm text-[#232323]/45">
+                  od {formatPrice(fromPrice)} · za sve prilike · srpski tim,
+                  srpska podrška
+                </p>
+              </div>
+
+              {/* Visual — fan of invitations */}
+              <div className="lg:col-span-5">
+                <InvitationFan />
+              </div>
             </div>
           </div>
         </section>
 
         {/* CHOOSER — all event types */}
-        <section className="py-12 sm:py-16">
+        <section id="prilike" className="py-12 sm:py-16 scroll-mt-24">
           <InvitationClusterLinks
             title="Za koju priliku pravite pozivnicu?"
             subtitle="Izaberite tip događaja — svaka pozivnica ima dizajn prilagođen prilici."
             showHubLink={false}
           />
+        </section>
+
+        {/* PRIMERI UŽIVO — placeholder for real invitation clips (separate task) */}
+        <section
+          id="primeri"
+          className="py-16 sm:py-24 bg-[#232323] relative overflow-hidden scroll-mt-24"
+        >
+          <style>{`
+            @keyframes dotWaveIzrada {
+              0%   { background-position: 0px 0px; }
+              50%  { background-position: 14px 14px; }
+              100% { background-position: 0px 0px; }
+            }
+          `}</style>
+          <div
+            className="absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, #F5F4DC 1px, transparent 1px)",
+              backgroundSize: "28px 28px",
+              animation: "dotWaveIzrada 12s ease-in-out infinite",
+            }}
+          />
+
+          <div className="container mx-auto px-4 max-w-6xl relative z-10">
+            <div className="text-center mb-12">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#d4af37] mb-4">
+                Pogledajte uživo
+              </p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#F5F4DC] mb-4">
+                Ovako izgleda{" "}
+                <span className="italic text-[#d4af37]">vaša pozivnica</span>
+              </h2>
+              <p className="text-[#F5F4DC]/50 max-w-2xl mx-auto">
+                Prava pozivnica se ne opisuje — otvara se. Zavirite kako gosti
+                doživljavaju svaku priliku.
+              </p>
+            </div>
+
+            <div className="flex gap-6 sm:gap-8 overflow-x-auto snap-x snap-mandatory scroll-px-4 pb-4 -mx-4 px-4 justify-start lg:justify-center scrollbar-none">
+              {exampleSlots.map((slot) => (
+                <PhoneSlot key={slot.label} {...slot} />
+              ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <a
+                href="#prilike"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full"
+              >
+                Napravite ovakvu pozivnicu
+                <ArrowRight size={16} />
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* BENEFITS */}
+        <section className="py-16 sm:py-20 bg-white">
+          <div className="container mx-auto px-4 max-w-6xl">
+            <div className="text-center mb-12">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
+                Zašto online pozivnica
+              </p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-4">
+                Papir se baca.{" "}
+                <span className="italic text-[#AE343F]">Link ostaje.</span>
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {benefits.map((b) => (
+                <div
+                  key={b.title}
+                  className="p-6 rounded-3xl bg-[#f5f4dc]/40 border border-[#232323]/5 hover:border-[#AE343F]/20 hover:shadow-md transition-all"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-[#AE343F]/10 text-[#AE343F] flex items-center justify-center mb-4">
+                    {b.icon}
+                  </div>
+                  <h3 className="font-serif text-xl text-[#232323] mb-2">
+                    {b.title}
+                  </h3>
+                  <p className="text-sm text-[#232323]/55 leading-relaxed">
+                    {b.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* KAKO FUNKCIONISE */}
+        <section className="py-16 sm:py-20 md:py-24">
+          <div className="container mx-auto px-4 max-w-5xl">
+            <div className="text-center mb-14">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
+                Kako funkcioniše
+              </p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323]">
+                Od ideje do pozivnice{" "}
+                <span className="italic text-[#AE343F]">za 24 sata</span>
+              </h2>
+            </div>
+            <div className="relative">
+              {/* connecting line behind the numbered nodes (desktop) */}
+              <div className="hidden md:block absolute top-8 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-[#AE343F]/10 via-[#AE343F]/40 to-[#AE343F]/10" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6 relative">
+                {steps.map((step) => (
+                  <div
+                    key={step.n}
+                    className="flex flex-col items-center text-center"
+                  >
+                    <div className="relative z-10 w-16 h-16 rounded-full bg-[#AE343F] text-white flex items-center justify-center font-serif text-2xl shadow-lg shadow-[#AE343F]/25">
+                      {step.n}
+                    </div>
+                    <h3 className="font-serif text-xl text-[#232323] mt-5 mb-2">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm text-[#232323]/55 leading-relaxed max-w-xs">
+                      {step.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* ŠTAMPANE POZIVNICE + QR */}
@@ -269,74 +666,8 @@ export default function IzradaPozivnicaOnline() {
           </div>
         </section>
 
-        {/* BENEFITS */}
-        <section className="py-16 sm:py-20 bg-white">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <div className="text-center mb-12">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
-                Zašto online pozivnica
-              </p>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-4">
-                Sve prednosti{" "}
-                <span className="italic text-[#AE343F]">na jednom mestu</span>
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {benefits.map((b) => (
-                <div
-                  key={b.title}
-                  className="p-6 rounded-3xl bg-[#f5f4dc]/40 border border-[#232323]/5"
-                >
-                  <div className="w-14 h-14 rounded-2xl bg-[#AE343F]/10 text-[#AE343F] flex items-center justify-center mb-4">
-                    {b.icon}
-                  </div>
-                  <h3 className="font-serif text-xl text-[#232323] mb-2">
-                    {b.title}
-                  </h3>
-                  <p className="text-sm text-[#232323]/55 leading-relaxed">
-                    {b.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* KAKO FUNKCIONISE */}
-        <section className="py-16 sm:py-20 md:py-24">
-          <div className="container mx-auto px-4 max-w-5xl">
-            <div className="text-center mb-12">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
-                Kako funkcioniše
-              </p>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323]">
-                Pozivnica u{" "}
-                <span className="italic text-[#AE343F]">3 koraka</span>
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {steps.map((step) => (
-                <div
-                  key={step.n}
-                  className="p-8 rounded-3xl bg-white border border-[#232323]/8 text-center"
-                >
-                  <span className="font-serif text-5xl text-[#AE343F]/20 block mb-3">
-                    {step.n}
-                  </span>
-                  <h3 className="font-serif text-xl text-[#232323] mb-2">
-                    {step.title}
-                  </h3>
-                  <p className="text-sm text-[#232323]/55 leading-relaxed">
-                    {step.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* KONTAKT — štampane pozivnice / zahvalnice */}
-        <section id="kontakt" className="py-16 sm:py-24 bg-[#232323]">
+        <section id="kontakt" className="py-16 sm:py-24 bg-[#232323] scroll-mt-24">
           <div className="container mx-auto px-4 max-w-3xl">
             <div className="text-center mb-10">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#d4af37] mb-4">
@@ -385,6 +716,41 @@ export default function IzradaPozivnicaOnline() {
                 </details>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* FINAL CTA BAND */}
+        <section className="py-16 sm:py-20 md:py-24 bg-[#232323] text-[#F5F4DC] relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#AE343F]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#AE343F]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+          <div className="container mx-auto px-4 max-w-4xl relative z-10 text-center">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif mb-6">
+              Vaša prilika zaslužuje{" "}
+              <span className="italic text-[#d4af37]">svoju pozivnicu</span>
+            </h2>
+            <div className="flex flex-wrap justify-center gap-3 mb-10">
+              {clusterPills.map((pill) => (
+                <Link
+                  key={pill.label}
+                  href={pill.href}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/[0.07] border border-white/10 rounded-full text-sm text-[#F5F4DC]/80 hover:border-[#d4af37]/40 hover:text-[#F5F4DC] transition-all"
+                >
+                  <span className="text-[#d4af37]">{pill.icon}</span>
+                  {pill.label}
+                </Link>
+              ))}
+            </div>
+            <a
+              href="#prilike"
+              className="inline-flex items-center gap-3 px-10 py-5 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full shadow-xl shadow-[#AE343F]/30"
+            >
+              Napravite pozivnicu
+              <ArrowRight size={16} />
+            </a>
+            <p className="mt-6 text-sm text-[#F5F4DC]/40">
+              od {formatPrice(fromPrice)} · gotova za 24h
+            </p>
           </div>
         </section>
 
