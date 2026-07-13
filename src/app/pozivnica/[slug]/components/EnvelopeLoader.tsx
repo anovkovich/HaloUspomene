@@ -111,9 +111,10 @@ export const EnvelopeLoader: React.FC<EnvelopeLoaderProps> = ({
       >
         {/* ENVELOPE ASSEMBLY */}
         <div
-          className={`relative w-full h-full preserve-3d transition-all duration-[1500ms] will-change-transform
-          ${stage === "extracted" ? "translate-y-[12%] rotateX(6deg)" : "rotateX(0deg)"}
+          className={`relative w-full h-full preserve-3d transition-all duration-[1500ms] backface-hidden
+          ${stage === "extracted" ? "translate-y-[12%]" : ""}
           ${stage === "fadeout" ? "opacity-30 blur-sm scale-90" : "opacity-100"}`}
+          style={{ WebkitBackfaceVisibility: "hidden", backfaceVisibility: "hidden" }}
         >
           {/* 1. BACK SIDE */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#e8e4d8] to-[#ddd9cd] rounded-sm border border-stone-300/50 z-0 shadow-inner">
