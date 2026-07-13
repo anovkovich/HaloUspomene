@@ -114,7 +114,7 @@ export default async function PremiumInvitationPage({ params }: Props) {
         </p>
       </div>
 
-      <PremiumInvitationClient data={data} slug={slug} />
+      <PremiumInvitationClient data={data} slug={slug} preview={isDraft} />
     </>
   );
 }

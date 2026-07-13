@@ -12,6 +12,7 @@ import { BirthdayThemeProvider } from "./components/ThemeProvider";
 import { SceneDecorations, AgeBadge } from "./components/Illustrations";
 import { BirthdayCountdown } from "./components/Countdown";
 import { BirthdayRSVPForm } from "./components/BirthdayRSVPForm";
+import PreviewRsvpLock from "@/components/PreviewRsvpLock";
 import { MultilineText } from "@/lib/multiline";
 import {
   type CalendarEvent,
@@ -24,6 +25,8 @@ import {
 interface Props {
   data: BirthdayData;
   slug: string;
+  /** Freemium preview (B3): draft → RSVP locked behind a publish CTA. */
+  preview?: boolean;
 }
 
 const MONTHS = [
@@ -60,7 +63,7 @@ function formatDate(iso: string) {
   };
 }
 
-export default function BirthdayClient({ data, slug }: Props) {
+export default function BirthdayClient({ data, slug, preview = false }: Props) {
   const cssVars = getBirthdayThemeCSSVariables(data.theme, data.displayFont);
   const themeConfig = getBirthdayThemeConfig(data.theme);
   const dateInfo = formatDate(data.event_date);
@@ -328,14 +331,25 @@ export default function BirthdayClient({ data, slug }: Props) {
                 Potvrdite svoje prisustvo
               </p>
             </div>
-            <BirthdayRSVPForm
-              slug={slug}
-              submitUntil={data.submit_until}
-              gender={data.gender}
-              calendarEvent={birthdayEvent}
-              reminder={birthdayReminder}
-              calendarLabels={birthdayCalLabels}
-            />
+            {preview ? (
+              <PreviewRsvpLock
+                payHref={`/placanje/rodjendan/${slug}`}
+                accent="var(--theme-primary, #FF6B6B)"
+                surface="var(--theme-surface, #ffffff)"
+                border="var(--theme-border-light, rgba(0,0,0,0.08))"
+                titleColor="var(--theme-primary, #FF6B6B)"
+                mutedColor="var(--theme-text-light, #8a8a8a)"
+              />
+            ) : (
+              <BirthdayRSVPForm
+                slug={slug}
+                submitUntil={data.submit_until}
+                gender={data.gender}
+                calendarEvent={birthdayEvent}
+                reminder={birthdayReminder}
+                calendarLabels={birthdayCalLabels}
+              />
+            )}
           </div>
         </section>
 

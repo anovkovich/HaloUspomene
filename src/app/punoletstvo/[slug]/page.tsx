@@ -49,7 +49,7 @@ export default async function PunoletstvoInvitationPage({ params }: PageProps) {
 
   return (
     <>
-      <PunoletstvoInvitationClient data={data} slug={slug} />
+      <PunoletstvoInvitationClient data={data} slug={slug} preview={isDraft} />
       {isDraft && (
         <PreviewWatermark payHref={`/placanje/punoletstvo/${slug}`} />
       )}

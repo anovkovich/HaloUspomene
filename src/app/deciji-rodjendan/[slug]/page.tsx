@@ -46,7 +46,7 @@ export default async function BirthdayInvitationPage({ params }: PageProps) {
 
   return (
     <>
-      <BirthdayClient data={data} slug={slug} />
+      <BirthdayClient data={data} slug={slug} preview={isDraft} />
       {isDraft && (
         <PreviewWatermark payHref={`/placanje/rodjendan/${slug}`} />
       )}

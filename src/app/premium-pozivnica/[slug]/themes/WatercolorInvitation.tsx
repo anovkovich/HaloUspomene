@@ -1,5 +1,9 @@
 "use client";
 
+/* Theme renderer with positioned/dynamic preview <img> (backgrounds, cars,
+   gallery) where next/image doesn't fit. */
+/* eslint-disable @next/next/no-img-element */
+
 import { useState, useEffect, useRef } from "react";
 import {
   motion,
@@ -18,6 +22,7 @@ import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
 import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
 import PremiumCallCTA from "../components/PremiumCallCTA";
+import PreviewRsvpLock from "@/components/PreviewRsvpLock";
 
 /*
  * WATERCOLOR ROMANCE THEME
@@ -398,6 +403,7 @@ export default function WatercolorInvitation({
   formattedSubmitUntil,
   isPastDeadline,
   calendar,
+  preview,
 }: ThemeInvitationProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -515,7 +521,6 @@ export default function WatercolorInvitation({
               willChange: "transform, opacity",
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={bgSrc}
               alt=""
@@ -950,7 +955,17 @@ export default function WatercolorInvitation({
           >
             Potvrda dolaska
           </p>
-          {isPastDeadline ? (
+          {preview ? (
+            <PreviewRsvpLock
+              payHref={`/placanje/pozivnica/${slug}`}
+              accent="#d4af37"
+              ctaBg="#AE343F"
+              surface="rgba(255,255,255,0.06)"
+              border="rgba(255,255,255,0.15)"
+              titleColor="#ffffff"
+              mutedColor="rgba(255,255,255,0.6)"
+            />
+          ) : isPastDeadline ? (
             <p className="text-sm text-white/50 text-center">
               Rok za potvrdu dolaska je istekao.
             </p>

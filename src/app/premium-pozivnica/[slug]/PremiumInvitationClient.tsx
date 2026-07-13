@@ -44,6 +44,8 @@ const themeComponents = {
 interface PremiumInvitationClientProps {
   data: WeddingData;
   slug: string;
+  /** Freemium preview (B3): draft couple → RSVP locked behind a publish CTA. */
+  preview?: boolean;
 }
 
 // Shared theme props type — exported for theme components
@@ -63,6 +65,8 @@ export interface ThemeInvitationProps {
   isRevealed: boolean;
   /** Wedding "add to calendar" event + RSVP reminder + localized labels. */
   calendar: PremiumCalendarBundle;
+  /** Freemium preview (B3): render the locked RSVP card instead of the form. */
+  preview: boolean;
 }
 
 export interface PremiumCalendarBundle {
@@ -79,6 +83,7 @@ export interface PremiumCalendarBundle {
 export default function PremiumInvitationClient({
   data,
   slug,
+  preview = false,
 }: PremiumInvitationClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -267,6 +272,7 @@ export default function PremiumInvitationClient({
     isPastDeadline,
     isRevealed,
     calendar,
+    preview,
   };
 
   const InvitationTheme =

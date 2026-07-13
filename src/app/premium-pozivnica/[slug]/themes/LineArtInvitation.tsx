@@ -1,5 +1,12 @@
 "use client";
 
+/* Animation-heavy parallax theme: imperative useCallbacks depend on Framer
+   motion values, which React Compiler can't preserve as manual memoization —
+   the callbacks are correct, they just aren't auto-memoized. Preview thumbnails
+   use positioned/dynamic <img> where next/image doesn't fit. */
+/* eslint-disable react-hooks/preserve-manual-memoization */
+/* eslint-disable @next/next/no-img-element */
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, useScroll, useTransform, useMotionValue, animate } from "framer-motion";
 import { Heart, Send, MapPin, Clock, Church, Home, Sparkles } from "lucide-react";
@@ -13,6 +20,7 @@ import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
 import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
 import PremiumCallCTA from "../components/PremiumCallCTA";
+import PreviewRsvpLock from "@/components/PreviewRsvpLock";
 
 const HeroSection = dynamic(() => import("../components/HeroSection"), {
   ssr: false,
@@ -660,6 +668,7 @@ export default function LineArtInvitation({
   formattedSubmitUntil,
   isPastDeadline,
   calendar,
+  preview,
 }: ThemeInvitationProps) {
   // Window-level scroll for page parallax
   const { scrollY } = useScroll();
@@ -848,7 +857,17 @@ export default function LineArtInvitation({
             <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#d4af37]/80 mb-6 text-center font-medium">
               Potvrda dolaska
             </p>
-            {isPastDeadline ? (
+            {preview ? (
+              <PreviewRsvpLock
+                payHref={`/placanje/pozivnica/${slug}`}
+                accent="#d4af37"
+                ctaBg="#AE343F"
+                surface="transparent"
+                border="transparent"
+                titleColor="#232323"
+                mutedColor="#8B7355"
+              />
+            ) : isPastDeadline ? (
               <p className="text-sm text-[#8B7355] text-center">
                 Rok za potvrdu dolaska je istekao.
               </p>

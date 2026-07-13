@@ -14,6 +14,7 @@ import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import TornPaperDivider from "../components/TornPaperDivider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
 import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
+import PreviewRsvpLock from "@/components/PreviewRsvpLock";
 import type {
   ThemeInvitationProps,
   PremiumCalendarBundle,
@@ -1054,6 +1055,7 @@ export default function FountainInvitation({
   isPastDeadline,
   isRevealed,
   calendar,
+  preview,
 }: ThemeInvitationProps) {
   const lang = data.useCyrillic ? T.cyrillic : T.latin;
   // True when the envelope holds for a tap (music is enabled). For these
@@ -1538,6 +1540,22 @@ export default function FountainInvitation({
               if (isNaN(d.getTime())) return "";
               return `${d.getDate()}. ${lang.monthsGenitive[d.getMonth()]} ${d.getFullYear()}`;
             })();
+
+            if (preview) {
+              return (
+                <div className="max-w-sm mx-auto mt-2">
+                  <PreviewRsvpLock
+                    payHref={`/placanje/pozivnica/${slug}`}
+                    accent="#d4af37"
+                    ctaBg="#AE343F"
+                    surface="rgba(255,255,255,0.08)"
+                    border="rgba(255,255,255,0.2)"
+                    titleColor="#ffffff"
+                    mutedColor="rgba(255,255,255,0.65)"
+                  />
+                </div>
+              );
+            }
 
             if (isPastDeadline) {
               return (

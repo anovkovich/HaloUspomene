@@ -11,6 +11,7 @@ import type {
 import { ThemeProvider } from "@/app/pozivnica/[slug]/components/ThemeProvider";
 import { EnvelopeLoader } from "@/app/pozivnica/[slug]/components/EnvelopeLoader";
 import { BirthdayRSVPForm } from "@/app/deciji-rodjendan/[slug]/components/BirthdayRSVPForm";
+import PreviewRsvpLock from "@/components/PreviewRsvpLock";
 import { MultilineText } from "@/lib/multiline";
 import AddToCalendar from "@/components/ui/AddToCalendar";
 import {
@@ -24,6 +25,8 @@ import {
 interface Props {
   data: BirthdayData;
   slug: string;
+  /** Freemium preview (B3): draft → RSVP locked behind a publish CTA. */
+  preview?: boolean;
 }
 
 const FONT_VAR_BY_KEY: Record<ScriptFontType, string> = {
@@ -298,7 +301,11 @@ function Countdown({ eventDate }: { eventDate: string }) {
 
 // ─── Main component ─────────────────────────────────────────────────────────
 
-export default function PunoletstvoInvitationClient({ data, slug }: Props) {
+export default function PunoletstvoInvitationClient({
+  data,
+  slug,
+  preview = false,
+}: Props) {
   const [loaderDone, setLoaderDone] = useState(false);
 
   const scriptFont: ScriptFontType =
@@ -789,13 +796,24 @@ export default function PunoletstvoInvitationClient({ data, slug }: Props) {
                 )}
               </div>
 
-              <BirthdayRSVPForm
-                slug={slug}
-                submitUntil={data.submit_until}
-                gender={data.gender}
-                calendarEvent={punoletstvoEvent}
-                calendarLabels={punoletstvoCalLabels}
-              />
+              {preview ? (
+                <PreviewRsvpLock
+                  payHref={`/placanje/punoletstvo/${slug}`}
+                  accent="var(--theme-primary, #AE343F)"
+                  surface="var(--theme-surface, #ffffff)"
+                  border="var(--theme-border-light, rgba(0,0,0,0.08))"
+                  titleColor="var(--theme-primary, #AE343F)"
+                  mutedColor="var(--theme-text-light, #8a8a8a)"
+                />
+              ) : (
+                <BirthdayRSVPForm
+                  slug={slug}
+                  submitUntil={data.submit_until}
+                  gender={data.gender}
+                  calendarEvent={punoletstvoEvent}
+                  calendarLabels={punoletstvoCalLabels}
+                />
+              )}
             </motion.div>
           </section>
 
