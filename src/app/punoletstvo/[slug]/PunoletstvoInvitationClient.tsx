@@ -218,9 +218,13 @@ function FloatingParticles() {
         @keyframes punoletstvo-rotate-slow {
           to { transform: rotate(360deg); }
         }
+        /* Animates top (not transform) on purpose: a transform animation
+           promotes the scroll cue to its own GPU layer, and iOS Safari renders
+           a flickering compositing seam below it. Animating top keeps it in the
+           main layer (no promotion, no seam); the 3px bounce looks identical. */
         @keyframes punoletstvo-bounce-soft {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(3px); }
+          0%, 100% { top: 0; }
+          50% { top: 3px; }
         }
         html { scroll-behavior: smooth; }
       `}</style>
@@ -606,6 +610,7 @@ export default function PunoletstvoInvitationClient({
                 aria-label="Skrolujte niže"
                 style={{
                   color: "var(--theme-wax-seal)",
+                  position: "relative",
                   animation: "punoletstvo-bounce-soft 2.2s ease-in-out infinite",
                 }}
               >
