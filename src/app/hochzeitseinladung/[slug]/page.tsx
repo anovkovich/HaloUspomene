@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getWeddingData } from "@/data/pozivnice";
 import InvitationClient from "@/app/pozivnica/[slug]/InvitationClient";
+import InvitationFrame from "@/components/invitation/InvitationFrame";
 
 // Couples opt in via the `german_enabled: true` flag in MongoDB. Slugs are
 // not pre-rendered here — they're a tiny opt-in subset of the classic
@@ -49,5 +50,9 @@ export default async function HochzeitseinladungPage({ params }: PageProps) {
   if (!data.german_enabled) notFound();
   if (data.draft && process.env.NODE_ENV === "production") notFound();
 
-  return <InvitationClient data={data} slug={slug} lang="de" />;
+  return (
+    <InvitationFrame>
+      <InvitationClient data={data} slug={slug} lang="de" />
+    </InvitationFrame>
+  );
 }

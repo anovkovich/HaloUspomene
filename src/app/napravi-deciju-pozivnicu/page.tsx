@@ -51,7 +51,7 @@ const fontVars = `${fredoka.variable} ${bubblegumSans.variable} ${baloo2.variabl
 export const metadata: Metadata = {
   title: "Napravi Pozivnicu za Dečiji Rođendan Online",
   description:
-    "Napravite sami digitalnu pozivnicu za dečiji rođendan online — izaberite temu, dodajte RSVP i podelite jednim linkom. Uz besplatnu PDF pozivnicu za štampu.",
+    "Napravite sami digitalnu pozivnicu za dečiji rođendan online — izaberite temu, dodajte potvrde dolaska i podelite jednim linkom. Uz besplatnu PDF pozivnicu za štampu.",
   keywords: [
     "pozivnica za dečiji rođendan",
     "digitalna pozivnica rođendan",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Napravi Pozivnicu za Dečiji Rođendan | HALO Uspomene",
     description:
-      "Šarena digitalna pozivnica za dečiji rođendan — sa RSVP formom, odbrojavanjem i veselim temama. Gotova za 24h.",
+      "Šarena digitalna pozivnica za dečiji rođendan — sa formom za potvrdu dolaska, odbrojavanjem i veselim temama. Gotova odmah.",
     type: "website",
   },
   alternates: {
@@ -93,7 +93,7 @@ export default function NapraviDecijuPozivnicuPage() {
             </h1>
             <p className="text-[#E55A5A] text-lg max-w-xl mx-auto">
               Popunite upitnik u 4 koraka — mi ćemo sve ostalo uraditi i Vaša
-              pozivnica će biti gotova za 24h
+              pozivnica će biti gotova odmah
             </p>
             <p className="text-stone-400 text-sm mt-3">
               ili pođite na <PortalLink />
@@ -112,13 +112,13 @@ export default function NapraviDecijuPozivnicuPage() {
           <p>
             HALO Uspomene izrađuje šarene digitalne pozivnice za dečije rođendane
             u Srbiji. Naša usluga obuhvata kreiranje vesele online pozivnice sa
-            RSVP formom, odbrojavanjem do proslave i detaljima o lokaciji.
+            formom za potvrdu dolaska, odbrojavanjem do proslave i detaljima o lokaciji.
           </p>
           <h3>Kako funkcioniše izrada pozivnice za dečiji rođendan?</h3>
           <p>
             Popunite kratki upitnik u 4 koraka: unesite ime deteta, izaberite
             temu za dečaka ili devojčicu, dodajte datum i lokaciju proslave.
-            Mi zatim za 24 sata pravimo vašu personalizovanu digitalnu pozivnicu
+            Mi zatim odmah pravimo vašu personalizovanu digitalnu pozivnicu
             i šaljemo vam link koji možete podeliti sa gostima putem WhatsApp-a,
             Vibera ili e-maila.
           </p>
@@ -126,7 +126,7 @@ export default function NapraviDecijuPozivnicuPage() {
           <ul>
             <li>Personalizovani dizajn u odabranoj temi (dečak, devojčica, neutralna)</li>
             <li>Veseli fontovi i šarene ilustracije</li>
-            <li>RSVP forma za potvrdu dolaska</li>
+            <li>Forma za potvrdu dolaska</li>
             <li>Odbrojavanje do proslave</li>
             <li>Lokacija na Google Maps</li>
             <li>Optimizovano za mobilne uređaje</li>

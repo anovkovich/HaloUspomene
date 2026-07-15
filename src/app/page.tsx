@@ -73,16 +73,17 @@ export default function Home() {
           <h2>HALO Uspomene — sve za vaše venčanje na jednom mestu</h2>
           <p>
             HALO Uspomene je sveobuhvatna platforma za organizaciju venčanja u
-            Srbiji. Nudimo digitalne web pozivnice (e-pozivnice) sa RSVP
-            potvrdom dolaska, pametan raspored sedenja kroz QR Pano
+            Srbiji. Nudimo digitalne web pozivnice (e-pozivnice) sa potvrdom
+            dolaska, pametan raspored sedenja kroz QR Pano
             dobrodošlice, audio uspomene putem retro telefona ili digitalne
             audio knjige, kao i Premium AI Pozivnice sa AI generisanim
             ilustracijama para. Dostupno u svim gradovima Srbije: Beograd, Novi
             Sad, Niš, Kragujevac, Subotica, Čačak, Smederevo i drugi.
           </p>
           <p>
-            Website pozivnice za venčanje sa kustomnim dizajnom, RSVP
-            praćenjem, mapom restorana, odbrojavanjem i galerijom fotografija —
+            Website pozivnice za venčanje sa kustomnim dizajnom, praćenjem
+            potvrda dolaska, mapom restorana, odbrojavanjem i galerijom
+            fotografija —
             od 5.000 din. Uz svaku web pozivnicu dobijate besplatnu PDF
             pozivnicu (A5 format) sa personalizovanim QR kodom za štampariju.
             Podržana latinica i ćirilica. Pozivnice za venčanje, dečije
@@ -126,7 +127,7 @@ export default function Home() {
           <p>
             Moje Venčanje portal uključen uz svaku pozivnicu — checklist po
             vremenskim grupama, budžet kalkulator, baza preko 90 proverenih
-            vendora, RSVP praćenje. Sve dostupno na pametnom telefonu.
+            vendora, praćenje potvrda dolaska. Sve dostupno na pametnom telefonu.
             Saznajte više o našem{" "}
             <Link href="/telefon-uspomena">retro telefonu za venčanja</Link>{" "}
             ili pogledajte{" "}

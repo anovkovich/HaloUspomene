@@ -69,7 +69,8 @@ const HowItWorks: React.FC = () => {
               + besplatna PDF pozivnica za štampu
             </p>
             <p className="text-[#F5F4DC]/60 text-sm sm:text-base leading-relaxed max-w-lg mb-6">
-              Personalizovana web stranica sa RSVP formom, odbrojavanjem,
+              Personalizovana web stranica sa formom za potvrdu dolaska,
+              odbrojavanjem,
               programom dana i interaktivnom mapom. Gosti potvrde dolazak jednim
               klikom — bez poziva, nikad lakše.
             </p>
@@ -82,7 +83,7 @@ const HowItWorks: React.FC = () => {
                   icon: <FileDown size={13} />,
                   label: "PDF za štampu — besplatno",
                 },
-                { icon: <Check size={13} />, label: "RSVP potvrda dolaska" },
+                { icon: <Check size={13} />, label: "Potvrda dolaska" },
                 { icon: <Check size={13} />, label: "Latinica i ćirilica" },
               ].map((f) => (
                 <div
@@ -219,7 +220,7 @@ const HowItWorks: React.FC = () => {
                 {
                   n: "02",
                   t: "Mi kreiramo pozivnicu",
-                  d: "Vaša personalizovana stranica gotova za 24h",
+                  d: "Vaša personalizovana stranica gotova odmah",
                 },
                 {
                   n: "03",

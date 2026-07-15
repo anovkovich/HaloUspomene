@@ -8,7 +8,7 @@ import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
 export const metadata: Metadata = {
   title: "Pozivnice za 18. Rođendan i Punoletstvo",
   description:
-    "Elegantna digitalna pozivnica za 18. rođendan (punoletstvo) — script font, RSVP forma, odbrojavanje i mapa. Gotova za 24h, deli se jednim linkom.",
+    "Elegantna digitalna pozivnica za 18. rođendan (punoletstvo) — script font, forma za potvrdu dolaska, odbrojavanje i mapa. Gotova odmah, deli se jednim linkom.",
   keywords: [
     "pozivnica za punoletstvo",
     "pozivnica za 18 rođendan",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Napravi Pozivnicu za Punoletstvo | HALO Uspomene",
     description:
-      "Elegantna digitalna pozivnica za 18. rođendan — klasičan stil sa RSVP formom, mapom i odbrojavanjem. Gotova za 24h.",
+      "Elegantna digitalna pozivnica za 18. rođendan — klasičan stil sa formom za potvrdu dolaska, mapom i odbrojavanjem. Gotova odmah.",
     type: "website",
   },
   alternates: {
@@ -44,7 +44,7 @@ export default function NapraviPunoletstvoPage() {
             </h1>
             <p className="text-[#7A242C] text-lg max-w-xl mx-auto">
               Popunite upitnik u 4 koraka — klasičan dizajn sa elegantnim script
-              fontom, RSVP formom i odbrojavanjem. Gotova za 24h.
+              fontom, formom za potvrdu dolaska i odbrojavanjem. Gotova odmah.
             </p>
             <p className="inline-block mt-4 text-xs tracking-widest uppercase text-stone-400 border border-stone-200 rounded-full px-4 py-1.5">
               Cena: <span className="font-semibold text-[#AE343F]">{formatPrice(getRodjendanPozivnicaPrice(true))}</span>
@@ -61,7 +61,7 @@ export default function NapraviPunoletstvoPage() {
             HALO Uspomene izrađuje elegantne digitalne pozivnice za punoletstvo
             u Srbiji — u klasičnom stilu svadbenih pozivnica, sa script fontom i
             svečanim bojama (bordo i zlatna ili teget i zlatna). Usluga
-            obuhvata RSVP formu, odbrojavanje do proslave i Google mapu
+            obuhvata formu za potvrdu dolaska, odbrojavanje do proslave i Google mapu
             lokacije.
           </p>
           <h3>Kako funkcioniše izrada pozivnice za punoletstvo?</h3>
@@ -69,7 +69,7 @@ export default function NapraviPunoletstvoPage() {
             Popunite kratki upitnik u 4 koraka: unesite ime i prezime
             slavljenika, datum i lokaciju proslave, odaberite boje (bela — zlatna
             — bordo za devojke ili bela — zlatna — teget za momke) i script font.
-            Mi zatim za 24 sata pravimo vašu personalizovanu digitalnu pozivnicu
+            Mi zatim odmah pravimo vašu personalizovanu digitalnu pozivnicu
             i šaljemo vam link koji možete podeliti sa gostima putem WhatsApp-a,
             Vibera ili e-maila.
           </p>
@@ -78,7 +78,7 @@ export default function NapraviPunoletstvoPage() {
             <li>Klasičan dizajn u odabranoj kombinaciji boja</li>
             <li>Elegantni script fontovi — latinični i ćirilični</li>
             <li>Animirani omot pozivnice (classic envelope)</li>
-            <li>RSVP forma za potvrdu dolaska gostiju</li>
+            <li>Forma za potvrdu dolaska gostiju</li>
             <li>Odbrojavanje do dana proslave</li>
             <li>Lokacija na Google Maps</li>
             <li>Optimizovano za mobilne uređaje i desktop</li>

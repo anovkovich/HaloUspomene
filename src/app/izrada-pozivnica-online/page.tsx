@@ -22,6 +22,7 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
 import { pricing, formatPrice, getRodjendanPozivnicaPrice } from "@/data/pricing";
 import StampaneLeadForm from "./StampaneLeadForm";
+import LiveExampleCard from "./LiveExampleCard";
 import PromoCapture from "@/components/PromoCapture";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
   title:
     "Izrada Pozivnica Online — Napravi Digitalnu Pozivnicu za Svaku Priliku",
   description:
-    "Napravite pozivnicu online za venčanje, dečiji rođendan, prvi rođendan ili punoletstvo. Personalizovana digitalna pozivnica sa RSVP-om, odbrojavanjem i mapom — gotova za 24h.",
+    "Napravite pozivnicu online za venčanje, dečiji rođendan, prvi rođendan ili punoletstvo. Personalizovana digitalna pozivnica sa potvrdama dolaska, odbrojavanjem i mapom — gotova odmah.",
   keywords: [
     "izrada pozivnica",
     "izrada pozivnica online",
@@ -61,7 +62,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Izrada Pozivnica Online za Svaku Priliku | HALO Uspomene",
     description:
-      "Digitalna pozivnica za venčanje, rođendan, prvi rođendan ili punoletstvo — sa RSVP-om, odbrojavanjem i mapom. Gotova za 24h.",
+      "Digitalna pozivnica za venčanje, rođendan, prvi rođendan ili punoletstvo — sa potvrdama dolaska, odbrojavanjem i mapom. Gotova odmah.",
     type: "website",
     url: `${siteUrl}/izrada-pozivnica-online`,
     siteName: "Halo Uspomene",
@@ -70,7 +71,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Izrada Pozivnica Online za Svaku Priliku | HALO Uspomene",
     description:
-      "Napravite digitalnu pozivnicu za venčanje, rođendan ili punoletstvo — sa RSVP-om i odbrojavanjem.",
+      "Napravite digitalnu pozivnicu za venčanje, rođendan ili punoletstvo — sa potvrdama dolaska i odbrojavanjem.",
   },
   alternates: {
     canonical: `${siteUrl}/izrada-pozivnica-online`,
@@ -78,11 +79,10 @@ export const metadata: Metadata = {
 };
 
 const heroPills = [
-  { icon: <CheckCircle2 size={15} />, label: "RSVP" },
+  { icon: <CheckCircle2 size={15} />, label: "Potvrde dolaska" },
   { icon: <Timer size={15} />, label: "Odbrojavanje" },
   { icon: <MapPin size={15} />, label: "Mapa" },
   { icon: <QrCode size={15} />, label: "PDF sa QR" },
-  { icon: <Clock size={15} />, label: "Gotova za 24h" },
 ];
 
 const benefits = [
@@ -93,7 +93,7 @@ const benefits = [
   },
   {
     icon: <CheckCircle2 size={24} />,
-    title: "RSVP potvrde uživo",
+    title: "Potvrde dolaska uživo",
     desc: "Gosti potvrđuju dolazak kroz formu, a vi u realnom vremenu vidite ko dolazi i sa koliko osoba.",
   },
   {
@@ -131,43 +131,51 @@ const steps = [
   },
   {
     n: "03",
-    title: "Dobijate pozivnicu za 24h",
-    desc: "Mi dizajniramo i šaljemo vam link spreman za deljenje — plus PDF sa QR kodom.",
+    title: "Dobijate pozivnicu odmah",
+    desc: "Softver odmah generiše vašu pozivnicu iz podataka iz upitnika — spremna je istog trena. Čim uplatite, šaljete je gostima, uz PDF sa QR kodom.",
   },
 ];
 
-// Live-examples slots — one per occasion, linking to its spoke page. The
-// skeleton screen is a placeholder; when we record real invitation clips
-// (envelope opening, parallax, RSVP, countdown) they drop straight into the
-// phone frame — this is a separate task.
-const exampleSlots = [
+// Live-examples carousel — one card per occasion, each cycling several theme
+// variants via subtle arrows. Each variant shows a skeleton placeholder until a
+// looping clip of the real invitation is added: set `video` (+ optional
+// `poster`/`videoWebm`) on the variant and it renders inside the phone frame.
+// (Prvi rođendan is intentionally not a visible card here — it stays SEO-linked
+//  in the hidden section and the chooser above.)
+const liveExamples = [
   {
-    initials: "M & J",
-    gradient: "linear-gradient(160deg, #AE343F, #7a1f27)",
     label: "Venčanje",
-    desc: "Koverta se otvara, RSVP uživo",
-    href: "/napravi-pozivnicu",
+    desc: "Više boja i fontova · jedan primer uživo",
+    variants: [
+      { theme: "Classic Rose", gradient: "linear-gradient(160deg, #AE343F, #7a1f27)", initials: "A & D", liveHref: "/pozivnica/ana-dejan" },
+      { theme: "Luxury Gold", gradient: "linear-gradient(160deg, #3a3226, #6b5a2f)", initials: "A & D", initialsColor: "#f0e2b8", liveHref: "/pozivnica/ana-dejan" },
+      { theme: "Modern Blue", gradient: "linear-gradient(160deg, #3f5c78, #26374a)", initials: "A & D", liveHref: "/pozivnica/ana-dejan" },
+    ],
   },
   {
-    initials: "5",
-    gradient: "linear-gradient(160deg, #5b8fb0, #7a9b6d)",
+    label: "Venčanje Premium",
+    desc: "Tri premium teme · primer uživo za svaku",
+    variants: [
+      { theme: "Watercolor", gradient: "linear-gradient(160deg, #24303f, #3a2b40)", initials: "T & B", initialsColor: "#e8c9a0", liveHref: "/premium-pozivnica/teodora-bojan" },
+      { theme: "Papirna", gradient: "linear-gradient(160deg, #7d7f6e, #585a49)", initials: "A & M", liveHref: "/premium-pozivnica/ana-marko" },
+      { theme: "Fountain", gradient: "linear-gradient(160deg, #8a1f28, #AE343F)", initials: "M & N", initialsColor: "#f0d9b0", liveHref: "/premium-pozivnica/milica-nikola" },
+    ],
+  },
+  {
     label: "Dečiji rođendan",
-    desc: "Šareno, sa odbrojavanjem",
-    href: "/napravi-deciju-pozivnicu",
+    desc: "Teme za dečake i devojčice",
+    variants: [
+      { theme: "Za dečake", gradient: "linear-gradient(160deg, #4a7ba6, #2f5a7d)", initials: "1", liveHref: "/deciji-rodjendan/primer-decak" },
+      { theme: "Za devojčice", gradient: "linear-gradient(160deg, #c76a90, #a24f74)", initials: "1", liveHref: "/deciji-rodjendan/primer-devojcica" },
+    ],
   },
   {
-    initials: "1",
-    gradient: "linear-gradient(160deg, #e6c48f, #d4af37)",
-    label: "Prvi rođendan",
-    desc: "Nežno, za prvu svećicu",
-    href: "/pozivnica-za-prvi-rodjendan",
-  },
-  {
-    initials: "18",
-    gradient: "linear-gradient(160deg, #2b2b2b, #454545)",
     label: "Punoletstvo",
-    desc: "Elegantno, sa mapom",
-    href: "/napravi-punoletstvo",
+    desc: "Više boja · primer uživo za svaku",
+    variants: [
+      { theme: "Bordo & zlato", gradient: "linear-gradient(160deg, #2b2b2b, #4a3f2a)", initials: "18", initialsColor: "#d4af37", liveHref: "/punoletstvo/primer-devojka" },
+      { theme: "Teget & zlato", gradient: "linear-gradient(160deg, #1f2a44, #2c3a5a)", initials: "18", initialsColor: "#d4af37", liveHref: "/punoletstvo/primer-momak" },
+    ],
   },
 ];
 
@@ -197,11 +205,11 @@ const faqItems = [
   },
   {
     q: "Koliko traje izrada pozivnice?",
-    a: "Pozivnicu izrađujemo i šaljemo u roku od 24 sata od popunjavanja upitnika. Vi popunite kratak upitnik u 4 koraka, a mi radimo dizajn.",
+    a: "Pozivnica je gotova odmah — čim popunite kratak upitnik u 4 koraka (par minuta), spremna je, a otključavate je nakon plaćanja, bez čekanja.",
   },
   {
     q: "Šta je uključeno u digitalnu pozivnicu?",
-    a: "Personalizovani dizajn, RSVP forma za potvrdu dolaska, odbrojavanje do događaja, lokacija na Google mapi i optimizacija za mobilne uređaje. Uz to dobijate i PDF verziju sa QR kodom.",
+    a: "Personalizovani dizajn, forma za potvrdu dolaska, odbrojavanje do događaja, lokacija na Google mapi i optimizacija za mobilne uređaje. Uz to dobijate i PDF verziju sa QR kodom.",
   },
   {
     q: "Kako gosti dobijaju pozivnicu?",
@@ -347,68 +355,6 @@ function InvitationFan() {
   );
 }
 
-/** A single phone-framed example slot. `media` is intentionally not wired yet —
- *  the skeleton screen is the placeholder until real clips are recorded. */
-function PhoneSlot({
-  initials,
-  gradient,
-  label,
-  desc,
-  href,
-}: {
-  initials: string;
-  gradient: string;
-  label: string;
-  desc: string;
-  href: string;
-}) {
-  return (
-    <div className="snap-center shrink-0 flex flex-col items-center">
-      <div className="relative w-[178px] aspect-[9/19] rounded-[2rem] bg-[#0d0d0d] p-2.5 shadow-2xl">
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-14 h-1.5 rounded-full bg-white/15 z-10" />
-        {/* GIF/video ide ovde kasnije (media prop) — zaseban task */}
-        <div
-          className="w-full h-full rounded-[1.6rem] overflow-hidden flex flex-col items-center justify-center gap-3 px-5 text-center"
-          style={{ background: gradient }}
-        >
-          <span className="text-[9px] uppercase tracking-[0.2em] text-white/70">
-            Pozivnica
-          </span>
-          <span className="font-serif text-3xl text-white leading-none">
-            {initials}
-          </span>
-          <div className="flex flex-col items-center gap-1.5">
-            <span className="h-1.5 w-24 rounded-full bg-white/25" />
-            <span className="h-1.5 w-16 rounded-full bg-white/20" />
-          </div>
-          <div className="flex gap-1.5 mt-1">
-            {["12", "08", "45"].map((n) => (
-              <span
-                key={n}
-                className="w-7 h-8 rounded-md bg-white/15 flex items-center justify-center text-white text-xs font-medium"
-              >
-                {n}
-              </span>
-            ))}
-          </div>
-          <span className="mt-1 text-[9px] bg-white/90 text-[#232323] px-3 py-1 rounded-full">
-            Potvrdi dolazak
-          </span>
-        </div>
-      </div>
-      <p className="mt-4 font-serif text-lg text-[#F5F4DC]">{label}</p>
-      <p className="text-xs text-[#F5F4DC]/45 mb-2">{desc}</p>
-      <Link
-        href={href}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-[#d4af37] hover:gap-2.5 transition-all"
-      >
-        Pogledaj primer uživo
-        <ArrowRight size={14} />
-      </Link>
-    </div>
-  );
-}
-
 export default function IzradaPozivnicaOnline() {
   return (
     <>
@@ -444,14 +390,12 @@ export default function IzradaPozivnicaOnline() {
                   Jedna platforma · četiri prilike
                 </p>
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-[#232323] leading-[1.08] mb-6">
-                  Izrada pozivnica{" "}
-                  <span className="italic text-[#AE343F]">online</span>
+                  Izrada pozivnica online —{" "}
+                  <span className="italic text-[#AE343F]">bez čekanja</span>
                 </h1>
                 <p className="text-lg sm:text-xl text-[#232323]/60 max-w-xl leading-relaxed mb-8">
-                  Venčanje, dečiji rođendan, prva svećica ili punoletstvo —
-                  napravite pozivnicu koja se otvara kao doživljaj. RSVP potvrde
-                  uživo, odbrojavanje, mapa i PDF sa QR kodom. Gotova za 24h,
-                  deli se jednim linkom.
+                  Najlepše proslave počinju pozivom koji se pamti. Pogledajte
+                  primere, izaberite svoj — i pozivnica je vaša istog trenutka.
                 </p>
 
                 <div className="flex flex-wrap gap-2.5 mb-8">
@@ -482,10 +426,6 @@ export default function IzradaPozivnicaOnline() {
                   </a>
                 </div>
 
-                <p className="mt-6 text-sm text-[#232323]/45">
-                  od {formatPrice(fromPrice)} · za sve prilike · srpski tim,
-                  srpska podrška
-                </p>
               </div>
 
               {/* Visual — fan of invitations */}
@@ -502,6 +442,7 @@ export default function IzradaPozivnicaOnline() {
             title="Za koju priliku pravite pozivnicu?"
             subtitle="Izaberite tip događaja — svaka pozivnica ima dizajn prilagođen prilici."
             showHubLink={false}
+            hrefOverrides={{ vencanje: "/cene" }}
           />
         </section>
 
@@ -542,9 +483,9 @@ export default function IzradaPozivnicaOnline() {
               </p>
             </div>
 
-            <div className="flex gap-6 sm:gap-8 overflow-x-auto snap-x snap-mandatory scroll-px-4 pb-4 -mx-4 px-4 justify-start lg:justify-center scrollbar-none">
-              {exampleSlots.map((slot) => (
-                <PhoneSlot key={slot.label} {...slot} />
+            <div className="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scroll-px-4 pb-4 -mx-4 px-4 justify-start xl:justify-center scrollbar-none">
+              {liveExamples.map((ex) => (
+                <LiveExampleCard key={ex.label} {...ex} />
               ))}
             </div>
 
@@ -568,8 +509,8 @@ export default function IzradaPozivnicaOnline() {
                 Zašto online pozivnica
               </p>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-4">
-                Papir se baca.{" "}
-                <span className="italic text-[#AE343F]">Link ostaje.</span>
+                Ovako je sve{" "}
+                <span className="italic text-[#AE343F]">mnogo lakše!</span>
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -602,7 +543,7 @@ export default function IzradaPozivnicaOnline() {
               </p>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323]">
                 Od ideje do pozivnice{" "}
-                <span className="italic text-[#AE343F]">za 24 sata</span>
+                <span className="italic text-[#AE343F]">za par minuta</span>
               </h2>
             </div>
             <div className="relative">
@@ -749,7 +690,7 @@ export default function IzradaPozivnicaOnline() {
               <ArrowRight size={16} />
             </a>
             <p className="mt-6 text-sm text-[#F5F4DC]/40">
-              od {formatPrice(fromPrice)} · gotova za 24h
+              od {formatPrice(fromPrice)} · gotova odmah
             </p>
           </div>
         </section>
@@ -762,10 +703,10 @@ export default function IzradaPozivnicaOnline() {
             Srbiji. Napravite pozivnicu za venčanje, pozivnicu za svadbu,
             pozivnicu za dečiji rođendan, pozivnicu za prvi rođendan ili
             pozivnicu za punoletstvo (18. rođendan). Svaka online pozivnica
-            uključuje RSVP formu za potvrdu dolaska, odbrojavanje do događaja,
+            uključuje formu za potvrdu dolaska, odbrojavanje do događaja,
             lokaciju na Google mapi i PDF verziju sa QR kodom. Pozivnicu delite
-            jednim linkom preko WhatsApp-a, Vibera ili e-maila i gotova je za 24
-            sata. Pogledajte i naše{" "}
+            jednim linkom preko WhatsApp-a, Vibera ili e-maila i gotova je
+            odmah. Pogledajte i naše{" "}
             <Link href="/napravi-pozivnicu">pozivnice za venčanje</Link>,{" "}
             <Link href="/napravi-deciju-pozivnicu">
               pozivnice za dečiji rođendan

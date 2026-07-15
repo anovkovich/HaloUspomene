@@ -302,7 +302,7 @@ export default function RootLayout({
       "Direktorijum Vendora za Venčanje",
     ],
     description:
-      "HALO Uspomene — sveobuhvatna platforma za venčanja u Srbiji: web i Premium AI pozivnice sa RSVP, QR Pano raspored sedenja, audio knjiga uspomena (digitalna i preko retro telefona), planer venčanja i direktorijum vendora.",
+      "HALO Uspomene — sveobuhvatna platforma za venčanja u Srbiji: web i Premium AI pozivnice sa potvrdama dolaska, QR Pano raspored sedenja, audio knjiga uspomena (digitalna i preko retro telefona), planer venčanja i direktorijum vendora.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
     image: `${siteUrl}/images/og-image.png`,
@@ -401,7 +401,7 @@ export default function RootLayout({
               "@type": "Service",
               name: "Website Pozivnica",
               description:
-                "Kreirajte personalizovanu website pozivnicu za venčanje sa RSVP formom, odbrojavanjem, galerijom fotografija i mapom lokacije. Web pozivnice sa integrisanom glasovnom porukom.",
+                "Kreirajte personalizovanu website pozivnicu za venčanje sa formom za potvrdu dolaska, odbrojavanjem, galerijom fotografija i mapom lokacije. Web pozivnice sa integrisanom glasovnom porukom.",
             },
           },
           {
@@ -410,7 +410,7 @@ export default function RootLayout({
               "@type": "Service",
               name: "Interaktivna Web Pozivnica",
               description:
-                "Premium website pozivnica sa temama, kustomnim fontovima, animacijama i mogućnostima za gostiju da ostave poruke. E-pozivnice sa RSVP praćenjem.",
+                "Premium website pozivnica sa temama, kustomnim fontovima, animacijama i mogućnostima za gostiju da ostave poruke. E-pozivnice sa praćenjem potvrda dolaska.",
             },
           },
         ],
@@ -464,7 +464,7 @@ export default function RootLayout({
               "@type": "Service",
               name: "Moje Venčanje Planer",
               description:
-                "Besplatan online planer za venčanje uz svaku pozivnicu: checklista zadataka po vremenskim grupama, budžet kalkulator sa EUR/RSD konverzijom, RSVP praćenje i pristup direktorijumu vendora.",
+                "Besplatan online planer za venčanje uz svaku pozivnicu: checklista zadataka po vremenskim grupama, budžet kalkulator sa EUR/RSD konverzijom, praćenje potvrda dolaska i pristup direktorijumu vendora.",
             },
             price: "0",
             priceCurrency: "RSD",

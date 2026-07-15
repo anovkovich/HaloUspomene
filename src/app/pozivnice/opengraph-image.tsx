@@ -118,7 +118,7 @@ export default async function OGImage() {
               textAlign: "center",
             }}
           >
-            RSVP · Odbrojavanje · Mapa · PDF za štampu sa QR kodom
+            Potvrde dolaska · Odbrojavanje · Mapa · PDF za štampu sa QR kodom
           </span>
 
           <span
@@ -130,7 +130,7 @@ export default async function OGImage() {
               letterSpacing: "0.1em",
             }}
           >
-            od 5.000 din · Gotova za 24h
+            od 5.000 din · Gotova odmah
           </span>
 
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>

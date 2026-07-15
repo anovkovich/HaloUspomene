@@ -110,7 +110,7 @@ function PricingStructuredData() {
         name: "Website Pozivnica",
         price: "5000",
         description:
-          "Personalizovana web stranica za venčanje sa RSVP formom, odbrojavanjem i besplatnom PDF pozivnicom za štampu.",
+          "Personalizovana web stranica za venčanje sa formom za potvrdu dolaska, odbrojavanjem i besplatnom PDF pozivnicom za štampu.",
         ...offerDefaults,
       },
       {
@@ -198,7 +198,7 @@ function FAQStructuredData() {
         name: "Kako funkcioniše potvrda dolaska na venčanje?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Gosti skeniraju QR kod sa pozivnice ili otvore link i popunjavaju RSVP formu — potvrđuju dolazak, broj osoba i ostavljaju poruku. Vi pratite sve potvrde u realnom vremenu kroz portal.",
+          text: "Gosti skeniraju QR kod sa pozivnice ili otvore link i popunjavaju formu za potvrdu dolaska — potvrđuju dolazak, broj osoba i ostavljaju poruku. Vi pratite sve potvrde u realnom vremenu kroz portal.",
         },
       },
       {
@@ -246,7 +246,7 @@ export default function CenePage() {
             Personalizovana web stranica sa animacijama i odbrojavanjem do
             venčanja
           </li>
-          <li>RSVP forma za online potvrdu dolaska gostiju</li>
+          <li>Forma za online potvrdu dolaska gostiju</li>
           <li>Besplatna PDF pozivnica za štampu u A5 formatu sa QR kodom</li>
           <li>Program dana venčanja sa lokacijom na mapi</li>
           <li>Podrška za latinicu i ćirilicu</li>

@@ -681,7 +681,7 @@ export default function OverviewCard({
                     QR kod za potvrdu dolaska
                   </span>
                   <span className="block text-[11px] text-[#232323]/55 mt-0.5">
-                    Skeniranjem gosti idu direktno na RSVP formu.
+                    Skeniranjem gosti idu direktno na formu za potvrdu dolaska.
                   </span>
                 </span>
               </label>

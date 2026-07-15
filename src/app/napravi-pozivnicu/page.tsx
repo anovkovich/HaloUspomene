@@ -16,7 +16,7 @@ import {
 export const metadata: Metadata = {
   title: "Napravi Pozivnicu za Venčanje Online",
   description:
-    "Napravite svoju digitalnu pozivnicu za venčanje online za 24h — popunite kratki upitnik, mi dizajniramo. RSVP forma, odbrojavanje i besplatna PDF uključeni.",
+    "Napravite svoju digitalnu pozivnicu za venčanje online — gotova odmah. Popunite kratki upitnik, mi dizajniramo. Forma za potvrdu dolaska, odbrojavanje i besplatna PDF uključeni.",
   keywords: [
     "website venčana pozivnica",
     "napravi pozivnicu online",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Napravi Website Pozivnicu za Venčanje | HALO Uspomene",
     description:
-      "Personalizovana website pozivnica za vaše venčanje — sa RSVP formom, odbrojavanjem i programom dana. Gotova za 24h.",
+      "Personalizovana website pozivnica za vaše venčanje — sa formom za potvrdu dolaska, odbrojavanjem i programom dana. Gotova odmah.",
     type: "website",
   },
   alternates: {

@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import InvitationClient from "./InvitationClient";
+import InvitationFrame from "@/components/invitation/InvitationFrame";
 import PreviewWatermark from "@/components/PreviewWatermark";
 import BackgroundMusicPlayer from "@/components/BackgroundMusicPlayer";
 import { issuePromo } from "@/lib/payments/promo";
@@ -69,7 +70,7 @@ export default async function InvitationPage({ params }: PageProps) {
   const promo = issuePromo(weddingData.event_date, slug);
 
   return (
-    <>
+    <InvitationFrame>
       <InvitationClient
         data={weddingData}
         slug={slug}
@@ -83,6 +84,6 @@ export default async function InvitationPage({ params }: PageProps) {
       {weddingData.paid_for_music && weddingData.music_url && (
         <BackgroundMusicPlayer src={weddingData.music_url} />
       )}
-    </>
+    </InvitationFrame>
   );
 }

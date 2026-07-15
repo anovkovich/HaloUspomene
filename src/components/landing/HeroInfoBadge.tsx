@@ -82,7 +82,8 @@ const HeroInfoBadge: React.FC = () => {
                     💌 Website Pozivnica
                   </p>
                   <p className="text-xs text-[#232323]/60 leading-relaxed">
-                    Kompletna platforma — RSVP, portal, raspored sedenja, PDF
+                    Kompletna platforma — potvrde dolaska, portal, raspored
+                    sedenja, PDF
                     pozivnica za štampu, i još mnogo toga.
                   </p>
                   <Link

@@ -592,7 +592,7 @@ function Step4({
           <div className="bg-[#AE343F]/5 border border-[#AE343F]/15 rounded-2xl px-5 py-4 text-sm text-[#7A242C] leading-relaxed">
             <p className="font-semibold mb-1">🥂 Skoro sve je spremno!</p>
             <p>
-              Klasičan omot, RSVP formu i odbrojavanje ćemo podesiti mi — vi samo
+              Klasičan omot, formu za potvrdu dolaska i odbrojavanje ćemo podesiti mi — vi samo
               kliknite <em>Pošalji zahtev</em> i mi ćemo se pobrinuti za sve.
             </p>
           </div>

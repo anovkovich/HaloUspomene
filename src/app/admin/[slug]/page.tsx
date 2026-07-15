@@ -674,12 +674,12 @@ export default function EditCouplePage() {
 
           {parsedPhones.length === 0 ? (
             <p className="text-xs text-white/30 italic">
-              Nema sačuvanih brojeva. Dodaj jedan ili više brojeva pa će se pojaviti prekidači za prikaz ispod RSVP forme.
+              Nema sačuvanih brojeva. Dodaj jedan ili više brojeva pa će se pojaviti prekidači za prikaz ispod forme za potvrdu dolaska.
             </p>
           ) : (
             <div className="space-y-2">
               <p className="text-[11px] uppercase tracking-wider text-white/40">
-                Prikaži ispod RSVP forme
+                Prikaži ispod forme za potvrdu dolaska
               </p>
               {parsedPhones.map((phone, idx) => {
                 const enabled = showNumbers[idx] ?? false;

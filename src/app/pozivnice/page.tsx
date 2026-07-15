@@ -47,7 +47,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 export const metadata: Metadata = {
   title: "Digitalna Pozivnica za Venčanje + PDF za Štampu",
   description:
-    "Website pozivnica za venčanje sa RSVP potvrdom, odbrojavanjem, mapom i besplatnom PDF pozivnicom za štampu sa QR kodom. 5 tema, latinica i ćirilica. Od 5.000 din. Gotova za 24h.",
+    "Website pozivnica za venčanje sa potvrdom dolaska, odbrojavanjem, mapom i besplatnom PDF pozivnicom za štampu sa QR kodom. 5 tema, latinica i ćirilica. Od 5.000 din. Gotova odmah.",
   keywords: [
     "pozivnica za venčanje",
     "pozivnice za vencanje",
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Website Pozivnica za Venčanje | HALO Uspomene",
     description:
-      "Digitalna pozivnica + besplatna PDF za štampu sa QR kodom. RSVP, odbrojavanje, mapa — sve na jednom mestu. Od 5.000 din.",
+      "Digitalna pozivnica + besplatna PDF za štampu sa QR kodom. Potvrde dolaska, odbrojavanje, mapa — sve na jednom mestu. Od 5.000 din.",
     type: "website",
     url: `${siteUrl}/pozivnice`,
     siteName: "Halo Uspomene",
@@ -84,7 +84,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Website Pozivnica za Venčanje | HALO Uspomene",
     description:
-      "Digitalna pozivnica + PDF za štampu sa QR kodom. Od 5.000 din, gotova za 24h.",
+      "Digitalna pozivnica + PDF za štampu sa QR kodom. Od 5.000 din, gotova odmah.",
   },
   alternates: {
     canonical: `${siteUrl}/pozivnice`,
@@ -94,7 +94,7 @@ export const metadata: Metadata = {
 const features = [
   {
     icon: <Check size={22} />,
-    title: "RSVP potvrda dolaska",
+    title: "Potvrda dolaska",
     desc: "Gosti potvrđuju dolazak jednim klikom — bez telefonskih poziva.",
   },
   {
@@ -147,7 +147,7 @@ const comparisonRows = [
     halo: `od ${formatPrice(pricing.pozivnica.website.price)}`,
   },
   {
-    label: "RSVP potvrda",
+    label: "Potvrda dolaska",
     paper: false,
     animated: false,
     other: "Kod nekih",
@@ -200,7 +200,7 @@ const comparisonRows = [
     paper: "2–4 nedelje",
     animated: "2–7 dana",
     other: "2–5 dana",
-    halo: "24h",
+    halo: "Odmah",
   },
   {
     label: "Digital + papir",
@@ -214,7 +214,7 @@ const comparisonRows = [
 const faqItems = [
   {
     q: "Šta je website pozivnica za venčanje?",
-    a: "Website pozivnica je personalizovana web stranica za vaše venčanje. Sadrži imena mladenaca, datum, lokaciju sa mapom, program dana, odbrojavanje i RSVP formu za potvrdu dolaska. Gosti otvaraju link na telefonu i potvrđuju dolazak — bez papira, bez poziva.",
+    a: "Website pozivnica je personalizovana web stranica za vaše venčanje. Sadrži imena mladenaca, datum, lokaciju sa mapom, program dana, odbrojavanje i formu za potvrdu dolaska. Gosti otvaraju link na telefonu i potvrđuju dolazak — bez papira, bez poziva.",
   },
   {
     q: "Koliko košta website pozivnica?",
@@ -225,8 +225,8 @@ const faqItems = [
     a: "Da! Uz svaku website pozivnicu dobijate elegantnu PDF pozivnicu u A5 formatu sa QR kodom. Gosti koji skeniraju QR kod dolaze direktno na vašu online pozivnicu gde mogu potvrditi dolazak.",
   },
   {
-    q: "Kako gosti potvrđuju dolazak (RSVP)?",
-    a: "Gosti otvaraju link ili skeniraju QR kod, vide sve detalje venčanja i popune kratku RSVP formu. Vi u realnom vremenu pratite ko dolazi, koliko gostiju dovodi, i sve posebne napomene.",
+    q: "Kako gosti potvrđuju dolazak?",
+    a: "Gosti otvaraju link ili skeniraju QR kod, vide sve detalje venčanja i popune kratku formu za potvrdu dolaska. Vi u realnom vremenu pratite ko dolazi, koliko gostiju dovodi, i sve posebne napomene.",
   },
   {
     q: "Koje teme dizajna su dostupne?",
@@ -238,7 +238,7 @@ const faqItems = [
   },
   {
     q: "Koliko brzo će moja pozivnica biti gotova?",
-    a: "Pozivnica je gotova za 24h nakon što popunite upitnik. Popunjavanje traje oko 5 minuta — unosite imena, datum, lokaciju, temu i program dana.",
+    a: "Pozivnica je gotova odmah nakon što popunite upitnik. Popunjavanje traje oko 5 minuta — unosite imena, datum, lokaciju, temu i program dana.",
   },
   {
     q: "Da li mogu kasnije menjati podatke na pozivnici?",
@@ -279,7 +279,7 @@ export default function PozivnicePage() {
     "@type": "Product",
     name: "Website Pozivnica za Venčanje",
     description:
-      "Digitalna pozivnica za venčanje sa RSVP potvrdom, odbrojavanjem, mapom, programom dana i besplatnom PDF pozivnicom za štampu sa QR kodom.",
+      "Digitalna pozivnica za venčanje sa potvrdom dolaska, odbrojavanjem, mapom, programom dana i besplatnom PDF pozivnicom za štampu sa QR kodom.",
     image: `${siteUrl}/images/full-logo.png`,
     brand: { "@type": "Brand", name: "Halo Uspomene" },
     url: `${siteUrl}/pozivnice`,
@@ -383,14 +383,14 @@ export default function PozivnicePage() {
                 </h1>
 
                 <p className="text-lg sm:text-xl text-[#232323]/60 leading-relaxed mb-8 max-w-2xl">
-                  Personalizovana web stranica sa RSVP potvrdom, odbrojavanjem,
+                  Personalizovana web stranica sa potvrdom dolaska, odbrojavanjem,
                   mapom i programom dana. Uz web pozivnicu dobijate i besplatnu
                   PDF pozivnicu za štampu sa QR kodom.
                 </p>
 
                 <div className="flex flex-wrap gap-3 mb-8">
                   {[
-                    { icon: <Check size={16} />, label: "RSVP" },
+                    { icon: <Check size={16} />, label: "Potvrde dolaska" },
                     { icon: <Timer size={16} />, label: "Odbrojavanje" },
                     { icon: <MapPin size={16} />, label: "Mapa" },
                     { icon: <Palette size={16} />, label: "5 tema" },
@@ -428,7 +428,7 @@ export default function PozivnicePage() {
                   </span>
                   <span className="flex items-center gap-1.5">
                     <Clock size={14} className="text-[#AE343F]" />
-                    Gotova za 24h
+                    Gotova odmah
                   </span>
                 </div>
               </div>
@@ -437,7 +437,7 @@ export default function PozivnicePage() {
               <div className="lg:col-span-5 flex justify-center lg:justify-end">
                 <Image
                   src="/images/website-pozivnice.webp"
-                  alt="HALO Uspomene website pozivnica za venčanje — digitalna pozivnica sa RSVP, odbrojavanjem, mapom i PDF za štampu"
+                  alt="HALO Uspomene website pozivnica za venčanje — digitalna pozivnica sa potvrdama dolaska, odbrojavanjem, mapom i PDF za štampu"
                   width={797}
                   height={874}
                   priority
@@ -618,7 +618,7 @@ export default function PozivnicePage() {
                 Kako početi
               </p>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#F5F4DC] mb-4">
-                Od upitnika do pozivnice za 24h
+                Od upitnika do gotove pozivnice
               </h2>
             </div>
 
@@ -634,7 +634,7 @@ export default function PozivnicePage() {
                   n: "02",
                   icon: <Sparkles size={20} />,
                   title: "Mi kreiramo pozivnicu",
-                  desc: "Vaša personalizovana web stranica sa svim detaljima, gotova za manje od 24h.",
+                  desc: "Vaša personalizovana web stranica sa svim detaljima, gotova odmah.",
                 },
                 {
                   n: "03",
@@ -1008,7 +1008,7 @@ export default function PozivnicePage() {
                 </p>
                 <p className="text-sm text-[#232323]/50">
                   Pravimo i rođendanske pozivnice — dečiji rođendan ili
-                  punoletstvo — sa istim funkcijama: RSVP, mapa, odbrojavanje.
+                  punoletstvo — sa istim funkcijama: potvrde dolaska, mapa, odbrojavanje.
                 </p>
               </div>
               <BirthdayTypeButton
@@ -1033,7 +1033,7 @@ export default function PozivnicePage() {
             </h2>
             <p className="text-lg text-[#F5F4DC]/60 max-w-2xl mx-auto mb-10">
               Popunite upitnik u 2 minuta — mi ćemo sve ostalo. Vaša
-              personalizovana pozivnica biće gotova za manje od 24h.
+              personalizovana pozivnica biće gotova odmah.
             </p>
             <Link
               href="/napravi-pozivnicu"
@@ -1043,7 +1043,7 @@ export default function PozivnicePage() {
               <ArrowRight size={16} />
             </Link>
             <p className="mt-6 text-sm text-[#F5F4DC]/40">
-              od {formatPrice(pricing.pozivnica.website.price)} · Gotova za 24h
+              od {formatPrice(pricing.pozivnica.website.price)} · Gotova odmah
             </p>
           </div>
         </section>
@@ -1053,10 +1053,10 @@ export default function PozivnicePage() {
           <h2>Website Pozivnica za Venčanje u Srbiji</h2>
           <p>
             HALO Uspomene nudi website pozivnice za venčanja u Srbiji. Digitalna
-            pozivnica sa RSVP potvrdom dolaska, odbrojavanjem, interaktivnom
+            pozivnica sa potvrdom dolaska, odbrojavanjem, interaktivnom
             Google mapom, programom dana i besplatnom PDF pozivnicom za štampu
             sa QR kodom. 5 dizajnerskih tema, latinica i ćirilica. Od 5.000 din,
-            gotova za 24h.
+            gotova odmah.
           </p>
           <p>
             Pozivnica za venčanje, pozivnice za vencanje, digitalna pozivnica za

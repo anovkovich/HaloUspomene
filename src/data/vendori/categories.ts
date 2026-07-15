@@ -68,7 +68,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
       },
       {
         q: "Kako da znam koji kapacitet sale mi treba?",
-        a: "Pravilo je: kapacitet sale = broj potvrđenih zvanica + 10-15% rezerve. Ako planirate 150 ljudi, gledajte sale za 170-180. U Moje Venčanje planeru imate RSVP sistem koji vam pokazuje tačan broj.",
+        a: "Pravilo je: kapacitet sale = broj potvrđenih zvanica + 10-15% rezerve. Ako planirate 150 ljudi, gledajte sale za 170-180. U Moje Venčanje planeru imate sistem za potvrde dolaska koji vam pokazuje tačan broj.",
       },
       {
         q: "Da li sale uključuju i meni i piće?",
@@ -76,7 +76,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
       },
       {
         q: "Šta ako gosti ne mogu da dođu na zadati datum?",
-        a: "Zato je ključno koristiti RSVP sistem što ranije. HALO Uspomene digitalna pozivnica šalje gostima link za potvrdu i automatski računa attendance — pa znate stvarnu cifru pre nego što potvrdite meni.",
+        a: "Zato je ključno koristiti sistem za potvrde dolaska što ranije. HALO Uspomene digitalna pozivnica šalje gostima link za potvrdu i automatski računa attendance — pa znate stvarnu cifru pre nego što potvrdite meni.",
       },
     ],
     cityIntros: {

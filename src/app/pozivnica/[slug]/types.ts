@@ -120,6 +120,7 @@ export interface WeddingData {
   custom_background_color?: string; // Custom background color in hex, overrides theme background
   stamp_color?: string; // Custom wax seal color in hex (e.g. "#8B2252"), overrides theme waxSeal
   draft?: boolean; // Only visible in dev, returns 404 in production
+  example?: boolean; // Demo/example couple — sorts to the bottom of the admin list
   receipt_valid?: boolean; // Receipt link is active (set false after payment)
   receipt_created?: string; // ISO date when receipt was generated
   custom_discount?: number; // Custom discount in RSD on website pozivnica

@@ -921,7 +921,7 @@ export default function TelefonUspomenaPage() {
           </p>
           <p>
             HALO Uspomene je kompletna platforma za organizaciju venčanja:
-            website pozivnice sa RSVP-om, raspored sedenja, digitalna audio
+            website pozivnice sa potvrdama dolaska, raspored sedenja, digitalna audio
             knjiga utisaka i retro telefon uspomena. Sve na jednom mestu.
             Pogledajte i našu stranicu sa{" "}
             <Link href="/cene">cenama pozivnica</Link> i{" "}

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getWeddingData, getPremiumWeddingSlugs } from "@/lib/couples";
 import type { Metadata } from "next";
 import PremiumInvitationClient from "./PremiumInvitationClient";
+import InvitationFrame from "@/components/invitation/InvitationFrame";
 import PreviewWatermark from "@/components/PreviewWatermark";
 
 export const revalidate = 10;
@@ -52,7 +53,7 @@ export default async function PremiumInvitationPage({ params }: Props) {
   const isDraft = !!data.draft;
 
   return (
-    <>
+    <InvitationFrame>
       {isDraft && (
         <PreviewWatermark payHref={`/placanje/pozivnica/${slug}`} />
       )}
@@ -115,6 +116,6 @@ export default async function PremiumInvitationPage({ params }: Props) {
       </div>
 
       <PremiumInvitationClient data={data} slug={slug} preview={isDraft} />
-    </>
+    </InvitationFrame>
   );
 }

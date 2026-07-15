@@ -21,7 +21,7 @@ const ITEMS: ClusterItem[] = [
   {
     key: "vencanje",
     label: "Za venčanje",
-    desc: "Website pozivnica sa RSVP-om",
+    desc: "Website pozivnica sa potvrdama dolaska",
     href: "/napravi-pozivnicu",
     icon: <Heart size={22} />,
   },
@@ -41,7 +41,7 @@ const ITEMS: ClusterItem[] = [
   },
   {
     key: "punoletstvo",
-    label: "Za punoletstvo (18. rođendan)",
+    label: "Za punoletstvo",
     desc: "Elegantna pozivnica za punoletstvo",
     href: "/napravi-punoletstvo",
     icon: <Sparkles size={22} />,
@@ -58,11 +58,14 @@ export default function InvitationClusterLinks({
   title = "Napravite pozivnicu i za druge prilike",
   subtitle,
   showHubLink = true,
+  hrefOverrides,
 }: {
   current?: ClusterKey;
   title?: string;
   subtitle?: string;
   showHubLink?: boolean;
+  /** Per-key destination overrides (e.g. hub sends venčanje to /cene). */
+  hrefOverrides?: Partial<Record<ClusterKey, string>>;
 }) {
   const items = ITEMS.filter((i) => i.key !== current);
 
@@ -87,7 +90,7 @@ export default function InvitationClusterLinks({
         {items.map((item) => (
           <Link
             key={item.key}
-            href={item.href}
+            href={hrefOverrides?.[item.key] ?? item.href}
             className="group flex flex-col items-center text-center bg-white rounded-2xl p-6 border border-[#232323]/8 shadow-sm hover:border-[#AE343F]/25 hover:shadow-md transition-all"
           >
             <div className="w-12 h-12 rounded-xl bg-[#AE343F]/10 text-[#AE343F] flex items-center justify-center mb-3 group-hover:bg-[#AE343F] group-hover:text-[#F5F4DC] transition-colors">

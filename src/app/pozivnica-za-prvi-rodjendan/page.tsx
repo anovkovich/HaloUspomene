@@ -20,7 +20,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 export const metadata: Metadata = {
   title: "Pozivnica za Prvi Rođendan — Digitalna Online",
   description:
-    "Napravite šarenu digitalnu pozivnicu za prvi rođendan online. Teme za dečaka, devojčicu ili neutralne, sa RSVP formom, odbrojavanjem i mapom. Gotova za 24h, deli se jednim linkom.",
+    "Napravite šarenu digitalnu pozivnicu za prvi rođendan online. Teme za dečaka, devojčicu ili neutralne, sa formom za potvrdu dolaska, odbrojavanjem i mapom. Gotova odmah, deli se jednim linkom.",
   keywords: [
     "pozivnica za prvi rođendan",
     "pozivnica za prvi rođendan online",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Pozivnica za Prvi Rođendan — Digitalna Pozivnica Online | HALO Uspomene",
     description:
-      "Šarena digitalna pozivnica za prvi rođendan — teme za dečaka, devojčicu ili neutralne, sa RSVP-om i odbrojavanjem. Gotova za 24h.",
+      "Šarena digitalna pozivnica za prvi rođendan — teme za dečaka, devojčicu ili neutralne, sa potvrdama dolaska i odbrojavanjem. Gotova odmah.",
     type: "website",
     url: `${siteUrl}/pozivnica-za-prvi-rodjendan`,
     siteName: "Halo Uspomene",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pozivnica za Prvi Rođendan Online | HALO Uspomene",
     description:
-      "Napravite šarenu digitalnu pozivnicu za prvi rođendan — sa RSVP formom i odbrojavanjem.",
+      "Napravite šarenu digitalnu pozivnicu za prvi rođendan — sa formom za potvrdu dolaska i odbrojavanjem.",
   },
   alternates: {
     canonical: `${siteUrl}/pozivnica-za-prvi-rodjendan`,
@@ -62,7 +62,7 @@ const included = [
   },
   {
     icon: <CheckCircle2 size={24} />,
-    title: "RSVP potvrde",
+    title: "Potvrde dolaska",
     desc: "Gosti potvrđuju dolazak kroz formu — vi tačno znate koliko odraslih i mališana dolazi.",
   },
   {
@@ -86,7 +86,7 @@ const steps = [
   {
     n: "02",
     title: "Mi dizajniramo",
-    desc: "Za 24h pravimo personalizovanu šarenu pozivnicu i šaljemo vam link.",
+    desc: "Pozivnicu pravimo odmah i šaljemo vam link spreman za deljenje.",
   },
   {
     n: "03",
@@ -98,7 +98,7 @@ const steps = [
 const faqItems = [
   {
     q: "Kako da napravim pozivnicu za prvi rođendan?",
-    a: "Popunite kratak upitnik u 4 koraka: ime deteta, datum prvog rođendana, lokaciju proslave i temu (dečak, devojčica ili neutralna). Mi za 24 sata izrađujemo personalizovanu digitalnu pozivnicu i šaljemo vam link spreman za deljenje.",
+    a: "Popunite kratak upitnik u 4 koraka: ime deteta, datum prvog rođendana, lokaciju proslave i temu (dečak, devojčica ili neutralna). Pozivnicu izrađujemo odmah i šaljemo vam link spreman za deljenje.",
   },
   {
     q: "Da li postoje teme posebno za prvi rođendan?",
@@ -106,7 +106,7 @@ const faqItems = [
   },
   {
     q: "Kako gosti dobijaju pozivnicu?",
-    a: "Dobijate jedan link koji delite preko WhatsApp-a, Vibera, e-maila ili društvenih mreža. Nema štampe — jedna pozivnica važi za sve goste, a oni potvrđuju dolazak kroz RSVP formu.",
+    a: "Dobijate jedan link koji delite preko WhatsApp-a, Vibera, e-maila ili društvenih mreža. Nema štampe — jedna pozivnica važi za sve goste, a oni potvrđuju dolazak jednim klikom.",
   },
   {
     q: "Koliko košta pozivnica za prvi rođendan?",
@@ -124,7 +124,7 @@ const serviceSchema = {
   serviceType: "Izrada digitalne pozivnice za prvi rođendan",
   name: "Digitalna pozivnica za prvi rođendan",
   description:
-    "Personalizovana online pozivnica za prvi rođendan deteta sa temama za dečaka, devojčicu ili neutralnim, RSVP formom, odbrojavanjem i lokacijom na mapi. Gotova za 24h.",
+    "Personalizovana online pozivnica za prvi rođendan deteta sa temama za dečaka, devojčicu ili neutralnim, formom za potvrdu dolaska, odbrojavanjem i lokacijom na mapi. Gotova odmah.",
   provider: {
     "@type": "Organization",
     name: "HALO Uspomene",
@@ -180,8 +180,9 @@ export default function PozivnicaZaPrviRodjendan() {
               </h1>
               <p className="text-lg sm:text-xl text-[#232323]/60 max-w-2xl mx-auto mb-10 leading-relaxed">
                 Napravite šarenu digitalnu pozivnicu za prvi rođendan vašeg
-                mališana — sa temama za dečaka, devojčicu ili neutralnim, RSVP
-                formom i odbrojavanjem. Gotova za 24h, deli se jednim linkom.
+                mališana — sa temama za dečaka, devojčicu ili neutralnim, uz
+                formu za potvrdu dolaska i odbrojavanje. Gotova odmah, deli se
+                jednim linkom.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
@@ -362,9 +363,9 @@ export default function PozivnicaZaPrviRodjendan() {
           <p>
             HALO Uspomene izrađuje digitalne pozivnice za prvi rođendan u
             Srbiji. Napravite šarenu online pozivnicu za prvu godinu vašeg
-            deteta — sa temom za dečaka, devojčicu ili neutralnom, RSVP formom za
+            deteta — sa temom za dečaka, devojčicu ili neutralnom, formom za
             potvrdu dolaska, odbrojavanjem do proslave i lokacijom na Google
-            mapi. Pozivnicu izrađujemo za 24 sata i delite je jednim linkom
+            mapi. Pozivnicu izrađujemo odmah i delite je jednim linkom
             preko WhatsApp-a, Vibera ili e-maila. Pogledajte i{" "}
             <Link href="/napravi-deciju-pozivnicu">
               pozivnice za dečiji rođendan

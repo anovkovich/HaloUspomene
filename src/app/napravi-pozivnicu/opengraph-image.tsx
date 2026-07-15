@@ -90,7 +90,7 @@ export default async function OGImage() {
               maxWidth: 800,
             }}
           >
-            RSVP, raspored sedenja, audio knjiga utisaka — sve na jednom mestu
+            Potvrde dolaska, raspored sedenja, audio knjiga utisaka — sve na jednom mestu
           </span>
 
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>

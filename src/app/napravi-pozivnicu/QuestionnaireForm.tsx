@@ -565,7 +565,7 @@ function PhoneNameInput({
         maxLength={40}
       />
       <p className="text-[10px] text-stone-400 italic leading-relaxed">
-        Ako popunite, broj će se prikazati na pozivnici ispod RSVP forme.
+        Ako popunite, broj će se prikazati na pozivnici ispod forme za potvrdu dolaska.
       </p>
     </div>
   );
@@ -1650,7 +1650,7 @@ function Step2({
     <div>
       <StepHeading
         title="Datum i rok za prijavu"
-        desc="Izaberite datum venčanja i krajnji rok za RSVP."
+        desc="Izaberite datum venčanja i krajnji rok za potvrde dolaska."
       />
       <div className="space-y-8">
         {/* Wedding date + time */}

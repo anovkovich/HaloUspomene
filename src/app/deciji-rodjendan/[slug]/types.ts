@@ -56,6 +56,7 @@ export interface BirthdayData {
   map_enabled: boolean;
   admin_password?: string;
   draft?: boolean;
+  example?: boolean; // Demo/example event — sorts to the bottom of the admin list
   /**
    * Unlocks the seating editor at /deciji-rodjendan/[slug]/raspored-sedenja/.
    * Mirrors the wedding `paid_for_raspored` gate — admin flips it after

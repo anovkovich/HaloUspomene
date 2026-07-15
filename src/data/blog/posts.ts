@@ -246,7 +246,7 @@ const allBlogPosts: BlogPost[] = [
     title:
       "Od Pozivnice do Rasporeda Sedenja: Kako smo rešili celu organizaciju venčanja",
     description:
-      "Kompletan vodič kroz HALO Uspomene — od slanja linka gostima, RSVP-a, rasporeda sedenja, PDF pozivnice za štampu, do Audio Knjige Utisaka i Retro Telefona Uspomena.",
+      "Kompletan vodič kroz HALO Uspomene — od slanja linka gostima, potvrda dolaska, rasporeda sedenja, PDF pozivnice za štampu, do Audio Knjige Utisaka i Retro Telefona Uspomena.",
     category: "Vodič",
     tags: [
       "website pozivnica venčanje",

@@ -40,7 +40,13 @@ export async function getPremiumWeddingSlugs(): Promise<string[]> {
 
 export async function getAllCouples(): Promise<CoupleDocument[]> {
   const c = await col();
-  return c.find({}, { projection: { _id: 0 } }).sort({ created_at: -1, _id: -1 }).toArray();
+  // `example: 1` first so demo/example couples (example: true) always sort to
+  // the bottom of the admin list — a missing field sorts as null (< true), so
+  // real couples come first, examples last; then newest-first within each group.
+  return c
+    .find({}, { projection: { _id: 0 } })
+    .sort({ example: 1, created_at: -1, _id: -1 })
+    .toArray();
 }
 
 /** Couples with the QR gallery enabled — minimal fields for the lifecycle cron. */
@@ -89,8 +95,11 @@ export async function upsertCouple(
   data: WeddingData
 ): Promise<void> {
   const c = await col();
-  // Exclude created_at from data to avoid conflict with $setOnInsert
-  const { created_at, ...dataWithoutTimestamp } = data as any;
+  // Exclude created_at from $set so it doesn't conflict with $setOnInsert.
+  // (Mongo rejects updates where the same field appears in both operators.)
+  const { created_at: _created_at, ...dataWithoutTimestamp } =
+    data as WeddingData & { created_at?: unknown };
+  void _created_at;
   await c.updateOne(
     { slug },
     { $set: { slug, ...dataWithoutTimestamp }, $setOnInsert: { created_at: new Date() } },

@@ -402,7 +402,7 @@ export default async function OGImage() {
               }}
             >
               {[
-                "Gotova pozivnica za 24h",
+                "Gotova pozivnica odmah",
                 "Fiksne cene — bez skrivenih troškova",
                 "Najveći popust uz Kompletan paket",
               ].map((line) => (

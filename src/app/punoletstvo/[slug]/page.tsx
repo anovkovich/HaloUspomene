@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBirthdayData, getAllBirthdaySlugs } from "@/lib/birthday";
 import PunoletstvoInvitationClient from "./PunoletstvoInvitationClient";
+import InvitationFrame from "@/components/invitation/InvitationFrame";
 import PreviewWatermark from "@/components/PreviewWatermark";
 
 export const revalidate = 10;
@@ -48,11 +49,11 @@ export default async function PunoletstvoInvitationPage({ params }: PageProps) {
   const isDraft = !!data.draft;
 
   return (
-    <>
+    <InvitationFrame>
       <PunoletstvoInvitationClient data={data} slug={slug} preview={isDraft} />
       {isDraft && (
         <PreviewWatermark payHref={`/placanje/punoletstvo/${slug}`} />
       )}
-    </>
+    </InvitationFrame>
   );
 }

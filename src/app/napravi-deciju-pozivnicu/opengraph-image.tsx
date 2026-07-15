@@ -110,7 +110,7 @@ export default async function OGImage() {
                 lineHeight: 1.5,
               }}
             >
-              Slatke teme, RSVP potvrde, mapa lokacije i raspored sedenja —
+              Slatke teme, potvrde dolaska, mapa lokacije i raspored sedenja —
               sve na jednom linku koji deca i roditelji mogu lako otvoriti.
             </span>
 
@@ -124,7 +124,7 @@ export default async function OGImage() {
                 textTransform: "uppercase",
               }}
             >
-              Brza izrada &nbsp;·&nbsp; RSVP &nbsp;·&nbsp; Bez papira
+              Brza izrada &nbsp;·&nbsp; Potvrde dolaska &nbsp;·&nbsp; Bez papira
             </span>
           </div>
         </div>

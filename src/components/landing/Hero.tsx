@@ -62,7 +62,7 @@ const Hero: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-5">
               <Link
-                href="/napravi-pozivnicu"
+                href="/cene"
                 className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] btn-lg rounded-full px-12 shadow-2xl shadow-[#AE343F]/30 group border-none"
                 data-track="cta_click"
                 data-track-cta-name="napravi_pozivnicu"
@@ -71,13 +71,13 @@ const Hero: React.FC = () => {
                 Napravite pozivnicu
               </Link>
               <Link
-                href="/cene"
+                href="/izrada-pozivnica-online"
                 className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] hover:border-[#232323] btn-lg rounded-full px-12"
                 data-track="cta_click"
-                data-track-cta-name="pogledajte_cene"
+                data-track-cta-name="pogledajte_primere"
                 data-track-cta-location="hero"
               >
-                Pogledajte cene
+                Pogledajte primere
               </Link>
             </div>
 

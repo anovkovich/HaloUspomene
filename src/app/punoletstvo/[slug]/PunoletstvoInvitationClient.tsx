@@ -267,7 +267,10 @@ function Countdown({ eventDate }: { eventDate: string }) {
           className="flex flex-col items-center flex-1 sm:flex-none max-w-[76px] sm:max-w-none"
         >
           <div
-            className="relative w-full sm:w-24 h-[72px] sm:h-28 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-sm"
+            // No backdrop-blur: it left thin iOS Safari compositing seams on the
+            // scrolled countdown boxes; the box is ~85% opaque so the blur was
+            // barely visible anyway.
+            className="relative w-full sm:w-24 h-[72px] sm:h-28 rounded-xl sm:rounded-2xl flex items-center justify-center"
             style={{
               backgroundColor: "color-mix(in srgb, var(--theme-surface) 85%, transparent)",
               border: "1px solid var(--theme-wax-seal)",
@@ -396,11 +399,18 @@ export default function PunoletstvoInvitationClient({
                 className="relative px-6 sm:px-14 pt-4 sm:pt-10 pb-10 sm:pb-20 text-center"
                 style={{
                   backgroundColor: "color-mix(in srgb, var(--theme-surface) 92%, transparent)",
-                  backdropFilter: "blur(4px)",
+                  // No backdrop-filter here: this card scale-animates in, and on
+                  // iOS Safari a `backdrop-filter` under a transform animation
+                  // tiles the blur and leaves thin dark compositing seams
+                  // (chevron / corner brackets). At 92% surface opacity the blur
+                  // was imperceptible anyway. backface-visibility keeps the GPU
+                  // promotion clean (same fix as the classic envelope loader).
                   borderRadius: 4,
                   border: "1px solid var(--theme-wax-seal)",
                   boxShadow:
                     "0 30px 80px -30px rgba(0,0,0,0.3), 0 10px 30px -10px rgba(0,0,0,0.15)",
+                  WebkitBackfaceVisibility: "hidden",
+                  backfaceVisibility: "hidden",
                 }}
               >
                 {/* Inner gold hairline */}

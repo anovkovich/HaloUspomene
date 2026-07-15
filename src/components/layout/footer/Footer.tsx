@@ -43,7 +43,7 @@ const Footer: React.FC = () => {
             />
             <p className="text-[#F5F4DC]/40 leading-relaxed mb-4 text-justify">
               HALO Uspomene — kompletna platforma za organizaciju venčanja.
-              Website pozivnice sa RSVP-om, rasporedom sedenja i audio knjigom
+              Website pozivnice sa potvrdama dolaska, rasporedom sedenja i audio knjigom
               utisaka. Retro telefon uspomena za nezaboravne glasovne poruke
               gostiju. Sve što vam treba — na jednom mestu.
             </p>

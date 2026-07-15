@@ -53,7 +53,7 @@ const FEATURES: Feature[] = [
     id: "website",
     label: "Website pozivnica",
     description:
-      "Personalizovana web stranica za vaše venčanje sa animacijama, odbrojavanjem, lokacijom i RSVP formom.",
+      "Personalizovana web stranica za vaše venčanje sa animacijama, odbrojavanjem, lokacijom i formom za potvrdu dolaska.",
     price: pricing.pozivnica.website.price,
     icon: <Globe size={20} />,
     locked: true,

@@ -116,7 +116,9 @@ export const Timeline: React.FC<TimelineProps> = ({ items, lang = "sr-Latn" }) =
               {/* Content */}
               <div className="w-full md:w-5/12 pl-16 md:pl-0">
                 <div
-                  className={`relative backdrop-blur-sm p-6 sm:p-8 group overflow-hidden transition-all duration-500 ${isEven ? "md:text-left" : "md:text-right"}`}
+                  /* No backdrop-blur: it left iOS Safari compositing seams on
+                     the scrolled card; bg is 90% opaque so blur was invisible. */
+                  className={`relative p-6 sm:p-8 group overflow-hidden transition-all duration-500 ${isEven ? "md:text-left" : "md:text-right"}`}
                   style={{
                     backgroundColor: "rgba(255,255,255,0.9)",
                     borderRadius: "var(--theme-radius)",

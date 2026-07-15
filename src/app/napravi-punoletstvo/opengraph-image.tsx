@@ -110,7 +110,7 @@ export default async function OGImage() {
                 lineHeight: 1.5,
               }}
             >
-              Modern dizajn, RSVP, odbrojavanje, mapa lokacije i raspored
+              Modern dizajn, potvrde dolaska, odbrojavanje, mapa lokacije i raspored
               sedenja — sve na jednom linku za vaše goste.
             </span>
 
@@ -124,7 +124,7 @@ export default async function OGImage() {
                 textTransform: "uppercase",
               }}
             >
-              Modern stil &nbsp;·&nbsp; RSVP &nbsp;·&nbsp; Bez papira
+              Modern stil &nbsp;·&nbsp; Potvrde dolaska &nbsp;·&nbsp; Bez papira
             </span>
           </div>
         </div>

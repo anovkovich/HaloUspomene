@@ -76,14 +76,14 @@ export default function TierCards({
             {formatPrice(osnovno?.price ?? 5000)}
           </p>
           <p className="text-xs text-[#232323]/50 mb-4">
-            Digitalna pozivnica sa potvrdama — spremno za 24h.
+            Digitalna pozivnica sa potvrdama — spremno odmah.
           </p>
           <ul className="space-y-2 text-sm text-[#232323]/70 flex-1 mb-5">
             <Li>Personalizovana web pozivnica</Li>
             <Li>Odbrojavanje do događaja</Li>
             <Li>Mapa do lokacija venčanja</Li>
             <Li>Protokol dana venčanja</Li>
-            <Li>Online potvrda dolaska (RSVP)</Li>
+            <Li>Online potvrda dolaska</Li>
             <Li>QR kod za potvrdu na štampanim pozivnicama</Li>
             <Li>Pristup {'„Moje Venčanje"'} portalu</Li>
             <Li>🎁 Gratis PDF pozivnica za štampu</Li>
@@ -302,7 +302,7 @@ export default function TierCards({
               <p className="font-semibold text-[#232323] text-sm group-hover:text-[#AE343F] transition-colors">
                 Dečja rođendanska pozivnica
               </p>
-              <p className="text-xs text-[#232323]/50">Sa RSVP i QR kodom</p>
+              <p className="text-xs text-[#232323]/50">Sa potvrdom dolaska i QR kodom</p>
             </div>
             <span className="text-sm font-bold text-[#AE343F] shrink-0">
               od {formatPrice(getRodjendanPozivnicaPrice(false))}

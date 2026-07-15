@@ -144,14 +144,14 @@ export default function FormPageWrapper({
         <p>
           HALO Uspomene izrađuje personalizovane website pozivnice za venčanja u
           Srbiji. Naša usluga obuhvata kreiranje elegantne online pozivnice sa
-          RSVP formom, odbrojavanjem do venčanja i detaljnim programom dana
+          formom za potvrdu dolaska, odbrojavanjem do venčanja i detaljnim programom dana
           svadbe.
         </p>
         <h3>Kako funkcioniše izrada website pozivnice za venčanje?</h3>
         <p>
           Popunite kratki upitnik u 6 koraka: unesite ime i prezime mladenaca,
           datum i lokaciju venčanja, odaberite temu boja i stil fonta, dodajte
-          program svadbe i kontakt informacije. Mi zatim za 24 sata pravimo vašu
+          program svadbe i kontakt informacije. Mi zatim odmah pravimo vašu
           personalozivanu digitalnu pozivnicu i šaljemo vam link koji možete
           podeliti sa gostima putem WhatsApp-a, Vibera, Telegrama ili e-maila.
         </p>
@@ -162,7 +162,7 @@ export default function FormPageWrapper({
             sage, plava)
           </li>
           <li>Elegantni skript fontovi — latinični i ćirilični</li>
-          <li>RSVP forma za potvrdu dolaska gostiju</li>
+          <li>Forma za potvrdu dolaska gostiju</li>
           <li>Odbrojavanje do dana venčanja</li>
           <li>Program venčanja — ceremonija, koktel, večera, ples</li>
           <li>Lokacija ceremonije i salle na Google Maps</li>

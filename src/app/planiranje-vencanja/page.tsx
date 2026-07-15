@@ -313,8 +313,7 @@ export default function PlaniranjeVencanjaPage() {
                 na dnu stranice i odmah počnite da koristite checklistu, budžet
                 i direktorijum vendora. Naš tim će biti u kontaktu sa Vama, pa
                 ćete nam, kada budete imali sve potrebne informacije, iste
-                proslediti — nakon čega ćemo izraditi Vašu pozivnicu u roku
-                kraćem od 24 sata.
+                proslediti — nakon čega je Vaša pozivnica gotova odmah.
               </p>
               <p className="text-sm text-[#232323]/50 italic">
                 Ukratko: registrujte se odmah → planirajte → pozivnicu zajedno
@@ -457,7 +456,7 @@ export default function PlaniranjeVencanjaPage() {
                   Website Pozivnica
                 </p>
                 <p className="text-xs text-[#232323]/40 mb-3">
-                  RSVP, odbrojavanje, mapa, PDF za štampu
+                  Potvrde dolaska, odbrojavanje, mapa, PDF za štampu
                 </p>
                 <span className="text-xs text-[#AE343F] font-medium inline-flex items-center gap-1">
                   od 5.000 din <ArrowRight size={12} />

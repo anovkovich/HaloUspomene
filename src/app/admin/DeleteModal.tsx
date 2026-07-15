@@ -96,7 +96,7 @@ export default function DeleteModal({ slug, onClose, onDeleted }: Props) {
             </li>
             <li className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-red-400/60 flex-shrink-0" />
-              Sve potvrde dolaska / RSVP odgovori
+              Sve potvrde dolaska
             </li>
             <li className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-red-400/60 flex-shrink-0" />

@@ -216,8 +216,10 @@ export default function BirthdayClient({ data, slug, preview = false }: Props) {
         {/* ── Details Card ── */}
         <section className="relative py-16 sm:py-24 px-6">
           <div className="max-w-md mx-auto relative z-10">
+            {/* No backdrop-blur: it left iOS Safari compositing seams on the
+                scrolled card; the surface is ~92% opaque so blur was invisible. */}
             <div
-              className="p-8 rounded-3xl text-center space-y-6 backdrop-blur-sm"
+              className="p-8 rounded-3xl text-center space-y-6"
               style={{
                 backgroundColor:
                   "color-mix(in srgb, var(--theme-surface) 92%, transparent)",

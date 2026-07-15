@@ -49,7 +49,7 @@ export default function BirthdayPassedGuard({ eventDate, children }: Props) {
           style={{ color: "#555" }}
         >
           Ovaj rođendanski događaj je prošao. Ukoliko i vi želite da napravite
-          šarenu digitalnu pozivnicu za dečiji rođendan — sa RSVP formom i
+          šarenu digitalnu pozivnicu za dečiji rođendan — sa formom za potvrdu dolaska i
           odbrojavanjem — možete to učiniti ovde:
         </p>
 

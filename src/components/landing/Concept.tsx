@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Globe,
-  Mic,
-  HeartHandshake,
-  Sparkles,
-  Phone,
-  FileDown,
-} from "lucide-react";
+import { Globe, Mic, HeartHandshake } from "lucide-react";
 
 const points = [
   {
@@ -40,7 +33,7 @@ const points = [
     ),
     title: "Mi brinemo o svemu",
     description:
-      "Od izrade pozivnice do dostave retro telefona — brzo i lako, vaš jedini zadatak je da uživate. Pozivnica gotova za 24h, telefon stiže kurirskom službom ili lično u Novom Sadu.",
+      "Od izrade pozivnice do dostave retro telefona — brzo i lako, vaš jedini zadatak je da uživate. Pozivnica gotova odmah, telefon stiže kurirskom službom ili lično u Novom Sadu.",
   },
 ];
 

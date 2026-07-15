@@ -25,7 +25,13 @@ export async function getAllBirthdaySlugs(): Promise<string[]> {
 
 export async function getAllBirthdays(): Promise<BirthdayDocument[]> {
   const c = await col();
-  return c.find({}, { projection: { _id: 0 } }).sort({ created_at: -1, _id: -1 }).toArray();
+  // `example: 1` first so demo/example events (example: true) always sort to the
+  // bottom of the admin list (missing field sorts as null < true); then
+  // newest-first within each group.
+  return c
+    .find({}, { projection: { _id: 0 } })
+    .sort({ example: 1, created_at: -1, _id: -1 })
+    .toArray();
 }
 
 export async function upsertBirthday(

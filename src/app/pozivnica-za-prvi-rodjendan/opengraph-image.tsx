@@ -117,7 +117,7 @@ export default async function OGImage() {
                 letterSpacing: "0.1em",
               }}
             >
-              RSVP, odbrojavanje i mapa · Gotova za 24h
+              Potvrde dolaska, odbrojavanje i mapa · Gotova odmah
             </span>
           </div>
         </div>
