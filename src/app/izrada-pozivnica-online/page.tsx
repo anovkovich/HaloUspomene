@@ -22,7 +22,7 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
 import { pricing, formatPrice, getRodjendanPozivnicaPrice } from "@/data/pricing";
 import StampaneLeadForm from "./StampaneLeadForm";
-import LiveExampleCard from "./LiveExampleCard";
+import LiveExamplesRow from "./LiveExamplesRow";
 import PromoCapture from "@/components/PromoCapture";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
@@ -137,44 +137,49 @@ const steps = [
 ];
 
 // Live-examples carousel — one card per occasion, each cycling several theme
-// variants via subtle arrows. Each variant shows a skeleton placeholder until a
-// looping clip of the real invitation is added: set `video` (+ optional
-// `poster`/`videoWebm`) on the variant and it renders inside the phone frame.
+// variants via subtle arrows. `gradient`/`initials` still drive the skeleton
+// screen, which shows for any variant left without a clip.
 // (Prvi rođendan is intentionally not a visible card here — it stays SEO-linked
 //  in the hidden section and the chooser above.)
+const clip = (name: string) => ({
+  videoWebm: `/videos/${name}.webm`,
+  poster: `/videos/${name}-poster.webp`,
+});
+
 const liveExamples = [
   {
     label: "Venčanje",
     desc: "Više boja i fontova · jedan primer uživo",
     variants: [
-      { theme: "Classic Rose", gradient: "linear-gradient(160deg, #AE343F, #7a1f27)", initials: "A & D", liveHref: "/pozivnica/ana-dejan" },
-      { theme: "Luxury Gold", gradient: "linear-gradient(160deg, #3a3226, #6b5a2f)", initials: "A & D", initialsColor: "#f0e2b8", liveHref: "/pozivnica/ana-dejan" },
-      { theme: "Modern Blue", gradient: "linear-gradient(160deg, #3f5c78, #26374a)", initials: "A & D", liveHref: "/pozivnica/ana-dejan" },
+      { theme: "Classic Rose", gradient: "linear-gradient(160deg, #AE343F, #7a1f27)", initials: "A & D", liveHref: "/pozivnica/ana-dejan", ...clip("poz-rose") },
+      { theme: "Luxury Gold", gradient: "linear-gradient(160deg, #3a3226, #6b5a2f)", initials: "A & D", initialsColor: "#f0e2b8", liveHref: "/pozivnica/ana-dejan", ...clip("poz-gold") },
+      { theme: "Modern Blue", gradient: "linear-gradient(160deg, #3f5c78, #26374a)", initials: "A & D", liveHref: "/pozivnica/ana-dejan", ...clip("poz-blue") },
     ],
   },
   {
     label: "Venčanje Premium",
     desc: "Tri premium teme · primer uživo za svaku",
+    featured: true,
     variants: [
-      { theme: "Watercolor", gradient: "linear-gradient(160deg, #24303f, #3a2b40)", initials: "T & B", initialsColor: "#e8c9a0", liveHref: "/premium-pozivnica/teodora-bojan" },
-      { theme: "Papirna", gradient: "linear-gradient(160deg, #7d7f6e, #585a49)", initials: "A & M", liveHref: "/premium-pozivnica/ana-marko" },
-      { theme: "Fountain", gradient: "linear-gradient(160deg, #8a1f28, #AE343F)", initials: "M & N", initialsColor: "#f0d9b0", liveHref: "/premium-pozivnica/milica-nikola" },
+      { theme: "Watercolor", gradient: "linear-gradient(160deg, #24303f, #3a2b40)", initials: "T & B", initialsColor: "#e8c9a0", liveHref: "/premium-pozivnica/teodora-bojan", ...clip("pre-watercolor") },
+      { theme: "Papirna", gradient: "linear-gradient(160deg, #7d7f6e, #585a49)", initials: "A & M", liveHref: "/premium-pozivnica/ana-marko", ...clip("pre-paper") },
+      { theme: "Fountain", gradient: "linear-gradient(160deg, #8a1f28, #AE343F)", initials: "M & N", initialsColor: "#f0d9b0", liveHref: "/premium-pozivnica/milica-nikola", ...clip("pre-burgundy") },
     ],
   },
   {
     label: "Dečiji rođendan",
     desc: "Teme za dečake i devojčice",
     variants: [
-      { theme: "Za dečake", gradient: "linear-gradient(160deg, #4a7ba6, #2f5a7d)", initials: "1", liveHref: "/deciji-rodjendan/primer-decak" },
-      { theme: "Za devojčice", gradient: "linear-gradient(160deg, #c76a90, #a24f74)", initials: "1", liveHref: "/deciji-rodjendan/primer-devojcica" },
+      { theme: "Za dečake", gradient: "linear-gradient(160deg, #4a7ba6, #2f5a7d)", initials: "1", liveHref: "/deciji-rodjendan/primer-decak", ...clip("dec-decak") },
+      { theme: "Za devojčice", gradient: "linear-gradient(160deg, #c76a90, #a24f74)", initials: "1", liveHref: "/deciji-rodjendan/primer-devojcica", ...clip("dec-devojcica") },
     ],
   },
   {
     label: "Punoletstvo",
     desc: "Više boja · primer uživo za svaku",
     variants: [
-      { theme: "Bordo & zlato", gradient: "linear-gradient(160deg, #2b2b2b, #4a3f2a)", initials: "18", initialsColor: "#d4af37", liveHref: "/punoletstvo/primer-devojka" },
-      { theme: "Teget & zlato", gradient: "linear-gradient(160deg, #1f2a44, #2c3a5a)", initials: "18", initialsColor: "#d4af37", liveHref: "/punoletstvo/primer-momak" },
+      { theme: "Bordo & zlato", gradient: "linear-gradient(160deg, #2b2b2b, #4a3f2a)", initials: "18", initialsColor: "#d4af37", liveHref: "/punoletstvo/primer-devojka", ...clip("pun-devojka") },
+      { theme: "Teget & zlato", gradient: "linear-gradient(160deg, #1f2a44, #2c3a5a)", initials: "18", initialsColor: "#d4af37", liveHref: "/punoletstvo/primer-momak", ...clip("pun-momak") },
     ],
   },
 ];
@@ -483,11 +488,7 @@ export default function IzradaPozivnicaOnline() {
               </p>
             </div>
 
-            <div className="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scroll-px-4 pb-4 -mx-4 px-4 justify-start xl:justify-center scrollbar-none">
-              {liveExamples.map((ex) => (
-                <LiveExampleCard key={ex.label} {...ex} />
-              ))}
-            </div>
+            <LiveExamplesRow examples={liveExamples} />
 
             <div className="text-center mt-12">
               <a
