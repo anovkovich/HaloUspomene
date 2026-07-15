@@ -37,6 +37,17 @@ select:-webkit-autofill {
   .animate-fade-up {
     animation: fadeUp 0.6s ease-out forwards;
   }
+
+  /* Used by every snap carousel in the app (vendors, pozivnice, live examples).
+     It was never defined, so those rows had been showing a native scrollbar
+     whenever their content overflowed. The snapped, part-visible cards are the
+     scroll affordance. */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @theme {
