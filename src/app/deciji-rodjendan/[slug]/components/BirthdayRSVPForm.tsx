@@ -44,6 +44,18 @@ export function BirthdayRSVPForm({
   deadline.setHours(23, 59, 59, 999);
   const isPastDeadline = new Date() > deadline;
 
+  // Human-readable deadline for the guest (only when a valid date is set).
+  const deadlineLabel = (() => {
+    if (!submitUntil) return null;
+    const d = new Date(submitUntil);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleDateString("sr-Latn-RS", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  })();
+
   if (isPastDeadline) {
     return (
       <div
@@ -162,6 +174,19 @@ export function BirthdayRSVPForm({
         boxShadow: "var(--theme-shadow)",
       }}
     >
+      {deadlineLabel && (
+        <p
+          className="text-center text-xs sm:text-sm"
+          style={{ color: "var(--theme-text-light)" }}
+        >
+          Molimo potvrdite do{" "}
+          <strong style={{ color: "var(--theme-primary)" }}>
+            {deadlineLabel}
+          </strong>
+          .
+        </p>
+      )}
+
       {/* Name */}
       <div>
         <label
