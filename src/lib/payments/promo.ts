@@ -15,6 +15,13 @@ export const PROMO_LS_CODE = "SVADBA10"; // the one reusable LS discount code st
 export const PROMO_VALIDITY_DAYS = 45; // window after couple X's event date
 export const PROMO_CAP = 25; // max redemptions per code (leak cap)
 
+/** Master switch. Off in production until the whole promo + card flow is ready
+ *  to launch — when off, no code is issued and none validates, so the system is
+ *  fully invisible + inert. Flip PROMO_ENABLED=1 (Vercel env) to activate. */
+export function isPromoEnabled(): boolean {
+  return process.env.PROMO_ENABLED === "1";
+}
+
 /** Only wedding invitations are eligible (matches "napravi svoju pozivnicu"). */
 const ELIGIBLE_KIND: PaymentKind = "pozivnica";
 
@@ -46,6 +53,7 @@ export function issuePromo(
   eventDate: string | undefined | null,
   slug: string,
 ): { code: string; validUntil: string } | null {
+  if (!isPromoEnabled()) return null;
   if (!eventDate) return null;
   const ms = new Date(eventDate).getTime();
   if (!Number.isFinite(ms)) return null;
@@ -73,6 +81,7 @@ export function verifyPromo(
     reason,
   });
 
+  if (!isPromoEnabled()) return fail("invalid");
   if (!code) return fail("invalid");
   const parts = code.split("-");
   if (parts.length !== 4 || parts[0] !== "HU") return fail("bad_format");

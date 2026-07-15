@@ -5,7 +5,12 @@ import { CheckCircle2 } from "lucide-react";
 import { KINDS, isPaymentKind, PaymentError } from "@/lib/payments/kinds";
 import { getOrCreatePendingOrder } from "@/lib/orders";
 import { productUrl } from "@/lib/payments/product-urls";
-import { verifyPromo, applyPromo, PROMO_CAP } from "@/lib/payments/promo";
+import {
+  verifyPromo,
+  applyPromo,
+  PROMO_CAP,
+  isPromoEnabled,
+} from "@/lib/payments/promo";
 import { countRedemptions } from "@/lib/promo-redemptions";
 import CheckoutPanel from "@/components/payments/CheckoutPanel";
 
@@ -138,6 +143,7 @@ export default async function PlacanjePage({
       tierId={tierId}
       cardEnabled={process.env.PAYMENTS_CARD_ENABLED === "1"}
       promoCode={order.promo?.code}
+      promoEnabled={isPromoEnabled()}
     />
   );
 }

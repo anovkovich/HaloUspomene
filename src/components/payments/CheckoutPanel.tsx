@@ -28,6 +28,8 @@ interface CheckoutPanelProps {
   cardEnabled: boolean;
   /** The promo code the server validated + applied (undefined = none). */
   promoCode?: string;
+  /** Master switch — when false, the promo UI is fully hidden. */
+  promoEnabled?: boolean;
 }
 
 export default function CheckoutPanel({
@@ -43,6 +45,7 @@ export default function CheckoutPanel({
   tierId,
   cardEnabled,
   promoCode,
+  promoEnabled = false,
 }: CheckoutPanelProps) {
   const { execute: executeRecaptcha } = useRecaptcha();
 
@@ -50,6 +53,7 @@ export default function CheckoutPanel({
   // the server applied one, remember it; if a stored code exists and none is in
   // the URL, retry it once; if a URL code was rejected, drop the dead code.
   useEffect(() => {
+    if (!promoEnabled) return; // fully inert until the promo flow launches
     if (promoCode) {
       try {
         localStorage.setItem("hu_promo", promoCode);
@@ -71,7 +75,7 @@ export default function CheckoutPanel({
       url.searchParams.set("promo", stored);
       window.location.replace(url.toString());
     }
-  }, [promoCode]);
+  }, [promoCode, promoEnabled]);
 
   const promoDiscountRsd = -(lines.find((l) => l.rsd < 0)?.rsd ?? 0);
   const [promoOpen, setPromoOpen] = useState(false);
@@ -217,6 +221,7 @@ export default function CheckoutPanel({
           </div>
 
           {!done &&
+            (promoCode || promoEnabled) &&
             (promoCode ? (
               <div className="flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 mb-5">
                 <Tag size={15} className="text-green-600 shrink-0" />
