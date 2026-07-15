@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
 /**
@@ -52,6 +53,14 @@ export default function InvitationFrame({
 }) {
   const isDesktop = useIsDesktop();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  // Must come from the router, not window.location: on a client-side <Link>
+  // navigation React renders this page before the history entry is swapped, so
+  // window.location still points at the PREVIOUS page and the iframe would
+  // load that instead. usePathname() is reactive and already correct here.
+  // (useSearchParams() would be the matching hook for the query string, but it
+  // opts these statically-rendered routes out of static generation, and no
+  // route behind this frame reads query params anyway.)
+  const pathname = usePathname();
 
   // On the embedded pass (`?embed=1`) we ARE the iframe → render full width.
   const isEmbed =
@@ -93,9 +102,7 @@ export default function InvitationFrame({
 
   if (!framed) return <>{children}</>;
 
-  const params = new URLSearchParams(window.location.search);
-  params.set("embed", "1");
-  const src = `${window.location.pathname}?${params.toString()}`;
+  const src = `${pathname}?embed=1`;
 
   return (
     <div
