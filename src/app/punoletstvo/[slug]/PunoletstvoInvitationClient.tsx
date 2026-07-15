@@ -134,7 +134,9 @@ function SunburstRing() {
     <svg
       viewBox="0 0 200 200"
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ animation: "punoletstvo-rotate-slow 80s linear infinite", transformOrigin: "50% 50%" }}
+      // Static (no rotation): a continuous transform animation promotes this SVG
+      // to its own GPU layer and iOS Safari flickers a seam along its edge. The
+      // 80s rotation was imperceptible anyway; the rays stay fully visible.
       aria-hidden
     >
       <g stroke="var(--theme-wax-seal)" strokeWidth="0.5" opacity="0.4">
@@ -210,13 +212,6 @@ function FloatingParticles() {
           10% { opacity: 1; }
           90% { opacity: 1; }
           100% { transform: translateY(-110vh) translateX(40px); opacity: 0; }
-        }
-        @keyframes punoletstvo-shimmer {
-          0%, 100% { filter: brightness(1); }
-          50% { filter: brightness(1.15) drop-shadow(0 0 18px rgba(212,175,55,0.45)); }
-        }
-        @keyframes punoletstvo-rotate-slow {
-          to { transform: rotate(360deg); }
         }
         /* Animates top (not transform) on purpose: a transform animation
            promotes the scroll cue to its own GPU layer, and iOS Safari renders
@@ -464,8 +459,11 @@ export default function PunoletstvoInvitationClient({
                       stiffness: 160,
                       damping: 16,
                     }}
+                    // No `punoletstvo-shimmer`: animating `filter`
+                    // (brightness + drop-shadow) promotes this whole box to a
+                    // GPU layer whose rectangular edge flickers as a "border" on
+                    // iOS Safari. The seal keeps its static drop-shadow below.
                     className="relative w-36 h-36 sm:w-60 sm:h-60"
-                    style={{ animation: "punoletstvo-shimmer 4s ease-in-out infinite" }}
                   >
                     <SunburstRing />
                     <div className="absolute inset-2 flex items-center justify-center">
