@@ -40,7 +40,17 @@ export async function createCheckout(
             custom: p.custom,
             ...(p.discountCode ? { discount_code: p.discountCode } : {}),
           },
-          checkout_options: { embed: false, media: false, logo: true },
+          // discount:false hides LS's own discount-code field. Codes are only
+          // ever applied server-side (p.discountCode), after our validation and
+          // BEFORE the order amount is frozen — a code typed at LS would make
+          // the paid total disagree with that frozen amount and quarantine an
+          // otherwise good order. Pre-applied codes still work with it hidden.
+          checkout_options: {
+            embed: false,
+            media: false,
+            logo: true,
+            discount: false,
+          },
           product_options: {
             redirect_url: p.redirectUrl,
             receipt_button_text: p.receiptButtonText,

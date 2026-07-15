@@ -10,6 +10,7 @@ import {
   getTier,
   getRodjendanPozivnicaPrice,
   getStandaloneSeatingPrice,
+  isStandaloneSeatingPromoActive,
 } from "@/data/pricing";
 import { getWeddingData, patchCouple } from "@/lib/couples";
 import { getBirthdayData, patchBirthday } from "@/lib/birthday";
@@ -45,6 +46,10 @@ export interface KindTier {
   rsd: number;
   eur: number;
   lsVariantEnv: string; // name of the env var holding this tier's LS variant id
+  /** Flat LS discount code to apply when this tier's price is a promo price —
+   *  keeps the LS product at its regular price while `rsd` (and the charged
+   *  total) carry the discount. Omit when the tier sells at full price. */
+  lsDiscountCode?: string;
 }
 
 export interface KindAdapter {
@@ -321,6 +326,15 @@ const punoletstvo: KindAdapter = {
 // ── raspored (standalone seating tool for organizers) ────────────────────────
 // EUR is fixed at 45 regardless of the RSD promo (locked product decision).
 
+/** Mirrors the standalone-seating launch promo on the card rail. The LS product
+ *  stays at the REGULAR 5.000 din; while `promoActive` is set in pricing.json,
+ *  computeOrder returns the promo price and the checkout applies this flat code
+ *  so LS charges exactly that. Ending the promo is then a pricing.json flag —
+ *  no LS product edit — and the receipt shows the saving as its own line.
+ *  MUST exist on LS as a flat 1.000 din code on the raspored variant, or the
+ *  webhook money invariant quarantines the order. */
+const LS_DISCOUNT_RASPORED = "RASPORED1000";
+
 const raspored: KindAdapter = {
   async loadEntity(slug) {
     const s = await getStandaloneSeating(slug);
@@ -335,7 +349,7 @@ const raspored: KindAdapter = {
   },
   tiers(e) {
     if (e.unlockedTiers.includes("default")) return [];
-    const rsd = getStandaloneSeatingPrice(); // 4000 while promo — satisfies RSD ≤ EUR
+    const rsd = getStandaloneSeatingPrice(); // promo price while promoActive
     const eurAmt = pricing.standalone_seating.priceEur;
     return [
       {
@@ -344,6 +358,9 @@ const raspored: KindAdapter = {
         rsd,
         eur: eurAmt,
         lsVariantEnv: "LS_VARIANT_RASPORED",
+        lsDiscountCode: isStandaloneSeatingPromoActive()
+          ? LS_DISCOUNT_RASPORED
+          : undefined,
       },
     ];
   },

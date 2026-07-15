@@ -110,11 +110,12 @@ export default async function PlacanjePage({
   if (promoRaw) {
     const p = verifyPromo(promoRaw, kind);
     if (p.valid && (await countRedemptions(p.code)) < PROMO_CAP) {
-      money = applyPromo(money, p);
+      const applied = applyPromo(money, p);
+      money = applied;
       appliedPromo = {
         code: p.code,
-        discountEur: p.discountEur,
-        discountRsd: p.discountRsd,
+        discountEur: applied.discountEur,
+        discountRsd: applied.discountRsd,
       };
     }
   }

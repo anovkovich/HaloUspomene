@@ -55,11 +55,12 @@ export async function createCardCheckout(
   if (promoCode) {
     const p = verifyPromo(promoCode, kind);
     if (p.valid && (await countRedemptions(p.code)) < PROMO_CAP) {
-      money = applyPromo(money, p);
+      const applied = applyPromo(money, p);
+      money = applied;
       appliedPromo = {
         code: p.code,
-        discountEur: p.discountEur,
-        discountRsd: p.discountRsd,
+        discountEur: applied.discountEur,
+        discountRsd: applied.discountRsd,
       };
     }
   }
@@ -90,10 +91,13 @@ export async function createCardCheckout(
       receiptButtonText: "Nazad na pozivnicu",
       receiptLinkUrl: `${site}${productUrl(kind, slug)}`,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      // LS applies its flat discount code; the post-discount total must equal
-      // the frozen order.amountEur (both subtract the same flat €, or the
-      // webhook money invariant quarantines it).
-      discountCode: appliedPromo ? PROMO_LS_CODE : undefined,
+      // LS applies the discount code; the post-discount total must equal the
+      // frozen order.amountRsd. The referral code is a percentage, the tier code
+      // a flat amount — each must mirror exactly what applyPromo/computeOrder
+      // already took off, or the webhook money invariant quarantines it. Only
+      // one ever applies: the referral promo is pozivnica-only, and
+      // lsDiscountCode is set only on other kinds' tiers.
+      discountCode: appliedPromo ? PROMO_LS_CODE : tier.lsDiscountCode,
     });
     await setOrderRail(order.orderId, "card", {
       ls: { ...order.ls, checkoutId },

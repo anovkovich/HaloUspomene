@@ -18,6 +18,14 @@ import { recordRedemption } from "@/lib/promo-redemptions";
 export const runtime = "nodejs"; // needs crypto.timingSafeEqual
 export const dynamic = "force-dynamic";
 
+/** The Lemon Squeezy store's charging currency. Products are priced in dinars,
+ *  so the money invariant below compares LS totals against the frozen
+ *  order.amountRsd (amountEur is display-only). LS reports totals in the
+ *  currency's minor units — para for RSD. If a test-mode order ever quarantines
+ *  with a total exactly 100× off, this factor is the only thing to revisit. */
+const LS_CURRENCY = "RSD";
+const LS_MINOR_UNITS = 100;
+
 function ok() {
   return NextResponse.json({ received: true });
 }
@@ -88,19 +96,20 @@ async function handleOrderCreated(evt: LsWebhook): Promise<Response> {
 
   // 4. Money invariant.
   const a = evt.data.attributes;
+  const expectedTotal = order.amountRsd * LS_MINOR_UNITS;
   const amountOk =
-    a.currency === "EUR" &&
+    a.currency === LS_CURRENCY &&
     a.status === "paid" &&
-    a.total === order.amountEur * 100;
+    a.total === expectedTotal;
   if (!amountOk) {
     console.error("[webhook] amount/currency mismatch → quarantine", orderId, {
       currency: a.currency,
       total: a.total,
-      expected: order.amountEur * 100,
+      expected: expectedTotal,
       status: a.status,
     });
     await transitionOrder(orderId, ["pending", "paid"], "review", {
-      adminNote: `Neslaganje iznosa (LS ${a.total} ${a.currency}, očekivano ${order.amountEur * 100} EUR).`,
+      adminNote: `Neslaganje iznosa (LS ${a.total} ${a.currency}, očekivano ${expectedTotal} ${LS_CURRENCY}).`,
     });
     return ok();
   }

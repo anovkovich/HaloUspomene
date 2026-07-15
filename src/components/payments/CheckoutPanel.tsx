@@ -284,8 +284,8 @@ export default function CheckoutPanel({
                 title="Plati karticom i aktiviraj odmah"
                 subtitle={
                   <>
-                    Platite karticom iznos u eurima ({formatEur(amountEur)}) i
-                    aktivirajte uslugu <strong>odmah</strong>!
+                    Aktivacija je <strong>odmah</strong>, čim plaćanje prođe.
+                    Naplata je u dinarima (≈ {formatEur(amountEur)}).
                   </>
                 }
               >

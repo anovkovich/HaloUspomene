@@ -6,12 +6,17 @@ import type { PaymentKind, CheckoutLine } from "@/lib/orders";
 // Codes are STATELESS, HMAC-signed and DERIVED from couple X's event date +
 // slug — so rendering a code on an RSVP success screen writes nothing to the DB.
 // Redemptions are tracked separately (promo-redemptions.ts) only to enforce an
-// abuse cap. The discount is a FIXED amount (never a percent) so the flat LS
-// discount code and our computeOrder math can't round-drift across the two rails.
+// abuse cap. The discount is a PERCENTAGE off the frozen subtotal and MUST match
+// the LS discount code's percentage exactly — both rails derive it from the same
+// base, so the paid total agrees with order.amountRsd (a disagreement is not a
+// rounding nuisance: the webhook quarantines the order and nothing unlocks).
 
-export const PROMO_DISCOUNT_EUR = 10; // MUST equal the LS discount code's flat € value
-export const PROMO_DISCOUNT_RSD = 1000; // IPS-only; independent of the EUR value
-export const PROMO_LS_CODE = "SVADBA10"; // the one reusable LS discount code string
+/** MUST equal the LS discount code's percentage. Keep every RSD price divisible
+ *  by 10 so this lands on whole dinars: LS computes the same percentage at para
+ *  precision, and a fractional dinar here would drift from its total. Today's
+ *  prices (5.000 / 9.900 / 13.900) all divide exactly → 500 / 990 / 1.390. */
+export const PROMO_PERCENT = 10;
+export const PROMO_LS_CODE = "PROMO10HU"; // the one reusable LS discount code string
 export const PROMO_VALIDITY_DAYS = 45; // window after couple X's event date
 export const PROMO_CAP = 25; // max redemptions per code (leak cap)
 
@@ -40,8 +45,9 @@ function todayDay(): number {
 export interface PromoResult {
   valid: boolean;
   code: string;
-  discountRsd: number;
-  discountEur: number;
+  /** Percentage off; 0 when invalid. The dinar amount depends on the tier, so
+   *  it's computed (and frozen) by applyPromo against the actual subtotal. */
+  percent: number;
   validUntil?: string;
   reason?: "invalid" | "expired" | "ineligible_kind" | "bad_format";
 }
@@ -76,8 +82,7 @@ export function verifyPromo(
   const fail = (reason: NonNullable<PromoResult["reason"]>): PromoResult => ({
     valid: false,
     code,
-    discountRsd: 0,
-    discountEur: 0,
+    percent: 0,
     reason,
   });
 
@@ -100,24 +105,39 @@ export function verifyPromo(
   return {
     valid: true,
     code,
-    discountRsd: PROMO_DISCOUNT_RSD,
-    discountEur: PROMO_DISCOUNT_EUR,
+    percent: PROMO_PERCENT,
     validUntil: new Date(expDay * DAY_MS).toISOString(),
   };
 }
 
 /** Appends a negative "Promo popust" line and floors both totals at 0. The
- *  single point where a discount is applied — after computeOrder, before freeze. */
+ *  single point where a discount is applied — after computeOrder, before freeze.
+ *  Also returns the resolved amounts: the caller freezes exactly what was taken
+ *  off, so the order ledger records the real discount rather than a rate. */
 export function applyPromo(
   money: { lines: CheckoutLine[]; totalRsd: number; totalEur: number },
-  promo: { discountRsd: number; discountEur: number },
-): { lines: CheckoutLine[]; totalRsd: number; totalEur: number } {
+  promo: { percent: number },
+): {
+  lines: CheckoutLine[];
+  totalRsd: number;
+  totalEur: number;
+  discountRsd: number;
+  discountEur: number;
+} {
+  const discountRsd = Math.round((money.totalRsd * promo.percent) / 100);
+  const discountEur = Math.round((money.totalEur * promo.percent) / 100);
   return {
     lines: [
       ...money.lines,
-      { l: "Promo popust", rsd: -promo.discountRsd, eur: -promo.discountEur },
+      {
+        l: `Promo popust (${promo.percent}%)`,
+        rsd: -discountRsd,
+        eur: -discountEur,
+      },
     ],
-    totalRsd: Math.max(0, money.totalRsd - promo.discountRsd),
-    totalEur: Math.max(0, money.totalEur - promo.discountEur),
+    totalRsd: Math.max(0, money.totalRsd - discountRsd),
+    totalEur: Math.max(0, money.totalEur - discountEur),
+    discountRsd,
+    discountEur,
   };
 }

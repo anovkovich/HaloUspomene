@@ -92,3 +92,6 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+
+# Rucni backup-i env fajlova — nikad u git (.env*.local ih ne hvata)
+.env*.bak*
