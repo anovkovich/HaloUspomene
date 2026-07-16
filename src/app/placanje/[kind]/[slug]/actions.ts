@@ -102,9 +102,10 @@ export async function createCardCheckout(
     await setOrderRail(order.orderId, "card", {
       ls: { ...order.ls, checkoutId },
     });
-    // Nudge LS toward the Croatian checkout locale (closest to Serbian).
-    const withLocale = `${url}${url.includes("?") ? "&" : "?"}locale=hr`;
-    return { url: withLocale };
+    // Return LS's URL verbatim. It is signed (?expires=&signature=) and LS
+    // validates the whole query string — appending anything, even a harmless
+    // ?locale=hr, turns every checkout into a 403 "Invalid signature" page.
+    return { url };
   } catch (e) {
     console.error("createCardCheckout failed:", e);
     return { error: "Kartično plaćanje trenutno nije dostupno." };

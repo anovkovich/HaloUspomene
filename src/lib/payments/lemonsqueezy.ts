@@ -5,6 +5,16 @@ import crypto from "crypto";
 
 const LS_API = "https://api.lemonsqueezy.com/v1";
 
+/** Checkout language. LS accepts hr / sl / bg / en / de / ru — but no Serbian
+ *  ("sr", "sr-Latn" and "bs" are all rejected with a 422), so Croatian is the
+ *  closest our customers can get. */
+const LS_CHECKOUT_LOCALE = "hr";
+
+/** Prefilled billing country. LS defaults the address to the United States,
+ *  which reads as a foreign/scam form to a Serbian buyer staring at a card
+ *  field. Every customer can still change it. */
+const LS_BILLING_COUNTRY = "RS";
+
 export interface CreateCheckoutParams {
   storeId: string;
   variantId: string;
@@ -38,6 +48,7 @@ export async function createCheckout(
         attributes: {
           checkout_data: {
             custom: p.custom,
+            billing_address: { country: LS_BILLING_COUNTRY },
             ...(p.discountCode ? { discount_code: p.discountCode } : {}),
           },
           // discount:false hides LS's own discount-code field. Codes are only
@@ -45,11 +56,23 @@ export async function createCheckout(
           // BEFORE the order amount is frozen — a code typed at LS would make
           // the paid total disagree with that frozen amount and quarantine an
           // otherwise good order. Pre-applied codes still work with it hidden.
+          //
+          // locale MUST travel as a checkout option, never as a query param on
+          // the returned URL: that URL is signed and LS validates the whole
+          // query string, so appending ?locale= yields a 403 "Invalid
+          // signature" on every checkout. LS has no Serbian locale ("sr" is
+          // rejected); Croatian is the closest it offers.
+          //
+          // embed:true renders the checkout so Lemon.js can host it in an
+          // overlay on our own page — buyers here distrust being thrown onto a
+          // foreign domain to type card details. The client still falls back to
+          // a plain redirect to this same URL if Lemon.js is blocked.
           checkout_options: {
-            embed: false,
+            embed: true,
             media: false,
             logo: true,
             discount: false,
+            locale: LS_CHECKOUT_LOCALE,
           },
           product_options: {
             redirect_url: p.redirectUrl,

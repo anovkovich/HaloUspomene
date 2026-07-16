@@ -2,10 +2,11 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import { CreditCard, Landmark, CheckCircle2, Loader2, AlertCircle, ChevronDown, Tag } from "lucide-react";
-import { formatPrice, formatEur } from "@/data/pricing";
+import { formatPrice } from "@/data/pricing";
 import { NbsQrCode } from "@/lib/nbs-qr";
 import { useRecaptcha, RecaptchaDisclosure } from "@/components/forms/RecaptchaProvider";
 import { createCardCheckout } from "@/app/placanje/[kind]/[slug]/actions";
+import { openCheckout } from "@/lib/payments/lemon-overlay";
 import type { PaymentKind } from "@/lib/orders";
 
 interface CheckoutLine {
@@ -22,6 +23,9 @@ interface CheckoutPanelProps {
   displayName: string;
   tierLabel: string;
   amountRsd: number;
+  /** Frozen EUR equivalent. Not rendered — the panel quotes dinars, which is
+   *  what LS charges — but kept on the props so bringing a EUR hint back is a
+   *  one-liner. Every line in `lines` carries its own `eur` too. */
   amountEur: number;
   lines: CheckoutLine[];
   tierId: string;
@@ -40,7 +44,6 @@ export default function CheckoutPanel({
   displayName,
   tierLabel,
   amountRsd,
-  amountEur,
   lines,
   tierId,
   cardEnabled,
@@ -108,7 +111,7 @@ export default function CheckoutPanel({
     try {
       const res = await createCardCheckout(kind, slug, tierId, promoCode);
       if (res.url) {
-        window.location.href = res.url;
+        openCheckout(res.url, `/placanje/${kind}/${slug}/hvala/?order=${orderId}`);
         return;
       }
       setCardError(res.error || "Kartično plaćanje trenutno nije dostupno.");
@@ -285,7 +288,6 @@ export default function CheckoutPanel({
                 subtitle={
                   <>
                     Aktivacija je <strong>odmah</strong>, čim plaćanje prođe.
-                    Naplata je u dinarima (≈ {formatEur(amountEur)}).
                   </>
                 }
               >

@@ -86,13 +86,13 @@
   "rodjendan": {
     "pozivnica": {
       "label": "Rođendanska pozivnica",
-      "price": 4000,
-      "priceEur": 35
+      "price": 4500,
+      "priceEur": 40
     },
     "punoletstvo": {
       "label": "Pozivnica za punoletstvo",
-      "price": 4000,
-      "priceEur": 35
+      "price": 4500,
+      "priceEur": 40
     },
     "raspored": {
       "label": "Raspored sedenja",
