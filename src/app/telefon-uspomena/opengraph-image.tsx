@@ -17,10 +17,13 @@ export default async function OGImage() {
     readFile(join(process.cwd(), "public/images/phone.webp")),
   ]);
 
-  // Satori can't decode webp — convert the hero image to a PNG data URI. Resized
-  // down since the OG only needs ~500px of it.
+  // Satori can't decode webp — convert the hero image to a PNG data URI. The
+  // source has a transparent background, so keep the alpha (no flatten) and fit
+  // by width; it floats on the OG background with no frame.
+  const phoneW = 400;
+  const phoneH = 267; // 1536×1024 source → 3:2
   const phonePng = await sharp(phoneWebp)
-    .resize(560, 460, { fit: "cover", position: "centre" })
+    .resize({ width: phoneW })
     .png()
     .toBuffer();
   const phoneSrc = `data:image/png;base64,${phonePng.toString("base64")}`;
@@ -84,27 +87,19 @@ export default async function OGImage() {
             marginTop: 8,
           }}
         >
-          {/* Phone hero image, framed */}
+          {/* Phone hero image — transparent PNG, no frame, floats on the bg */}
           <div
             style={{
               display: "flex",
-              width: 480,
+              width: 460,
               height: 420,
-              borderRadius: 26,
-              border: "1px solid rgba(35,35,35,0.10)",
-              boxShadow: "0 18px 40px rgba(174,52,63,0.18)",
-              overflow: "hidden",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             {/* Satori (next/og) renders raw <img>; next/image doesn't apply here. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={phoneSrc}
-              alt=""
-              width={480}
-              height={420}
-              style={{ objectFit: "cover" }}
-            />
+            <img src={phoneSrc} alt="" width={phoneW} height={phoneH} />
           </div>
 
           {/* Right text block */}
