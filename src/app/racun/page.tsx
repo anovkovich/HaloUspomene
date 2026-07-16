@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
 import { formatPrice } from "@/data/pricing";
 import { decodeFromBase64 } from "@/lib/encoding";
-import { buildReceiptItems, LEGACY_PRICE_TABLE } from "@/lib/receipt-items";
+import { buildReceiptItems, currentPriceTable } from "@/lib/receipt-items";
 import { toLatin, NbsQrCode } from "@/lib/nbs-qr";
 
 interface ReceiptPayload {
@@ -108,12 +108,12 @@ function ReceiptContent() {
   // Line items + bundle discount. v2 receipts carry a frozen snapshot (li/bd)
   // taken at generation time, so /racun just renders it — editing pricing.json
   // or flipping a promo can never change an already-sent receipt (the IPS QR
-  // amount stays put). Legacy receipts (no `v`) are priced with the frozen
-  // LEGACY table so links already in customers' hands never move.
+  // amount stays put). All receipts are v2; a snapshot-less payload just
+  // recomputes at current prices.
   const built =
     payload.v === 2 && payload.li
       ? { items: payload.li, bundleDiscount: payload.bd ?? 0 }
-      : buildReceiptItems(payload, LEGACY_PRICE_TABLE);
+      : buildReceiptItems(payload, currentPriceTable());
   const items = built.items.map((x) => ({
     label: x.l,
     amount: x.p,

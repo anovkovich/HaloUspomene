@@ -6,11 +6,11 @@
 // pricing.json or flipping a promo can NEVER change the amount on a receipt
 // already sent to a customer (the NBS IPS QR encodes that frozen amount).
 //
-// `buildReceiptItems` is a pure function of (flags, priceTable). New receipts
-// use `currentPriceTable()` (live pricing.json). Legacy receipts (no `v`) are
-// priced with the frozen `LEGACY_PRICE_TABLE` so links already in WhatsApp keep
-// exactly the amounts they were quoted — forever. There is only ever ONE legacy
-// table (no per-promo epoch accretion).
+// `buildReceiptItems` is a pure function of (flags, priceTable). Every receipt
+// now generated is `v: 2` and carries its own snapshot, so /racun renders that
+// and never reprices. A payload without a snapshot just recomputes from
+// `currentPriceTable()` (live pricing.json) — there are no pre-snapshot receipt
+// links left in circulation to preserve, so no frozen legacy table is kept.
 
 import {
   pricing,
@@ -119,37 +119,6 @@ export function currentPriceTable(): PriceTable {
     standaloneSeating: getStandaloneSeatingPrice(),
   };
 }
-
-/** Frozen snapshot of the EFFECTIVE prices as they were before the snapshot
- *  mechanism shipped — so pre-existing receipt links never reprice. Do NOT
- *  edit these to follow future price changes; that is exactly what would break
- *  old links. New receipts carry their own snapshot and never touch this. */
-export const LEGACY_PRICE_TABLE: PriceTable = {
-  website: 5000,
-  raspored: 2500,
-  audio: 3000,
-  galerija: 3500,
-  bundleFull: 10500,
-  bundle: 8500,
-  premium: 10000, // premium PROMO price was active
-  premiumRaspored: 1000,
-  premiumAudio: 1000,
-  kompletnoSavings: 0, // tiers didn't exist pre-deploy → old −2.000 partial applies
-  premiumSavings: 0,
-  premiumPartialBundle: false, // legacy premium receipts had no bundle discount
-  premiumPartialDiscount: 0,
-  usbKaseta: 2500,
-  usbBocica: 2000,
-  customColor: 600,
-  images: 600,
-  backgroundMusic: 1000,
-  personalizovanaDobrodoslica: 0,
-  retroPhoneAudio: 8000,
-  rodjendanPozivnica: 4000,
-  rodjendanPunoletstvo: 4000,
-  rodjendanRaspored: 2500,
-  standaloneSeating: 4000, // July promo was active
-};
 
 /** Build receipt line items + bundle discount for the given flags & price table.
  *  Pure: no side effects, no live-pricing reads beyond the passed table
