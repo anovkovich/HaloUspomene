@@ -1,6 +1,12 @@
 "use server";
 
-import { KINDS, isPaymentKind, PaymentError } from "@/lib/payments/kinds";
+import {
+  KINDS,
+  isPaymentKind,
+  PaymentError,
+  applyTestPrice,
+  testPaymentPriceRsd,
+} from "@/lib/payments/kinds";
 import { productUrl } from "@/lib/payments/product-urls";
 import { getOrCreatePendingOrder, setOrderRail } from "@/lib/orders";
 import { createCheckout } from "@/lib/payments/lemonsqueezy";
@@ -46,13 +52,19 @@ export async function createCardCheckout(
     return { error: "Greška u obračunu." };
   }
 
+  // Test override wins (and skips promo) so the frozen amount equals the flat
+  // price the LS test product charges. Must mirror page.tsx exactly, since the
+  // card checkout reuses the same (kind,slug,tier) pending row.
+  const testActive = testPaymentPriceRsd() != null;
+  money = applyTestPrice(money);
+
   // Re-validate the promo SERVER-SIDE (only the code string is trusted, never a
   // client amount) so the frozen order matches the same (kind,slug,tier,promo)
   // identity the page created — the card checkout reuses that exact row.
   let appliedPromo:
     | { code: string; discountEur: number; discountRsd: number }
     | undefined;
-  if (promoCode) {
+  if (!testActive && promoCode) {
     const p = verifyPromo(promoCode, kind);
     if (p.valid && (await countRedemptions(p.code)) < PROMO_CAP) {
       const applied = applyPromo(money, p);
@@ -76,7 +88,11 @@ export async function createCardCheckout(
   });
 
   const storeId = process.env.LEMONSQUEEZY_STORE_ID;
-  const variantId = process.env[tier.lsVariantEnv];
+  // Under the test override every checkout routes to the single 100-din test
+  // product; otherwise to this tier's real variant.
+  const variantId = testActive
+    ? process.env.PAYMENTS_TEST_VARIANT
+    : process.env[tier.lsVariantEnv];
   if (!storeId || !variantId) {
     return { error: "Kartično plaćanje trenutno nije konfigurisano." };
   }
@@ -96,8 +112,13 @@ export async function createCardCheckout(
       // a flat amount — each must mirror exactly what applyPromo/computeOrder
       // already took off, or the webhook money invariant quarantines it. Only
       // one ever applies: the referral promo is pozivnica-only, and
-      // lsDiscountCode is set only on other kinds' tiers.
-      discountCode: appliedPromo ? PROMO_LS_CODE : tier.lsDiscountCode,
+      // lsDiscountCode is set only on other kinds' tiers. No code under test —
+      // the test product is already the flat price.
+      discountCode: testActive
+        ? undefined
+        : appliedPromo
+          ? PROMO_LS_CODE
+          : tier.lsDiscountCode,
     });
     await setOrderRail(order.orderId, "card", {
       ls: { ...order.ls, checkoutId },

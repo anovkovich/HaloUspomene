@@ -2,7 +2,13 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CheckCircle2 } from "lucide-react";
-import { KINDS, isPaymentKind, PaymentError } from "@/lib/payments/kinds";
+import {
+  KINDS,
+  isPaymentKind,
+  PaymentError,
+  applyTestPrice,
+  testPaymentPriceRsd,
+} from "@/lib/payments/kinds";
 import { getOrCreatePendingOrder } from "@/lib/orders";
 import { productUrl } from "@/lib/payments/product-urls";
 import {
@@ -102,12 +108,17 @@ export default async function PlacanjePage({
 
   const selectedTier = available.find((t) => t.id === tierId)!;
 
+  // Test override wins over everything (and skips promo) so the frozen amount is
+  // exactly the flat test price the LS test product will charge.
+  const testActive = testPaymentPriceRsd() != null;
+  money = applyTestPrice(money);
+
   // Promo: verify the code (crypto + expiry + eligible kind), check the per-code
   // redemption cap, then apply the discount BEFORE freezing so both rails carry it.
   let appliedPromo:
     | { code: string; discountEur: number; discountRsd: number }
     | undefined;
-  if (promoRaw) {
+  if (!testActive && promoRaw) {
     const p = verifyPromo(promoRaw, kind);
     if (p.valid && (await countRedemptions(p.code)) < PROMO_CAP) {
       const applied = applyPromo(money, p);

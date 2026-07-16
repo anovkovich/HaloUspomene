@@ -74,6 +74,40 @@ function eur(v: number | undefined, fallback: number): number {
   return typeof v === "number" ? v : fallback;
 }
 
+/**
+ * Test-payment override. When PAYMENTS_TEST_PRICE_RSD is set, EVERY order is
+ * repriced to that flat dinar amount, and the card rail routes to the single
+ * PAYMENTS_TEST_VARIANT product (see actions.ts) — so the whole live
+ * card → webhook → unlock → refund chain can be exercised with a real ~100 din
+ * charge you refund afterwards. Off unless the env is present. Because the
+ * amount is frozen into the order and the webhook compares against it, the
+ * override only has to run wherever the ORDER is created (e.g. a local instance
+ * pointed at the shared DB) — production's webhook validates it either way.
+ * NEVER set this env on the customer-facing production deploy.
+ */
+export function testPaymentPriceRsd(): number | null {
+  const v = process.env.PAYMENTS_TEST_PRICE_RSD;
+  if (!v) return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/** Replaces `money` with the flat test price when the override is active. */
+export function applyTestPrice(money: {
+  lines: CheckoutLine[];
+  totalRsd: number;
+  totalEur: number;
+}): { lines: CheckoutLine[]; totalRsd: number; totalEur: number } {
+  const rsd = testPaymentPriceRsd();
+  if (rsd == null) return money;
+  console.warn(`[payments] TEST PRICE ACTIVE — order repriced to ${rsd} din`);
+  return {
+    lines: [{ l: "Test plaćanje", rsd, eur: 1 }],
+    totalRsd: rsd,
+    totalEur: 1,
+  };
+}
+
 /** Builds a single-line frozen snapshot for a one-line tier. */
 function oneLine(labelSr: string, rsd: number, eurAmt: number) {
   const lines: CheckoutLine[] = [{ l: labelSr, rsd, eur: eurAmt }];

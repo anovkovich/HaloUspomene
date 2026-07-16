@@ -25,6 +25,16 @@ export const dynamic = "force-dynamic";
  *  with a total exactly 100× off, this factor is the only thing to revisit. */
 const LS_CURRENCY = "RSD";
 const LS_MINOR_UNITS = 100;
+/** Stripe doesn't settle RSD natively, so LS charges via USD and back — the real
+ *  total drifts from the frozen dinar amount by a conversion round-trip (rounding
+ *  + spread; observed ~0.3% on a 100-din charge). The accepted band is the LARGER
+ *  of a flat floor and a percentage: the floor absorbs rounding on small amounts,
+ *  the percentage scales for big packages. Being generous here is safe — the
+ *  amount is only a backstop (the real integrity check is the kind/slug/tier
+ *  custom_data match), and the customer can't choose to pay less than LS charges.
+ *  A wrong-product / grossly-wrong charge is still far outside the band. */
+const LS_AMOUNT_TOLERANCE_PCT = 0.03; // ±3%
+const LS_AMOUNT_TOLERANCE_FLOOR = 5000; // ±50 din, in para
 
 function ok() {
   return NextResponse.json({ received: true });
@@ -94,18 +104,24 @@ async function handleOrderCreated(evt: LsWebhook): Promise<Response> {
     return ok();
   }
 
-  // 4. Money invariant.
+  // 4. Money invariant (currency exact, amount within the conversion band).
   const a = evt.data.attributes;
   const expectedTotal = order.amountRsd * LS_MINOR_UNITS;
+  const tolerance = Math.max(
+    Math.round(expectedTotal * LS_AMOUNT_TOLERANCE_PCT),
+    LS_AMOUNT_TOLERANCE_FLOOR,
+  );
+  const withinBand =
+    typeof a.total === "number" &&
+    Math.abs(a.total - expectedTotal) <= tolerance;
   const amountOk =
-    a.currency === LS_CURRENCY &&
-    a.status === "paid" &&
-    a.total === expectedTotal;
+    a.currency === LS_CURRENCY && a.status === "paid" && withinBand;
   if (!amountOk) {
     console.error("[webhook] amount/currency mismatch → quarantine", orderId, {
       currency: a.currency,
       total: a.total,
       expected: expectedTotal,
+      tolerance,
       status: a.status,
     });
     await transitionOrder(orderId, ["pending", "paid"], "review", {
