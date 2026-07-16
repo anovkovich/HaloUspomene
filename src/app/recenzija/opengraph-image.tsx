@@ -65,12 +65,14 @@ export default async function OGImage() {
             gap: 24,
           }}
         >
-          {/* Stars row */}
+          {/* Stars row — inline SVG, not a text ★: Satori would fetch a symbol
+              font for the glyph at build time, and that fetch fails on the
+              build machine and takes the whole prerender down. */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {[1, 2, 3, 4, 5].map((i) => (
-              <span key={i} style={{ fontSize: 40, color: "#d4af37" }}>
-                ★
-              </span>
+              <svg key={i} width="36" height="36" viewBox="0 0 24 24" fill="#d4af37">
+                <path d="M12 1.5 L15.09 8.26 L22.5 9.02 L17 14.14 L18.5 21.5 L12 17.77 L5.5 21.5 L7 14.14 L1.5 9.02 L8.91 8.26 Z" />
+              </svg>
             ))}
           </div>
 

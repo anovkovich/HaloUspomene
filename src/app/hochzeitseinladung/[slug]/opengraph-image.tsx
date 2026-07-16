@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { getWeddingData } from "@/data/pozivnice";
+import { stripOgSymbols } from "@/lib/og-text";
 import { THEME_CONFIGS } from "@/app/pozivnica/[slug]/constants";
 import type { ScriptFontType } from "@/app/pozivnica/[slug]/types";
 
@@ -84,7 +85,9 @@ export default async function OGImage({
     readFile(join(fontsDir, "JosefinSans-Regular.ttf")),
   ]);
 
-  const taglineDe = data.tagline_de ?? data.tagline;
+  const displayName = stripOgSymbols(data.couple_names.full_display);
+  const rawTagline = data.tagline_de ?? data.tagline;
+  const taglineDe = rawTagline ? stripOgSymbols(rawTagline) : "";
 
   return new ImageResponse(
     (
@@ -140,7 +143,7 @@ export default async function OGImage({
             maxWidth: 1000,
           }}
         >
-          {data.couple_names.full_display}
+          {displayName}
         </span>
 
         <div

@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { getWeddingData, getPremiumWeddingSlugs } from "@/lib/couples";
+import { stripOgSymbols } from "@/lib/og-text";
 import type { ScriptFontType } from "@/app/pozivnica/[slug]/types";
 
 export const alt = "Premium Pozivnica — HaloUspomene";
@@ -96,9 +97,10 @@ export default async function PremiumOGImage({
   // Defensive: some older premium couples may be missing full_display.
   const bride = data.couple_names?.bride ?? "";
   const groom = data.couple_names?.groom ?? "";
-  const fullName =
+  const fullName = stripOgSymbols(
     data.couple_names?.full_display ||
-    (bride && groom ? `${bride} & ${groom}` : bride || groom || "Naše Venčanje");
+      (bride && groom ? `${bride} & ${groom}` : bride || groom || "Naše Venčanje"),
+  );
   const isLineArt = data.premium_theme === "line_art";
   const isFountain = data.premium_theme === "fountain";
 

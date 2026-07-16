@@ -75,7 +75,11 @@ export default async function OGImage() {
               <div
                 style={{ width: 60, height: 1, background: "#AE343F", opacity: 0.3 }}
               />
-              <span style={{ fontSize: 18, color: "#d4af37" }}>✦</span>
+              {/* Inline SVG: a text ✦ makes Satori fetch a symbol font at
+                  build time, which fails on the build machine. */}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#d4af37">
+                <path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z" />
+              </svg>
               <div
                 style={{ width: 60, height: 1, background: "#AE343F", opacity: 0.3 }}
               />

@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
+import { stripOgSymbols } from "@/lib/og-text";
 import { THEME_CONFIGS } from "./constants";
 import type { ScriptFontType } from "./types";
 
@@ -61,6 +62,8 @@ export default async function OGImage({
   const theme = THEME_CONFIGS[data.theme] ?? THEME_CONFIGS.classic_rose;
   const primary = theme.colors.primary;
   const dateStr = formatDate(data.event_date, data.useCyrillic);
+  const displayName = stripOgSymbols(data.couple_names.full_display);
+  const tagline = data.tagline ? stripOgSymbols(data.tagline) : "";
   const scriptFontKey = data.scriptFont ?? "great-vibes";
   const scriptFontFile = SCRIPT_FONT_FILES[scriptFontKey] ?? "GreatVibes-Regular.ttf";
 
@@ -123,7 +126,7 @@ export default async function OGImage({
           maxWidth: 1000,
         }}
       >
-        {data.couple_names.full_display}
+        {displayName}
       </span>
 
       {/* Decorative line below names with heart */}
@@ -159,7 +162,7 @@ export default async function OGImage({
       </span>
 
       {/* Tagline */}
-      {data.tagline && (
+      {tagline && (
         <span
           style={{
             fontFamily: "Cormorant Garamond",
@@ -171,7 +174,7 @@ export default async function OGImage({
             textAlign: "center",
           }}
         >
-          {data.tagline}
+          {tagline}
         </span>
       )}
 

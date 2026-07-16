@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { getBirthdayData, getAllBirthdaySlugs } from "@/data/rodjendani";
+import { stripOgSymbols } from "@/lib/og-text";
 import { BIRTHDAY_THEME_CONFIGS } from "./constants";
 import type { BirthdayFontType } from "./types";
 
@@ -192,7 +193,7 @@ export default async function OGImage({
           maxWidth: 900,
         }}
       >
-        {data.child_name}
+        {stripOgSymbols(data.child_name)}
       </span>
 
       {/* Decorative line */}

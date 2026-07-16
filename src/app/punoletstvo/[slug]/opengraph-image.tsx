@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { getBirthdayData, getAllBirthdaySlugs } from "@/lib/birthday";
+import { stripOgSymbols } from "@/lib/og-text";
 import { THEME_CONFIGS } from "@/app/pozivnica/[slug]/constants";
 import type { ScriptFontType, ThemeType } from "@/app/pozivnica/[slug]/types";
 
@@ -88,10 +89,12 @@ export default async function OGImage({
   const primary = theme.colors.primary;
   const gold = theme.colors.waxSeal;
 
-  const displayName =
+  const displayName = stripOgSymbols(
     data.honoree_name && data.honoree_surname
       ? `${data.honoree_name} ${data.honoree_surname}`
-      : data.child_name;
+      : data.child_name,
+  );
+  const tagline = data.tagline ? stripOgSymbols(data.tagline) : "";
 
   const dateStr = formatDate(data.event_date);
   const scriptFontKey: ScriptFontType =
@@ -230,7 +233,7 @@ export default async function OGImage({
             {dateStr}
           </span>
 
-          {data.tagline && (
+          {tagline && (
             <span
               style={{
                 fontFamily: "Cormorant Garamond",
@@ -242,7 +245,7 @@ export default async function OGImage({
                 textAlign: "center",
               }}
             >
-              {data.tagline}
+              {tagline}
             </span>
           )}
 
