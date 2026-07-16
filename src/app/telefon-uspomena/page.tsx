@@ -598,7 +598,9 @@ export default function TelefonUspomenaPage() {
                 Dodaci
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {pricing.addons.filter((a: any) => a.for_retro_phone).map((addon) => (
+                {pricing.addons
+                  .filter((a: (typeof pricing.addons)[number]) => a.for_retro_phone)
+                  .map((addon) => (
                   <div
                     key={addon.id}
                     className="bg-white rounded-xl p-5 border border-[#d4af37]/20 text-center"
@@ -751,8 +753,7 @@ export default function TelefonUspomenaPage() {
                   Kurirska dostava
                 </h3>
                 <p className="text-sm text-[#232323]/50">
-                  Besplatna dostava i povrat u svim gradovima Srbije kurirskom
-                  službom.
+                  Dostava u sve gradove širom Srbije kurirskom službom.
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-6 text-center border border-stone-100 shadow-sm">

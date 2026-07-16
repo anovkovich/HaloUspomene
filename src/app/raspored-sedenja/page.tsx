@@ -15,6 +15,7 @@ import {
   Users,
   Shuffle,
   Check,
+  X,
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
@@ -26,6 +27,7 @@ import {
   isStandaloneSeatingPromoActive,
 } from "@/data/pricing";
 import RasporedKontaktForm from "./RasporedKontaktForm";
+import GdeSedimInfoButton from "./GdeSedimInfoButton";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
@@ -470,6 +472,100 @@ export default function RasporedSedenjaLanding() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Why us vs free tools */}
+        <section className="py-16 sm:py-20 bg-gradient-to-b from-white to-[#F5F4DC]">
+          <div className="container mx-auto px-4">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
+                Zašto baš mi
+              </p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] leading-tight">
+                „Besplatno“ ima sitna slova
+              </h2>
+              <p className="text-base text-[#232323]/65 leading-relaxed mt-4">
+                Drugi vam poklone 5 stolova i šezdesetak gostiju — a onda, kad
+                vam zatreba cela svadba, naplate paket po paket. Kod nas je{" "}
+                <strong className="text-[#232323]">jedna cena</strong>, bez
+                ograničenja i bez skrivenih nivoa.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
+              {/* Them */}
+              <div className="rounded-2xl p-7 border border-stone-200 bg-white">
+                <p className="text-sm font-bold uppercase tracking-[0.15em] text-[#232323]/40 mb-5">
+                  Besplatni alati
+                </p>
+                <ul className="space-y-3">
+                  {[
+                    "Do ~5 stolova i 60-ak gostiju besplatno",
+                    "Za celu svadbu — plaćate više paketa",
+                    "Statična slika: prva izmena znači novu štampu",
+                    "Bez QR panoa i stranice „Gde sedim?“",
+                    "Bez menija i podrške — snalazite se sami",
+                  ].map((t) => (
+                    <li
+                      key={t}
+                      className="flex items-start gap-2.5 text-sm text-[#232323]/55"
+                    >
+                      <X
+                        size={16}
+                        className="text-stone-400 shrink-0 mt-0.5"
+                        strokeWidth={2.5}
+                      />
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Us */}
+              <div className="rounded-2xl p-7 border-2 border-[#AE343F]/30 bg-white shadow-lg shadow-[#AE343F]/5">
+                <p className="text-sm font-bold uppercase tracking-[0.15em] text-[#AE343F] mb-5">
+                  HALO Uspomene
+                </p>
+                <ul className="space-y-3">
+                  {[
+                    <>Neograničen broj stolova i gostiju — jedna cena</>,
+                    <>
+                      Gratis{" "}
+                      <a
+                        href="/qr-pano-dobrodoslice/"
+                        className="text-[#AE343F] font-semibold underline decoration-[#AE343F]/30 underline-offset-2 hover:decoration-[#AE343F]"
+                      >
+                        QR pano dobrodošlice
+                      </a>{" "}
+                      za ulaz u salu
+                    </>,
+                    <>
+                      Stranica „Gde sedim?“ — gost skenira, ukuca ime i za pet
+                      sekundi zna svoj sto
+                      <GdeSedimInfoButton />
+                    </>,
+                    <>Šema sale sa vizuelnim rasporedom stolova</>,
+                    <>
+                      Meni za hranu i piće ako želite da ga dodate — bez doplate
+                    </>,
+                    <>Izmene do poslednjeg trenutka — pano i link ostaju isti</>,
+                  ].map((t, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2.5 text-sm text-[#232323]/80"
+                    >
+                      <Check
+                        size={16}
+                        className="text-[#AE343F] shrink-0 mt-0.5"
+                        strokeWidth={2.5}
+                      />
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </section>

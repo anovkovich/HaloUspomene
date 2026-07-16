@@ -19,7 +19,11 @@ import {
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
-import { formatPrice, pricing } from "@/data/pricing";
+import {
+  formatPrice,
+  pricing,
+  getStandaloneSeatingPrice,
+} from "@/data/pricing";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
@@ -580,9 +584,12 @@ export default function QRPanoLandingPage() {
   };
 
   const rasporedPrice = formatPrice(pricing.pozivnica.raspored.price);
-  const standalonePrice = formatPrice(pricing.standalone_seating.price);
+  // Honor the active promo — the standalone tool sells at getStandaloneSeatingPrice()
+  // (4.000 while promoActive), not the 5.000 sticker.
+  const standaloneRsd = getStandaloneSeatingPrice();
+  const standalonePrice = formatPrice(standaloneRsd);
   const priceSave = formatPrice(
-    pricing.standalone_seating.price - pricing.pozivnica.raspored.price,
+    standaloneRsd - pricing.pozivnica.raspored.price,
   );
 
   return (
@@ -819,19 +826,13 @@ export default function QRPanoLandingPage() {
                   </span>{" "}
                   (ušteda {priceSave})
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Link
-                    href="/napravi-pozivnicu"
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] text-sm uppercase tracking-widest font-medium rounded-full transition-all shadow-xl shadow-[#AE343F]/20"
-                  >
-                    Napravite pozivnicu sa rasporedom
-                    <ArrowRight size={16} />
-                  </Link>
+                <div className="flex justify-center">
                   <Link
                     href="/cene"
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-[#232323]/15 hover:border-[#232323] text-[#232323] text-sm uppercase tracking-widest font-medium rounded-full transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] text-sm uppercase tracking-widest font-medium rounded-full transition-all shadow-xl shadow-[#AE343F]/20"
                   >
-                    Sve cene
+                    Pogledaj sve cene i pakete
+                    <ArrowRight size={16} />
                   </Link>
                 </div>
               </div>
