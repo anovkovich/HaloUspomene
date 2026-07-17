@@ -1457,12 +1457,12 @@ function Step1({
       {/* Live preview section — classic only */}
       {!formData.premium && (
         <a
-          href="/pozivnica/ana-dejan"
+          href="/izrada-pozivnica-online#primeri"
           target="_blank"
           rel="noopener noreferrer"
           className="mb-6 flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg transition-colors text-xs sm:text-sm font-medium text-center bg-[var(--accent,#AE343F)] text-white hover:bg-[var(--accent-dark,#932d35)]"
         >
-          <span>Pogledajte live primer pozivnice</span>
+          <span>Pogledajte live primere pozivnica</span>
           <svg
             className="w-3.5 h-3.5 shrink-0"
             fill="none"
