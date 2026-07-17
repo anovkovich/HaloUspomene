@@ -408,10 +408,10 @@ export default function PozivnicePage() {
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                   <Link
-                    href="/napravi-pozivnicu"
+                    href="/izrada-pozivnica-online#primeri"
                     className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full"
                   >
-                    Napravi svoju pozivnicu
+                    Pogledajte primere
                   </Link>
                   <Link
                     href="/cene"

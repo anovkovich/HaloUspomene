@@ -7,8 +7,8 @@ import { Menu, X } from "lucide-react";
 
 const navLinks = [
   { name: "Cene", href: "/cene" },
-  { name: "Planer", href: "/planiranje-vencanja" },
   { name: "Pozivnice", href: "/pozivnice" },
+  { name: "QR-Galerija", href: "/qr-galerija-slika-sa-vencanja" },
   { name: "QR-Pano", href: "/qr-pano-dobrodoslice" },
   { name: "Telefon", href: "/telefon-uspomena" },
   { name: "Blog", href: "/blog" },
