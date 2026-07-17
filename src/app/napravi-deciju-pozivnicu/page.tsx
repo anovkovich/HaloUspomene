@@ -9,7 +9,6 @@ import {
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import BirthdayQuestionnaireForm from "./BirthdayQuestionnaireForm";
-import PortalLink from "./PortalLink";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
 import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
 
@@ -94,9 +93,6 @@ export default function NapraviDecijuPozivnicuPage() {
             <p className="text-[#E55A5A] text-lg max-w-xl mx-auto">
               Popunite upitnik u 4 koraka — mi ćemo sve ostalo uraditi i Vaša
               pozivnica će biti gotova odmah
-            </p>
-            <p className="text-stone-400 text-sm mt-3">
-              ili pođite na <PortalLink />
             </p>
             <p className="inline-block mt-4 text-xs tracking-widest uppercase text-stone-400 border border-stone-200 rounded-full px-4 py-1.5">
               Cena: <span className="font-semibold text-[#FF6B6B]">{formatPrice(getRodjendanPozivnicaPrice(false))}</span>
