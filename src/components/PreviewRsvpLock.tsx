@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Lock } from "lucide-react";
 
 /**
@@ -50,14 +49,17 @@ export default function PreviewRsvpLock({
         Ovo je pregled vaše pozivnice. Kada je objavite, gosti mogu da potvrde
         dolazak i sve funkcije se aktiviraju.
       </p>
-      <Link
+      {/* Plain <a target="_top"> — NOT next/link. Inside the desktop phone-frame
+          iframe a real anchor navigates the TOP context out of the frame;
+          next/link would client-route inside the iframe. */}
+      <a
         href={payHref}
         target="_top"
         className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-semibold text-white transition-opacity hover:opacity-90"
         style={{ backgroundColor: ctaBg || accent }}
       >
         Plati i otključaj je!
-      </Link>
+      </a>
     </div>
   );
 }

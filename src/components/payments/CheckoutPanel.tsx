@@ -37,8 +37,10 @@ interface CheckoutPanelProps {
   /** Custom (partial-combo) checkout: hide the card accordion entirely — this
    *  amount can only be paid via IPS (manual admin approval). */
   ipsOnly?: boolean;
-  /** Card upsell for the full package shown above IPS on the custom checkout. */
-  upsell?: { label: string; rsd: number; href: string; cheaper: boolean };
+  /** Card upsell for the full package shown above IPS on the custom checkout.
+   *  Only passed when the package costs MORE than the combo (a genuine upsell);
+   *  the page omits it entirely when it would be a downsell. */
+  upsell?: { label: string; rsd: number; href: string };
 }
 
 export default function CheckoutPanel({
@@ -297,10 +299,8 @@ export default function CheckoutPanel({
                     </span>
                   </div>
                   <p className="text-[13px] text-[#232323]/65 leading-relaxed">
-                    {formatPrice(upsell.rsd)} — aktivno <strong>odmah</strong>.
-                    {upsell.cheaper
-                      ? " Jeftinije je od vaše kombinacije i dobijate sve!"
-                      : " Ili platite svoju kombinaciju ispod."}
+                    {formatPrice(upsell.rsd)} — aktivno <strong>odmah</strong>. Ili
+                    platite svoju kombinaciju ispod.
                   </p>
                 </a>
               )}

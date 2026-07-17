@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Eye } from "lucide-react";
 
 /**
@@ -55,13 +54,17 @@ export default function PreviewWatermark({ payHref }: { payHref: string }) {
               — pozivnica je <strong>ZAKLJUČANA</strong>!
             </span>
           </p>
-          <Link
+          {/* Plain <a target="_top"> — NOT next/link. This lives inside the
+              desktop phone-frame iframe (InvitationFrame ?embed=1); a real
+              anchor navigates the TOP browsing context out of the frame,
+              whereas next/link would client-route inside the iframe. */}
+          <a
             href={payHref}
             target="_top"
             className="shrink-0 rounded-full bg-[#AE343F] hover:bg-[#8A2A32] text-white px-4 sm:px-5 py-1.5 text-[12px] font-semibold transition-colors"
           >
             Plati i otključaj je!
-          </Link>
+          </a>
         </div>
       </div>
     </>

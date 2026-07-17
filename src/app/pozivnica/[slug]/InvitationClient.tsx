@@ -274,11 +274,11 @@ export default function InvitationClient({
     [data.event_date, t.months, t.days_week, useIjekavica],
   );
   const mainLocation = useMemo(
-    () => data.locations.find((l) => l.type === "hall"),
+    () => data.locations?.find((l) => l.type === "hall"),
     [data],
   );
   const mapLocations = useMemo(
-    () => data.locations.filter((l) => l.map_url),
+    () => data.locations?.filter((l) => l.map_url) ?? [],
     [data],
   );
   const eventTime = useMemo(
@@ -293,7 +293,7 @@ export default function InvitationClient({
   const weddingCalendarEvent = useMemo<CalendarEvent | null>(() => {
     const start = parseLocalDate(data.event_date);
     if (!start) return null;
-    const loc = mainLocation ?? data.locations[0];
+    const loc = mainLocation ?? data.locations?.[0];
     const location = loc
       ? [loc.name, loc.address].filter(Boolean).join(", ")
       : undefined;
@@ -891,7 +891,10 @@ export default function InvitationClient({
                 Ovo je pregled vaše pozivnice. Kada je objavite, gosti mogu da
                 potvrde dolazak i sve funkcije se aktiviraju.
               </p>
-              <Link
+              {/* Plain <a target="_top"> — NOT next/link. Inside the desktop
+                  phone-frame iframe a real anchor navigates the TOP context out
+                  of the frame; next/link would client-route inside the iframe. */}
+              <a
                 href={payHref ?? `/placanje/pozivnica/${slug}`}
                 target="_top"
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-elegant text-sm uppercase tracking-[0.2em] transition-all hover:opacity-85"
@@ -902,7 +905,7 @@ export default function InvitationClient({
                 }}
               >
                 Objavi pozivnicu
-              </Link>
+              </a>
             </div>
           ) : isPastDeadline ? (
             <div

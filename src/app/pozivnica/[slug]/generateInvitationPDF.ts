@@ -325,7 +325,7 @@ export async function generateInvitationPDF(
 
   // Venue info
   const hall =
-    data.locations.find((l) => l.type === "hall") ?? data.locations[0];
+    data.locations?.find((l) => l.type === "hall") ?? data.locations?.[0];
   if (hall) {
     centerText(hall.name, y, 14, "Serif", text);
     y += 7;

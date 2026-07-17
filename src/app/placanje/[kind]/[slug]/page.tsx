@@ -96,6 +96,11 @@ export default async function PlacanjePage({
     const upsellFull = entity.premium
       ? { tier: "premium", label: "Premium paket", rsd: getTier("premium")?.price ?? 13900 }
       : { tier: "kompletan", label: "Kompletan paket", rsd: getTier("kompletno")?.price ?? 9900 };
+    // Only a real UPSELL when the full package costs MORE than this combo — the
+    // customer pays a bit more for everything + instant card. If their combo is
+    // already ≥ the package, offering the package would be a DOWNSELL (we'd give
+    // more for less), so hide it and let them pay their combination.
+    const showUpsell = customOrder.amountRsd < upsellFull.rsd;
     return (
       <CheckoutPanel
         kind={kind}
@@ -110,12 +115,15 @@ export default async function PlacanjePage({
         tierId="custom"
         cardEnabled={false}
         ipsOnly
-        upsell={{
-          label: upsellFull.label,
-          rsd: upsellFull.rsd,
-          href: `/placanje/pozivnica/${slug}/?tier=${upsellFull.tier}`,
-          cheaper: customOrder.amountRsd >= upsellFull.rsd,
-        }}
+        upsell={
+          showUpsell
+            ? {
+                label: upsellFull.label,
+                rsd: upsellFull.rsd,
+                href: `/placanje/pozivnica/${slug}/?tier=${upsellFull.tier}`,
+              }
+            : undefined
+        }
       />
     );
   }

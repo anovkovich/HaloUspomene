@@ -248,7 +248,7 @@ export function getScriptFontConfig(font: ScriptFontType): ScriptFontConfig {
 
 // Get theme config
 export function getThemeConfig(theme: ThemeType): ThemeConfig {
-  return THEME_CONFIGS[theme];
+  return THEME_CONFIGS[theme] ?? THEME_CONFIGS["classic_rose"];
 }
 
 // Convert hex to RGB components
