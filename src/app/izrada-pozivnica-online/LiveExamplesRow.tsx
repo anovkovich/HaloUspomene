@@ -26,6 +26,9 @@ export interface LiveExample {
    *  back to when the pointer leaves. Pointer devices only — see below. */
   featured?: boolean;
   variants: ExampleVariant[];
+  /** "Napravi ovakvu pozivnicu" target for this occasion (classic → pricing,
+   *  premium/birthday/punoletstvo → straight to their builder). */
+  createHref: string;
 }
 
 /**
@@ -100,6 +103,7 @@ export default function LiveExamplesRow({
           label={ex.label}
           desc={ex.desc}
           variants={ex.variants}
+          createHref={ex.createHref}
           active={i === active}
           onActivate={() => setActive(i)}
           prebuffer={!touch}

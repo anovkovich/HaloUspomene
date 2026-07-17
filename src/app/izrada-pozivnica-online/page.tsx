@@ -144,6 +144,7 @@ const liveExamples = [
   {
     label: "Venčanje",
     desc: "Više boja i fontova · jedan primer uživo",
+    createHref: "/cene",
     variants: [
       { theme: "Classic Rose", gradient: "linear-gradient(160deg, #AE343F, #7a1f27)", initials: "A & D", liveHref: "/pozivnica/ana-dejan", ...clip("poz-rose") },
       { theme: "Luxury Gold", gradient: "linear-gradient(160deg, #3a3226, #6b5a2f)", initials: "A & D", initialsColor: "#f0e2b8", liveHref: "/pozivnica/ana-dejan", ...clip("poz-gold") },
@@ -154,6 +155,7 @@ const liveExamples = [
     label: "Venčanje Premium",
     desc: "Tri premium teme · primer uživo za svaku",
     featured: true,
+    createHref: "/napravi-pozivnicu?premium=1&raspored=1&audio=1&galerija=1&paket=premium",
     variants: [
       { theme: "Watercolor", gradient: "linear-gradient(160deg, #24303f, #3a2b40)", initials: "T & B", initialsColor: "#e8c9a0", liveHref: "/premium-pozivnica/teodora-bojan", ...clip("pre-watercolor") },
       { theme: "Papirna", gradient: "linear-gradient(160deg, #7d7f6e, #585a49)", initials: "A & M", liveHref: "/premium-pozivnica/ana-marko", ...clip("pre-paper") },
@@ -163,6 +165,7 @@ const liveExamples = [
   {
     label: "Dečiji rođendan",
     desc: "Teme za dečake i devojčice",
+    createHref: "/napravi-deciju-pozivnicu",
     variants: [
       { theme: "Za dečake", gradient: "linear-gradient(160deg, #4a7ba6, #2f5a7d)", initials: "1", liveHref: "/deciji-rodjendan/primer-decak", ...clip("dec-decak") },
       { theme: "Za devojčice", gradient: "linear-gradient(160deg, #c76a90, #a24f74)", initials: "1", liveHref: "/deciji-rodjendan/primer-devojcica", ...clip("dec-devojcica") },
@@ -171,6 +174,7 @@ const liveExamples = [
   {
     label: "Punoletstvo",
     desc: "Više boja · primer uživo za svaku",
+    createHref: "/napravi-punoletstvo",
     variants: [
       { theme: "Bordo & zlato", gradient: "linear-gradient(160deg, #2b2b2b, #4a3f2a)", initials: "18", initialsColor: "#d4af37", liveHref: "/punoletstvo/primer-devojka", ...clip("pun-devojka") },
       { theme: "Teget & zlato", gradient: "linear-gradient(160deg, #1f2a44, #2c3a5a)", initials: "18", initialsColor: "#d4af37", liveHref: "/punoletstvo/primer-momak", ...clip("pun-momak") },
@@ -483,16 +487,6 @@ export default function IzradaPozivnicaOnline() {
             </div>
 
             <LiveExamplesRow examples={liveExamples} />
-
-            <div className="text-center mt-12">
-              <a
-                href="#prilike"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full"
-              >
-                Napravite ovakvu pozivnicu
-                <ArrowRight size={16} />
-              </a>
-            </div>
           </div>
         </section>
 

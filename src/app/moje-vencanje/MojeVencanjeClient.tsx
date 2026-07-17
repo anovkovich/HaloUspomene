@@ -5,11 +5,9 @@ import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Heart,
   LogOut,
   CheckCircle2,
   Wallet,
-  ArrowLeft,
   Download,
   Users,
   LayoutDashboard,
@@ -17,7 +15,6 @@ import {
   Images,
   UtensilsCrossed,
   Star,
-  ArrowLeftCircle,
   Home,
   Menu,
   X,
@@ -26,12 +23,16 @@ import {
 import {
   verifyAuth,
   loadPortalDataAction,
-  saveVendorFavoritesAction,
   loadHighlightedVendorsAction,
   loadVendorsAction,
   loadMyEndorsementsAction,
 } from "./actions";
-import type { ChecklistItem, PortalBudget, Vendor, VendorCategoryMeta } from "./types";
+import type {
+  ChecklistItem,
+  PortalBudget,
+  Vendor,
+  VendorCategoryMeta,
+} from "./types";
 import ChecklistCard from "./ChecklistCard";
 import BudgetCard from "./BudgetCard";
 import Sidebar, { type ActiveView } from "./Sidebar";
@@ -64,7 +65,10 @@ function daysUntil(dateStr: string): number {
   target.setHours(0, 0, 0, 0);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  return Math.max(0, Math.round((target.getTime() - today.getTime()) / 86_400_000));
+  return Math.max(
+    0,
+    Math.round((target.getTime() - today.getTime()) / 86_400_000),
+  );
 }
 
 export default function MojeVencanjeClient() {
@@ -189,9 +193,11 @@ export default function MojeVencanjeClient() {
   useEffect(() => {
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as any).standalone === true;
+      (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+        true;
     setIsStandalone(standalone);
-    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    const ios =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     setIsIOS(ios);
     const mobile = window.innerWidth < 768;
@@ -311,14 +317,18 @@ export default function MojeVencanjeClient() {
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
   }, [state, handleLogout]);
 
   const handleInstall = useCallback(async () => {
     if (isIOS) {
       setShowIOSInstall(true);
     } else if (installPrompt) {
-      const prompt = installPrompt as any;
+      const prompt = installPrompt as unknown as {
+        prompt: () => Promise<void>;
+        userChoice: Promise<unknown>;
+      };
       setInstallPrompt(null); // consumed after one use, clear immediately
       try {
         await prompt.prompt();
@@ -403,8 +413,8 @@ export default function MojeVencanjeClient() {
                   <>
                     <p className="text-[#232323]/75 max-w-md mx-auto mb-6">
                       Besplatan planer koji vam pomaže da organizujete savršeno
-                      venčanje — od izbora svečane sale do efekata za prvi ples, sve
-                      na jednom mestu.
+                      venčanje — od izbora svečane sale do efekata za prvi ples,
+                      sve na jednom mestu.
                     </p>
                     <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-[#232323]/70">
                       <span className="flex items-center gap-1.5">
@@ -489,10 +499,10 @@ export default function MojeVencanjeClient() {
                   )}
                 </button>
                 <Link
-                  href="/napravi-pozivnicu"
+                  href="/izrada-pozivnica-online#primeri"
                   className="text-xs text-[#d4af37] hover:text-[#b8972e] underline underline-offset-2 transition-colors"
                 >
-                  Nemate pozivnicu? Naručite ovde
+                  Želite pozivnicu - Pogledajte primere
                 </Link>
               </form>
 
@@ -541,7 +551,9 @@ export default function MojeVencanjeClient() {
               budgetStats={{ spent: totalSpent, planned: totalPlanned }}
               onLogout={handleLogout}
               onDraftAction={() => {
-                toast("Dostupno nakon kreiranja pozivnice — naš tim će vas kontaktirati");
+                toast(
+                  "Dostupno nakon kreiranja pozivnice — naš tim će vas kontaktirati",
+                );
               }}
             />
           </div>
@@ -1138,7 +1150,6 @@ function TeaserBudget() {
     200000, 35000,
   ];
   const fakeSpent = [350000, 195000, 60000, 100000, 55000, 0, 0, 0, 0, 0, 0, 0];
-  const totalPlanned = fakePlanned.reduce((s, v) => s + v, 0);
   const totalSpent = fakeSpent.reduce((s, v) => s + v, 0);
 
   return (

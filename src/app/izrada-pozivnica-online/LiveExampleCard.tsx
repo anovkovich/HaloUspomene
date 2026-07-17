@@ -114,6 +114,7 @@ export default function LiveExampleCard({
   label,
   desc,
   variants,
+  createHref,
   active,
   onActivate,
   prebuffer,
@@ -121,6 +122,8 @@ export default function LiveExampleCard({
   label: string;
   desc: string;
   variants: ExampleVariant[];
+  /** "Napravi ovakvu pozivnicu" target for this occasion. */
+  createHref: string;
   active: boolean;
   onActivate: () => void;
   /** Warm the clip ahead of use — see VariantClip. Pointer devices only. */
@@ -263,13 +266,23 @@ export default function LiveExampleCard({
           {v.theme}
         </p>
       )}
+      {/* Primary per-occasion CTA — same tab: this IS the conversion action, so
+          take the reader straight to the right funnel (classic → pricing,
+          premium/birthday/punoletstvo → their builder). */}
+      <Link
+        href={createHref}
+        className="inline-flex items-center justify-center gap-2 mt-3 px-5 py-2.5 rounded-full bg-[#AE343F] text-white text-sm font-semibold hover:bg-[#8B2833] transition-colors"
+      >
+        Napravi ovakvu pozivnicu
+        <ArrowRight size={14} />
+      </Link>
       {/* New tab: browsing examples is a comparison task, so keep this page
           (and the reader's place in the row) alive behind the sample. */}
       <Link
         href={v.liveHref}
         target="_blank"
         rel="noopener"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-[#d4af37] hover:gap-2.5 transition-all mt-2"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-[#d4af37] hover:gap-2.5 transition-all mt-2.5"
       >
         Pogledaj primer uživo
         <ArrowRight size={14} />
