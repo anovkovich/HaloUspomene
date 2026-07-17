@@ -5,6 +5,8 @@ import {
   type BuilderSelection,
 } from "@/lib/payments/builder-pricing";
 import { PaymentError } from "@/lib/payments/kinds";
+import { verifyPromo, applyPromo, PROMO_CAP } from "@/lib/payments/promo";
+import { countRedemptions } from "@/lib/promo-redemptions";
 
 /**
  * Freezes a custom (partial-combo) pozivnica order. The amount is computed
@@ -19,6 +21,7 @@ import { PaymentError } from "@/lib/payments/kinds";
  */
 export async function createCustomPozivnicaOrder(
   slug: string,
+  promoRaw?: string | null,
 ): Promise<OrderDocument> {
   const w = await getWeddingData(slug);
   if (!w) throw new PaymentError("INVALID_TIER");
@@ -37,7 +40,27 @@ export async function createCustomPozivnicaOrder(
     images: !!ex.images,
     customColor: !!ex.customColor,
   };
-  const money = computeBuilderMoney(sel);
+  const base = computeBuilderMoney(sel);
+
+  // Guest-referral promo applies to custom combos too (kind is always
+  // "pozivnica" here, which is eligible). IPS-only, so no LS discount code to
+  // reconcile — we just recompute the frozen RSD amount our-side.
+  let money = { lines: base.lines, totalRsd: base.totalRsd, totalEur: 0 };
+  let promo:
+    | { code: string; discountRsd: number; discountEur: number }
+    | undefined;
+  if (promoRaw) {
+    const p = verifyPromo(promoRaw, "pozivnica");
+    if (p.valid && (await countRedemptions(p.code)) < PROMO_CAP) {
+      const applied = applyPromo(money, p);
+      money = applied;
+      promo = {
+        code: p.code,
+        discountRsd: applied.discountRsd,
+        discountEur: applied.discountEur,
+      };
+    }
+  }
 
   return getOrCreatePendingOrder({
     kind: "pozivnica",
@@ -47,5 +70,6 @@ export async function createCustomPozivnicaOrder(
     amountEur: 0, // IPS is RSD-only; the panel doesn't render EUR
     lines: money.lines,
     customSelection: sel,
+    promo,
   });
 }

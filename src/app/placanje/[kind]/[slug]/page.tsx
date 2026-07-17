@@ -79,7 +79,7 @@ export default async function PlacanjePage({
   if (kind === "pozivnica" && requestedTier === "custom") {
     let customOrder;
     try {
-      customOrder = await createCustomPozivnicaOrder(slug);
+      customOrder = await createCustomPozivnicaOrder(slug, promoRaw);
     } catch (e) {
       if (e instanceof PaymentError && e.code === "ALREADY_UNLOCKED") {
         return (
@@ -115,6 +115,8 @@ export default async function PlacanjePage({
         tierId="custom"
         cardEnabled={false}
         ipsOnly
+        promoCode={customOrder.promo?.code}
+        promoEnabled={isPromoEnabled()}
         upsell={
           showUpsell
             ? {

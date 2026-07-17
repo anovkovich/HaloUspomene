@@ -3572,17 +3572,20 @@ export default function QuestionnaireForm({
                 ? `&promo=${encodeURIComponent(storedPromo)}`
                 : "";
               const payHref = `/placanje/pozivnica/${createdSlug}/?tier=${tierParam}${promoQuery}`;
-              // The checkout applies the promo on FIXED tiers only (the custom
-              // "Vaša kombinacija" order isn't discounted), so mirror the 10% off
-              // here just for fixed packages — matches the checkout total.
-              const applyPromo = !!storedPromo && d.kind === "fixed";
+              // The checkout applies the promo on every pozivnica order — fixed
+              // tiers AND the custom "Vaša kombinacija" — so mirror the 10% off
+              // here to match the checkout total.
+              const promoOn = !!storedPromo;
               const withPromo = (rsd: number) => rsd - Math.round((rsd * 10) / 100);
+              const minRsd = d.kind === "fixed" ? d.rsd : Math.min(d.rsd, d.upsell.rsd);
               const label =
                 d.kind === "fixed"
-                  ? applyPromo
+                  ? promoOn
                     ? `Plati i aktiviraj uz popust — ${formatPrice(withPromo(d.rsd))}`
                     : `Plati i aktiviraj odmah — ${formatPrice(d.rsd)}`
-                  : `Plati i aktiviraj — od ${formatPrice(Math.min(d.rsd, d.upsell.rsd))}`;
+                  : promoOn
+                    ? `Plati i aktiviraj uz popust — od ${formatPrice(withPromo(minRsd))}`
+                    : `Plati i aktiviraj — od ${formatPrice(minRsd)}`;
               return (
                 <a
                   href={payHref}
