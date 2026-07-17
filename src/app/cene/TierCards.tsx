@@ -190,7 +190,7 @@ export default function TierCards({
           <ul className="space-y-1.5 text-xs text-[#F5F4DC]/60 mb-5 pl-1">
             <li>
               <span className="text-[#d4af37]">▸ Akvarel</span> — akvarelna
-              pozadina venčanog mesta i vintage automobil
+              pozadina venčanog mesta i vintage ili moderan automobil
             </li>
             <li>
               <span className="text-[#d4af37]">▸ Papirni svet</span> — izrada
@@ -199,7 +199,7 @@ export default function TierCards({
             </li>
             <li>
               <span className="text-[#d4af37]">▸ Burgundy scena</span> — ruže i
-              animirani par belih golubova
+              animirani par belih golubova iznad prelepe fontane
             </li>
             <li className="pt-1 text-[#F5F4DC]/50">
               + 2 vrste animiranih koverti dobrodošlice i parallax filmski
