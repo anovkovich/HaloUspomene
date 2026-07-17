@@ -115,10 +115,13 @@ export default function TierCards({
             )}
           </div>
           {kompletnoSavings > 0 && (
-            <p className="text-xs font-semibold text-green-700 mb-4">
+            <p className="text-xs font-semibold text-green-700 mb-1">
               Ušteda {formatPrice(kompletnoSavings)}
             </p>
           )}
+          <p className="text-[11px] text-green-700 mb-4">
+            🎁 + muzika, izmena boja i galerija slika — <strong>gratis</strong>
+          </p>
           <ul className="space-y-2 text-sm text-[#232323]/75 flex-1 mb-5">
             <Li>
               <strong>Sve iz Osnovnog paketa</strong>
@@ -168,10 +171,13 @@ export default function TierCards({
             )}
           </div>
           {premiumSavings > 0 && (
-            <p className="text-xs font-semibold text-[#d4af37] mb-4">
+            <p className="text-xs font-semibold text-[#d4af37] mb-1">
               Ušteda {formatPrice(premiumSavings)}
             </p>
           )}
+          <p className="text-[11px] text-[#d4af37]/90 mb-4">
+            🎁 + muzika i brojni gratisi <strong>uključeni</strong>
+          </p>
           <ul className="space-y-2 text-sm text-[#F5F4DC]/75 flex-1 mb-5">
             <Li gold>
               <strong className="text-[#F5F4DC]">Sve iz Kompletnog paketa</strong>

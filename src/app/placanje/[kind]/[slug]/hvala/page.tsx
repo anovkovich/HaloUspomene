@@ -80,8 +80,9 @@ export default async function HvalaPage({
               Potvrđujemo uplatu
             </h1>
             <p className="text-sm text-gray-500">
-              Čim proverimo uplatu, aktiviraćemo vam pristup — obično u roku od 1
-              sata. Javićemo vam porukom.
+              {order?.rail === "card"
+                ? "Aktiviramo vam pristup — obično za nekoliko sekundi. Stranica će se sama osvežiti."
+                : "Čim proverimo uplatu, aktiviraćemo vam pristup — obično u roku od 1 sata. Javićemo vam porukom."}
             </p>
             {orderId && settling && (
               <Refresher order={String(orderId)} attempt={attempt} />

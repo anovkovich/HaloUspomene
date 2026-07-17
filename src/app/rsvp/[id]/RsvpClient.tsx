@@ -29,6 +29,11 @@ interface BaseProps {
   eventLocation?: string;
   /** Invitation URL added to the calendar event description. */
   eventUrl?: string;
+  /** Guest-referral promo shown on the RSVP success screen (Option A). */
+  promoCode?: string;
+  promoValidUntil?: string;
+  /** Funnel the offer CTA points at (wedding / birthday / punoletstvo builder). */
+  ctaBase?: string;
 }
 
 interface CoupleSpecific {
@@ -356,7 +361,12 @@ export default function RsvpClient(props: Props) {
       >
         {wrap(
           <>
-            <RSVPForm slug={props.slug} calendarEvent={calendarEvent} />
+            <RSVPForm
+              slug={props.slug}
+              calendarEvent={calendarEvent}
+              promoCode={props.promoCode}
+              promoValidUntil={props.promoValidUntil}
+            />
             {callBlock}
           </>,
         )}
@@ -386,6 +396,9 @@ export default function RsvpClient(props: Props) {
             cyrillic={cyrillic}
             calendarEvent={calendarEvent}
             calendarLabels={calLabels}
+            promoCode={props.promoCode}
+            promoValidUntil={props.promoValidUntil}
+            ctaBase={props.ctaBase}
           />
         </PremiumRsvpLayout>
       </ThemeProvider>
@@ -400,6 +413,9 @@ export default function RsvpClient(props: Props) {
             slug={props.slug}
             calendarEvent={calendarEvent}
             calendarLabels={calLabels}
+            promoCode={props.promoCode}
+            promoValidUntil={props.promoValidUntil}
+            ctaBase={props.ctaBase}
           />,
         )}
       </div>
@@ -415,6 +431,9 @@ export default function RsvpClient(props: Props) {
           gender={props.gender}
           calendarEvent={calendarEvent}
           calendarLabels={calLabels}
+          promoCode={props.promoCode}
+          promoValidUntil={props.promoValidUntil}
+          ctaBase={props.ctaBase}
         />,
       )}
     </div>

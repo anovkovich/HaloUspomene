@@ -222,7 +222,11 @@ function OrderCard({
             </span>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50">
               {KIND_LABEL_SR[o.kind]}
-              {o.tier !== "default" ? ` · ${o.tier}` : ""}
+              {o.tier === "custom"
+                ? " · Vaša kombinacija"
+                : o.tier !== "default"
+                  ? ` · ${o.tier}`
+                  : ""}
             </span>
             {o.rail && (
               <span className="text-[10px] text-white/35 uppercase">

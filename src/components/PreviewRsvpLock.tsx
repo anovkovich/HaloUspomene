@@ -52,6 +52,7 @@ export default function PreviewRsvpLock({
       </p>
       <Link
         href={payHref}
+        target="_top"
         className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-semibold text-white transition-opacity hover:opacity-90"
         style={{ backgroundColor: ctaBg || accent }}
       >

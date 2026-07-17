@@ -23,10 +23,13 @@ import type {
   CheckoutLine,
   OrderDocument,
 } from "@/lib/orders";
+import { findUnlockedOrderForTuple } from "@/lib/orders";
 
 /** Thrown by `computeOrder` — the checkout page renders a friendly state per code. */
 export class PaymentError extends Error {
-  constructor(public code: "ALREADY_UNLOCKED" | "INVALID_TIER") {
+  constructor(
+    public code: "ALREADY_UNLOCKED" | "INVALID_TIER" | "BLOCKED_OSNOVNI",
+  ) {
     super(code);
     this.name = "PaymentError";
   }
@@ -38,6 +41,11 @@ export interface KindEntitySummary {
   eventDate?: string;
   premium: boolean; // pozivnica only; false elsewhere
   unlockedTiers: string[]; // tiers whose flags are already fully set
+  /** Z1 (pozivnica only): a draft couple that already carries a functional
+   *  add-on flag (raspored/audio/galerija) must not check out as "osnovni" —
+   *  osnovni's unlock wouldn't cover those, so paying 5.000 would publish a
+   *  full config. When true, osnovni is hidden and refused. */
+  blockOsnovni?: boolean;
 }
 
 export interface KindTier {
@@ -167,6 +175,23 @@ const pozivnica: KindAdapter = {
       )
         unlockedTiers.push("kompletan");
     }
+    // Z1: block osnovni for a DRAFT couple that carries ANY paid extra —
+    // functional (raspored/audio/galerija) OR a flat extra (music/images/custom
+    // colour). Flat extras are free only inside the full package; alone they're
+    // à-la-carte, so paying 5.000 as "osnovni" must not smuggle them in. USB is
+    // off-system (pouzeće), so it doesn't count. Checked by flag (not
+    // builder_extras) so it also protects drafts from before this feature.
+    const blockOsnovni =
+      !published &&
+      !!(
+        w.paid_for_raspored ||
+        w.paid_for_audio ||
+        w.paid_for_gallery ||
+        w.paid_for_music ||
+        w.paid_for_images ||
+        w.custom_primary_color ||
+        w.custom_background_color
+      );
     return {
       slug,
       displayName:
@@ -175,6 +200,7 @@ const pozivnica: KindAdapter = {
       eventDate: w.event_date,
       premium,
       unlockedTiers,
+      blockOsnovni,
     };
   },
 
@@ -182,6 +208,7 @@ const pozivnica: KindAdapter = {
     const ids = e.premium ? ["premium"] : ["osnovni", "kompletan"];
     return ids
       .filter((id) => !e.unlockedTiers.includes(id))
+      .filter((id) => !(id === "osnovni" && e.blockOsnovni)) // Z1
       .map((id) => {
         const m = pozivnicaTierMoney(id);
         return {
@@ -204,6 +231,8 @@ const pozivnica: KindAdapter = {
       ? ["premium"]
       : ["osnovni", "kompletan"];
     if (!valid.includes(tierId)) throw new PaymentError("INVALID_TIER");
+    if (tierId === "osnovni" && e.blockOsnovni)
+      throw new PaymentError("BLOCKED_OSNOVNI"); // Z1
     if (e.unlockedTiers.includes(tierId))
       throw new PaymentError("ALREADY_UNLOCKED");
     const m = pozivnicaTierMoney(tierId);
@@ -232,6 +261,30 @@ const pozivnica: KindAdapter = {
           paid_for_gallery: true,
         });
         break;
+      case "custom": {
+        // Partial combo (IPS). Publish + set true ONLY the functional flags in
+        // the frozen selection (additive; free bonuses/USB were set at create).
+        // Defensive: a missing selection must never throw — the approve route
+        // marks the order unlocked BEFORE calling this, so a throw would strand
+        // it (retry is a no-op). Publish and let admin reconcile.
+        const sel = order.customSelection;
+        if (!sel) {
+          console.error(
+            "[unlock] custom order without customSelection:",
+            order.orderId,
+          );
+          await patchCouple(slug, { draft: false });
+          break;
+        }
+        await patchCouple(slug, {
+          draft: false,
+          ...(sel.raspored ? { paid_for_raspored: true } : {}),
+          ...(sel.audio ? { paid_for_audio: true } : {}),
+          ...(sel.galerija ? { paid_for_gallery: true } : {}),
+          ...(sel.premium ? { premium_paid: true } : {}),
+        });
+        break;
+      }
     }
   },
 
@@ -257,6 +310,27 @@ const pozivnica: KindAdapter = {
           paid_for_gallery: false,
         });
         break;
+      case "custom": {
+        const sel = order.customSelection;
+        if (!sel) {
+          await patchCouple(slug, { draft: true });
+          break;
+        }
+        // Belt: never turn off a gallery that was ALSO bought standalone.
+        const galleryElsewhere =
+          sel.galerija &&
+          (await findUnlockedOrderForTuple("galerija", slug, "default"));
+        await patchCouple(slug, {
+          draft: true,
+          ...(sel.raspored ? { paid_for_raspored: false } : {}),
+          ...(sel.audio ? { paid_for_audio: false } : {}),
+          ...(sel.galerija && !galleryElsewhere
+            ? { paid_for_gallery: false }
+            : {}),
+          ...(sel.premium ? { premium_paid: false } : {}),
+        });
+        break;
+      }
     }
   },
 };

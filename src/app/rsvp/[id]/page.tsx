@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getWeddingData } from "@/lib/couples";
 import { getBirthdayData } from "@/lib/birthday";
 import { getStandaloneSeating } from "@/lib/standalone-seating";
+import { issuePromo } from "@/lib/payments/promo";
 import RsvpClient from "./RsvpClient";
 
 export const dynamic = "force-dynamic";
@@ -61,6 +62,8 @@ export default async function RsvpPage({ params }: PageProps) {
       ? [loc.name, loc.address].filter(Boolean).join(", ")
       : undefined;
 
+    const promo = issuePromo(data.event_date, slug);
+
     return (
       <RsvpClient
         kind={data.premium ? "premium" : "classic"}
@@ -76,6 +79,8 @@ export default async function RsvpPage({ params }: PageProps) {
         useCyrillic={data.useCyrillic ?? false}
         premiumTheme={data.premium_theme}
         callNumbers={enabledPhones}
+        promoCode={promo?.code}
+        promoValidUntil={promo?.validUntil}
       />
     );
   }
@@ -83,6 +88,8 @@ export default async function RsvpPage({ params }: PageProps) {
   if (type === "dogadjaj") {
     const seating = await getStandaloneSeating(slug);
     if (!seating || !seating.active) notFound();
+
+    const promo = issuePromo(seating.eventDate, slug);
 
     return (
       <RsvpClient
@@ -92,6 +99,8 @@ export default async function RsvpPage({ params }: PageProps) {
         subtitle="Događaj"
         eventDate={seating.eventDate ?? ""}
         submitUntil=""
+        promoCode={promo?.code}
+        promoValidUntil={promo?.validUntil}
       />
     );
   }
@@ -113,6 +122,8 @@ export default async function RsvpPage({ params }: PageProps) {
     ? [data.location.name, data.location.address].filter(Boolean).join(", ")
     : undefined;
 
+  const promo = issuePromo(data.event_date, slug);
+
   return (
     <RsvpClient
       kind="birthday"
@@ -124,6 +135,9 @@ export default async function RsvpPage({ params }: PageProps) {
       eventLocation={eventLocation}
       eventUrl={`https://halouspomene.rs/${isEighteenth ? "punoletstvo" : "deciji-rodjendan"}/${slug}`}
       gender={data.gender}
+      promoCode={promo?.code}
+      promoValidUntil={promo?.validUntil}
+      ctaBase={isEighteenth ? "/napravi-punoletstvo" : "/napravi-deciju-pozivnicu"}
     />
   );
 }

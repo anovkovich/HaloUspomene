@@ -812,11 +812,15 @@ function FountainRSVPForm({
   formattedDeadline,
   rsvpByLabel,
   calendar,
+  promoCode,
+  promoValidUntil,
 }: {
   slug: string;
   formattedDeadline: string;
   rsvpByLabel: string;
   calendar: PremiumCalendarBundle;
+  promoCode?: string;
+  promoValidUntil?: string;
 }) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
@@ -914,7 +918,13 @@ function FountainRSVPForm({
           Pošalji još jednu potvrdu
         </button>
 
-        <InvitationOfferCTA inline tone="onDark" className="mt-6" />
+        <InvitationOfferCTA
+          inline
+          tone="onDark"
+          className="mt-6"
+          promoCode={promoCode}
+          promoValidUntil={promoValidUntil}
+        />
       </motion.div>
     );
   }
@@ -1056,6 +1066,9 @@ export default function FountainInvitation({
   isRevealed,
   calendar,
   preview,
+  payHref,
+  promoCode,
+  promoValidUntil,
 }: ThemeInvitationProps) {
   const lang = data.useCyrillic ? T.cyrillic : T.latin;
   // True when the envelope holds for a tap (music is enabled). For these
@@ -1545,7 +1558,7 @@ export default function FountainInvitation({
               return (
                 <div className="max-w-sm mx-auto mt-2">
                   <PreviewRsvpLock
-                    payHref={`/placanje/pozivnica/${slug}`}
+                    payHref={payHref ?? `/placanje/pozivnica/${slug}`}
                     accent="#d4af37"
                     ctaBg="#AE343F"
                     surface="rgba(255,255,255,0.08)"
@@ -1575,6 +1588,8 @@ export default function FountainInvitation({
                   formattedDeadline={deadlineGenitive}
                   rsvpByLabel={lang.rsvpBy}
                   calendar={calendar}
+                  promoCode={promoCode}
+                  promoValidUntil={promoValidUntil}
                 />
               </div>
             );

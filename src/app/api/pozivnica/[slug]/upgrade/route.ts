@@ -103,7 +103,22 @@ export async function POST(
       paid_for_audio_USB: body.paid_for_audio_USB || "",
       paid_for_pdf: false,
       paid_for_images: body.paid_for_images ?? false,
+      // Was missing here (present on create) — a galerija-only config would lose
+      // the flag on upgrade, breaking Z1 detection and the preview.
+      paid_for_gallery: body.paid_for_gallery ?? false,
       paid_for_music: body.paid_for_music ?? false,
+      builder_extras: {
+        premium: false,
+        raspored: body.paid_for_raspored ?? false,
+        audio: body.paid_for_audio ?? false,
+        galerija: body.paid_for_gallery ?? false,
+        music: body.paid_for_music ?? false,
+        usb: (body.paid_for_audio_USB || "") as "" | "kaseta" | "bocica",
+        images: body.paid_for_images ?? false,
+        customColor: !!(
+          body.custom_primary_color || body.custom_background_color
+        ),
+      },
       // Stay in draft — admin manually flips it after billing.
       draft: true,
       // Defensive clear of premium fields in case of misuse.

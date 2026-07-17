@@ -74,6 +74,21 @@ export interface OrderDocument {
   // amounts above already include the discount; this is the audit + redemption key.
   promo?: { code: string; discountEur: number; discountRsd: number };
 
+  // Frozen builder selection for a custom (partial-combo) pozivnica order. The
+  // amount above is server-computed from this at freeze time; unlock() reads it
+  // (not the couple's live snapshot) to decide exactly which flags to set. Only
+  // present when tier === "custom".
+  customSelection?: {
+    premium: boolean;
+    raspored: boolean;
+    audio: boolean;
+    galerija: boolean;
+    music: boolean;
+    usb: "" | "kaseta" | "bocica";
+    images: boolean;
+    customColor: boolean;
+  };
+
   webhookEvents?: Array<{
     eventName: string;
     lsEventId: string | null;
@@ -130,6 +145,7 @@ export interface CreateOrderInput {
   lines: CheckoutLine[];
   ipsAccountIdx?: number;
   promo?: { code: string; discountEur: number; discountRsd: number };
+  customSelection?: OrderDocument["customSelection"];
   meta?: { ip?: string; ua?: string };
 }
 
@@ -152,6 +168,12 @@ export async function getOrCreatePendingOrder(
     ? { "promo.code": input.promo.code }
     : { "promo.code": { $exists: false } };
 
+  // A custom order's amount depends on the frozen selection, which can change
+  // (via upgrade). Match the amount too so a changed selection never reuses a
+  // stale-priced pending row — it just spawns a fresh one (the old expires).
+  const amountFilter =
+    input.tier === "custom" ? { amountRsd: input.amountRsd } : {};
+
   const existing = await c.findOne({
     kind: input.kind,
     slug: input.slug,
@@ -159,6 +181,7 @@ export async function getOrCreatePendingOrder(
     status: "pending",
     createdAt: { $gte: cutoff },
     ...promoFilter,
+    ...amountFilter,
   });
   if (existing) return existing;
 
@@ -180,6 +203,7 @@ export async function getOrCreatePendingOrder(
       ipsRef,
       ipsAccountIdx: input.ipsAccountIdx ?? 0,
       promo: input.promo, // undefined → BSON omits it (matches the $exists:false reuse filter)
+      customSelection: input.customSelection,
       webhookEvents: [],
       createdAt: now,
       updatedAt: now,

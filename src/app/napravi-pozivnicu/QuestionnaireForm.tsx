@@ -19,6 +19,8 @@ import {
   Sparkles,
   Music,
   Info,
+  Copy,
+  Check,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
 import FeatureInfoModal, {
@@ -48,6 +50,10 @@ import type {
   EnvelopeItem,
 } from "@/app/pozivnica/[slug]/types";
 import { getThemeClasses } from "./premium-theme";
+import {
+  detectPackage,
+  type BuilderSelection,
+} from "@/lib/payments/builder-pricing";
 import dynamic from "next/dynamic";
 import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
 import { BypassPhoneInput } from "@/components/verification/BypassPhoneInput";
@@ -831,7 +837,25 @@ function ExtrasAccordion({
   // no premium bundling) and sits directly below Raspored, above Audio.
   // Music renders before Raspored for both tiers; USBs are nested-rendered
   // after the map so they stay directly under Audio knjiga.
-  const extras = [
+  // Flat extras (music/images/colour) are free ONLY inside the full package
+  // (all three functional add-ons = Kompletan/Premium). Otherwise they're paid
+  // à-la-carte and the selection becomes a custom order.
+  const allThreeSelected =
+    formData.extra_raspored && formData.extra_audio && formData.extra_galerija;
+  const extras: Array<{
+    key:
+      | "extra_images"
+      | "extra_music"
+      | "extra_raspored"
+      | "extra_galerija"
+      | "extra_audio"
+      | "extra_usb_kaseta"
+      | "extra_usb_bocica";
+    label: string;
+    price: string;
+    originalPrice: number | undefined;
+    free?: boolean; // when true: strike-through price + green GRATIS
+  }> = [
     ...(!isPremium
       ? [
           {
@@ -839,6 +863,7 @@ function ExtrasAccordion({
             label: "Galerija fotografija",
             price: `+${formatPrice(imagesAddonPrice)}`,
             originalPrice: undefined,
+            free: allThreeSelected,
           },
         ]
       : []),
@@ -847,6 +872,7 @@ function ExtrasAccordion({
       label: "Muzika u pozadini",
       price: `+${formatPrice(musicAddonPrice)}`,
       originalPrice: undefined,
+      free: allThreeSelected,
     },
     {
       key: "extra_raspored" as const,
@@ -991,7 +1017,7 @@ function ExtrasAccordion({
               ({ key }) =>
                 key !== "extra_usb_kaseta" && key !== "extra_usb_bocica",
             )
-            .map(({ key, label, price, originalPrice }) => {
+            .map(({ key, label, price, originalPrice, free }) => {
               const info = infoKeyFor(key);
               const isOn = formData[key];
               return (
@@ -1064,17 +1090,30 @@ function ExtrasAccordion({
                       </span>
                     )}
                     <span className="ml-auto flex items-baseline gap-1.5 shrink-0">
-                      {originalPrice != null && (
-                        <span className="text-[11px] text-stone-400 line-through">
-                          {formatPrice(originalPrice)}
-                        </span>
+                      {free ? (
+                        <>
+                          <span className="text-[11px] text-stone-400 line-through">
+                            {price}
+                          </span>
+                          <span className="text-xs font-bold text-green-600">
+                            GRATIS
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          {originalPrice != null && (
+                            <span className="text-[11px] text-stone-400 line-through">
+                              {formatPrice(originalPrice)}
+                            </span>
+                          )}
+                          <span
+                            className="text-xs font-semibold"
+                            style={{ color: accentHex }}
+                          >
+                            {price}
+                          </span>
+                        </>
                       )}
-                      <span
-                        className="text-xs font-semibold"
-                        style={{ color: accentHex }}
-                      >
-                        {price}
-                      </span>
                     </span>
                   </label>
                   {key === "extra_images" && isOn && (
@@ -1137,39 +1176,45 @@ function ExtrasAccordion({
                   style={{ accentColor: accentHex }}
                 />
                 <span className="text-xs text-stone-600">{label}</span>
-                <span
-                  className="text-[11px] ml-auto shrink-0 font-medium"
-                  style={{ color: accentHex }}
-                >
-                  {price}
+                <span className="ml-auto shrink-0 flex items-baseline gap-1">
+                  <span
+                    className="text-[11px] font-medium"
+                    style={{ color: accentHex }}
+                  >
+                    {price}
+                  </span>
+                  <span className="text-[10px] text-stone-400">· pri isporuci</span>
                 </span>
               </label>
             ))}
           </div>
           {/* Sum + discount */}
           {(() => {
+            // "Ukupno" = base + the three functional add-ons (minus bundle
+            // discount). Flat extras (music/images/colour) are free INSIDE the
+            // full package; à-la-carte (no full package) they're charged and
+            // added here. USB is always off the online total (pouzeće).
             let sum = isPremium
               ? getPremiumPrice()
               : pricing.pozivnica.website.price;
             if (formData.extra_raspored) sum += rasporedPrice;
             if (formData.extra_audio) sum += audioPrice;
-            if (formData.extra_usb_kaseta)
-              sum += pricing.addons.find((a) => a.id === "usb_kaseta")!.price;
-            if (formData.extra_usb_bocica)
-              sum += pricing.addons.find((a) => a.id === "usb_bocica")!.price;
-            // Galerija fotografija (polaroid) — classic-only add-on. Premium
-            // Fountain bundles it free; other premium themes don't offer it.
-            if (!isPremium && formData.extra_images) sum += imagesAddonPrice;
-            // QR galerija — flat standalone add-on for both tiers.
             if (formData.extra_galerija) sum += galerijaPrice;
-            // Muzika u pozadini — flat add-on for both tiers.
-            if (formData.extra_music) sum += musicAddonPrice;
             // Bundle discount — mirrors buildReceiptItems (single source of
             // pricing truth). Full package (all three) beats the partial promo.
             const allThree =
               formData.extra_raspored &&
               formData.extra_audio &&
               formData.extra_galerija;
+            if (!allThree) {
+              if (formData.extra_music) sum += musicAddonPrice;
+              if (!isPremium && formData.extra_images) sum += imagesAddonPrice;
+              if (
+                formData.custom_primary_color ||
+                formData.custom_background_color
+              )
+                sum += pricing.addons.find((a) => a.id === "custom_color")!.price;
+            }
             const partialBundle =
               formData.extra_raspored &&
               (formData.extra_galerija || formData.extra_audio);
@@ -1214,6 +1259,10 @@ function ExtrasAccordion({
               </div>
             );
           })()}
+          <p className="text-[11px] text-green-700 mt-2 leading-relaxed">
+            🎁 Uz <strong>Kompletan</strong> i <strong>Premium</strong> paket —
+            brojni gratisi uključeni!
+          </p>
           <p className="text-[11px] text-stone-500 mt-2.5">
             <a
               href="/cene"
@@ -1992,22 +2041,23 @@ function Step3({
         </button>
       </div>
 
-      {/* Pricing note for custom color */}
+      {/* Custom colour: free inside the full package, +600 din à-la-carte. */}
       {(formData.custom_primary_color || formData.custom_background_color) &&
-        (() => {
-          const customColorAddon = pricing.addons.find(
-            (addon) => addon.id === "custom_color",
-          );
-          const price = customColorAddon
-            ? formatPrice(customColorAddon.price)
-            : "600 din";
-          return (
-            <div className="mt-4 p-3 rounded-lg border border-amber-200 bg-amber-50 text-sm text-amber-800">
-              ℹ️ Za prilagođenu boju biće vam naplaćeno dodatnih{" "}
-              <strong>{price}</strong>.
-            </div>
-          );
-        })()}
+        (formData.extra_raspored &&
+        formData.extra_audio &&
+        formData.extra_galerija ? (
+          <div className="mt-4 p-3 rounded-lg border border-green-200 bg-green-50 text-sm text-green-800">
+            🎁 Izmena boja po želji je <strong>gratis</strong> uz vaš paket.
+          </div>
+        ) : (
+          <div className="mt-4 p-3 rounded-lg border border-amber-200 bg-amber-50 text-sm text-amber-800">
+            ℹ️ Izmena boja po želji:{" "}
+            <strong>
+              +{formatPrice(pricing.addons.find((a) => a.id === "custom_color")!.price)}
+            </strong>{" "}
+            — ili <strong>gratis</strong> uz Kompletan/Premium paket.
+          </div>
+        ))}
 
       {/* Color picker modal */}
       <AnimatePresence>
@@ -2517,6 +2567,15 @@ export default function QuestionnaireForm({
   // preview + publish CTA and reveal the portal password once.
   const [createdSlug, setCreatedSlug] = useState<string | null>(null);
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
+  const [copiedPassword, setCopiedPassword] = useState(false);
+  const copyPassword = async () => {
+    if (!createdPassword) return;
+    try {
+      await navigator.clipboard.writeText(createdPassword);
+      setCopiedPassword(true);
+      setTimeout(() => setCopiedPassword(false), 2000);
+    } catch {}
+  };
   const [error, setError] = useState<string | null>(null);
   // Drives the dynamic spinner copy on the submit button so the user knows
   // *what* we're doing during the multi-stage submit
@@ -3105,6 +3164,12 @@ export default function QuestionnaireForm({
           paid_for_audio: formData.extra_audio,
           paid_for_gallery: formData.extra_galerija,
           paid_for_music: formData.extra_music,
+          // USB souvenir — recorded on the couple (off-system, paid on delivery).
+          paid_for_audio_USB: formData.extra_usb_kaseta
+            ? "kaseta"
+            : formData.extra_usb_bocica
+              ? "bocica"
+              : "",
           ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
           recaptcha_token: recaptchaToken,
           locations: formData.locations
@@ -3419,27 +3484,91 @@ export default function QuestionnaireForm({
           >
             Pogledaj i objavi pozivnicu →
           </a>
+          {process.env.NEXT_PUBLIC_BUILDER_CHECKOUT === "1" &&
+            (() => {
+              // Route straight to the right checkout: full package → that fixed
+              // tier; partial combo → the custom (upsell + IPS) page.
+              const sel: BuilderSelection = {
+                premium: formData.premium,
+                raspored: formData.extra_raspored,
+                audio: formData.extra_audio,
+                galerija: formData.extra_galerija,
+                music: formData.extra_music,
+                usb: formData.extra_usb_kaseta
+                  ? "kaseta"
+                  : formData.extra_usb_bocica
+                    ? "bocica"
+                    : "",
+                images: formData.extra_images,
+                customColor: !!(
+                  formData.custom_primary_color ||
+                  formData.custom_background_color
+                ),
+              };
+              const d = detectPackage(sel);
+              const tierParam = d.kind === "fixed" ? d.tier : "custom";
+              const payHref = `/placanje/pozivnica/${createdSlug}/?tier=${tierParam}`;
+              const label =
+                d.kind === "fixed"
+                  ? `Plati i aktiviraj odmah — ${formatPrice(d.rsd)}`
+                  : `Plati i aktiviraj — od ${formatPrice(Math.min(d.rsd, d.upsell.rsd))}`;
+              return (
+                <a
+                  href={payHref}
+                  className="mt-4 inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl border-2 font-semibold text-base transition-all hover:opacity-90"
+                  style={{ borderColor: accent, color: accent }}
+                >
+                  {label} →
+                </a>
+              );
+            })()}
           {createdPassword && (
             <div
-              className="mt-8 mx-auto max-w-sm rounded-2xl border p-5 text-left"
-              style={{ borderColor: `${accent}30`, backgroundColor: `${accent}08` }}
+              className="mt-8 mx-auto max-w-sm rounded-2xl border-2 p-5 text-left"
+              style={{ borderColor: `${accent}55`, backgroundColor: `${accent}0d` }}
             >
               <p
-                className="text-xs font-bold uppercase tracking-wider mb-1"
+                className="text-xs font-bold uppercase tracking-wider mb-2"
                 style={{ color: accentText }}
               >
-                Lozinka za portal Moje Venčanje
+                🔑 Lozinka za portal Moje Venčanje
               </p>
+              <div className="flex items-center gap-2 mb-2.5">
+                <span
+                  className="font-mono text-2xl font-bold tracking-widest"
+                  style={{ color: accent }}
+                >
+                  {createdPassword}
+                </span>
+                <button
+                  type="button"
+                  onClick={copyPassword}
+                  className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition-colors"
+                  style={{
+                    borderColor: `${accent}40`,
+                    color: copiedPassword ? "#15803d" : accent,
+                    backgroundColor: copiedPassword ? "#f0fdf4" : "transparent",
+                  }}
+                >
+                  {copiedPassword ? (
+                    <>
+                      <Check size={14} /> Kopirano
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={14} /> Kopiraj
+                    </>
+                  )}
+                </button>
+              </div>
               <p
-                className="font-mono text-lg font-bold mb-2"
-                style={{ color: accent }}
+                className="text-xs leading-relaxed font-semibold"
+                style={{ color: accentText }}
               >
-                {createdPassword}
-              </p>
-              <p className="text-xs leading-relaxed" style={{ color: accentText }}>
-                Sačuvajte je — sa njom se prijavljujete na{" "}
-                <span className="font-semibold">moje-vencanje</span> da pratite
-                potvrde dolaska, raspored sedenja i budžet.
+                ⚠️ Obavezno je sačuvajte — nećete je videti ponovo. Sa njom se
+                prijavljujete na{" "}
+                <span className="font-semibold">moje-vencanje</span> (potvrde
+                dolaska, raspored sedenja, budžet).
               </p>
             </div>
           )}

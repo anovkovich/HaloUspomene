@@ -4,6 +4,7 @@ import { getBirthdayData, getAllBirthdaySlugs } from "@/data/rodjendani";
 import BirthdayClient from "./BirthdayClient";
 import InvitationFrame from "@/components/invitation/InvitationFrame";
 import PreviewWatermark from "@/components/PreviewWatermark";
+import { issuePromo } from "@/lib/payments/promo";
 
 export const revalidate = 60;
 // Allow slugs not in generateStaticParams (new events added via admin)
@@ -44,10 +45,17 @@ export default async function BirthdayInvitationPage({ params }: PageProps) {
 
   // Freemium (B3): a draft renders a watermarked, RSVP-locked preview.
   const isDraft = !!data.draft;
+  const promo = issuePromo(data.event_date, slug);
 
   return (
     <InvitationFrame>
-      <BirthdayClient data={data} slug={slug} preview={isDraft} />
+      <BirthdayClient
+        data={data}
+        slug={slug}
+        preview={isDraft}
+        promoCode={promo?.code}
+        promoValidUntil={promo?.validUntil}
+      />
       {isDraft && (
         <PreviewWatermark payHref={`/placanje/rodjendan/${slug}`} />
       )}

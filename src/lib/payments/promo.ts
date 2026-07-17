@@ -27,8 +27,14 @@ export function isPromoEnabled(): boolean {
   return process.env.PROMO_ENABLED === "1";
 }
 
-/** Only wedding invitations are eligible (matches "napravi svoju pozivnicu"). */
-const ELIGIBLE_KIND: PaymentKind = "pozivnica";
+/** Invitation purchases are eligible — a guest at any celebration can redeem the
+ *  code for their own invitation: wedding (classic + premium), children's
+ *  birthday, or coming-of-age. The seating editor + gallery add-ons are not. */
+const ELIGIBLE_KINDS: ReadonlySet<PaymentKind> = new Set([
+  "pozivnica",
+  "rodjendan",
+  "punoletstvo",
+]);
 
 const SECRET =
   process.env.PROMO_SECRET || process.env.JWT_SECRET || "dev-secret";
@@ -100,7 +106,7 @@ export function verifyPromo(
   if (a.length !== b.length || !timingSafeEqual(a, b)) return fail("invalid");
 
   if (expDay < todayDay()) return fail("expired");
-  if (kind !== ELIGIBLE_KIND) return fail("ineligible_kind");
+  if (!ELIGIBLE_KINDS.has(kind)) return fail("ineligible_kind");
 
   return {
     valid: true,

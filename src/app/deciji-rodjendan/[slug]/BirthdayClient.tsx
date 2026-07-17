@@ -27,6 +27,9 @@ interface Props {
   slug: string;
   /** Freemium preview (B3): draft → RSVP locked behind a publish CTA. */
   preview?: boolean;
+  /** Guest-referral promo shown on the RSVP success screen (Option A). */
+  promoCode?: string;
+  promoValidUntil?: string;
 }
 
 const MONTHS = [
@@ -63,7 +66,7 @@ function formatDate(iso: string) {
   };
 }
 
-export default function BirthdayClient({ data, slug, preview = false }: Props) {
+export default function BirthdayClient({ data, slug, preview = false, promoCode, promoValidUntil }: Props) {
   const cssVars = getBirthdayThemeCSSVariables(data.theme, data.displayFont);
   const themeConfig = getBirthdayThemeConfig(data.theme);
   const dateInfo = formatDate(data.event_date);
@@ -350,6 +353,9 @@ export default function BirthdayClient({ data, slug, preview = false }: Props) {
                 calendarEvent={birthdayEvent}
                 reminder={birthdayReminder}
                 calendarLabels={birthdayCalLabels}
+                promoCode={promoCode}
+                promoValidUntil={promoValidUntil}
+                ctaBase="/napravi-deciju-pozivnicu"
               />
             )}
           </div>

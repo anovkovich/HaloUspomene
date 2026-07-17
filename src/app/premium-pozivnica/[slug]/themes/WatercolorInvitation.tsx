@@ -167,11 +167,15 @@ function WatercolorRSVPForm({
   submitUntil,
   formattedDeadline,
   calendar,
+  promoCode,
+  promoValidUntil,
 }: {
   slug: string;
   submitUntil: string;
   formattedDeadline: string;
   calendar: PremiumCalendarBundle;
+  promoCode?: string;
+  promoValidUntil?: string;
 }) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
@@ -263,7 +267,13 @@ function WatercolorRSVPForm({
           Pošalji još jednu potvrdu
         </button>
 
-        <InvitationOfferCTA inline tone="onDark" className="mt-6" />
+        <InvitationOfferCTA
+          inline
+          tone="onDark"
+          className="mt-6"
+          promoCode={promoCode}
+          promoValidUntil={promoValidUntil}
+        />
       </motion.div>
     );
   }
@@ -404,6 +414,9 @@ export default function WatercolorInvitation({
   isPastDeadline,
   calendar,
   preview,
+  payHref,
+  promoCode,
+  promoValidUntil,
 }: ThemeInvitationProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -957,7 +970,7 @@ export default function WatercolorInvitation({
           </p>
           {preview ? (
             <PreviewRsvpLock
-              payHref={`/placanje/pozivnica/${slug}`}
+              payHref={payHref ?? `/placanje/pozivnica/${slug}`}
               accent="#d4af37"
               ctaBg="#AE343F"
               surface="rgba(255,255,255,0.06)"
@@ -975,6 +988,8 @@ export default function WatercolorInvitation({
               submitUntil={data.submit_until}
               formattedDeadline={formattedSubmitUntil}
               calendar={calendar}
+              promoCode={promoCode}
+              promoValidUntil={promoValidUntil}
             />
           )}
           <PremiumCallCTA

@@ -27,6 +27,9 @@ interface Props {
   slug: string;
   /** Freemium preview (B3): draft → RSVP locked behind a publish CTA. */
   preview?: boolean;
+  /** Guest-referral promo shown on the RSVP success screen (Option A). */
+  promoCode?: string;
+  promoValidUntil?: string;
 }
 
 const FONT_VAR_BY_KEY: Record<ScriptFontType, string> = {
@@ -307,6 +310,8 @@ export default function PunoletstvoInvitationClient({
   data,
   slug,
   preview = false,
+  promoCode,
+  promoValidUntil,
 }: Props) {
   const [loaderDone, setLoaderDone] = useState(false);
 
@@ -825,6 +830,9 @@ export default function PunoletstvoInvitationClient({
                   gender={data.gender}
                   calendarEvent={punoletstvoEvent}
                   calendarLabels={punoletstvoCalLabels}
+                  promoCode={promoCode}
+                  promoValidUntil={promoValidUntil}
+                  ctaBase="/napravi-punoletstvo"
                 />
               )}
             </motion.div>

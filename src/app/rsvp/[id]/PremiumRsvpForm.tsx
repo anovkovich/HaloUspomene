@@ -77,6 +77,9 @@ export default function PremiumRsvpForm({
   cyrillic,
   calendarEvent,
   calendarLabels: calLabels,
+  promoCode,
+  promoValidUntil,
+  ctaBase,
 }: {
   slug: string;
   submitUntil: string;
@@ -84,6 +87,10 @@ export default function PremiumRsvpForm({
   cyrillic: boolean;
   calendarEvent?: CalendarEvent | null;
   calendarLabels?: CalendarLabels;
+  /** Guest-referral promo shown on the success screen (Option A). */
+  promoCode?: string;
+  promoValidUntil?: string;
+  ctaBase?: string;
 }) {
   const t = cyrillic ? CYR : LAT;
   const { execute: executeRecaptcha } = useRecaptcha();
@@ -193,7 +200,14 @@ export default function PremiumRsvpForm({
           {t.another}
         </button>
 
-        <InvitationOfferCTA inline tone="onDark" className="mt-6" />
+        <InvitationOfferCTA
+          inline
+          tone="onDark"
+          className="mt-6"
+          ctaBase={ctaBase}
+          promoCode={promoCode}
+          promoValidUntil={promoValidUntil}
+        />
       </motion.div>
     );
   }

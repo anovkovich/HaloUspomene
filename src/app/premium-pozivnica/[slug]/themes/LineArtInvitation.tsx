@@ -487,7 +487,7 @@ function SpinningTimeline({ timeline, locations, mapEnabled }: {
   );
 }
 
-function LineArtRSVPForm({ slug, submitUntil, formattedDeadline, calendar }: { slug: string; submitUntil: string; formattedDeadline: string; calendar: PremiumCalendarBundle }) {
+function LineArtRSVPForm({ slug, submitUntil, formattedDeadline, calendar, promoCode, promoValidUntil }: { slug: string; submitUntil: string; formattedDeadline: string; calendar: PremiumCalendarBundle; promoCode?: string; promoValidUntil?: string }) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
   const [attending, setAttending] = useState<"Da" | "Ne">("Da");
@@ -558,7 +558,13 @@ function LineArtRSVPForm({ slug, submitUntil, formattedDeadline, calendar }: { s
           Pošalji još jednu potvrdu
         </button>
 
-        <InvitationOfferCTA inline tone="onLight" className="mt-6" />
+        <InvitationOfferCTA
+          inline
+          tone="onLight"
+          className="mt-6"
+          promoCode={promoCode}
+          promoValidUntil={promoValidUntil}
+        />
       </motion.div>
     );
   }
@@ -669,6 +675,9 @@ export default function LineArtInvitation({
   isPastDeadline,
   calendar,
   preview,
+  payHref,
+  promoCode,
+  promoValidUntil,
 }: ThemeInvitationProps) {
   // Window-level scroll for page parallax
   const { scrollY } = useScroll();
@@ -859,7 +868,7 @@ export default function LineArtInvitation({
             </p>
             {preview ? (
               <PreviewRsvpLock
-                payHref={`/placanje/pozivnica/${slug}`}
+                payHref={payHref ?? `/placanje/pozivnica/${slug}`}
                 accent="#d4af37"
                 ctaBg="#AE343F"
                 surface="transparent"
@@ -872,7 +881,7 @@ export default function LineArtInvitation({
                 Rok za potvrdu dolaska je istekao.
               </p>
             ) : (
-              <LineArtRSVPForm slug={slug} submitUntil={data.submit_until} formattedDeadline={formattedSubmitUntil} calendar={calendar} />
+              <LineArtRSVPForm slug={slug} submitUntil={data.submit_until} formattedDeadline={formattedSubmitUntil} calendar={calendar} promoCode={promoCode} promoValidUntil={promoValidUntil} />
             )}
             <PremiumCallCTA
               contactPhone={data.contact_phone}

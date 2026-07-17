@@ -167,6 +167,21 @@ export async function POST(request: NextRequest) {
       ...(body.custom_background_color
         ? { custom_background_color: body.custom_background_color }
         : {}),
+      // Snapshot of the builder selection, derived server-side from the same
+      // flags above — used to server-compute the custom (partial-combo) IPS
+      // amount. Never trusted for money on its own.
+      builder_extras: {
+        premium: false,
+        raspored: body.paid_for_raspored ?? false,
+        audio: body.paid_for_audio ?? false,
+        galerija: body.paid_for_gallery ?? false,
+        music: body.paid_for_music ?? false,
+        usb: (body.paid_for_audio_USB || "") as "" | "kaseta" | "bocica",
+        images: body.paid_for_images ?? false,
+        customColor: !!(
+          body.custom_primary_color || body.custom_background_color
+        ),
+      },
       draft: true,
     };
 

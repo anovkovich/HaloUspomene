@@ -46,6 +46,11 @@ interface PremiumInvitationClientProps {
   slug: string;
   /** Freemium preview (B3): draft couple → RSVP locked behind a publish CTA. */
   preview?: boolean;
+  /** Tier-routed "pay & unlock" URL (from the server). */
+  payHref?: string;
+  /** Guest-referral promo shown on the RSVP success screen. */
+  promoCode?: string;
+  promoValidUntil?: string;
 }
 
 // Shared theme props type — exported for theme components
@@ -67,6 +72,11 @@ export interface ThemeInvitationProps {
   calendar: PremiumCalendarBundle;
   /** Freemium preview (B3): render the locked RSVP card instead of the form. */
   preview: boolean;
+  /** Tier-routed "pay & unlock" URL for the preview CTA. */
+  payHref?: string;
+  /** Guest-referral promo shown on the RSVP success screen. */
+  promoCode?: string;
+  promoValidUntil?: string;
 }
 
 export interface PremiumCalendarBundle {
@@ -84,6 +94,9 @@ export default function PremiumInvitationClient({
   data,
   slug,
   preview = false,
+  payHref,
+  promoCode,
+  promoValidUntil,
 }: PremiumInvitationClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -273,6 +286,9 @@ export default function PremiumInvitationClient({
     isRevealed,
     calendar,
     preview,
+    payHref,
+    promoCode,
+    promoValidUntil,
   };
 
   const InvitationTheme =

@@ -76,6 +76,7 @@ export default function InvitationOfferCTA({
   inline = false,
   tone = "theme",
   className = "",
+  ctaBase = "/izrada-pozivnica-online",
   promoCode,
   promoValidUntil,
 }: {
@@ -83,6 +84,10 @@ export default function InvitationOfferCTA({
   inline?: boolean;
   tone?: Tone;
   className?: string;
+  /** Funnel the CTA points at — wedding hub by default, but a birthday /
+   *  punoletstvo surface passes its own builder so the offer matches the
+   *  guest's celebration. The promo code (if any) is appended as `?promo=`. */
+  ctaBase?: string;
   /** Guest-referral promo code (Option A) — shown here + carried on the link. */
   promoCode?: string;
   promoValidUntil?: string;
@@ -90,8 +95,8 @@ export default function InvitationOfferCTA({
   const s = TONES[tone];
 
   const href = promoCode
-    ? `/izrada-pozivnica-online?promo=${encodeURIComponent(promoCode)}`
-    : "/izrada-pozivnica-online";
+    ? `${ctaBase}?promo=${encodeURIComponent(promoCode)}`
+    : ctaBase;
 
   const validUntil = promoValidUntil
     ? new Date(promoValidUntil).toLocaleDateString("sr-Latn-RS", {

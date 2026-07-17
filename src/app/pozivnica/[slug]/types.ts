@@ -120,6 +120,20 @@ export interface WeddingData {
   custom_background_color?: string; // Custom background color in hex, overrides theme background
   stamp_color?: string; // Custom wax seal color in hex (e.g. "#8B2252"), overrides theme waxSeal
   draft?: boolean; // Only visible in dev, returns 404 in production
+  // Snapshot of the /napravi-pozivnicu builder selection, written by the create/
+  // upgrade routes. Used ONLY to server-compute the custom (partial-combo) IPS
+  // amount and for admin insight — never trusted for money on its own. Shape
+  // matches BuilderSelection in src/lib/payments/builder-pricing.ts.
+  builder_extras?: {
+    premium: boolean;
+    raspored: boolean;
+    audio: boolean;
+    galerija: boolean;
+    music: boolean;
+    usb: "" | "kaseta" | "bocica";
+    images: boolean;
+    customColor: boolean;
+  };
   example?: boolean; // Demo/example couple — sorts to the bottom of the admin list
   receipt_valid?: boolean; // Receipt link is active (set false after payment)
   receipt_created?: string; // ISO date when receipt was generated

@@ -112,6 +112,25 @@ export async function POST(
       // Fountain bundles a 2-photo gallery; other premium themes leave this off.
       paid_for_images: body.paid_for_images ?? false,
       paid_for_music: body.paid_for_music ?? false,
+      // Functional add-ons + USB were not written on the premium upgrade path
+      // (patchCouple merges, so stale values survived) — set them from the form
+      // so flags and the builder_extras snapshot never diverge.
+      paid_for_raspored: body.paid_for_raspored ?? false,
+      paid_for_audio: body.paid_for_audio ?? false,
+      paid_for_gallery: body.paid_for_gallery ?? false,
+      paid_for_audio_USB: body.paid_for_audio_USB || "",
+      builder_extras: {
+        premium: true,
+        raspored: body.paid_for_raspored ?? false,
+        audio: body.paid_for_audio ?? false,
+        galerija: body.paid_for_gallery ?? false,
+        music: body.paid_for_music ?? false,
+        usb: (body.paid_for_audio_USB || "") as "" | "kaseta" | "bocica",
+        images: body.paid_for_images ?? false,
+        customColor: !!(
+          body.custom_primary_color || body.custom_background_color
+        ),
+      },
       // Stay in draft — admin manually flips it (and sets premium_paid) after billing.
       draft: true,
     };

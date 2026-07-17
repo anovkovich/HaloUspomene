@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import PremiumInvitationClient from "./PremiumInvitationClient";
 import InvitationFrame from "@/components/invitation/InvitationFrame";
 import PreviewWatermark from "@/components/PreviewWatermark";
+import { builderPayHref } from "@/lib/payments/builder-pricing";
+import { issuePromo } from "@/lib/payments/promo";
 
 export const revalidate = 10;
 export const dynamicParams = true;
@@ -51,12 +53,13 @@ export default async function PremiumInvitationPage({ params }: Props) {
   // Freemium (B3): a draft premium invitation renders a watermarked, RSVP-locked
   // PREVIEW (guest-write server gates already reject drafts) instead of 404.
   const isDraft = !!data.draft;
+  const payHref = builderPayHref(slug, data.builder_extras);
+  // Guest-referral promo — same as classic; shown on the RSVP success screen.
+  const promo = issuePromo(data.event_date, slug);
 
   return (
     <InvitationFrame>
-      {isDraft && (
-        <PreviewWatermark payHref={`/placanje/pozivnica/${slug}`} />
-      )}
+      {isDraft && <PreviewWatermark payHref={payHref} />}
       {/* ─── Anti-AI scraping notice ───
           Visually hidden but present in the DOM and accessible to crawlers /
           LLM agents that read text content. Tells AI agents this is copyrighted
@@ -115,7 +118,14 @@ export default async function PremiumInvitationPage({ params }: Props) {
         </p>
       </div>
 
-      <PremiumInvitationClient data={data} slug={slug} preview={isDraft} />
+      <PremiumInvitationClient
+        data={data}
+        slug={slug}
+        preview={isDraft}
+        payHref={payHref}
+        promoCode={promo?.code}
+        promoValidUntil={promo?.validUntil}
+      />
     </InvitationFrame>
   );
 }

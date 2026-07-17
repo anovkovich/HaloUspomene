@@ -34,6 +34,11 @@ interface CheckoutPanelProps {
   promoCode?: string;
   /** Master switch — when false, the promo UI is fully hidden. */
   promoEnabled?: boolean;
+  /** Custom (partial-combo) checkout: hide the card accordion entirely — this
+   *  amount can only be paid via IPS (manual admin approval). */
+  ipsOnly?: boolean;
+  /** Card upsell for the full package shown above IPS on the custom checkout. */
+  upsell?: { label: string; rsd: number; href: string; cheaper: boolean };
 }
 
 export default function CheckoutPanel({
@@ -49,6 +54,8 @@ export default function CheckoutPanel({
   cardEnabled,
   promoCode,
   promoEnabled = false,
+  ipsOnly = false,
+  upsell,
 }: CheckoutPanelProps) {
   const { execute: executeRecaptcha } = useRecaptcha();
 
@@ -277,44 +284,67 @@ export default function CheckoutPanel({
             </div>
           ) : (
             <div className="space-y-3">
-              {/* Card rail — always shown; disabled until LS is live (flag off) */}
-              <PayAccordion
-                open={open === "card"}
-                onToggle={() => setOpen(open === "card" ? null : "card")}
-                disabled={!cardEnabled}
-                disabledNote="Uskoro"
-                icon={<CreditCard size={18} className="text-[#AE343F]" />}
-                title="Plati karticom i aktiviraj odmah"
-                subtitle={
-                  <>
-                    Aktivacija je <strong>odmah</strong>, čim plaćanje prođe.
-                  </>
-                }
-              >
-                <button
-                  type="button"
-                  onClick={startCard}
-                  disabled={cardLoading}
-                  className="w-full flex items-center justify-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-2xl py-3.5 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              {/* Upsell (custom checkout): pay the full package on card, instant */}
+              {upsell && (
+                <a
+                  href={upsell.href}
+                  className="block rounded-2xl border-2 border-[#AE343F]/30 bg-[#AE343F]/[0.04] hover:bg-[#AE343F]/[0.07] p-4 transition-colors"
                 >
-                  {cardLoading ? (
-                    <>
-                      <Loader2 size={18} className="animate-spin" />
-                      Otvaramo plaćanje…
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard size={18} />
-                      Nastavi na plaćanje
-                    </>
-                  )}
-                </button>
-                {cardError && (
-                  <p className="text-[12px] text-[#AE343F] text-center mt-2">
-                    {cardError}
+                  <div className="flex items-center gap-2 mb-1">
+                    <CreditCard size={18} className="text-[#AE343F]" />
+                    <span className="font-semibold text-[#232323]">
+                      Uzmi ceo {upsell.label} karticom
+                    </span>
+                  </div>
+                  <p className="text-[13px] text-[#232323]/65 leading-relaxed">
+                    {formatPrice(upsell.rsd)} — aktivno <strong>odmah</strong>.
+                    {upsell.cheaper
+                      ? " Jeftinije je od vaše kombinacije i dobijate sve!"
+                      : " Ili platite svoju kombinaciju ispod."}
                   </p>
-                )}
-              </PayAccordion>
+                </a>
+              )}
+
+              {/* Card rail — always shown; disabled until LS is live (flag off) */}
+              {!ipsOnly && (
+                <PayAccordion
+                  open={open === "card"}
+                  onToggle={() => setOpen(open === "card" ? null : "card")}
+                  disabled={!cardEnabled}
+                  disabledNote="Uskoro"
+                  icon={<CreditCard size={18} className="text-[#AE343F]" />}
+                  title="Plati karticom i aktiviraj odmah"
+                  subtitle={
+                    <>
+                      Aktivacija je <strong>odmah</strong>, čim plaćanje prođe.
+                    </>
+                  }
+                >
+                  <button
+                    type="button"
+                    onClick={startCard}
+                    disabled={cardLoading}
+                    className="w-full flex items-center justify-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-2xl py-3.5 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {cardLoading ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        Otvaramo plaćanje…
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard size={18} />
+                        Nastavi na plaćanje
+                      </>
+                    )}
+                  </button>
+                  {cardError && (
+                    <p className="text-[12px] text-[#AE343F] text-center mt-2">
+                      {cardError}
+                    </p>
+                  )}
+                </PayAccordion>
+              )}
 
               {/* IPS rail */}
               <PayAccordion

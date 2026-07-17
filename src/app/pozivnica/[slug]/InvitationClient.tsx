@@ -36,6 +36,9 @@ interface InvitationClientProps {
    *  publish CTA — the server-side RSVP endpoint rejects drafts regardless,
    *  this just makes the wall visible instead of throwing a 403 at the guest. */
   preview?: boolean;
+  /** Where the "pay & unlock" CTA points — already tier-routed by the server
+   *  (full package → its fixed tier, partial combo → ?tier=custom). */
+  payHref?: string;
   /** Guest-referral promo code shown on the RSVP success screen (Option A). */
   promoCode?: string;
   promoValidUntil?: string;
@@ -239,6 +242,7 @@ export default function InvitationClient({
   slug,
   lang: langProp,
   preview = false,
+  payHref,
   promoCode,
   promoValidUntil,
 }: InvitationClientProps) {
@@ -888,7 +892,8 @@ export default function InvitationClient({
                 potvrde dolazak i sve funkcije se aktiviraju.
               </p>
               <Link
-                href={`/placanje/pozivnica/${slug}`}
+                href={payHref ?? `/placanje/pozivnica/${slug}`}
+                target="_top"
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-elegant text-sm uppercase tracking-[0.2em] transition-all hover:opacity-85"
                 style={{
                   backgroundColor: "var(--theme-primary)",

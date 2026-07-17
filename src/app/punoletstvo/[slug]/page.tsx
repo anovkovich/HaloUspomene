@@ -4,6 +4,7 @@ import { getBirthdayData, getAllBirthdaySlugs } from "@/lib/birthday";
 import PunoletstvoInvitationClient from "./PunoletstvoInvitationClient";
 import InvitationFrame from "@/components/invitation/InvitationFrame";
 import PreviewWatermark from "@/components/PreviewWatermark";
+import { issuePromo } from "@/lib/payments/promo";
 
 export const revalidate = 10;
 export const dynamicParams = true;
@@ -47,10 +48,17 @@ export default async function PunoletstvoInvitationPage({ params }: PageProps) {
 
   // Freemium (B3): a draft renders a watermarked, RSVP-locked preview.
   const isDraft = !!data.draft;
+  const promo = issuePromo(data.event_date, slug);
 
   return (
     <InvitationFrame>
-      <PunoletstvoInvitationClient data={data} slug={slug} preview={isDraft} />
+      <PunoletstvoInvitationClient
+        data={data}
+        slug={slug}
+        preview={isDraft}
+        promoCode={promo?.code}
+        promoValidUntil={promo?.validUntil}
+      />
       {isDraft && (
         <PreviewWatermark payHref={`/placanje/punoletstvo/${slug}`} />
       )}

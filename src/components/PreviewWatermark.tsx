@@ -57,6 +57,7 @@ export default function PreviewWatermark({ payHref }: { payHref: string }) {
           </p>
           <Link
             href={payHref}
+            target="_top"
             className="shrink-0 rounded-full bg-[#AE343F] hover:bg-[#8A2A32] text-white px-4 sm:px-5 py-1.5 text-[12px] font-semibold transition-colors"
           >
             Plati i otključaj je!

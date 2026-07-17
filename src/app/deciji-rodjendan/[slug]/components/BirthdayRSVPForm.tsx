@@ -22,6 +22,11 @@ interface BirthdayRSVPFormProps {
   /** RSVP reminder link shown at the bottom of the form. */
   reminder?: { event: CalendarEvent; label: string } | null;
   calendarLabels?: CalendarLabels;
+  /** Guest-referral promo shown on the success screen (Option A). */
+  promoCode?: string;
+  promoValidUntil?: string;
+  /** Funnel the offer CTA points at (birthday / punoletstvo builder). */
+  ctaBase?: string;
 }
 
 export function BirthdayRSVPForm({
@@ -30,6 +35,9 @@ export function BirthdayRSVPForm({
   calendarEvent,
   reminder,
   calendarLabels = defaultCalendarLabels(false),
+  promoCode,
+  promoValidUntil,
+  ctaBase,
 }: BirthdayRSVPFormProps) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
@@ -118,7 +126,13 @@ export function BirthdayRSVPForm({
           </div>
         )}
 
-        <InvitationOfferCTA inline className="mt-8" />
+        <InvitationOfferCTA
+          inline
+          className="mt-8"
+          ctaBase={ctaBase}
+          promoCode={promoCode}
+          promoValidUntil={promoValidUntil}
+        />
       </motion.div>
     );
   }

@@ -130,6 +130,21 @@ export async function POST(request: NextRequest) {
       paid_for_audio: body.paid_for_audio ?? false,
       // Background music is a flat 1000 din add-on across both tiers.
       paid_for_music: body.paid_for_music ?? false,
+      // USB souvenir was dropped on the premium path (present on classic) — it's
+      // the only COD (pouzeće) signal the admin gets, so persist it here too.
+      paid_for_audio_USB: body.paid_for_audio_USB || "",
+      builder_extras: {
+        premium: true,
+        raspored: body.paid_for_raspored ?? false,
+        audio: body.paid_for_audio ?? false,
+        galerija: body.paid_for_gallery ?? false,
+        music: body.paid_for_music ?? false,
+        usb: (body.paid_for_audio_USB || "") as "" | "kaseta" | "bocica",
+        images: body.paid_for_images ?? false,
+        customColor: !!(
+          body.custom_primary_color || body.custom_background_color
+        ),
+      },
       draft: true,
       phone_country: bypassCountry || "RS",
       phone_verified: !bypassTokenId,

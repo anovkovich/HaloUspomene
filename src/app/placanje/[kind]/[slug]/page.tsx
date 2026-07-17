@@ -11,6 +11,8 @@ import {
 } from "@/lib/payments/kinds";
 import { getOrCreatePendingOrder } from "@/lib/orders";
 import { productUrl } from "@/lib/payments/product-urls";
+import { createCustomPozivnicaOrder } from "@/lib/payments/custom-order";
+import { getTier } from "@/data/pricing";
 import {
   verifyPromo,
   applyPromo,
@@ -71,6 +73,52 @@ export default async function PlacanjePage({
   const adapter = KINDS[kind];
   const entity = await adapter.loadEntity(slug);
   if (!entity) notFound();
+
+  // Custom (partial-combo) branch — pozivnica only, IPS-only, with a card upsell
+  // for the full package. Amount is server-computed from the builder snapshot.
+  if (kind === "pozivnica" && requestedTier === "custom") {
+    let customOrder;
+    try {
+      customOrder = await createCustomPozivnicaOrder(slug);
+    } catch (e) {
+      if (e instanceof PaymentError && e.code === "ALREADY_UNLOCKED") {
+        return (
+          <AlreadyUnlocked
+            kind={kind}
+            slug={slug}
+            displayName={entity.displayName}
+          />
+        );
+      }
+      if (e instanceof PaymentError) notFound();
+      throw e;
+    }
+    const upsellFull = entity.premium
+      ? { tier: "premium", label: "Premium paket", rsd: getTier("premium")?.price ?? 13900 }
+      : { tier: "kompletan", label: "Kompletan paket", rsd: getTier("kompletno")?.price ?? 9900 };
+    return (
+      <CheckoutPanel
+        kind={kind}
+        slug={slug}
+        orderId={customOrder.orderId}
+        ipsRef={customOrder.ipsRef}
+        displayName={entity.displayName}
+        tierLabel="Vaša kombinacija"
+        amountRsd={customOrder.amountRsd}
+        amountEur={customOrder.amountEur}
+        lines={customOrder.lines}
+        tierId="custom"
+        cardEnabled={false}
+        ipsOnly
+        upsell={{
+          label: upsellFull.label,
+          rsd: upsellFull.rsd,
+          href: `/placanje/pozivnica/${slug}/?tier=${upsellFull.tier}`,
+          cheaper: customOrder.amountRsd >= upsellFull.rsd,
+        }}
+      />
+    );
+  }
 
   const available = adapter.tiers(entity);
   // No purchasable tier left ⇒ fully unlocked.

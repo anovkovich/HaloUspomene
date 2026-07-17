@@ -16,12 +16,19 @@ interface Props {
   slug: string;
   calendarEvent?: CalendarEvent | null;
   calendarLabels?: CalendarLabels;
+  /** Guest-referral promo shown on the success screen (Option A). */
+  promoCode?: string;
+  promoValidUntil?: string;
+  ctaBase?: string;
 }
 
 export default function StandaloneRSVPForm({
   slug,
   calendarEvent,
   calendarLabels = defaultCalendarLabels(false),
+  promoCode,
+  promoValidUntil,
+  ctaBase,
 }: Props) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
@@ -77,7 +84,13 @@ export default function StandaloneRSVPForm({
           </div>
         )}
 
-        <InvitationOfferCTA inline className="mt-8" />
+        <InvitationOfferCTA
+          inline
+          className="mt-8"
+          ctaBase={ctaBase}
+          promoCode={promoCode}
+          promoValidUntil={promoValidUntil}
+        />
       </motion.div>
     );
   }

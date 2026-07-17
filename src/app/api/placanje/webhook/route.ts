@@ -91,6 +91,17 @@ async function handleOrderCreated(evt: LsWebhook): Promise<Response> {
     lsEventId: evt.data?.id ?? null,
   });
 
+  // Custom (partial-combo) orders are IPS-only — the card rail never lists a
+  // "custom" tier, so a card webhook for one is impossible-by-design. Quarantine
+  // if it ever happens rather than unlock. (Defense in depth.)
+  if (order.tier === "custom") {
+    console.error("[webhook] card order with tier=custom → quarantine", orderId);
+    await transitionOrder(orderId, ["pending", "paid"], "review", {
+      adminNote: "Kartična uplata na custom order — nemoguće stanje, proveri.",
+    });
+    return ok();
+  }
+
   // 3. Cross-check the server-bound identity.
   if (
     custom.kind !== order.kind ||

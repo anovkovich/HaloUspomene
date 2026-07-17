@@ -6,6 +6,7 @@ import InvitationFrame from "@/components/invitation/InvitationFrame";
 import PreviewWatermark from "@/components/PreviewWatermark";
 import BackgroundMusicPlayer from "@/components/BackgroundMusicPlayer";
 import { issuePromo } from "@/lib/payments/promo";
+import { builderPayHref } from "@/lib/payments/builder-pricing";
 
 // Allow slugs not in generateStaticParams (new couples added via admin)
 export const dynamicParams = true;
@@ -69,18 +70,21 @@ export default async function InvitationPage({ params }: PageProps) {
   // RSVP success screen (only surfaces on published couples — drafts lock RSVP).
   const promo = issuePromo(weddingData.event_date, slug);
 
+  // Route the "pay & unlock" CTA to the right checkout (full package → fixed
+  // tier, partial combo → custom IPS).
+  const payHref = builderPayHref(slug, weddingData.builder_extras);
+
   return (
     <InvitationFrame>
       <InvitationClient
         data={weddingData}
         slug={slug}
         preview={isDraft}
+        payHref={payHref}
         promoCode={promo?.code}
         promoValidUntil={promo?.validUntil}
       />
-      {isDraft && (
-        <PreviewWatermark payHref={`/placanje/pozivnica/${slug}`} />
-      )}
+      {isDraft && <PreviewWatermark payHref={payHref} />}
       {weddingData.paid_for_music && weddingData.music_url && (
         <BackgroundMusicPlayer src={weddingData.music_url} />
       )}
