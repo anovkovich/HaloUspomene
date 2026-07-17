@@ -3477,54 +3477,9 @@ export default function QuestionnaireForm({
             {formData.bride} i {formData.groom}, pogledajte kako izgleda — pa je
             objavite kad budete spremni.
           </p>
-          <a
-            href={previewHref}
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-semibold text-base transition-all hover:opacity-90 shadow-lg"
-            style={{ backgroundColor: accent, boxShadow: `0 10px 25px ${accent}40` }}
-          >
-            Pogledaj i objavi pozivnicu →
-          </a>
-          {process.env.NEXT_PUBLIC_BUILDER_CHECKOUT === "1" &&
-            (() => {
-              // Route straight to the right checkout: full package → that fixed
-              // tier; partial combo → the custom (upsell + IPS) page.
-              const sel: BuilderSelection = {
-                premium: formData.premium,
-                raspored: formData.extra_raspored,
-                audio: formData.extra_audio,
-                galerija: formData.extra_galerija,
-                music: formData.extra_music,
-                usb: formData.extra_usb_kaseta
-                  ? "kaseta"
-                  : formData.extra_usb_bocica
-                    ? "bocica"
-                    : "",
-                images: formData.extra_images,
-                customColor: !!(
-                  formData.custom_primary_color ||
-                  formData.custom_background_color
-                ),
-              };
-              const d = detectPackage(sel);
-              const tierParam = d.kind === "fixed" ? d.tier : "custom";
-              const payHref = `/placanje/pozivnica/${createdSlug}/?tier=${tierParam}`;
-              const label =
-                d.kind === "fixed"
-                  ? `Plati i aktiviraj odmah — ${formatPrice(d.rsd)}`
-                  : `Plati i aktiviraj — od ${formatPrice(Math.min(d.rsd, d.upsell.rsd))}`;
-              return (
-                <a
-                  href={payHref}
-                  className="mt-4 inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl border-2 font-semibold text-base transition-all hover:opacity-90"
-                  style={{ borderColor: accent, color: accent }}
-                >
-                  {label} →
-                </a>
-              );
-            })()}
           {createdPassword && (
             <div
-              className="mt-8 mx-auto max-w-sm rounded-2xl border-2 p-5 text-left"
+              className="mb-8 mx-auto max-w-sm rounded-2xl border-2 p-5 text-left"
               style={{ borderColor: `${accent}55`, backgroundColor: `${accent}0d` }}
             >
               <p
@@ -3572,6 +3527,51 @@ export default function QuestionnaireForm({
               </p>
             </div>
           )}
+          <a
+            href={previewHref}
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-semibold text-base transition-all hover:opacity-90 shadow-lg"
+            style={{ backgroundColor: accent, boxShadow: `0 10px 25px ${accent}40` }}
+          >
+            Pogledaj i objavi pozivnicu →
+          </a>
+          {process.env.NEXT_PUBLIC_BUILDER_CHECKOUT === "1" &&
+            (() => {
+              // Route straight to the right checkout: full package → that fixed
+              // tier; partial combo → the custom (upsell + IPS) page.
+              const sel: BuilderSelection = {
+                premium: formData.premium,
+                raspored: formData.extra_raspored,
+                audio: formData.extra_audio,
+                galerija: formData.extra_galerija,
+                music: formData.extra_music,
+                usb: formData.extra_usb_kaseta
+                  ? "kaseta"
+                  : formData.extra_usb_bocica
+                    ? "bocica"
+                    : "",
+                images: formData.extra_images,
+                customColor: !!(
+                  formData.custom_primary_color ||
+                  formData.custom_background_color
+                ),
+              };
+              const d = detectPackage(sel);
+              const tierParam = d.kind === "fixed" ? d.tier : "custom";
+              const payHref = `/placanje/pozivnica/${createdSlug}/?tier=${tierParam}`;
+              const label =
+                d.kind === "fixed"
+                  ? `Plati i aktiviraj odmah — ${formatPrice(d.rsd)}`
+                  : `Plati i aktiviraj — od ${formatPrice(Math.min(d.rsd, d.upsell.rsd))}`;
+              return (
+                <a
+                  href={payHref}
+                  className="mt-4 inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl border-2 font-semibold text-base transition-all hover:opacity-90"
+                  style={{ borderColor: accent, color: accent }}
+                >
+                  {label} →
+                </a>
+              );
+            })()}
         </div>
       );
     }
