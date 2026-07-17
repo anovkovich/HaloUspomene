@@ -209,7 +209,7 @@ export default function PozivnicaZaPrviRodjendan() {
         {/* ZASTO / O PRVOM RODJENDANU */}
         <section className="py-16 sm:py-20 bg-white">
           <div className="container mx-auto px-4 max-w-3xl">
-            <div className="mb-8">
+            <div className="text-center mb-8">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
                 Zašto digitalna pozivnica
               </p>
@@ -218,7 +218,7 @@ export default function PozivnicaZaPrviRodjendan() {
                 <span className="italic text-[#AE343F]">pamti</span>
               </h2>
             </div>
-            <div className="space-y-4 text-[#232323]/70 leading-relaxed">
+            <div className="space-y-4 text-[#232323]/70 leading-relaxed text-center">
               <p>
                 Prvi rođendan je jedna od najlepših porodičnih proslava — prva
                 torta, prvi veliki krug gostiju, prve zajedničke fotografije sa
