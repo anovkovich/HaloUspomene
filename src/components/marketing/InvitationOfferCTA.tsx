@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import PromoCodeCopy from "./PromoCodeCopy";
 
 /**
  * Guest-facing, theme-aware branding + offer CTA.
@@ -131,12 +132,7 @@ export default function InvitationOfferCTA({
           >
             🎁 Vaš poklon kôd
           </p>
-          <p
-            className="font-mono text-base font-bold tracking-wider mb-1"
-            style={{ color: s.headline }}
-          >
-            {promoCode}
-          </p>
+          <PromoCodeCopy code={promoCode} textColor={s.headline} />
           <p className="text-[11px]" style={{ color: s.brand }}>
             Popust na vašu pozivnicu
             {validUntil ? ` — važi do ${validUntil}` : ""}. Automatski se

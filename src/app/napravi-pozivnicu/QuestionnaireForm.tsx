@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import * as Sentry from "@sentry/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
@@ -2576,6 +2576,17 @@ export default function QuestionnaireForm({
       setTimeout(() => setCopiedPassword(false), 2000);
     } catch {}
   };
+  // Guest-referral promo carried from the RSVP-success CTA (?promo= →
+  // localStorage by PromoCapture). Read it on the success screen so the
+  // "Plati i aktiviraj" price + link match the discount the checkout applies.
+  const [storedPromo, setStoredPromo] = useState<string | null>(null);
+  useEffect(() => {
+    if (!createdSlug) return;
+    try {
+      const p = localStorage.getItem("hu_promo");
+      if (p && p.trim()) setStoredPromo(p.trim().toUpperCase());
+    } catch {}
+  }, [createdSlug]);
   const [error, setError] = useState<string | null>(null);
   // Drives the dynamic spinner copy on the submit button so the user knows
   // *what* we're doing during the multi-stage submit
@@ -3557,10 +3568,20 @@ export default function QuestionnaireForm({
               };
               const d = detectPackage(sel);
               const tierParam = d.kind === "fixed" ? d.tier : "custom";
-              const payHref = `/placanje/pozivnica/${createdSlug}/?tier=${tierParam}`;
+              const promoQuery = storedPromo
+                ? `&promo=${encodeURIComponent(storedPromo)}`
+                : "";
+              const payHref = `/placanje/pozivnica/${createdSlug}/?tier=${tierParam}${promoQuery}`;
+              // The checkout applies the promo on FIXED tiers only (the custom
+              // "Vaša kombinacija" order isn't discounted), so mirror the 10% off
+              // here just for fixed packages — matches the checkout total.
+              const applyPromo = !!storedPromo && d.kind === "fixed";
+              const withPromo = (rsd: number) => rsd - Math.round((rsd * 10) / 100);
               const label =
                 d.kind === "fixed"
-                  ? `Plati i aktiviraj odmah — ${formatPrice(d.rsd)}`
+                  ? applyPromo
+                    ? `Plati i aktiviraj uz popust — ${formatPrice(withPromo(d.rsd))}`
+                    : `Plati i aktiviraj odmah — ${formatPrice(d.rsd)}`
                   : `Plati i aktiviraj — od ${formatPrice(Math.min(d.rsd, d.upsell.rsd))}`;
               return (
                 <a
