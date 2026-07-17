@@ -20,17 +20,11 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
-import { pricing, formatPrice, getRodjendanPozivnicaPrice } from "@/data/pricing";
 import StampaneLeadForm from "./StampaneLeadForm";
 import LiveExamplesRow from "./LiveExamplesRow";
 import PromoCapture from "@/components/PromoCapture";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
-
-const fromPrice = Math.min(
-  pricing.pozivnica.website.price,
-  getRodjendanPozivnicaPrice(),
-);
 
 export const metadata: Metadata = {
   title:
@@ -690,9 +684,6 @@ export default function IzradaPozivnicaOnline() {
               Napravite pozivnicu
               <ArrowRight size={16} />
             </a>
-            <p className="mt-6 text-sm text-[#F5F4DC]/40">
-              od {formatPrice(fromPrice)} · gotova odmah
-            </p>
           </div>
         </section>
 
