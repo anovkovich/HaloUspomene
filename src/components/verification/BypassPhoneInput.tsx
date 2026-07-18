@@ -34,7 +34,7 @@ export function BypassPhoneInput({
   const styles =
     variant === "dark"
       ? {
-          wrapper: "border-b border-white/10 focus-within:border-[#AE343F]",
+          wrapper: "bg-white/5 border border-white/10 rounded-xl focus-within:border-[#AE343F] transition-colors",
           prefix: "py-3 pl-4 pr-2 text-[#F5F4DC]/80 text-lg select-none",
           input:
             "flex-1 bg-transparent py-3 pr-4 text-[#F5F4DC] text-lg outline-none placeholder:text-white/50",
@@ -42,10 +42,10 @@ export function BypassPhoneInput({
         }
       : {
           wrapper:
-            "flex items-center border-b border-stone-200 focus-within:border-[var(--accent,#AE343F)] transition-colors",
-          prefix: "py-1.5 pl-1 pr-2 text-stone-400 text-base select-none",
+            "bg-stone-50 border border-stone-200 rounded-xl focus-within:border-[var(--accent,#AE343F)] transition-colors",
+          prefix: "py-3 pl-4 pr-2 text-stone-400 text-base select-none",
           input:
-            "flex-1 bg-transparent py-1.5 pr-1 text-stone-800 text-base outline-none placeholder:text-stone-300",
+            "flex-1 bg-transparent py-3 pr-2 text-stone-800 text-base outline-none placeholder:text-stone-300",
           hint: "inline-flex items-center gap-1.5 text-xs text-emerald-700 mt-1.5",
         };
 

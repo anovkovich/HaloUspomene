@@ -71,7 +71,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className="w-full flex items-center justify-between bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none hover:border-[#AE343F]/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
+        className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none hover:border-[#AE343F]/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
       >
         <span
           className={`${
@@ -296,7 +296,7 @@ const ContactForm: React.FC = () => {
               required
               type="text"
               placeholder="Ime i Prezime"
-              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -346,7 +346,7 @@ const ContactForm: React.FC = () => {
               required
               type="text"
               placeholder="npr. Beograd, Sala XY"
-              className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
               value={formData.location}
               onChange={(e) =>
                 setFormData({ ...formData, location: e.target.value })

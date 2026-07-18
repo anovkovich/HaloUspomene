@@ -4,5 +4,30 @@
     "dotenv",
     "fastapi",
     "healthcheck"
-  ]
+  ],
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/out": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/.vercel": true,
+    "**/*.lock": true,
+    "**/package-lock.json": true,
+    "**/pnpm-lock.yaml": true,
+    "**/yarn.lock": true,
+    "**/.git": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/out/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.vercel/**": true,
+    "**/.git/**": true
+  },
+  "search.useIgnoreFiles": true,
+  "search.followSymlinks": false
 }

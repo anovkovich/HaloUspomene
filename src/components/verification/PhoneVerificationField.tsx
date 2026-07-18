@@ -163,12 +163,12 @@ export function PhoneVerificationField({
   const styles =
     variant === "dark"
       ? {
-          wrapper: "border-b border-white/10 focus-within:border-[#AE343F]",
+          wrapper: "bg-white/5 border border-white/10 rounded-xl focus-within:border-[#AE343F] transition-colors",
           prefix: "py-3 pl-4 pr-2 text-[#F5F4DC]/80 text-lg select-none",
           input:
-            "flex-1 bg-transparent py-3 pr-4 text-[#F5F4DC] text-lg outline-none placeholder:text-white/50",
-          bigButton:
-            "w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#AE343F] py-3 text-sm font-semibold text-white hover:bg-[#8d2a33] disabled:opacity-40 disabled:cursor-not-allowed transition-colors",
+            "flex-1 min-w-0 bg-transparent py-3 pr-2 text-[#F5F4DC] text-lg outline-none placeholder:text-white/50",
+          inlineBtn:
+            "shrink-0 inline-flex items-center gap-1.5 px-3 py-2 mr-2 rounded-lg bg-[#AE343F] text-xs font-semibold text-white hover:bg-[#8d2a33] disabled:opacity-40 disabled:cursor-not-allowed transition-colors",
           codeInput: `min-w-0 flex-1 bg-transparent border border-white/15 rounded-xl px-3 ${CODE_INPUT_HEIGHT} text-center text-xl tracking-[0.4em] text-[#F5F4DC] outline-none focus:border-[#AE343F] placeholder:text-white/40`,
           confirmBtn: `${CODE_INPUT_HEIGHT} shrink-0 w-[140px] inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#AE343F] px-5 text-sm font-semibold text-white hover:bg-[#8d2a33] disabled:opacity-40 disabled:cursor-not-allowed transition-colors`,
           subText: "text-xs text-[#F5F4DC]/70",
@@ -178,12 +178,12 @@ export function PhoneVerificationField({
         }
       : {
           wrapper:
-            "flex items-center border-b border-stone-200 focus-within:border-[var(--accent,#AE343F)] transition-colors",
-          prefix: "py-1.5 pl-1 pr-2 text-stone-400 text-base select-none",
+            "bg-stone-50 border border-stone-200 rounded-xl focus-within:border-[var(--accent,#AE343F)] transition-colors",
+          prefix: "py-3 pl-4 pr-2 text-stone-400 text-base select-none",
           input:
-            "flex-1 bg-transparent py-1.5 pr-1 text-stone-800 text-base outline-none placeholder:text-stone-300",
-          bigButton:
-            "w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent,#AE343F)] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity",
+            "flex-1 bg-transparent py-3 pr-2 text-stone-800 text-base outline-none placeholder:text-stone-300",
+          inlineBtn:
+            "shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 mr-1 rounded-lg bg-[var(--accent,#AE343F)] text-xs font-semibold text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity",
           codeInput: `min-w-0 flex-1 bg-white border border-stone-200 rounded-xl px-3 ${CODE_INPUT_HEIGHT} text-center text-xl tracking-[0.4em] text-stone-800 outline-none focus:border-[var(--accent,#AE343F)] placeholder:text-stone-300`,
           confirmBtn: `${CODE_INPUT_HEIGHT} shrink-0 w-[140px] inline-flex items-center justify-center gap-1.5 rounded-xl bg-[var(--accent,#AE343F)] px-5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity`,
           subText: "text-xs text-stone-500",
@@ -221,32 +221,26 @@ export function PhoneVerificationField({
             className={`mr-2 shrink-0 ${variant === "dark" ? "text-emerald-400" : "text-emerald-600"}`}
             aria-label="Verifikovano"
           />
+        ) : !isVerified && (phase.kind === "idle" || phase.kind === "error") ? (
+          <button
+            type="button"
+            onClick={sendCode}
+            disabled={!phoneLooksValid || disabled}
+            className={styles.inlineBtn}
+          >
+            <Send size={12} />
+            Kod
+          </button>
+        ) : phase.kind === "sending" ? (
+          <button
+            type="button"
+            disabled
+            className={styles.inlineBtn + " pointer-events-none"}
+          >
+            <Loader2 size={12} className="animate-spin" />
+          </button>
         ) : null}
       </div>
-
-      {!isVerified &&
-      (phase.kind === "idle" || phase.kind === "error") ? (
-        <button
-          type="button"
-          onClick={sendCode}
-          disabled={!phoneLooksValid || disabled}
-          className={styles.bigButton}
-        >
-          <Send size={16} />
-          Pošalji kod
-        </button>
-      ) : null}
-
-      {phase.kind === "sending" ? (
-        <button
-          type="button"
-          disabled
-          className={styles.bigButton + " pointer-events-none"}
-        >
-          <Loader2 size={16} className="animate-spin" />
-          Šaljem...
-        </button>
-      ) : null}
 
       {phase.kind === "awaiting" || phase.kind === "verifying" ? (
         <div className="space-y-2 pt-1">

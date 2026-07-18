@@ -1760,17 +1760,24 @@ function Step2({
               countryLabel={bypassInfo.countryLabel}
             />
           ) : (
-            <PhoneVerificationField
-              value={formData.contact_phone}
-              onChange={(v) => {
-                updateField("contact_phone", v);
-                if (formData.phone_trust_token) {
-                  updateField("phone_trust_token", "");
-                }
-              }}
-              onVerified={(token) => updateField("phone_trust_token", token)}
-              onUnverified={() => updateField("phone_trust_token", "")}
-            />
+            <>
+              <PhoneVerificationField
+                value={formData.contact_phone}
+                onChange={(v) => {
+                  updateField("contact_phone", v);
+                  if (formData.phone_trust_token) {
+                    updateField("phone_trust_token", "");
+                  }
+                }}
+                onVerified={(token) => updateField("phone_trust_token", token)}
+                onUnverified={() => updateField("phone_trust_token", "")}
+              />
+              {!formData.phone_trust_token && (
+                <p className="text-[11px] text-stone-400 mt-1.5">
+                  Kliknite na dugme „Kod" kako biste dobili verifikacioni kod putem SMS-a.
+                </p>
+              )}
+            </>
           )}
           {formData.contact_phone &&
             (bypassInfo || formData.phone_trust_token) && (

@@ -22,7 +22,7 @@ const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 const labelClass =
   "block text-[10px] uppercase tracking-[0.2em] text-[#F5F4DC]/40 mb-2";
 const inputClass =
-  "w-full bg-transparent border-b border-[#F5F4DC]/15 py-3 px-1 text-[#F5F4DC] placeholder:text-[#F5F4DC]/30 focus:outline-none focus:border-[#AE343F] transition-colors text-base";
+  "w-full bg-white/5 border border-[#F5F4DC]/15 rounded-xl py-3 px-4 text-[#F5F4DC] placeholder:text-[#F5F4DC]/30 focus:outline-none focus:border-[#AE343F] transition-colors text-base";
 
 export default function RasporedKontaktForm() {
   const [name, setName] = useState("");

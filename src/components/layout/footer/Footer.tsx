@@ -96,7 +96,7 @@ const Footer: React.FC = () => {
           {/* Column 2: Pozivnice */}
           <div>
             <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/80 mb-6">
-              Pozivnice
+              Venčanje
             </h4>
             <ul className="space-y-3">
               {[
@@ -114,6 +114,10 @@ const Footer: React.FC = () => {
                 {
                   name: "Auto za venčanje",
                   href: "/iznajmljivanje-automobila-za-vencanje",
+                },
+                {
+                  name: "Paviljoni i oprema",
+                  href: "/iznajmljivanje-opreme-za-vencanje",
                 },
                 { name: "Kako funkcioniše", href: "/#proces" },
                 { name: "Cene", href: "/cene" },

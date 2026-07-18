@@ -285,7 +285,7 @@ const GalleryLeadForm: React.FC = () => {
             required
             type="text"
             placeholder="Ime i Prezime"
-            className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             disabled={isLoading}
@@ -331,7 +331,7 @@ const GalleryLeadForm: React.FC = () => {
           <input
             type="text"
             placeholder="npr. Beograd, hotel / sala"
-            className="w-full bg-transparent border-b border-white/10 py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
             value={formData.location}
             onChange={(e) =>
               setFormData({ ...formData, location: e.target.value })
@@ -341,46 +341,49 @@ const GalleryLeadForm: React.FC = () => {
         </div>
       </div>
 
-      {/* Uz pozivnicu? */}
-      <div className="flex items-start gap-3">
-        <input
-          type="checkbox"
-          id="withInvitation"
-          checked={formData.withInvitation}
-          onChange={(e) =>
-            setFormData({ ...formData, withInvitation: e.target.checked })
-          }
-          disabled={isLoading}
-          className="mt-1 w-4 h-4 accent-[#AE343F] cursor-pointer shrink-0"
-        />
-        <label
-          htmlFor="withInvitation"
-          className="text-[#F5F4DC]/90 text-sm cursor-pointer leading-relaxed"
-        >
-          Zainteresovan/a sam i za digitalnu pozivnicu / raspored sedenja uz
-          galeriju.
-        </label>
-      </div>
+      {/* Checkboxes */}
+      <div className="space-y-4">
+        {/* Uz pozivnicu? */}
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="withInvitation"
+            checked={formData.withInvitation}
+            onChange={(e) =>
+              setFormData({ ...formData, withInvitation: e.target.checked })
+            }
+            disabled={isLoading}
+            className="mt-1 w-4 h-4 accent-[#AE343F] cursor-pointer shrink-0"
+          />
+          <label
+            htmlFor="withInvitation"
+            className="text-[#F5F4DC]/90 text-sm cursor-pointer leading-relaxed"
+          >
+            Zainteresovan/a sam i za digitalnu pozivnicu / raspored sedenja uz
+            galeriju.
+          </label>
+        </div>
 
-      {/* Saglasnost */}
-      <div className="flex items-start gap-3">
-        <input
-          required
-          type="checkbox"
-          id="acceptedTerms"
-          checked={formData.acceptedTerms}
-          onChange={(e) =>
-            setFormData({ ...formData, acceptedTerms: e.target.checked })
-          }
-          disabled={isLoading}
-          className="mt-1 w-4 h-4 accent-[#AE343F] cursor-pointer shrink-0"
-        />
-        <label
-          htmlFor="acceptedTerms"
-          className="text-[#F5F4DC]/90 text-sm cursor-pointer leading-relaxed"
-        >
-          Saglasan/na sam da me kontaktirate povodom ovog upita za QR galeriju.
-        </label>
+        {/* Saglasnost */}
+        <div className="flex items-start gap-3">
+          <input
+            required
+            type="checkbox"
+            id="acceptedTerms"
+            checked={formData.acceptedTerms}
+            onChange={(e) =>
+              setFormData({ ...formData, acceptedTerms: e.target.checked })
+            }
+            disabled={isLoading}
+            className="mt-1 w-4 h-4 accent-[#AE343F] cursor-pointer shrink-0"
+          />
+          <label
+            htmlFor="acceptedTerms"
+            className="text-[#F5F4DC]/90 text-sm cursor-pointer leading-relaxed"
+          >
+            Saglasan/na sam da me kontaktirate povodom ovog upita za QR galeriju.
+          </label>
+        </div>
       </div>
 
       <button

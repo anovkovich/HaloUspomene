@@ -481,6 +481,11 @@ function Step2({
             onVerified={(token) => updateField("phone_trust_token", token)}
             onUnverified={() => updateField("phone_trust_token", "")}
           />
+          {!formData.phone_trust_token && (
+            <p className="text-[11px] text-stone-400 mt-1.5">
+              Kliknite na dugme „Kod" kako biste dobili verifikacioni kod putem SMS-a.
+            </p>
+          )}
         </Field>
       </div>
       <RecaptchaDisclosure className="mt-4 text-[10px] text-stone-400 text-center" />

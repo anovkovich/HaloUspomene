@@ -473,7 +473,7 @@ export default function MojeVencanjeClient() {
                   placeholder="'Slug' Vaše pozivnice"
                   autoComplete="off"
                   data-1p-ignore
-                  className="w-full bg-transparent border-b border-[#d4af37]/60 px-0 py-3 text-center text-sm tracking-wide text-[#232323] placeholder:text-[#232323]/50 focus:border-[#d4af37] focus:outline-none transition-colors [&:-webkit-autofill]:[-webkit-text-fill-color:#232323] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
+                  className="w-full bg-[#d4af37]/5 border border-[#d4af37]/30 rounded-xl px-4 py-3 text-center text-sm tracking-wide text-[#232323] placeholder:text-[#232323]/50 focus:border-[#d4af37] focus:outline-none transition-colors [&:-webkit-autofill]:[-webkit-text-fill-color:#232323] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
                   required
                 />
                 <input
@@ -483,7 +483,7 @@ export default function MojeVencanjeClient() {
                   placeholder="Lozinka"
                   autoComplete="off"
                   data-1p-ignore
-                  className="w-full bg-transparent border-b border-[#d4af37]/60 px-0 py-3 text-center text-sm tracking-wide text-[#232323] placeholder:text-[#232323]/50 focus:border-[#d4af37] focus:outline-none transition-colors [&:-webkit-autofill]:[-webkit-text-fill-color:#232323] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
+                  className="w-full bg-[#d4af37]/5 border border-[#d4af37]/30 rounded-xl px-4 py-3 text-center text-sm tracking-wide text-[#232323] placeholder:text-[#232323]/50 focus:border-[#d4af37] focus:outline-none transition-colors [&:-webkit-autofill]:[-webkit-text-fill-color:#232323] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
                   required
                 />
                 {error && <p className="text-xs text-[#AE343F]">{error}</p>}

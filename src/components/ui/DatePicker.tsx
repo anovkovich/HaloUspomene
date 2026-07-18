@@ -220,7 +220,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         className={`w-full flex items-center justify-between py-3 px-4 text-left focus:outline-none transition-all group ${
           isLight
             ? "bg-[#faf9f6] border border-stone-200 rounded-xl"
-            : "bg-transparent border-b border-white/10"
+            : "bg-white/5 border border-white/10 rounded-xl"
         }`}
         style={{
           ...(isOpen || undefined
