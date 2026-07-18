@@ -12,6 +12,7 @@ import {
   AlertCircle,
   MessageCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 import DatePicker from "@/components/ui/DatePicker";
 import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
 import {
@@ -43,7 +44,7 @@ const GalleryLeadForm: React.FC = () => {
     e.preventDefault();
     setError(null);
     if (!phoneTrustToken) {
-      setError("Verifikujte broj telefona pre slanja upita.");
+      toast.error('Verifikujte broj telefona klikom na dugme "Kod" kako biste dobili SMS kod.');
       return;
     }
     const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
@@ -388,7 +389,7 @@ const GalleryLeadForm: React.FC = () => {
 
       <button
         type="submit"
-        disabled={isLoading || !phoneTrustToken}
+        disabled={isLoading}
         className="btn bg-[#AE343F] hover:bg-[#8A2A32] btn-lg w-full min-h-[48px] h-16 sm:h-20 rounded-2xl text-[#F5F4DC] text-base sm:text-lg font-bold shadow-2xl shadow-[#AE343F]/40 group relative overflow-hidden border-none disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className="relative z-10 flex items-center gap-3">

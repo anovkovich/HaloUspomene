@@ -10,6 +10,7 @@ import {
   Phone,
   Calendar,
 } from "lucide-react";
+import { toast } from "sonner";
 import DatePicker from "@/components/ui/DatePicker";
 import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
 import {
@@ -49,7 +50,7 @@ export default function RasporedKontaktForm() {
       return;
     }
     if (!phoneTrustToken) {
-      setError("Verifikujte broj telefona pre slanja upita.");
+      toast.error('Verifikujte broj telefona klikom na dugme "Kod" kako biste dobili SMS kod.');
       return;
     }
 
@@ -274,7 +275,7 @@ export default function RasporedKontaktForm() {
       <div>
         <button
           type="submit"
-          disabled={submitting || !phoneTrustToken}
+          disabled={submitting}
           className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#AE343F] hover:bg-[#8A2A32] disabled:opacity-50 text-[#F5F4DC] text-sm uppercase tracking-widest font-medium rounded-full transition-all shadow-xl shadow-[#AE343F]/20"
         >
           {submitting ? (
