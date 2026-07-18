@@ -623,12 +623,13 @@ export default function RootLayout({
             style: {
               background: "#232323",
               color: "#fff",
-              fontSize: "0.75rem",
+              fontSize: "0.875rem",
               fontWeight: 500,
-              borderRadius: "0.75rem",
-              padding: "0.625rem 1rem",
-              boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-              maxWidth: "20rem",
+              borderRadius: "1rem",
+              padding: "1rem 1.25rem",
+              boxShadow: "0 10px 25px -5px rgba(0,0,0,0.25)",
+              width: "calc(100vw - 2rem)",
+              maxWidth: "24rem",
               textAlign: "center",
             },
           }}
