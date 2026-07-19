@@ -183,7 +183,15 @@ export default function MojeVencanjeClient() {
           setDbCategories(vendorData.categories);
           setDbCities(vendorData.cities);
           setMyEndorsements(endorsements);
-          setActiveView(isGalleryOnly ? "galerija" : "overview");
+          // Respect ?tab= deep-link for regular users
+          const tab = new URLSearchParams(window.location.search).get("tab");
+          const validTabs: ActiveView[] = ["checklist", "budget", "vendors", "audio", "galerija", "meni", "guests"];
+          if (isGalleryOnly) {
+            setActiveView("galerija");
+          } else if (!tab || !validTabs.includes(tab as ActiveView)) {
+            setActiveView("overview");
+          }
+          // else: tab is valid, already set by mount effect
           setPwaSubView("none");
           setState("auth");
         } else {
@@ -290,7 +298,15 @@ export default function MojeVencanjeClient() {
         setDbCategories(vendorData2.categories);
         setDbCities(vendorData2.cities);
         setMyEndorsements(endorsements2);
-        setActiveView(isGalleryOnly ? "galerija" : "overview");
+        // Respect ?tab= deep-link for regular users
+        const tab = new URLSearchParams(window.location.search).get("tab");
+        const validTabs: ActiveView[] = ["checklist", "budget", "vendors", "audio", "galerija", "meni", "guests"];
+        if (isGalleryOnly) {
+          setActiveView("galerija");
+        } else if (!tab || !validTabs.includes(tab as ActiveView)) {
+          setActiveView("overview");
+        }
+        // else: tab is valid, already set by mount effect
         setPwaSubView("none");
         setState("auth");
       } catch {
@@ -420,7 +436,7 @@ export default function MojeVencanjeClient() {
                 {!(mobilePrompt && skipInstall) && (
                   <>
                     <p className="text-[#232323]/75 max-w-md mx-auto mb-6">
-                      Besplatan planer koji vam pomaže da organizujete savršeno
+                      Kompletan planer koji vam pomaže da organizujete savršeno
                       venčanje — od izbora svečane sale do efekata za prvi ples,
                       sve na jednom mestu.
                     </p>
@@ -768,16 +784,55 @@ export default function MojeVencanjeClient() {
         >
           <div className="flex justify-around items-center h-14">
             {coupleInfo.galleryOnly ? (
-              <button
-                onClick={() => {
-                  setActiveView("galerija");
-                  window.scrollTo({ top: 0 });
-                }}
-                className="flex flex-col items-center gap-0.5 py-1 text-[#AE343F]"
-              >
-                <Images size={20} />
-                <span className="text-[10px] font-medium">Galerija</span>
-              </button>
+              <>
+                <button
+                  onClick={() => {
+                    setActiveView("galerija");
+                    window.scrollTo({ top: 0 });
+                  }}
+                  className={`flex flex-col items-center gap-0.5 py-1 ${
+                    activeView === "galerija"
+                      ? "text-[#AE343F]"
+                      : "text-[#232323]/60"
+                  }`}
+                >
+                  <Images size={20} />
+                  <span className="text-[10px] font-medium">Galerija</span>
+                </button>
+                {(["overview", "guests", "budget"] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => {
+                      setActiveView(v);
+                      window.scrollTo({ top: 0 });
+                    }}
+                    className={`relative flex flex-col items-center gap-0.5 py-1 ${
+                      activeView === v
+                        ? "text-[#232323]/50"
+                        : "text-[#232323]/35"
+                    }`}
+                  >
+                    {v === "overview" ? (
+                      <Home size={20} />
+                    ) : v === "guests" ? (
+                      <Users size={20} />
+                    ) : (
+                      <Wallet size={20} />
+                    )}
+                    <span className="text-[10px] font-medium">
+                      {v === "overview"
+                        ? "Pregled"
+                        : v === "guests"
+                          ? "Gosti"
+                          : "Budžet"}
+                    </span>
+                    <Lock
+                      size={9}
+                      className="absolute top-0 right-0 text-[#232323]/40"
+                    />
+                  </button>
+                ))}
+              </>
             ) : (
               <>
                 <button

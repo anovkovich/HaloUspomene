@@ -97,9 +97,6 @@ export default function Sidebar({
         {lockedItems.length > 0 && (
           <>
             <div className="border-t border-[#232323]/10 my-3" />
-            <p className="px-3 text-[10px] font-medium text-[#232323]/40 uppercase tracking-wider mb-2">
-              Uz digitalnu pozivnicu
-            </p>
             {lockedItems.map((item) => {
               const isActive = activeView === item.view;
               return (
@@ -124,7 +121,7 @@ export default function Sidebar({
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Sparkles size={12} className="text-[#d4af37]" />
                 <span className="text-[11px] font-medium text-[#232323]/70">
-                  Uz digitalne pozivnice
+                  Uz digitalnu pozivnicu
                 </span>
               </div>
               <p className="text-[10px] text-[#232323]/50 leading-relaxed mb-2">

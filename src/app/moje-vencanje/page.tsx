@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import MojeVencanjeClient from "./MojeVencanjeClient";
 
 export const metadata: Metadata = {
-  title: "Moje Venčanje — Besplatan Planer za Organizaciju Venčanja",
+  title: "Moje Venčanje — Planer za Organizaciju Venčanja",
   description:
-    "Organizujte venčanje na jednom mestu: checklista zadataka, praćenje budžeta, katalog vendora (sale, bendovi, fotografi, torte, dekoracija) i audio knjiga uspomena. Besplatno.",
+    "Organizujte venčanje na jednom mestu: checklista zadataka, praćenje budžeta, katalog vendora (sale, bendovi, fotografi, torte, dekoracija) i audio knjiga uspomena.",
   keywords: [
     "organizacija venčanja",
     "planer za venčanje",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "torta za venčanje",
   ],
   openGraph: {
-    title: "Moje Venčanje — Besplatan Planer za Organizaciju Venčanja",
+    title: "Moje Venčanje — Planer za Organizaciju Venčanja",
     description:
       "Checklista, budžet, katalog vendora i audio knjiga uspomena — sve za organizaciju vašeg venčanja na jednom mestu.",
   },

@@ -6,6 +6,39 @@
 >
 > Sa srećom.
 
+## Critical Rules
+
+### Testing Before Push
+**NEVER push without local verification.** Before `git push`:
+1. Run `npx tsc --noEmit` to catch type errors
+2. Test all affected URLs in browser or via `curl`
+3. For DB-dependent pages, create proper test data and verify rendering
+4. If unsure, ask the user to verify before pushing
+
+### Password/PIN Formats
+Different products use different credential formats — mismatched test data will break login:
+
+| Product | Format | Example | Login validation |
+|---------|--------|---------|------------------|
+| Standalone raspored | 6-digit numeric | `847291` | `inputMode="numeric"`, `maxLength={6}` |
+| Pozivnica / Moje Venčanje | GroomName + 4 digits | `Stefan9012` | Plain text input |
+
+Generation code:
+- Raspored: `src/lib/standalone-seating.ts` → `generatePassword()`
+- Pozivnica: `src/app/api/pozivnica/create/route.ts` → `${groom}${4-digit-random}`
+
+### Test Data for MongoDB
+When creating test data, include ALL required fields:
+- `couple_names` must have `full_display` (used in metadata)
+- `standalone_seatings.password` must be 6-digit numeric
+- `standalone_seatings.createdAt/updatedAt` must be `Date` objects
+- See `scripts/create-test-orders.mjs` for complete schemas
+
+### Serbian Copy Guidelines
+- Never use "besplatno" for features that come with paid packages
+- Use "uz naše pakete" or "uz digitalne pozivnice" instead
+- Never use Serbian special quotes (`„"`) in JS/TS — causes parsing errors
+
 ## Project Overview
 
 **HaloUspomene** (`halouspomene.rs`) is a Serbian wedding & celebration SaaS platform. It started as a wedding-invitation builder and has grown into a multi-product suite:
