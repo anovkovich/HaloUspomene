@@ -39,7 +39,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 export const metadata: Metadata = {
   title: "Raspored Sedenja za Svadbu — Online Alat",
   description:
-    "Raspored sedenja i stolova za svadbu online — raspoređivanje gostiju, QR pano dobrodošlice i „gde sedim?" pretraga. Uvoz gostiju, demo i cena po upitu.",
+    'Raspored sedenja i stolova za svadbu online — raspoređivanje gostiju, QR pano dobrodošlice i "gde sedim?" pretraga. Uvoz gostiju, demo i cena po upitu.',
   keywords: [
     "raspored sedenja",
     "raspored sedenja online",
@@ -462,15 +462,15 @@ const faqs = [
   },
   {
     q: "Mogu li da menjam raspored u poslednji čas ako neko otkaže?",
-    a: "Da. Sve promene koje napravite u editoru se ažuriraju u realnom vremenu — i QR kod i link „gde sedim?" ostaju isti, samo se ažurira ono što gost vidi kada skenira. Možete da menjate raspored čak i tokom samog događaja sa telefona.",
+    a: 'Da. Sve promene koje napravite u editoru se ažuriraju u realnom vremenu — i QR kod i link "gde sedim?" ostaju isti, samo se ažurira ono što gost vidi kada skenira. Možete da menjate raspored čak i tokom samog događaja sa telefona.',
   },
   {
     q: "Da li mogu da uvezem goste iz Excel-a ili Google Sheets-a?",
-    a: "Da. Alat podržava .xlsx, .xls i .csv format. Dovoljno je da imate kolone za ime gosta, broj osoba u njegovoj grupi i opciono kategoriju (npr. „Mladini" ili „Kolege sa posla"). Alat sve automatski procesuira u listu spremnu za raspoređivanje.",
+    a: 'Da. Alat podržava .xlsx, .xls i .csv format. Dovoljno je da imate kolone za ime gosta, broj osoba u njegovoj grupi i opciono kategoriju (npr. "Mladini" ili "Kolege sa posla"). Alat sve automatski procesuira u listu spremnu za raspoređivanje.',
   },
   {
     q: "Šta je QR Pano dobrodošlice i kako se uklapa u raspored sedenja?",
-    a: "QR Pano dobrodošlice je elegantan grafički pano (B1 format, spreman za štampu) sa QR kodom koji vodi do personalizovane stranice „gde sedim?". Postavlja se na ulazu u salu — gost skenira telefonom, ukuca ime i odmah vidi za koji je sto raspoređen. Eliminiše gužvu na ulazu, štampane spiskove i potrebu za hostesom. Više detalja na našoj stranici QR Pano dobrodošlice.",
+    a: 'QR Pano dobrodošlice je elegantan grafički pano (B1 format, spreman za štampu) sa QR kodom koji vodi do personalizovane stranice "gde sedim?". Postavlja se na ulazu u salu — gost skenira telefonom, ukuca ime i odmah vidi za koji je sto raspoređen. Eliminiše gužvu na ulazu, štampane spiskove i potrebu za hostesom. Više detalja na našoj stranici QR Pano dobrodošlice.',
   },
   {
     q: "Koje oblike stolova podržava alat?",
@@ -482,7 +482,7 @@ const faqs = [
   },
   {
     q: "Kako gosti pronalaze svoj sto na dan događaja?",
-    a: "Tri opcije: 1) Skeniraju QR kod sa panoa na ulazu u salu i pretraže svoje ime. 2) Otvore link „gde sedim?" koji ste im poslali pre događaja (npr. u sklopu pozivnice). 3) Pitaju hostesu koja koristi isti taj link na svom telefonu. Pretraga zanemaruje dijakritike (š, č, ž, ć) — gost se nalazi i ako ukuca „Petrovic" umesto „Petrović".",
+    a: 'Tri opcije: 1) Skeniraju QR kod sa panoa na ulazu u salu i pretraže svoje ime. 2) Otvore link "gde sedim?" koji ste im poslali pre događaja (npr. u sklopu pozivnice). 3) Pitaju hostesu koja koristi isti taj link na svom telefonu. Pretraga zanemaruje dijakritike (š, č, ž, ć) — gost se nalazi i ako ukuca "Petrovic" umesto "Petrović".',
   },
   {
     q: "Da li je raspored sedenja online dostupan i u Beogradu, Novom Sadu i drugim gradovima?",
@@ -501,7 +501,7 @@ export default function RasporedSedenjaLanding() {
     "@type": "SoftwareApplication",
     name: "HALO Uspomene — Raspored sedenja online",
     description:
-      "Online alat za raspoređivanje stolova i gostiju na svadbi, konferenciji, korporativnom eventu ili većoj proslavi. Editor, Excel/CSV uvoz gostiju, QR pano dobrodošlice za ulaz u salu, lično „gde sedim?" pretraga.",
+      'Online alat za raspoređivanje stolova i gostiju na svadbi, konferenciji, korporativnom eventu ili većoj proslavi. Editor, Excel/CSV uvoz gostiju, QR pano dobrodošlice za ulaz u salu, lično "gde sedim?" pretraga.',
     applicationCategory: "BusinessApplication",
     applicationSubCategory: "Event Planning",
     operatingSystem: "Web (browser-based)",
@@ -514,7 +514,7 @@ export default function RasporedSedenjaLanding() {
       "Ručno dodavanje i izmena gostiju",
       "Filtriranje po kategorijama (VIP, Govornici, kolege)",
       "QR pano dobrodošlice (PDF, B1 format)",
-      "Personalizovan link „Gde sedim?" za goste",
+      'Personalizovan link "Gde sedim?" za goste',
       "Promene moguće u realnom vremenu do dana događaja",
       "Pretraga sa prepoznavanjem dijakritike",
     ],
@@ -708,27 +708,15 @@ export default function RasporedSedenjaLanding() {
                 Kako radi — pravi primer
               </p>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] leading-tight">
-                Od liste zvanica do panoa na ulazu
+                Od šeme sale do panoa na ulazu
               </h2>
             </div>
 
             <div className="max-w-5xl mx-auto space-y-16 sm:space-y-24">
               <Scene
                 n="01"
-                icon={SCENE_ICON.list}
-                title="Napravite listu zvanica"
-                text="Dodajte goste ručno ili uvezite spisak iz Excel-a. Grupišite ih po kategorijama — familija mladine, familija mladoženje, kolege, prijatelji. Pratite ko je potvrdio dolazak, a ko još nije."
-                visual={
-                  <BrowserFrame>
-                    <GuestListMock />
-                  </BrowserFrame>
-                }
-              />
-              <Scene
-                n="02"
                 icon={SCENE_ICON.editor}
                 title="Iscrtajte šemu sale i rasporedite goste"
-                flip
                 text="Postavite stolove prema planu koji ste dobili od objekta — okrugle, pravougaone ili mladenački sto. Zatim jednostavno prevucite goste na njihova mesta. Sistem vam pokazuje koliko je mesta zauzeto na svakom stolu."
                 visual={
                   <BrowserFrame>
@@ -737,9 +725,10 @@ export default function RasporedSedenjaLanding() {
                 }
               />
               <Scene
-                n="03"
+                n="02"
                 icon={SCENE_ICON.chair}
                 title="Generišite QR pano za ulaz u salu"
+                flip
                 text="Jednim klikom preuzmite elegantan B1 pano sa QR kodom — spreman za štampu u bilo kojoj štampariji. Postavite ga na ulaz i gosti će se sami snaći bez gužve i štampanih spiskova."
                 visual={
                   <div className="bg-gradient-to-br from-[#faf9f6] to-[#F5F4DC] rounded-2xl p-8 border border-stone-200 text-center">
@@ -758,10 +747,9 @@ export default function RasporedSedenjaLanding() {
                 }
               />
               <Scene
-                n="04"
+                n="03"
                 icon={SCENE_ICON.pin}
                 title="Gost skenira i odmah zna svoj sto"
-                flip
                 text="Gost na ulazu skenira QR kod sa telefona, ukuca svoje ime — i za 5 sekundi vidi broj svog stola zajedno sa mapom sale. Bez čekanja, bez pitanja, bez haosa."
                 visual={
                   <IPhoneFrame>
@@ -875,7 +863,7 @@ export default function RasporedSedenjaLanding() {
                     {[
                       "B1 pano (700×1000mm) spreman za štampu",
                       "QR kod u visokoj rezoluciji",
-                      "Personalizovan link „Gde sedim?" za goste",
+                      'Personalizovan link "Gde sedim?" za goste',
                       "Mapa sale sa označenim stolom gosta",
                     ].map((item) => (
                       <div
@@ -905,7 +893,7 @@ export default function RasporedSedenjaLanding() {
                 Zašto baš mi
               </p>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] leading-tight">
-                „Besplatno" ima sitna slova
+                "Besplatno" ima sitna slova
               </h2>
               <p className="text-base text-[#232323]/65 leading-relaxed mt-4">
                 Drugi vam poklone 5 stolova i šezdesetak gostiju — a onda, kad
@@ -919,15 +907,16 @@ export default function RasporedSedenjaLanding() {
               {/* Them */}
               <div className="rounded-2xl p-7 border border-stone-200 bg-white">
                 <p className="text-sm font-bold uppercase tracking-[0.15em] text-[#232323]/40 mb-5">
-                  Besplatni alati
+                  Drugi alati
                 </p>
                 <ul className="space-y-3">
                   {[
-                    "Do ~5 stolova i 60-ak gostiju besplatno",
-                    "Za celu svadbu — plaćate više paketa",
-                    "Statična slika: prva izmena znači novu štampu",
-                    "Bez QR panoa i stranice „Gde sedim?"",
-                    "Bez menija i podrške — snalazite se sami",
+                    "Do 5 stolova i 50 gostiju",
+                    "Cela svadba zahteva dodatne doplate",
+                    "Nema dizajn za pano dobrodošlice",
+                    "Ne postoji ni PDF izvoz",
+                    'Bez stranice "Gde sedim?"!',
+                    "Bez podrške — snalazite se sami",
                   ].map((t) => (
                     <li
                       key={t}
@@ -963,7 +952,7 @@ export default function RasporedSedenjaLanding() {
                       za ulaz u salu
                     </>,
                     <>
-                      Stranica „Gde sedim?" — gost skenira, ukuca ime i za pet
+                      Stranica "Gde sedim?" — gost skenira, ukuca ime i za pet
                       sekundi zna svoj sto
                       <GdeSedimInfoButton />
                     </>,
@@ -1006,7 +995,7 @@ export default function RasporedSedenjaLanding() {
                   "Excel / CSV uvoz gostiju (ime, broj, kategorija)",
                   "Ručno dodavanje, izmena i brisanje gostiju",
                   "Filtriranje po kategorijama (npr. VIP, Govornici, Studenti)",
-                  'Personalizovan link „Gde sedim?" za goste',
+                  'Personalizovan link "Gde sedim?" za goste',
                   "QR kod (visoka rezolucija za štampu)",
                   "QR pano u B1 formatu spreman za štampu (PDF format)",
                   "Mapa sale sa vizuelnim rasporedom stolova",

@@ -28,36 +28,32 @@ import {
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
-  title:
-    "QR Pano Dobrodošlice — Pametan Raspored Sedenja za Svadbu",
+  title: "QR Pano Dobrodošlice — Digitalni Vodič za Goste na Svadbi",
   description:
-    "QR Pano dobrodošlice za venčanje, svadbu ili drugi događaj — gosti skeniraju QR kod na ulazu u salu, ukucaju ime i telefon ih vodi do njihovog stola. Alat za raspored sedenja, B1 pano spreman za štampu. Bez gužve, bez spiskova, bez hostese.",
+    "QR Pano dobrodošlice za venčanje ili event — gosti skeniraju QR kod na ulazu u salu, ukucaju ime i telefon ih vodi do njihovog stola. B1 pano spreman za štampu. Bez gužve, bez spiskova, bez hostese.",
   keywords: [
     "qr pano dobrodošlice",
     "qr pano za venčanje",
     "qr pano za svadbu",
     "qr pano za salu",
-    "raspored sedenja",
-    "raspored sedenja za svadbu",
-    "raspored sedenja za venčanje",
-    "raspored sedenja online",
-    "digitalni raspored sedenja",
-    "raspored stolova svadba",
-    "QR kod za sedenje",
-    "pametno sedenje venčanje",
-    "vizuelni raspored stolova",
+    "qr kod za svadbu",
+    "qr kod za goste",
     "gde sedim svadba",
+    "gde sedim pretraga",
     "pano za salu",
     "pano dobrodošlice za štampu",
     "ulaz u salu venčanje",
+    "welcome pano svadba",
+    "digitalni ulaz svadba",
     "moderna svadba srbija",
     "qr pano cena",
     "kako napraviti qr pano",
+    "B1 pano za štampu",
   ],
   openGraph: {
-    title: "QR Pano Dobrodošlice — Pametan raspored sedenja | HALO Uspomene",
+    title: "QR Pano Dobrodošlice — Digitalni Vodič za Goste | HALO Uspomene",
     description:
-      "Pametan raspored sedenja za svadbu — gosti skeniraju QR pano i pronalaze svoj sto u 2 sekunde.",
+      "Gosti skeniraju QR pano na ulazu i pronalaze svoj sto za 5 sekundi. B1 format spreman za štampu.",
     type: "website",
     url: `${siteUrl}/qr-pano-dobrodoslice`,
     siteName: "Halo Uspomene",
@@ -66,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "QR Pano Dobrodošlice | HALO Uspomene",
     description:
-      "Pametan raspored sedenja — alat za upravljanje rasporedom i QR pano za ulaz u salu.",
+      "Gosti skeniraju QR kod na ulazu u salu i za 5 sekundi znaju svoj sto. B1 pano spreman za štampu.",
   },
   alternates: {
     canonical: `${siteUrl}/qr-pano-dobrodoslice`,
@@ -467,15 +463,15 @@ const faqs = [
   },
   {
     q: "Koliko košta QR pano dobrodošlice?",
-    a: "QR pano je deo paketa „raspored sedenja” — košta 2.500 RSD uz website pozivnicu, ili još povoljnije u kombinaciji sa premium pozivnicom. Cena uključuje pristup alatu za pravljenje rasporeda, generisanje PDF panoa, QR koda i personalizovan link „gde sedim?” za goste. Sama štampa kod štamparije nije uračunata (obično 1.000–2.500 RSD za B1 format u Srbiji).",
+    a: 'QR pano je deo paketa "raspored sedenja" — košta 2.500 RSD uz website pozivnicu, ili još povoljnije u kombinaciji sa premium pozivnicom. Cena uključuje pristup alatu za pravljenje rasporeda, generisanje PDF panoa, QR koda i personalizovan link "gde sedim?" za goste. Sama štampa kod štamparije nije uračunata (obično 1.000–2.500 RSD za B1 format u Srbiji).',
   },
   {
     q: "Mogu li gosti da pronađu svoj sto bez QR panoa?",
-    a: "Da. Možete im poslati direktan link „gde sedim?” pre venčanja (uz pozivnicu, SMS-om ili u WhatsApp grupi), ili tradicionalno postaviti domaćina/hostesu na ulazu sa tabletom ili telefonom — umesto haosa sa papirima i spiskovima, jednostavno otvore isti taj link i pronađu mesto svakom gostu za par sekundi.",
+    a: 'Da. Možete im poslati direktan link "gde sedim?" pre venčanja (uz pozivnicu, SMS-om ili u WhatsApp grupi), ili tradicionalno postaviti domaćina/hostesu na ulazu sa tabletom ili telefonom — umesto haosa sa papirima i spiskovima, jednostavno otvore isti taj link i pronađu mesto svakom gostu za par sekundi.',
   },
   {
     q: "Da li QR pano radi i bez interneta?",
-    a: "Sam QR kod se skenira bez interneta — kamera telefona prepoznaje kod u sekundi. Ali da bi gost video za koji je sto raspoređen, potrebna mu je internet konekcija (mobilni podaci ili Wi-Fi sale). Naša „gde sedim?” stranica je optimizovana za brzo učitavanje (manje od 500 KB) i radi i na slabom signalu.",
+    a: 'Sam QR kod se skenira bez interneta — kamera telefona prepoznaje kod u sekundi. Ali da bi gost video za koji je sto raspoređen, potrebna mu je internet konekcija (mobilni podaci ili Wi-Fi sale). Naša "gde sedim?" stranica je optimizovana za brzo učitavanje (manje od 500 KB) i radi i na slabom signalu.',
   },
   {
     q: "U kom formatu se štampa QR pano?",
@@ -487,7 +483,7 @@ const faqs = [
   },
   {
     q: "Da li pretraga prepoznaje srpske dijakritike (š, č, ž, ć)?",
-    a: "Da. Pretraga gostiju zanemaruje dijakritike — ako se gost preziva „Petrović”, može da ukuca „Petrovic” i naći će se u listi. Isto važi za sva slova sa kvačicama (š, č, ž, ć) i njihove latinične varijante.",
+    a: 'Da. Pretraga gostiju zanemaruje dijakritike — ako se gost preziva "Petrović", može da ukuca "Petrovic" i naći će se u listi. Isto važi za sva slova sa kvačicama (š, č, ž, ć) i njihove latinične varijante.',
   },
   {
     q: "Da li dobijam i QR kod za potvrdu dolaska?",
@@ -499,9 +495,9 @@ export default function QRPanoLandingPage() {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: "QR Pano Dobrodošlice — Pametan raspored sedenja",
+    name: "QR Pano Dobrodošlice — Digitalni Vodič za Goste",
     description:
-      "Elegantan QR pano za ulaz u salu — gosti skeniraju kod, ukucaju ime i telefon ih vodi do njihovog stola. Uz alat za raspored sedenja i personalizovan link „gde sedim?”. Format B1, spreman za štampu.",
+      'Elegantan QR pano za ulaz u salu — gosti skeniraju kod, ukucaju ime i telefon ih vodi do njihovog stola. B1 format spreman za štampu, personalizovan link "gde sedim?" za svakog gosta.',
     image: `${siteUrl}/images/pano.webp`,
     brand: { "@type": "Brand", name: "HALO Uspomene" },
     category: "Wedding Stationery / Event Signage",
@@ -791,7 +787,7 @@ export default function QRPanoLandingPage() {
                   "Excel / CSV uvoz gostiju (ime, broj osoba, kategorija)",
                   "QR kod za pano u visokoj rezoluciji za štampu",
                   "PDF pano u B1 formatu, spreman za štampariju",
-                  'Personalizovan link „Gde sedim?" za svakog gosta',
+                  'Personalizovan link "Gde sedim?" za svakog gosta',
                   "Pretraga po imenu (prepoznaje š, č, ž, ć)",
                   "Promene moguće do samog dana venčanja",
                 ].map((item) => (
