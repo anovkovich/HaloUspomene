@@ -241,7 +241,7 @@ export default function RasporedKontaktForm() {
             required
             value={eventName}
             onChange={(e) => setEventName(e.target.value)}
-            placeholder="npr. Konferencija Beograd 2026"
+            placeholder="npr. Venčanje Marija & Dejan"
             disabled={submitting}
             className={inputClass}
           />
