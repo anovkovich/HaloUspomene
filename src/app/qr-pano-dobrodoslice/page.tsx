@@ -1020,17 +1020,17 @@ export default function QRPanoLandingPage() {
         {/* Bottom note: standalone seating access */}
         <section className="py-10 sm:py-12 bg-white border-t border-stone-200">
           <div className="container mx-auto px-4 text-center">
-            <p className="text-sm sm:text-base text-[#232323]/60 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base text-[#232323]/60 leading-relaxed max-w-2xl mx-auto mb-4">
               Organizujete event ili ne želite website pozivnicu? Alat za
-              raspored sedenja i QR pano možete uzeti i samostalno —{" "}
-              <Link
-                href="/raspored-sedenja#kontakt-raspored"
-                className="text-[#AE343F] font-medium hover:underline underline-offset-4"
-              >
-                prijavite se ovde
-              </Link>
-              .
+              raspored sedenja i QR pano možete uzeti i samostalno.
             </p>
+            <Link
+              href="/raspored-sedenja#kontakt-raspored"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#AE343F] hover:bg-[#8A2A32] text-white text-sm uppercase tracking-widest font-medium rounded-full transition-all"
+            >
+              Platite i aktivirajte odmah
+              <ArrowRight size={16} />
+            </Link>
           </div>
         </section>
       </main>

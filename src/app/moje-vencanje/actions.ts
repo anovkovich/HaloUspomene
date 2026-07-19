@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { getWeddingData } from "@/data/pozivnice";
-import { patchCouple } from "@/lib/couples";
+import { patchCouple, isGalleryOnlyCouple } from "@/lib/couples";
 import type { MeniData } from "@/app/pozivnica/[slug]/types";
 import {
   loadPortalData as dbLoadPortal,
@@ -76,6 +76,7 @@ export async function verifyAuth(): Promise<{
   premium?: boolean;
   premium_paid?: boolean;
   paid_for_gallery?: boolean;
+  galleryOnly?: boolean;
 } | null> {
   const slug = await getAuthSlug();
   if (!slug) return null;
@@ -95,6 +96,7 @@ export async function verifyAuth(): Promise<{
     premium: data.premium ?? false,
     premium_paid: data.premium_paid ?? false,
     paid_for_gallery: data.paid_for_gallery ?? false,
+    galleryOnly: isGalleryOnlyCouple(data),
   };
 }
 

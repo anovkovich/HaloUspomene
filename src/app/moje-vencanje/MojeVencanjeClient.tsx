@@ -103,6 +103,7 @@ export default function MojeVencanjeClient() {
     premium: boolean;
     premiumPaid: boolean;
     paidForGallery: boolean;
+    galleryOnly: boolean;
   } | null>(null);
 
   // Portal data
@@ -148,6 +149,7 @@ export default function MojeVencanjeClient() {
       setSlug(savedSlug);
       verifyAuth().then(async (result) => {
         if (result?.ok && result.slug) {
+          const isGalleryOnly = result.galleryOnly ?? false;
           setCoupleInfo({
             slug: result.slug,
             bride: result.bride!,
@@ -159,6 +161,7 @@ export default function MojeVencanjeClient() {
             premium: result.premium ?? false,
             premiumPaid: result.premium_paid ?? false,
             paidForGallery: result.paid_for_gallery ?? false,
+            galleryOnly: isGalleryOnly,
           });
           const [data, highlighted, vendorData, endorsements] =
             await Promise.all([
@@ -177,7 +180,7 @@ export default function MojeVencanjeClient() {
           setDbCategories(vendorData.categories);
           setDbCities(vendorData.cities);
           setMyEndorsements(endorsements);
-          setActiveView("overview");
+          setActiveView(isGalleryOnly ? "galerija" : "overview");
           setPwaSubView("none");
           setState("auth");
         } else {
@@ -252,6 +255,7 @@ export default function MojeVencanjeClient() {
           return;
         }
 
+        const isGalleryOnly = json.couple.galleryOnly ?? false;
         setCoupleInfo({
           slug: trimmedSlug,
           bride: json.couple.bride,
@@ -263,6 +267,7 @@ export default function MojeVencanjeClient() {
           premium: json.couple.premium ?? false,
           premiumPaid: json.couple.premium_paid ?? false,
           paidForGallery: json.couple.paid_for_gallery ?? false,
+          galleryOnly: isGalleryOnly,
         });
 
         const [data, highlighted, vendorData2, endorsements2] =
@@ -282,7 +287,7 @@ export default function MojeVencanjeClient() {
         setDbCategories(vendorData2.categories);
         setDbCities(vendorData2.cities);
         setMyEndorsements(endorsements2);
-        setActiveView("overview");
+        setActiveView(isGalleryOnly ? "galerija" : "overview");
         setPwaSubView("none");
         setState("auth");
       } catch {
@@ -743,95 +748,110 @@ export default function MojeVencanjeClient() {
           style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
         >
           <div className="flex justify-around items-center h-14">
-            <button
-              onClick={() => {
-                setActiveView("overview");
-                setPwaSubView("none");
-                window.scrollTo({ top: 0 });
-              }}
-              className={`flex flex-col items-center gap-0.5 py-1 ${
-                activeView === "overview"
-                  ? "text-[#AE343F]"
-                  : "text-[#232323]/60"
-              }`}
-            >
-              <Home size={20} />
-              <span className="text-[10px] font-medium">Pregled</span>
-            </button>
-            <button
-              onClick={() => {
-                setActiveView("guests");
-                window.scrollTo({ top: 0 });
-              }}
-              className={`flex flex-col items-center gap-0.5 py-1 ${
-                activeView === "guests" ? "text-[#AE343F]" : "text-[#232323]/60"
-              }`}
-            >
-              <Users size={20} />
-              <span className="text-[10px] font-medium">Gosti</span>
-            </button>
-            <button
-              onClick={() => {
-                setActiveView("vendors");
-                window.scrollTo({ top: 0 });
-              }}
-              className={`flex flex-col items-center gap-0.5 py-1 ${
-                activeView === "vendors"
-                  ? "text-[#AE343F]"
-                  : "text-[#232323]/60"
-              }`}
-            >
-              <Star size={20} />
-              <span className="text-[10px] font-medium">Vendori</span>
-            </button>
-            <button
-              onClick={() => {
-                setActiveView("audio");
-                window.scrollTo({ top: 0 });
-              }}
-              className={`flex flex-col items-center gap-0.5 py-1 ${
-                activeView === "audio" ? "text-[#AE343F]" : "text-[#232323]/60"
-              }`}
-            >
-              <Mic size={20} />
-              <span className="text-[10px] font-medium">Audio</span>
-            </button>
-            {coupleInfo.paidForGallery && (
+            {coupleInfo.galleryOnly ? (
               <button
                 onClick={() => {
                   setActiveView("galerija");
                   window.scrollTo({ top: 0 });
                 }}
-                className={`flex flex-col items-center gap-0.5 py-1 ${
-                  activeView === "galerija"
-                    ? "text-[#AE343F]"
-                    : "text-[#232323]/60"
-                }`}
+                className="flex flex-col items-center gap-0.5 py-1 text-[#AE343F]"
               >
                 <Images size={20} />
                 <span className="text-[10px] font-medium">Galerija</span>
               </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setActiveView("overview");
+                    setPwaSubView("none");
+                    window.scrollTo({ top: 0 });
+                  }}
+                  className={`flex flex-col items-center gap-0.5 py-1 ${
+                    activeView === "overview"
+                      ? "text-[#AE343F]"
+                      : "text-[#232323]/60"
+                  }`}
+                >
+                  <Home size={20} />
+                  <span className="text-[10px] font-medium">Pregled</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveView("guests");
+                    window.scrollTo({ top: 0 });
+                  }}
+                  className={`flex flex-col items-center gap-0.5 py-1 ${
+                    activeView === "guests" ? "text-[#AE343F]" : "text-[#232323]/60"
+                  }`}
+                >
+                  <Users size={20} />
+                  <span className="text-[10px] font-medium">Gosti</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveView("vendors");
+                    window.scrollTo({ top: 0 });
+                  }}
+                  className={`flex flex-col items-center gap-0.5 py-1 ${
+                    activeView === "vendors"
+                      ? "text-[#AE343F]"
+                      : "text-[#232323]/60"
+                  }`}
+                >
+                  <Star size={20} />
+                  <span className="text-[10px] font-medium">Vendori</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveView("audio");
+                    window.scrollTo({ top: 0 });
+                  }}
+                  className={`flex flex-col items-center gap-0.5 py-1 ${
+                    activeView === "audio" ? "text-[#AE343F]" : "text-[#232323]/60"
+                  }`}
+                >
+                  <Mic size={20} />
+                  <span className="text-[10px] font-medium">Audio</span>
+                </button>
+                {coupleInfo.paidForGallery && (
+                  <button
+                    onClick={() => {
+                      setActiveView("galerija");
+                      window.scrollTo({ top: 0 });
+                    }}
+                    className={`flex flex-col items-center gap-0.5 py-1 ${
+                      activeView === "galerija"
+                        ? "text-[#AE343F]"
+                        : "text-[#232323]/60"
+                    }`}
+                  >
+                    <Images size={20} />
+                    <span className="text-[10px] font-medium">Galerija</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setActiveView("meni");
+                    window.scrollTo({ top: 0 });
+                  }}
+                  className={`flex flex-col items-center gap-0.5 py-1 ${
+                    activeView === "meni" ? "text-[#AE343F]" : "text-[#232323]/60"
+                  }`}
+                >
+                  <UtensilsCrossed size={20} />
+                  <span className="text-[10px] font-medium">Meni</span>
+                </button>
+                <Link
+                  href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
+                  target="_blank"
+                  className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/60"
+                >
+                  <LayoutDashboard size={20} />
+                  <span className="text-[10px] font-medium">Raspored</span>
+                </Link>
+              </>
             )}
-            <button
-              onClick={() => {
-                setActiveView("meni");
-                window.scrollTo({ top: 0 });
-              }}
-              className={`flex flex-col items-center gap-0.5 py-1 ${
-                activeView === "meni" ? "text-[#AE343F]" : "text-[#232323]/60"
-              }`}
-            >
-              <UtensilsCrossed size={20} />
-              <span className="text-[10px] font-medium">Meni</span>
-            </button>
-            <Link
-              href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
-              target="_blank"
-              className="flex flex-col items-center gap-0.5 py-1 text-[#232323]/60"
-            >
-              <LayoutDashboard size={20} />
-              <span className="text-[10px] font-medium">Raspored</span>
-            </Link>
           </div>
         </nav>
       )}
@@ -864,52 +884,61 @@ export default function MojeVencanjeClient() {
               {daysUntil(coupleInfo.eventDate)}d
             </p>
             <nav className="flex-1 px-3 space-y-1">
-              {[
-                {
-                  view: "overview" as const,
-                  label: "Pregled",
-                  icon: <Home size={18} />,
-                },
-                {
-                  view: "checklist" as const,
-                  label: "Checklista",
-                  icon: <CheckCircle2 size={18} />,
-                },
-                {
-                  view: "budget" as const,
-                  label: "Budžet",
-                  icon: <Wallet size={18} />,
-                },
-                {
-                  view: "vendors" as const,
-                  label: "Vendori",
-                  icon: <Star size={18} />,
-                },
-                {
-                  view: "audio" as const,
-                  label: "Audio knjiga",
-                  icon: <Mic size={18} />,
-                },
-                ...(coupleInfo.paidForGallery
-                  ? [
-                      {
-                        view: "galerija" as const,
-                        label: "Galerija",
-                        icon: <Images size={18} />,
-                      },
-                    ]
-                  : []),
-                {
-                  view: "meni" as const,
-                  label: "Meni",
-                  icon: <UtensilsCrossed size={18} />,
-                },
-                {
-                  view: "guests" as const,
-                  label: "Gosti",
-                  icon: <Users size={18} />,
-                },
-              ].map((item) => {
+              {(coupleInfo.galleryOnly
+                ? [
+                    {
+                      view: "galerija" as const,
+                      label: "Galerija",
+                      icon: <Images size={18} />,
+                    },
+                  ]
+                : [
+                    {
+                      view: "overview" as const,
+                      label: "Pregled",
+                      icon: <Home size={18} />,
+                    },
+                    {
+                      view: "checklist" as const,
+                      label: "Checklista",
+                      icon: <CheckCircle2 size={18} />,
+                    },
+                    {
+                      view: "budget" as const,
+                      label: "Budžet",
+                      icon: <Wallet size={18} />,
+                    },
+                    {
+                      view: "vendors" as const,
+                      label: "Vendori",
+                      icon: <Star size={18} />,
+                    },
+                    {
+                      view: "audio" as const,
+                      label: "Audio knjiga",
+                      icon: <Mic size={18} />,
+                    },
+                    ...(coupleInfo.paidForGallery
+                      ? [
+                          {
+                            view: "galerija" as const,
+                            label: "Galerija",
+                            icon: <Images size={18} />,
+                          },
+                        ]
+                      : []),
+                    {
+                      view: "meni" as const,
+                      label: "Meni",
+                      icon: <UtensilsCrossed size={18} />,
+                    },
+                    {
+                      view: "guests" as const,
+                      label: "Gosti",
+                      icon: <Users size={18} />,
+                    },
+                  ]
+              ).map((item) => {
                 const isActive = activeView === item.view;
                 return (
                   <button
@@ -930,16 +959,20 @@ export default function MojeVencanjeClient() {
                   </button>
                 );
               })}
-              <div className="border-t border-[#232323]/10 my-2" />
-              <Link
-                href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
-                target="_blank"
-                onClick={() => setMobileSidebar(false)}
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-[#232323]/85 hover:bg-white/60 hover:text-[#232323] transition-colors"
-              >
-                <LayoutDashboard size={18} />
-                Raspored
-              </Link>
+              {!coupleInfo.galleryOnly && (
+                <>
+                  <div className="border-t border-[#232323]/10 my-2" />
+                  <Link
+                    href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
+                    target="_blank"
+                    onClick={() => setMobileSidebar(false)}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-[#232323]/85 hover:bg-white/60 hover:text-[#232323] transition-colors"
+                  >
+                    <LayoutDashboard size={18} />
+                    Raspored
+                  </Link>
+                </>
+              )}
             </nav>
             <div className="px-3 pb-5 pt-2 border-t border-[#232323]/10">
               <button

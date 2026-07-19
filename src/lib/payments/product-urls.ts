@@ -2,13 +2,15 @@ import type { PaymentKind } from "@/lib/orders";
 
 // Public URL of the unlocked product per kind. Type-only import above (erased at
 // compile) so this stays client-safe — usable from both the admin table and the
-// server `/hvala` page. galerija unlocks a flag on the couple record, so it
-// deep-links to the invitation.
+// server `/hvala` page.
 export function productUrl(kind: PaymentKind, slug: string): string {
   switch (kind) {
     case "pozivnica":
-    case "galerija":
       return `/pozivnica/${slug}/`;
+    case "galerija":
+      // Standalone galerija koristi portal; kupac je auto-ulogovan preko
+      // QuickRegister mehanizma. ?tab=galerija otvara direktno Galerija view.
+      return `/moje-vencanje/?tab=galerija`;
     case "rodjendan":
       return `/deciji-rodjendan/${slug}/`;
     case "punoletstvo":

@@ -25,9 +25,16 @@ async function isAdmin(req: NextRequest) {
 // Drop the ISR cache for the unlocked entity so the flip (draft:false, paid_*,
 // active) is visible immediately instead of after the revalidate window.
 function revalidateEntity(kind: PaymentKind, slug: string) {
+  if (kind === "galerija") {
+    // productUrl za galeriju pokazuje na portal; flag paid_for_gallery
+    // živi na couple recordu → revalidiraj stranice pozivnice.
+    revalidatePath(`/pozivnica/${slug}`);
+    revalidatePath(`/premium-pozivnica/${slug}`);
+    return;
+  }
   const url = productUrl(kind, slug).replace(/\/$/, "");
   revalidatePath(url);
-  if (kind === "pozivnica" || kind === "galerija") {
+  if (kind === "pozivnica") {
     revalidatePath(`/premium-pozivnica/${slug}`);
   }
 }

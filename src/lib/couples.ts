@@ -3,6 +3,17 @@ import { WeddingData } from "@/app/pozivnica/[slug]/types";
 
 export type CoupleDocument = WeddingData & { slug: string };
 
+/** Standalone gallery user = kupio samo galeriju, bez pozivnice/rasporeda/audio */
+export function isGalleryOnlyCouple(data: WeddingData): boolean {
+  return (
+    (data.paid_for_gallery ?? false) &&
+    (data.draft ?? false) &&
+    !(data.paid_for_raspored ?? false) &&
+    !(data.paid_for_audio ?? false) &&
+    !(data.premium_paid ?? false)
+  );
+}
+
 async function col() {
   const client = await clientPromise;
   return client.db("halouspomene").collection<CoupleDocument>("couples");

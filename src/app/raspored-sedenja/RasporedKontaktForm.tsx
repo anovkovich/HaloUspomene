@@ -9,7 +9,9 @@ import {
   User,
   Phone,
   Calendar,
+  CreditCard,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import DatePicker from "@/components/ui/DatePicker";
 import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
@@ -26,6 +28,7 @@ const inputClass =
   "w-full bg-white/5 border border-[#F5F4DC]/15 rounded-xl py-3 px-4 text-[#F5F4DC] placeholder:text-[#F5F4DC]/30 focus:outline-none focus:border-[#AE343F] transition-colors text-base";
 
 export default function RasporedKontaktForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneTrustToken, setPhoneTrustToken] = useState("");
@@ -34,6 +37,7 @@ export default function RasporedKontaktForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [mode, setMode] = useState<"inquiry" | "buy">("inquiry");
   // Pay-first self-serve: the record is created immediately; the couple pays to
   // activate, then logs in with this PIN.
   const [createdSlug, setCreatedSlug] = useState<string | null>(null);
@@ -111,12 +115,21 @@ export default function RasporedKontaktForm() {
 
       // Admin notification — record is already created server-side, this is
       // just so admin knows to share URL+PIN with the client.
+      const emailSubject =
+        mode === "buy"
+          ? `Raspored sedenja - PLAĆANJE U TOKU: ${eventName.trim()}`
+          : `Raspored sedenja - upit za ${eventName.trim()}`;
+      const emailNote =
+        mode === "buy"
+          ? "Korisnik je krenuo na stranicu za plaćanje. Pristup je VEC kreiran — aktivira se automatski po uplati."
+          : "Pristup je VEC kreiran. Posaljite klijentu URL + PIN telefonom/SMS-om.";
+
       const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           access_key: WEB3FORMS_KEY,
-          subject: `Raspored sedenja - upit za ${eventName.trim()}`,
+          subject: emailSubject,
           from_name: "HALO Uspomene",
           name: name.trim(),
           telefon: `+381${phone}`,
@@ -126,8 +139,7 @@ export default function RasporedKontaktForm() {
           slug: requestData.slug,
           pin: requestData.password,
           pristupni_link: accessUrl,
-          napomena:
-            "Pristup je VEC kreiran. Posaljite klijentu URL + PIN telefonom/SMS-om.",
+          napomena: emailNote,
         }),
       });
 
@@ -138,6 +150,12 @@ export default function RasporedKontaktForm() {
 
       if (!res.ok || !data.success) {
         setError(data.message || "Slanje nije uspelo. Pokušajte ponovo.");
+        return;
+      }
+
+      // If buy mode, redirect directly to payment
+      if (mode === "buy" && requestData.slug) {
+        router.push(`/placanje/raspored/${requestData.slug}`);
         return;
       }
 
@@ -250,7 +268,7 @@ export default function RasporedKontaktForm() {
           <label className={labelClass}>
             <span className="inline-flex items-center gap-1.5">
               <Calendar size={10} className="text-[#AE343F]" />
-              Datum eventa (opciono)
+              Datum eventa *
             </span>
           </label>
           <DatePicker
@@ -270,26 +288,59 @@ export default function RasporedKontaktForm() {
         </div>
       )}
 
-      <RecaptchaDisclosure className="text-[10px] text-[#F5F4DC]/30" />
-
-      <div>
+      {/* CTA section */}
+      <div className="mt-2 pt-6 border-t border-[#F5F4DC]/10 flex flex-col items-center gap-4">
+        {/* Primary - Buy now */}
         <button
           type="submit"
-          disabled={submitting || !name || !phone || !eventName}
-          className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#AE343F] hover:bg-[#8A2A32] disabled:opacity-50 text-[#F5F4DC] text-sm uppercase tracking-widest font-medium rounded-full transition-all shadow-xl shadow-[#AE343F]/20"
+          disabled={submitting}
+          onClick={() => {
+            if (!name || !phone || !eventName || !eventDate) {
+              toast.error("Molimo popunite sva obavezna polja pre nastavka.");
+              return;
+            }
+            setMode("buy");
+          }}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-10 py-3.5 bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] text-sm uppercase tracking-widest font-medium rounded-full transition-all shadow-lg shadow-[#AE343F]/25 disabled:opacity-50"
         >
-          {submitting ? (
+          {submitting && mode === "buy" ? (
             <>
               <Loader2 size={16} className="animate-spin" />
-              Šaljem upit...
+              Priprema...
             </>
           ) : (
             <>
-              Pošalji upit
-              <Send size={16} />
+              Plati odmah i kreni
+              <CreditCard size={16} />
             </>
           )}
         </button>
+
+        {/* Secondary - Inquiry link */}
+        <button
+          type="submit"
+          disabled={submitting}
+          onClick={() => {
+            if (!name || !phone || !eventName || !eventDate) {
+              toast.error("Molimo popunite sva obavezna polja pre nastavka.");
+              return;
+            }
+            setMode("inquiry");
+          }}
+          className="group inline-flex items-center gap-1.5 text-xs text-[#F5F4DC]/45 hover:text-[#F5F4DC]/70 transition-colors disabled:opacity-50"
+        >
+          {submitting && mode === "inquiry" ? (
+            <Loader2 size={12} className="animate-spin" />
+          ) : (
+            <>
+              Stupite u kontakt sa timom za podršku i sva pitanja
+              <Send size={12} className="opacity-50 group-hover:translate-x-0.5 transition-transform" />
+            </>
+          )}
+        </button>
+
+        {/* reCAPTCHA disclosure at the very bottom */}
+        <RecaptchaDisclosure className="text-[10px] text-[#F5F4DC]/30 mt-4" />
       </div>
     </form>
   );

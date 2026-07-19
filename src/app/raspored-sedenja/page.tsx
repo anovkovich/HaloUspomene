@@ -1036,13 +1036,21 @@ export default function RasporedSedenjaLanding() {
                   <span className="font-bold text-[#232323]">{bundlePrice}</span>{" "}
                   uz website pozivnicu
                 </p>
-                <a
-                  href="#kontakt-raspored"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] text-sm uppercase tracking-widest font-medium rounded-full transition-all shadow-xl shadow-[#AE343F]/20"
-                >
-                  Pošaljite nam upit
-                  <ArrowRight size={16} />
-                </a>
+                <div className="flex flex-col items-center gap-3">
+                  <a
+                    href="#kontakt-raspored"
+                    className="inline-flex items-center gap-2 px-8 py-4 bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] text-sm uppercase tracking-widest font-medium rounded-full transition-all shadow-xl shadow-[#AE343F]/20"
+                  >
+                    Kupi odmah
+                    <ArrowRight size={16} />
+                  </a>
+                  <a
+                    href="#kontakt-raspored"
+                    className="text-sm text-[#232323]/60 hover:text-[#AE343F] transition-colors"
+                  >
+                    Imam pitanje — pošalji upit
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -1155,8 +1163,7 @@ export default function RasporedSedenjaLanding() {
                   Spremni da organizujete?
                 </h2>
                 <p className="text-base sm:text-lg text-[#F5F4DC]/65 leading-relaxed">
-                  Ostavite osnovne podatke o događaju — a mi ćemo Vas
-                  kontaktirati u roku od 24h
+                  Unesite podatke o događaju i aktivirajte alat odmah
                 </p>
               </div>
 

@@ -35,6 +35,7 @@ interface SidebarProps {
     scriptFont: string;
     draft: boolean;
     paidForGallery?: boolean;
+    galleryOnly?: boolean;
   };
   checklistStats: { completed: number; total: number };
   budgetStats: { spent: number; planned: number };
@@ -102,9 +103,12 @@ export default function Sidebar({
 
       {/* Main nav */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {NAV_ITEMS.filter(
-          (item) => item.view !== "galerija" || coupleInfo.paidForGallery
-        ).map((item) => {
+        {NAV_ITEMS.filter((item) => {
+          if (coupleInfo.galleryOnly) {
+            return item.view === "galerija";
+          }
+          return item.view !== "galerija" || coupleInfo.paidForGallery;
+        }).map((item) => {
           const isActive = activeView === item.view;
           return (
             <button
@@ -122,28 +126,30 @@ export default function Sidebar({
           );
         })}
 
-        {/* Separator */}
-        <div className="border-t border-[#232323]/10 my-3" />
-
-        {/* External links */}
-        {coupleInfo.draft ? (
-          <button
-            onClick={onDraftAction}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/50 cursor-pointer transition-all duration-200 hover:bg-white/70 hover:text-[#232323]/75"
-          >
-            <LayoutDashboard size={18} />
-            <span className="flex-1 text-left">Raspored</span>
-          </button>
-        ) : (
-          <Link
-            href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
-            target="_blank"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/85 cursor-pointer transition-all duration-200 hover:bg-white/70 hover:text-[#232323] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
-          >
-            <LayoutDashboard size={18} />
-            <span className="flex-1">Raspored</span>
-            <ExternalLink size={12} className="text-[#232323]/50" />
-          </Link>
+        {/* Separator + external links (hidden for gallery-only users) */}
+        {!coupleInfo.galleryOnly && (
+          <>
+            <div className="border-t border-[#232323]/10 my-3" />
+            {coupleInfo.draft ? (
+              <button
+                onClick={onDraftAction}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/50 cursor-pointer transition-all duration-200 hover:bg-white/70 hover:text-[#232323]/75"
+              >
+                <LayoutDashboard size={18} />
+                <span className="flex-1 text-left">Raspored</span>
+              </button>
+            ) : (
+              <Link
+                href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
+                target="_blank"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#232323]/85 cursor-pointer transition-all duration-200 hover:bg-white/70 hover:text-[#232323] hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+              >
+                <LayoutDashboard size={18} />
+                <span className="flex-1">Raspored</span>
+                <ExternalLink size={12} className="text-[#232323]/50" />
+              </Link>
+            )}
+          </>
         )}
       </nav>
 

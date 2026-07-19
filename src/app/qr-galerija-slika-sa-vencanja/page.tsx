@@ -295,7 +295,7 @@ export default function QrGalerijaSlikaSaVencanja() {
                   data-track-cta-name="zatrazi_galeriju"
                   data-track-cta-location="hero"
                 >
-                  Zatražite galeriju
+                  Platite i aktivirajte
                   <ArrowRight size={18} />
                 </Link>
                 <a
@@ -408,13 +408,13 @@ export default function QrGalerijaSlikaSaVencanja() {
                   data-track-cta-name="zatrazi_galeriju"
                   data-track-cta-location="section_cena"
                 >
-                  Zatražite galeriju
+                  Platite i aktivirajte
                 </Link>
                 <Link
                   href="/cene"
                   className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] rounded-full px-8"
                 >
-                  Sve cene i paketi
+                  Pogledajte sve cene i pakete
                 </Link>
               </div>
             </div>
@@ -464,12 +464,11 @@ export default function QrGalerijaSlikaSaVencanja() {
                 fill="currentColor"
               />
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#F5F4DC] mb-4">
-                Zatražite QR galeriju za{" "}
+                Aktivirajte QR galeriju za{" "}
                 <span className="italic text-[#AE343F]">vaše venčanje</span>
               </h2>
               <p className="text-[#F5F4DC]/55 max-w-xl mx-auto">
-                Pošaljite upit — javljamo se brzo sa svim informacijama i
-                aktivacijom galerije. Bez obaveze.
+                Unesite podatke o događaju i aktivirajte galeriju odmah
               </p>
             </div>
 

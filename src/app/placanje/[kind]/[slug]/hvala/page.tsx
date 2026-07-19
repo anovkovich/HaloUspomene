@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2, Clock, KeyRound } from "lucide-react";
 import { getOrder } from "@/lib/orders";
 import { getWeddingData } from "@/lib/couples";
+import { getStandaloneSeating } from "@/lib/standalone-seating";
 import { isPaymentKind } from "@/lib/payments/kinds";
 import { productUrl } from "@/lib/payments/product-urls";
 import Refresher from "./Refresher";
@@ -44,6 +45,18 @@ export default async function HvalaPage({
     premiumInProduction = couple?.premium_status === "u_izradi";
   }
 
+  // PIN za standalone proizvode — buyer ga je video na success ekranu forme,
+  // ali posle redirect-a na plaćanje često je izgubljen. Prikaz je gated na
+  // validan unlocked order (orderId je nepogodljiv capability token).
+  let pin: string | null = null;
+  if (unlocked && order && order.slug === slug && order.kind === kind) {
+    if (kind === "raspored") {
+      pin = (await getStandaloneSeating(slug))?.password ?? null;
+    } else if (kind === "galerija") {
+      pin = (await getWeddingData(slug))?.potvrde_password ?? null;
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#F5F4DC] flex items-center justify-center p-4">
       <div className="w-full max-w-[440px] bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-8 text-center">
@@ -63,6 +76,24 @@ export default async function HvalaPage({
                   Naš tim upravo radi na finalnoj, ručno doteranoj verziji —
                   zamenićemo je automatski, bez ikakve akcije s vaše strane.
                   Obavestićemo vas kad bude gotova.
+                </p>
+              </div>
+            )}
+            {pin && (
+              <div className="mb-6 rounded-2xl border border-[#AE343F]/20 bg-[#AE343F]/[0.04] p-4">
+                <p className="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1.5">
+                  <KeyRound size={13} className="text-[#AE343F]" />
+                  Vaš PIN za prijavu
+                </p>
+                <p className="text-2xl font-bold tracking-[0.3em] text-[#232323]">
+                  {pin}
+                </p>
+                <p className="text-[11px] text-gray-400 mt-1.5">
+                  Sačuvajte ga — trebaće vam za prijavu na{" "}
+                  {kind === "raspored"
+                    ? "raspored sedenja"
+                    : "portal Moje Venčanje"}
+                  .
                 </p>
               </div>
             )}

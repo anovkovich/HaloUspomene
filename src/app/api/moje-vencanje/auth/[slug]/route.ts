@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SignJWT } from "jose";
 import { getWeddingData } from "@/data/pozivnice";
+import { isGalleryOnlyCouple } from "@/lib/couples";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
@@ -46,6 +47,7 @@ export async function POST(
       premium: weddingData.premium ?? false,
       premium_paid: weddingData.premium_paid ?? false,
       paid_for_gallery: weddingData.paid_for_gallery ?? false,
+      galleryOnly: isGalleryOnlyCouple(weddingData),
     },
   });
 
