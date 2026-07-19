@@ -864,20 +864,6 @@ export default function MojeVencanjeClient() {
                 </button>
                 <button
                   onClick={() => {
-                    setActiveView("vendors");
-                    window.scrollTo({ top: 0 });
-                  }}
-                  className={`flex flex-col items-center gap-0.5 py-1 ${
-                    activeView === "vendors"
-                      ? "text-[#AE343F]"
-                      : "text-[#232323]/60"
-                  }`}
-                >
-                  <Star size={20} />
-                  <span className="text-[10px] font-medium">Vendori</span>
-                </button>
-                <button
-                  onClick={() => {
                     setActiveView("audio");
                     window.scrollTo({ top: 0 });
                   }}

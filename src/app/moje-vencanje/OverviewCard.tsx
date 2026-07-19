@@ -18,6 +18,7 @@ import {
   Sparkles,
   Mail,
   Hourglass,
+  Star,
 } from "lucide-react";
 import {
   loadOverviewAction,
@@ -399,6 +400,20 @@ export default function OverviewCard({
           ) : (
             <p className="font-serif text-3xl font-semibold text-[#232323]/40">—</p>
           )}
+        </button>
+
+        {/* Vendors */}
+        <button
+          onClick={() => onNavigate("vendors")}
+          className="bg-white rounded-xl border border-[#232323]/25 p-5 text-left shadow-sm hover:border-[#AE343F]/50 hover:shadow-md transition-all cursor-pointer"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Star size={17} className="text-[#AE343F]" />
+            <span className="text-sm font-semibold text-[#232323]/85">Vendori</span>
+          </div>
+          <p className="text-sm text-[#232323]/70 leading-relaxed">
+            Pronađite fotografe, DJ-eve, sale, torte i druge vendore u vašem gradu.
+          </p>
         </button>
 
         {/* Alerts inline */}
