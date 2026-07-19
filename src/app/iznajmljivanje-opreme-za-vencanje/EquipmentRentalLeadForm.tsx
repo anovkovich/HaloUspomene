@@ -40,7 +40,7 @@ const OCCASION_OPTIONS = [
   "Doček svatova",
   "Polazak od kuće",
   "Ceremonija na otvorenom",
-  "Koktail prijem",
+  "Koktel prijem",
   "Proslava u dvorištu",
   "Drugo",
 ];

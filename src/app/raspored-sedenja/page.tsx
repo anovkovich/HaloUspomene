@@ -829,7 +829,7 @@ export default function RasporedSedenjaLanding() {
           </div>
         </section>
 
-        {/* ───────── QR Pano bonus — slag na tortu ───────── */}
+        {/* ───────── QR Pano bonus — šlag na tortu ───────── */}
         <section className="py-16 sm:py-20 bg-[#F5F4DC]">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto bg-white rounded-3xl p-8 sm:p-10 md:p-12 border border-stone-200 shadow-sm">
@@ -839,7 +839,7 @@ export default function RasporedSedenjaLanding() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#d4af37] mb-3">
-                    Slag na tortu
+                    Šlag na tortu
                   </p>
                   <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#232323] leading-tight mb-4">
                     QR Pano dobrodošlice —{" "}

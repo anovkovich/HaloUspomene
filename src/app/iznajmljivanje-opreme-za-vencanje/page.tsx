@@ -24,8 +24,9 @@ import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import EquipmentRentalLeadForm from "./EquipmentRentalLeadForm";
 
-// Feature flag: set NEXT_PUBLIC_EQUIPMENT_RENTAL_ENABLED=true to enable this page
-const isEnabled = process.env.NEXT_PUBLIC_EQUIPMENT_RENTAL_ENABLED === "true";
+// Feature flag: set NEXT_PUBLIC_HIDE_EQUIPMENT_RENTAL=true on Vercel to hide this page
+// Remove the flag when ready to go live — without it, the page is visible
+const isHidden = process.env.NEXT_PUBLIC_HIDE_EQUIPMENT_RENTAL === "true";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
     "šator za venčanje",
     "šator za doček svatova",
     "barski stolovi za venčanje",
-    "koktail stolovi za svadbu",
+    "koktel stolovi za svadbu",
     "ventilatori za venčanje",
     "rashladni ventilatori za svadbu",
     "oprema za venčanje na otvorenom",
@@ -110,12 +111,12 @@ const equipment: Equipment[] = [
   {
     id: "barski-sto",
     name: "Barski Sto",
-    tagline: "Visoki koktail sto sa navlakom",
+    tagline: "Visoki koktel sto sa navlakom",
     badge: "Elegantan",
     icon: <Wine size={32} />,
     image: "/images/equipment/barski-sto.png",
     description:
-      "Visoki barski sto sa belom ili crnom navlakom — savršen za koktail prijem, doček gostiju ili aperitiv ispred sale. Stabilan i reprezentativan.",
+      "Visoki barski sto sa belom ili crnom navlakom — savršen za koktel prijem, doček gostiju ili aperitiv ispred sale. Stabilan i reprezentativan.",
     features: [
       "Visina 110 cm",
       "Prečnik ploče 80 cm",
@@ -216,8 +217,8 @@ const occasions = [
   },
   {
     icon: <PartyPopper size={26} />,
-    title: "Koktail prijem",
-    desc: "Pre ulaska u salu — elegantan koktail sa barskim stolovima za druženje, fotografisanje i lagani aperitiv dok čekate ostale goste.",
+    title: "Koktel prijem",
+    desc: "Pre ulaska u salu — elegantan koktel sa barskim stolovima za druženje, fotografisanje i lagani aperitiv dok čekate ostale goste.",
   },
 ];
 
@@ -396,7 +397,7 @@ const faqSchema = {
 
 export default function IznajmljivanjeOpremeZaVencanje() {
   // Hide page in production until partner verification is complete
-  if (!isEnabled) notFound();
+  if (isHidden) notFound();
 
   return (
     <>
@@ -948,12 +949,12 @@ export default function IznajmljivanjeOpremeZaVencanje() {
             HALO Uspomene posreduje najam opreme za venčanja i proslave širom
             Srbije. U ponudi su elegantni beli paviljoni sa zavesama dimenzija
             3×3 metra (30€/dan), visoki barski stolovi 80cm prečnika sa navlakama
-            za koktail prijeme (10€/dan), i rashladni industrijski ventilatori
+            za koktel prijeme (10€/dan), i rashladni industrijski ventilatori
             za letnje svadbe na otvorenom (~40€/dan, uskoro dostupni). Trenutno
             na raspolaganju: 4 paviljona i 12 visokih stolova. Starter paket
             (1 paviljon + 3 stola) samo 55€, Komplet paket (2 paviljona + 6 stolova)
             105€. Oprema je idealna za doček svatova, polazak od kuće, ceremonije u
-            dvorištu ili bašti, i koktail prijeme ispred sale. Besplatna dostava
+            dvorištu ili bašti, i koktel prijeme ispred sale. Besplatna dostava
             i montaža za lokacije do 50km (100km ukupno). Radimo širom Srbije —
             Beograd, Novi Sad, Niš, Kragujevac, Subotica, Čačak i svi ostali
             gradovi. Najam po danu ili za ceo vikend — fleksibilni smo i
