@@ -1,28 +1,9 @@
 import React from "react";
 import Link from "next/link";
-import {
-  CheckCircle2,
-  Wallet,
-  Star,
-  Users,
-  Mic,
-  Images,
-  UtensilsCrossed,
-  LayoutDashboard,
-  LogOut,
-  ExternalLink,
-  Home,
-} from "lucide-react";
+import { LayoutDashboard, LogOut, ExternalLink, Lock, Sparkles } from "lucide-react";
+import { type ActiveView, getNavItems } from "./nav-items";
 
-export type ActiveView =
-  | "overview"
-  | "checklist"
-  | "budget"
-  | "vendors"
-  | "audio"
-  | "galerija"
-  | "meni"
-  | "guests";
+export type { ActiveView } from "./nav-items";
 
 interface SidebarProps {
   activeView: ActiveView;
@@ -44,7 +25,6 @@ interface SidebarProps {
 }
 
 function daysUntil(dateStr: string): number {
-  // Calendar-day comparison: an event later today returns 0 ("danas"), not 1.
   const target = new Date(dateStr);
   target.setHours(0, 0, 0, 0);
   const today = new Date();
@@ -52,27 +32,10 @@ function daysUntil(dateStr: string): number {
   return Math.max(0, Math.round((target.getTime() - today.getTime()) / 86_400_000));
 }
 
-const NAV_ITEMS: {
-  view: ActiveView;
-  label: string;
-  icon: React.ReactNode;
-}[] = [
-  { view: "overview", label: "Pregled", icon: <Home size={18} /> },
-  { view: "checklist", label: "Checklista", icon: <CheckCircle2 size={18} /> },
-  { view: "budget", label: "Budžet", icon: <Wallet size={18} /> },
-  { view: "vendors", label: "Vendori", icon: <Star size={18} /> },
-  { view: "audio", label: "Audio knjiga", icon: <Mic size={18} /> },
-  { view: "galerija", label: "Galerija", icon: <Images size={18} /> },
-  { view: "meni", label: "Meni", icon: <UtensilsCrossed size={18} /> },
-  { view: "guests", label: "Gosti", icon: <Users size={18} /> },
-];
-
 export default function Sidebar({
   activeView,
   onViewChange,
   coupleInfo,
-  checklistStats,
-  budgetStats,
   onLogout,
   onDraftAction,
 }: SidebarProps) {
@@ -81,6 +44,14 @@ export default function Sidebar({
   const eventDateFormatted = hasDate
     ? new Date(coupleInfo.eventDate).toLocaleDateString("sr-Latn-RS", { day: "numeric", month: "short" })
     : null;
+
+  const navItems = getNavItems({
+    paidForGallery: coupleInfo.paidForGallery,
+    galleryOnly: coupleInfo.galleryOnly,
+  });
+
+  const unlockedItems = navItems.filter((i) => !i.locked);
+  const lockedItems = navItems.filter((i) => i.locked);
 
   return (
     <aside className="fixed left-0 top-0 w-60 h-screen bg-[#F5F4DC] border-r border-[#232323]/15 flex flex-col z-40 overflow-y-auto">
@@ -102,13 +73,9 @@ export default function Sidebar({
       </div>
 
       {/* Main nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {NAV_ITEMS.filter((item) => {
-          if (coupleInfo.galleryOnly) {
-            return item.view === "galerija";
-          }
-          return item.view !== "galerija" || coupleInfo.paidForGallery;
-        }).map((item) => {
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {/* Unlocked items */}
+        {unlockedItems.map((item) => {
           const isActive = activeView === item.view;
           return (
             <button
@@ -125,6 +92,53 @@ export default function Sidebar({
             </button>
           );
         })}
+
+        {/* Locked items section (gallery-only users) */}
+        {lockedItems.length > 0 && (
+          <>
+            <div className="border-t border-[#232323]/10 my-3" />
+            <p className="px-3 text-[10px] font-medium text-[#232323]/40 uppercase tracking-wider mb-2">
+              Uz digitalnu pozivnicu
+            </p>
+            {lockedItems.map((item) => {
+              const isActive = activeView === item.view;
+              return (
+                <button
+                  key={item.view}
+                  onClick={() => onViewChange(item.view)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all duration-200 ${
+                    isActive
+                      ? "bg-[#232323]/5 text-[#232323]/50"
+                      : "text-[#232323]/45 hover:bg-white/50 hover:text-[#232323]/55"
+                  }`}
+                >
+                  {item.icon}
+                  <span className="flex-1 text-left">{item.label}</span>
+                  <Lock size={13} className="text-[#232323]/35" />
+                </button>
+              );
+            })}
+
+            {/* Upsell CTA card */}
+            <div className="mt-3 mx-1 p-3 rounded-xl bg-gradient-to-br from-white/80 to-white/40 border border-[#232323]/8">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Sparkles size={12} className="text-[#d4af37]" />
+                <span className="text-[11px] font-medium text-[#232323]/70">
+                  Uz digitalne pozivnice
+                </span>
+              </div>
+              <p className="text-[10px] text-[#232323]/50 leading-relaxed mb-2">
+                Kompletan planer za venčanje dolazi uz naše pakete pozivnica.
+              </p>
+              <Link
+                href="/cene"
+                className="text-[10px] font-medium text-[#AE343F] hover:underline"
+              >
+                Pogledajte pakete →
+              </Link>
+            </div>
+          </>
+        )}
 
         {/* Separator + external links (hidden for gallery-only users) */}
         {!coupleInfo.galleryOnly && (

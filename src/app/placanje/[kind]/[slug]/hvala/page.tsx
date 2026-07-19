@@ -8,6 +8,7 @@ import { getStandaloneSeating } from "@/lib/standalone-seating";
 import { isPaymentKind } from "@/lib/payments/kinds";
 import { productUrl } from "@/lib/payments/product-urls";
 import Refresher from "./Refresher";
+import CopyButton from "./CopyButton";
 
 export const dynamic = "force-dynamic";
 
@@ -36,24 +37,31 @@ export default async function HvalaPage({
   const settling = status === "pending" || status === "paid";
   const attempt = Number(r) || 0;
 
+  // Fetch couple data once if needed (for PIN and/or premium status check)
+  const needsCoupleData =
+    unlocked &&
+    order &&
+    order.slug === slug &&
+    (kind === "pozivnica" || kind === "galerija");
+  const coupleData = needsCoupleData ? await getWeddingData(slug) : null;
+
   // Premium themes (watercolor custom bg / line_art HQ illustration) need a
   // manual team step AFTER payment. The invitation is live immediately; the
   // final hand-crafted asset arrives shortly. Set the expectation here.
-  let premiumInProduction = false;
-  if (unlocked && order?.kind === "pozivnica" && order.tier === "premium") {
-    const couple = await getWeddingData(slug);
-    premiumInProduction = couple?.premium_status === "u_izradi";
-  }
+  const premiumInProduction =
+    unlocked &&
+    order?.kind === "pozivnica" &&
+    order.tier === "premium" &&
+    coupleData?.premium_status === "u_izradi";
 
-  // PIN za standalone proizvode — buyer ga je video na success ekranu forme,
-  // ali posle redirect-a na plaćanje često je izgubljen. Prikaz je gated na
-  // validan unlocked order (orderId je nepogodljiv capability token).
+  // PIN za sve proizvode — buyer ga je dobio pri kreiranju ali često zaboravi.
+  // Prikaz je gated na validan unlocked order (orderId je nepogodljiv capability token).
   let pin: string | null = null;
   if (unlocked && order && order.slug === slug && order.kind === kind) {
     if (kind === "raspored") {
       pin = (await getStandaloneSeating(slug))?.password ?? null;
-    } else if (kind === "galerija") {
-      pin = (await getWeddingData(slug))?.potvrde_password ?? null;
+    } else if (kind === "pozivnica" || kind === "galerija") {
+      pin = coupleData?.potvrde_password ?? null;
     }
   }
 
@@ -85,15 +93,15 @@ export default async function HvalaPage({
                   <KeyRound size={13} className="text-[#AE343F]" />
                   Vaš PIN za prijavu
                 </p>
-                <p className="text-2xl font-bold tracking-[0.3em] text-[#232323]">
-                  {pin}
-                </p>
+                <div className="flex items-center justify-center gap-1">
+                  <p className="text-2xl font-bold tracking-[0.3em] text-[#232323]">
+                    {pin}
+                  </p>
+                  <CopyButton text={pin} />
+                </div>
                 <p className="text-[11px] text-gray-400 mt-1.5">
-                  Sačuvajte ga — trebaće vam za prijavu na{" "}
-                  {kind === "raspored"
-                    ? "raspored sedenja"
-                    : "portal Moje Venčanje"}
-                  .
+                  Sačuvajte ga — trebaće vam za prijavu
+                  {kind === "raspored" ? " na raspored sedenja" : ""}.
                 </p>
               </div>
             )}

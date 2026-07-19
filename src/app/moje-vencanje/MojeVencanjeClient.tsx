@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   Store,
+  Lock,
 } from "lucide-react";
 import {
   verifyAuth,
@@ -35,7 +36,9 @@ import type {
 } from "./types";
 import ChecklistCard from "./ChecklistCard";
 import BudgetCard from "./BudgetCard";
-import Sidebar, { type ActiveView } from "./Sidebar";
+import Sidebar from "./Sidebar";
+import { type ActiveView, getNavItems } from "./nav-items";
+import LockedFeatureCard from "./LockedFeatureCard";
 import TeaserVendors from "./TeaserVendors";
 import Footer from "@/components/layout/footer/Footer";
 import {
@@ -615,8 +618,15 @@ export default function MojeVencanjeClient() {
                 )}
               </div>
 
+              {/* Locked feature guard for gallery-only users */}
+              {coupleInfo?.galleryOnly && activeView !== "galerija" && (
+                <LockedFeatureCard view={activeView} />
+              )}
+
               {/* Active view content */}
-              {activeView === "overview" && coupleInfo && (
+              {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
+                activeView === "overview" &&
+                coupleInfo && (
                 <>
                   {/* PWA sub-view: show checklist/budget inline, or overview stats */}
                   <div className="hidden [@media(display-mode:standalone)]:block md:hidden">
@@ -659,16 +669,19 @@ export default function MojeVencanjeClient() {
                   </div>
                 </>
               )}
-              {activeView === "checklist" && (
-                <ChecklistCard
-                  checklist={checklist}
-                  setChecklist={setChecklist}
-                />
-              )}
-              {activeView === "budget" && (
-                <BudgetCard budget={budget} setBudget={setBudget} />
-              )}
-              {activeView === "vendors" && (
+              {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
+                activeView === "checklist" && (
+                  <ChecklistCard
+                    checklist={checklist}
+                    setChecklist={setChecklist}
+                  />
+                )}
+              {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
+                activeView === "budget" && (
+                  <BudgetCard budget={budget} setBudget={setBudget} />
+                )}
+              {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
+                activeView === "vendors" && (
                 <React.Suspense
                   fallback={
                     <div className="flex justify-center py-12">
@@ -689,7 +702,9 @@ export default function MojeVencanjeClient() {
                   />
                 </React.Suspense>
               )}
-              {activeView === "audio" && coupleInfo && (
+              {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
+                activeView === "audio" &&
+                coupleInfo && (
                 <React.Suspense
                   fallback={
                     <div className="flex justify-center py-12">
@@ -714,7 +729,9 @@ export default function MojeVencanjeClient() {
                   <GalleryCard slug={coupleInfo.slug} />
                 </React.Suspense>
               )}
-              {activeView === "meni" && coupleInfo && (
+              {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
+                activeView === "meni" &&
+                coupleInfo && (
                 <React.Suspense
                   fallback={
                     <div className="flex justify-center py-12">
@@ -725,7 +742,9 @@ export default function MojeVencanjeClient() {
                   <MeniCard />
                 </React.Suspense>
               )}
-              {activeView === "guests" && coupleInfo && (
+              {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
+                activeView === "guests" &&
+                coupleInfo && (
                 <React.Suspense
                   fallback={
                     <div className="flex justify-center py-12">
@@ -883,82 +902,71 @@ export default function MojeVencanjeClient() {
               {" · još "}
               {daysUntil(coupleInfo.eventDate)}d
             </p>
-            <nav className="flex-1 px-3 space-y-1">
-              {(coupleInfo.galleryOnly
-                ? [
-                    {
-                      view: "galerija" as const,
-                      label: "Galerija",
-                      icon: <Images size={18} />,
-                    },
-                  ]
-                : [
-                    {
-                      view: "overview" as const,
-                      label: "Pregled",
-                      icon: <Home size={18} />,
-                    },
-                    {
-                      view: "checklist" as const,
-                      label: "Checklista",
-                      icon: <CheckCircle2 size={18} />,
-                    },
-                    {
-                      view: "budget" as const,
-                      label: "Budžet",
-                      icon: <Wallet size={18} />,
-                    },
-                    {
-                      view: "vendors" as const,
-                      label: "Vendori",
-                      icon: <Star size={18} />,
-                    },
-                    {
-                      view: "audio" as const,
-                      label: "Audio knjiga",
-                      icon: <Mic size={18} />,
-                    },
-                    ...(coupleInfo.paidForGallery
-                      ? [
-                          {
-                            view: "galerija" as const,
-                            label: "Galerija",
-                            icon: <Images size={18} />,
-                          },
-                        ]
-                      : []),
-                    {
-                      view: "meni" as const,
-                      label: "Meni",
-                      icon: <UtensilsCrossed size={18} />,
-                    },
-                    {
-                      view: "guests" as const,
-                      label: "Gosti",
-                      icon: <Users size={18} />,
-                    },
-                  ]
-              ).map((item) => {
-                const isActive = activeView === item.view;
+            <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+              {(() => {
+                const navItems = getNavItems({
+                  paidForGallery: coupleInfo.paidForGallery,
+                  galleryOnly: coupleInfo.galleryOnly,
+                });
+                const unlockedItems = navItems.filter((i) => !i.locked);
+                const lockedItems = navItems.filter((i) => i.locked);
+
                 return (
-                  <button
-                    key={item.view}
-                    onClick={() => {
-                      setActiveView(item.view);
-                      setMobileSidebar(false);
-                      window.scrollTo({ top: 0 });
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                      isActive
-                        ? "bg-[#AE343F]/12 text-[#AE343F]"
-                        : "text-[#232323]/85 hover:bg-white/60 hover:text-[#232323]"
-                    }`}
-                  >
-                    {item.icon}
-                    {item.label}
-                  </button>
+                  <>
+                    {unlockedItems.map((item) => {
+                      const isActive = activeView === item.view;
+                      return (
+                        <button
+                          key={item.view}
+                          onClick={() => {
+                            setActiveView(item.view);
+                            setMobileSidebar(false);
+                            window.scrollTo({ top: 0 });
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                            isActive
+                              ? "bg-[#AE343F]/12 text-[#AE343F]"
+                              : "text-[#232323]/85 hover:bg-white/60 hover:text-[#232323]"
+                          }`}
+                        >
+                          {item.icon}
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                    {lockedItems.length > 0 && (
+                      <>
+                        <div className="border-t border-[#232323]/10 my-3" />
+                        <p className="px-3 text-[10px] font-medium text-[#232323]/40 uppercase tracking-wider mb-2">
+                          Uz digitalnu pozivnicu
+                        </p>
+                        {lockedItems.map((item) => {
+                          const isActive = activeView === item.view;
+                          return (
+                            <button
+                              key={item.view}
+                              onClick={() => {
+                                setActiveView(item.view);
+                                setMobileSidebar(false);
+                                window.scrollTo({ top: 0 });
+                              }}
+                              className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm cursor-pointer transition-colors ${
+                                isActive
+                                  ? "bg-[#232323]/5 text-[#232323]/50"
+                                  : "text-[#232323]/45 hover:bg-white/50"
+                              }`}
+                            >
+                              {item.icon}
+                              <span className="flex-1 text-left">{item.label}</span>
+                              <Lock size={13} className="text-[#232323]/35" />
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+                  </>
                 );
-              })}
+              })()}
               {!coupleInfo.galleryOnly && (
                 <>
                   <div className="border-t border-[#232323]/10 my-2" />
