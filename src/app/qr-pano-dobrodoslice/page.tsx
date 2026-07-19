@@ -660,8 +660,7 @@ export default function QRPanoLandingPage() {
                   <span className="font-bold text-[#AE343F]">
                     {rasporedPrice}
                   </span>{" "}
-                  uz pozivnicu — još povoljnije uz Premium. Dostupno i
-                  samostalno, bez pozivnice.
+                  uz pozivnicu. Dostupno i samostalno, bez pozivnice.
                 </p>
 
                 <a
