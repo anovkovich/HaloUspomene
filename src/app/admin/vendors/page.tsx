@@ -25,6 +25,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 import type { VendorCategory } from "@/app/moje-vencanje/types";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface VendorRow {
   id: string;
@@ -74,6 +75,7 @@ const CATEGORY_ICONS: Record<VendorCategory, React.ReactNode> = {
 };
 
 export default function AdminVendorsPage() {
+  const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
   const [vendors, setVendors] = useState<VendorRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -236,7 +238,7 @@ export default function AdminVendorsPage() {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Obriši vendora "${name}"?`)) return;
+    if (!(await confirm({ title: `Obriši vendora "${name}"?`, danger: true, confirmLabel: "Obriši" }))) return;
     const res = await fetch(`/api/admin/vendors/${id}`, { method: "DELETE" });
     if (res.ok) {
       setVendors((prev) => prev.filter((v) => v.id !== id));
@@ -253,6 +255,7 @@ export default function AdminVendorsPage() {
 
   return (
     <div className="min-h-screen bg-transparent p-4 sm:p-6 max-w-5xl mx-auto">
+      {dialog}
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">

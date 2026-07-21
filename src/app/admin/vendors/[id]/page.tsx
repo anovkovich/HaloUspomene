@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import type { VendorCategory } from "@/app/moje-vencanje/types";
 import { CITIES, CATEGORY_META } from "@/app/moje-vencanje/vendor-constants";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export default function EditVendorPage({
   params,
@@ -22,6 +23,8 @@ export default function EditVendorPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -143,7 +146,7 @@ export default function EditVendorPage({
   };
 
   const handleLogoRemove = async () => {
-    if (!confirm("Obriši trenutni logo?")) return;
+    if (!(await confirm({ title: "Obriši trenutni logo?", danger: true, confirmLabel: "Obriši" }))) return;
     setLogoBusy("upload");
     setLogoMsg(null);
     try {
@@ -207,7 +210,7 @@ export default function EditVendorPage({
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Obriši vendora "${name}"? Ovo se ne može poništiti.`)) return;
+    if (!(await confirm({ title: `Obriši vendora "${name}"?`, message: "Ovo se ne može poništiti.", danger: true, confirmLabel: "Obriši" }))) return;
     const res = await fetch(`/api/admin/vendors/${id}`, { method: "DELETE" });
     if (res.ok) {
       router.push("/admin/vendors");
@@ -224,6 +227,7 @@ export default function EditVendorPage({
 
   return (
     <div className="min-h-screen bg-transparent p-4 sm:p-6 max-w-2xl mx-auto">
+      {dialog}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Link

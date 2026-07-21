@@ -20,6 +20,7 @@ import {
   Star,
 } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type {
   GuestList,
   GuestSection,
@@ -344,7 +345,7 @@ function RolePickerModal({
               className="w-full text-left p-3 rounded-xl border border-[#AE343F]/40 bg-[#AE343F]/[0.04] hover:bg-[#AE343F]/[0.08] transition-colors cursor-pointer"
             >
               <span className="text-sm font-medium text-[#AE343F] flex items-center gap-2">
-                <UserPlus size={14} /> Dodaj novo ime: „{trimmed}"
+                <UserPlus size={14} /> Dodaj novo ime: „{trimmed}&rdquo;
               </span>
               <span className="text-[11px] text-[#232323]/55">
                 osoba koja nije na listi zvanica
@@ -858,6 +859,7 @@ export default function InviteeListCard({
   onLink,
   onUnlink,
 }: Props) {
+  const { confirm, prompt, dialog } = useConfirmDialog({ variant: "light" });
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<InviteeStatus | "all">(
     "all",
@@ -1030,8 +1032,12 @@ export default function InviteeListCard({
   const removeRoleSlot = (id: string) =>
     setKeyRoles((rs) => rs.filter((r) => r.id !== id));
 
-  const addCustomRole = () => {
-    const label = window.prompt("Naziv uloge:");
+  const addCustomRole = async () => {
+    const label = await prompt({
+      title: "Nova uloga",
+      input: { label: "Naziv uloge", placeholder: "npr. Kum" },
+      confirmLabel: "Dodaj",
+    });
     if (label && label.trim()) {
       setKeyRoles((rs) => [
         ...rs,
@@ -1180,6 +1186,7 @@ export default function InviteeListCard({
 
   return (
     <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm">
+      {dialog}
       <h3 className="font-serif text-lg text-[#232323] mb-1">Lista zvanica</h3>
       <p className="text-xs text-[#232323]/55 mb-3 leading-relaxed">
         Vaš privatni spisak — pratite koga ste pozvali, ko je potvrdio, a ko još
@@ -1512,11 +1519,15 @@ export default function InviteeListCard({
                         <ChevronDown size={13} />
                       </button>
                       <button
-                        onClick={() => {
-                          const name = window.prompt(
-                            "Naziv celine:",
-                            section.name,
-                          );
+                        onClick={async () => {
+                          const name = await prompt({
+                            title: "Preimenuj celinu",
+                            input: {
+                              label: "Naziv celine",
+                              defaultValue: section.name,
+                            },
+                            confirmLabel: "Sačuvaj",
+                          });
                           if (name != null) renameSection(section.id, name);
                         }}
                         className="text-[#232323]/55 hover:text-[#AE343F] p-0.5 cursor-pointer transition-colors"
@@ -1524,12 +1535,16 @@ export default function InviteeListCard({
                         <Pencil size={12} />
                       </button>
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (
                             all.length === 0 ||
-                            window.confirm(
-                              `Obrisati celinu „${section.name}"? Zvanice ostaju u listi (bez celine).`,
-                            )
+                            (await confirm({
+                              title: `Obrisati celinu "${section.name}"?`,
+                              message:
+                                "Zvanice ostaju u listi (bez celine).",
+                              danger: true,
+                              confirmLabel: "Obriši",
+                            }))
                           ) {
                             deleteSection(section.id);
                           }

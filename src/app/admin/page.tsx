@@ -21,6 +21,7 @@ import AdminCalendar from "./AdminCalendar";
 import BypassLinkModal from "./BypassLinkModal";
 import ShareLinkButton from "./ShareLinkButton";
 import DatePicker from "@/components/ui/DatePicker";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja" | "uplate";
 
@@ -1342,6 +1343,7 @@ function MarkPaidModal({
   const [tier, setTier] = useState(target.premium ? "premium" : "custom");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
 
   useEffect(() => {
     fetch("/api/admin/orders?status=pending,review")
@@ -1354,15 +1356,15 @@ function MarkPaidModal({
   }, [target.slug]);
 
   async function link(o: PendingRow) {
-    const warn = o.dupWarning
-      ? "\n\n⚠ UPOZORENJE: postoji već aktiviran order za isti proizvod — proveri duplu uplatu."
-      : "";
-    if (
-      !window.confirm(
-        `Povezati i odobriti uplatu ${o.orderId} (${o.amountRsd.toLocaleString("sr-RS")} din)?\nAutomatski uključuje plaćene opcije na proizvodu.${warn}`,
-      )
-    )
-      return;
+    const ok = await confirm({
+      title: "Poveži i odobri uplatu",
+      message: `${o.orderId} — ${o.amountRsd.toLocaleString("sr-RS")} din\nAutomatski uključuje plaćene opcije na proizvodu.`,
+      warning: o.dupWarning
+        ? "Postoji već plaćen order za isti proizvod — proveri duplu uplatu."
+        : undefined,
+      confirmLabel: "Odobri",
+    });
+    if (!ok) return;
     setBusy(true);
     setError(null);
     try {
@@ -1546,6 +1548,7 @@ function MarkPaidModal({
 
         {error && <p className="text-xs text-red-400">{error}</p>}
       </div>
+      {dialog}
     </div>
   );
 }

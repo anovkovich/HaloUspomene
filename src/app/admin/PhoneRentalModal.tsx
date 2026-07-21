@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Phone, Calendar, Trash2, Copy, Check, X } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { PhoneRental } from "@/lib/phone-rentals";
 import {
   buildReceiptItems,
@@ -16,6 +17,7 @@ interface PhoneRentalModalProps {
 }
 
 export default function PhoneRentalModal({ onClose, bankAccountIdx }: PhoneRentalModalProps) {
+  const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
   const [rentals, setRentals] = useState<PhoneRental[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -24,7 +26,6 @@ export default function PhoneRentalModal({ onClose, bankAccountIdx }: PhoneRenta
   const [dobrodoslica, setDobrodoslica] = useState(false);
   const [saving, setSaving] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export default function PhoneRentalModal({ onClose, bankAccountIdx }: PhoneRenta
   }
 
   async function handleDeleteRental(id: string) {
-    if (!confirm("Obriši iznajmljivanje?")) return;
+    if (!(await confirm({ title: "Obriši iznajmljivanje?", danger: true, confirmLabel: "Obriši" }))) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/admin/phone-rentals/${id}`, { method: "DELETE" });
@@ -107,8 +108,6 @@ export default function PhoneRentalModal({ onClose, bankAccountIdx }: PhoneRenta
   }
 
   function buildReceiptUrl(rental: PhoneRental) {
-    const d = new Date(rental.rental_date);
-    const pad = (n: number) => String(n).padStart(2, "0");
     const data = {
       s: rental.id, // tel-xxx
       par: rental.contact_name,
@@ -171,6 +170,7 @@ export default function PhoneRentalModal({ onClose, bankAccountIdx }: PhoneRenta
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      {dialog}
       <div className="bg-[#1a1a1a] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/10">
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between p-6 border-b border-white/10 bg-[#1a1a1a]">

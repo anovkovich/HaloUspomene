@@ -12,6 +12,7 @@ import {
 import { formatPrice } from "@/data/pricing";
 import { KIND_LABEL_SR, productUrl } from "@/lib/payments/product-urls";
 import type { PaymentKind } from "@/lib/orders";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface OrderRow {
   orderId: string;
@@ -35,7 +36,7 @@ const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   pending: { label: "Čeka", cls: "bg-white/10 text-white/60" },
   review: { label: "Za overu", cls: "bg-amber-500/20 text-amber-300" },
   paid: { label: "Plaćeno (kartica)", cls: "bg-blue-500/20 text-blue-300" },
-  unlocked: { label: "Aktivirano", cls: "bg-green-500/20 text-green-300" },
+  unlocked: { label: "Plaćeno", cls: "bg-green-500/20 text-green-300" },
   canceled: { label: "Odbijeno", cls: "bg-white/5 text-white/35" },
   expired: { label: "Isteklo", cls: "bg-white/5 text-white/35" },
   refunded: { label: "Refundirano", cls: "bg-red-500/20 text-red-300" },
@@ -63,6 +64,7 @@ export default function OrdersAdminTab({
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const { confirm, prompt, dialog } = useConfirmDialog({ variant: "dark" });
 
   async function load() {
     setLoading(true);
@@ -94,18 +96,28 @@ export default function OrdersAdminTab({
   async function act(orderId: string, action: "approve" | "reject") {
     let adminNote: string | undefined;
     if (action === "reject") {
-      const note = window.prompt(
-        "Razlog odbijanja (opciono) — biće vidljiv samo tebi:",
-        "",
-      );
+      const note = await prompt({
+        title: "Odbij uplatu",
+        input: {
+          label: "Razlog odbijanja (opciono) — biće vidljiv samo tebi",
+          optional: true,
+        },
+        confirmLabel: "Odbij",
+        danger: true,
+      });
       if (note === null) return; // cancelled
       adminNote = note || undefined;
     } else {
       const row = orders.find((o) => o.orderId === orderId);
-      const warn = row?.dupWarning
-        ? "\n\n⚠ UPOZORENJE: postoji već aktiviran order za isti proizvod — proveri duplu uplatu."
-        : "";
-      if (!window.confirm(`Aktivirati pristup za ovaj order?${warn}`)) return;
+      const ok = await confirm({
+        title: "Odobri uplatu",
+        message: "Aktivirati pristup za ovaj order?",
+        warning: row?.dupWarning
+          ? "Postoji već plaćen order za isti proizvod — proveri duplu uplatu."
+          : undefined,
+        confirmLabel: "Odobri",
+      });
+      if (!ok) return;
     }
 
     setBusy(orderId);
@@ -143,6 +155,7 @@ export default function OrdersAdminTab({
 
   return (
     <div>
+      {dialog}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl sm:text-2xl font-semibold text-white">
           Uplate {actionable.length > 0 && `(${actionable.length})`}

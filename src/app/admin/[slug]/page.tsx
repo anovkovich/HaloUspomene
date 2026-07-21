@@ -7,11 +7,13 @@ import { ArrowLeft, Save, Trash2, MapPin, ChevronDown, Phone, Music } from "luci
 import Link from "next/link";
 import DeleteModal from "../DeleteModal";
 import PlannerStatsSection from "@/app/pozivnica/[slug]/PlannerStatsSection";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export default function EditCouplePage() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
   const router = useRouter();
+  const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
   const [json, setJson] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,7 +46,8 @@ export default function EditCouplePage() {
           (c: { slug: string }) => c.slug === slug
         );
         if (couple) {
-          const { slug: _s, ...data } = couple;
+          const data = { ...couple };
+          delete (data as { slug?: string }).slug;
           setJson(JSON.stringify(data, null, 2));
           setPaidForImages(data.paid_for_images ?? false);
           setImages(data.images ?? []);
@@ -298,7 +301,7 @@ export default function EditCouplePage() {
   }
 
   async function handleMusicDelete() {
-    if (!confirm("Obriši muziku?")) return;
+    if (!(await confirm({ title: "Obriši muziku?", danger: true, confirmLabel: "Obriši" }))) return;
     setMusicError(null);
     const res = await fetch(`/api/admin/couples/${slug}/music`, {
       method: "DELETE",
@@ -321,7 +324,7 @@ export default function EditCouplePage() {
   }
 
   async function handleImageDelete(img: { url: string; pathname: string }) {
-    if (!confirm("Obriši sliku?")) return;
+    if (!(await confirm({ title: "Obriši sliku?", danger: true, confirmLabel: "Obriši" }))) return;
     setImageError(null);
 
     const res = await fetch(`/api/admin/couples/${slug}/images`, {
@@ -351,6 +354,7 @@ export default function EditCouplePage() {
 
   return (
     <div>
+      {dialog}
       <Link
         href="/admin"
         className="inline-flex items-center gap-1 text-white/40 hover:text-white mb-6 text-sm transition-colors"
