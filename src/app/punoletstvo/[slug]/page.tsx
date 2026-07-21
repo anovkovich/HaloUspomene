@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getBirthdayData, getAllBirthdaySlugs } from "@/lib/birthday";
 import PunoletstvoInvitationClient from "./PunoletstvoInvitationClient";
 import InvitationFrame from "@/components/invitation/InvitationFrame";
+import AiCopyrightNotice from "@/components/invitation/AiCopyrightNotice";
 import PreviewWatermark from "@/components/PreviewWatermark";
 import { issuePromo } from "@/lib/payments/promo";
 
@@ -62,6 +63,7 @@ export default async function PunoletstvoInvitationPage({ params }: PageProps) {
       {isDraft && (
         <PreviewWatermark payHref={`/placanje/punoletstvo/${slug}`} />
       )}
+      <AiCopyrightNotice />
     </InvitationFrame>
   );
 }

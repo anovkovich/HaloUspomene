@@ -25,6 +25,15 @@ const nextConfig: NextConfig = {
         source: "/deciji-rodjendan/(.*)",
         headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }],
       },
+      // Invitation designs — de-facto opt-out signal against AI training /
+      // dataset scrapers (does not affect normal search indexing; unknown
+      // tokens are ignored by search engines). Complements the in-page
+      // AiCopyrightNotice and the AI-bot rules in robots.ts.
+      {
+        source:
+          "/(pozivnica|premium-pozivnica|deciji-rodjendan|punoletstvo)/(.*)",
+        headers: [{ key: "X-Robots-Tag", value: "noai, noimageai" }],
+      },
       // Share-link landing pages — per-customer, password-bearing; never cache
       {
         source: "/pristup/(.*)",

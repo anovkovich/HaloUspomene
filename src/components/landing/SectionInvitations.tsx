@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Check, ArrowRight, FileDown, LayoutDashboard } from "lucide-react";
 
 const features = [
-  "6 dizajnerskih tema, latinica i ćirilica",
+  "5 predefinisanih tema + boja po želji, latinica i ćirilica",
   "Potvrda dolaska — nikad jednostavnije",
   "Pratite spisak gostiju u realnom vremenu",
 ];

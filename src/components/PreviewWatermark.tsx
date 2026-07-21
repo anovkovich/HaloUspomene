@@ -13,14 +13,22 @@ import { Eye } from "lucide-react";
  */
 
 // One repeating tile: a padlock glyph above the word PREGLED. Single-quoted so
-// it survives encodeURIComponent cleanly into a data: URI.
+// it survives encodeURIComponent cleanly into a data: URI. Every glyph is drawn
+// twice — a white pass offset by 1px under a dark pass (emboss) — so the mark
+// stays visible on dark theme backgrounds where a dark-only stroke disappears.
 const TILE = `<svg xmlns='http://www.w3.org/2000/svg' width='240' height='170' viewBox='0 0 240 170'>
-  <g fill='none' stroke='#232323' stroke-opacity='0.12' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'>
+  <g transform='translate(1 1)' fill='none' stroke='#ffffff' stroke-opacity='0.22' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'>
     <rect x='102' y='58' width='36' height='30' rx='5'/>
     <path d='M108 58 v-9 a12 12 0 0 1 24 0 v9'/>
-    <circle cx='120' cy='71' r='2.5' fill='#232323' fill-opacity='0.12' stroke='none'/>
+    <circle cx='120' cy='71' r='2.5' fill='#ffffff' fill-opacity='0.22' stroke='none'/>
   </g>
-  <text x='120' y='112' font-family='Arial, Helvetica, sans-serif' font-size='15' font-weight='700' letter-spacing='3' text-anchor='middle' fill='#232323' fill-opacity='0.11'>PREGLED</text>
+  <g fill='none' stroke='#232323' stroke-opacity='0.14' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'>
+    <rect x='102' y='58' width='36' height='30' rx='5'/>
+    <path d='M108 58 v-9 a12 12 0 0 1 24 0 v9'/>
+    <circle cx='120' cy='71' r='2.5' fill='#232323' fill-opacity='0.14' stroke='none'/>
+  </g>
+  <text x='121' y='113' font-family='Arial, Helvetica, sans-serif' font-size='15' font-weight='700' letter-spacing='3' text-anchor='middle' fill='#ffffff' fill-opacity='0.2'>PREGLED</text>
+  <text x='120' y='112' font-family='Arial, Helvetica, sans-serif' font-size='15' font-weight='700' letter-spacing='3' text-anchor='middle' fill='#232323' fill-opacity='0.13'>PREGLED</text>
 </svg>`;
 
 const WATERMARK_BG = `url("data:image/svg+xml,${encodeURIComponent(TILE)}")`;

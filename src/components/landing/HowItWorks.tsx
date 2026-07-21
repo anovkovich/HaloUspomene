@@ -78,7 +78,7 @@ const HowItWorks: React.FC = () => {
             {/* Feature pills */}
             <div className="grid grid-cols-2 gap-2 max-w-md">
               {[
-                { icon: <Globe size={13} />, label: "6 dizajnerskih tema" },
+                { icon: <Globe size={13} />, label: "5 tema + boja po želji" },
                 {
                   icon: <FileDown size={13} />,
                   label: "PDF za štampu — besplatno",

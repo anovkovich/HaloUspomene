@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import InvitationClient from "./InvitationClient";
 import InvitationFrame from "@/components/invitation/InvitationFrame";
+import AiCopyrightNotice from "@/components/invitation/AiCopyrightNotice";
 import PreviewWatermark from "@/components/PreviewWatermark";
 import BackgroundMusicPlayer from "@/components/BackgroundMusicPlayer";
 import { issuePromo } from "@/lib/payments/promo";
@@ -85,6 +86,7 @@ export default async function InvitationPage({ params }: PageProps) {
         promoValidUntil={promo?.validUntil}
       />
       {isDraft && <PreviewWatermark payHref={payHref} />}
+      <AiCopyrightNotice />
       {weddingData.paid_for_music && weddingData.music_url && (
         <BackgroundMusicPlayer src={weddingData.music_url} />
       )}

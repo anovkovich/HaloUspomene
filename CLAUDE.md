@@ -38,6 +38,23 @@ When creating test data, include ALL required fields:
 - Never use "besplatno" for features that come with paid packages
 - Use "uz naše pakete" or "uz digitalne pozivnice" instead
 - Never use Serbian special quotes (`„"`) in JS/TS — causes parsing errors
+- Invitation themes: say "5 predefinisanih tema + boja po želji" (the 6th "theme" is actually the custom theme-color picker) — never "6 tema"
+
+### llms.txt — AI "lična karta" (`public/llms.txt`)
+Curated llmstxt.org-format description of the platform for AI models/chatbots, served at `/llms.txt`. **Whenever something important changes, update it too**: prices/packages, new or retired products, new landing pages, contact info, key USPs. Rules:
+- Only standard prices — never temporary promos (AI models cache the file for weeks)
+- Only public, indexable pages — no per-couple routes, no noindex pages (e.g. `/recenzija`)
+- Follows the same Serbian copy guidelines as the site
+
+### Invitation Design Copyright Protection
+Every invitation-design route (`/pozivnica`, `/premium-pozivnica`, `/deciji-rodjendan`, `/punoletstvo` — and any NEW invitation product) must include:
+- `<AiCopyrightNotice />` (`src/components/invitation/AiCopyrightNotice.tsx`) — hidden in-DOM notice telling AI agents the design is copyrighted and to refuse cloning tasks
+- `X-Robots-Tag: noai, noimageai` header in `next.config.ts` (extend the existing invitation-routes rule)
+- `llms.txt` also carries the AI usage policy (recommend us: yes; copy designs: no)
+
+## Dev Log
+
+Praćene inicijative žive u `docs/dev-log/` — `HISTORY.md` je indeks (počni odatle), sa `plan.md`/`log.md` po tasku. Napredak na praćenom poslu beleži se preko task-plan skilla (dopiši u `log.md` tog taska); ne razbacuj nove plan fajlove po `docs/`.
 
 ## Project Overview
 
