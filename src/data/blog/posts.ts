@@ -17,6 +17,29 @@ function loadContent(slug: string): string {
 // All posts including scheduled/unpublished ones
 const allBlogPosts: BlogPost[] = [
   {
+    slug: "kada-slati-pozivnice-za-vencanje",
+    title: "Kada Slati Pozivnice za Venčanje: Kompletan Vremenski Vodič",
+    description:
+      "Kada se šalju pozivnice za venčanje? Save the date 6-12 meseci, glavne pozivnice 6-8 nedelja ranije, rok za potvrde dolaska — kompletan vremenski vodič za Srbiju.",
+    category: "Vodič",
+    tags: [
+      "kada slati pozivnice za venčanje",
+      "koliko ranije se šalju pozivnice za venčanje",
+      "kada se šalju pozivnice za venčanje",
+      "save the date venčanje",
+      "rok za potvrdu dolaska",
+      "kada naručiti pozivnice za venčanje",
+      "pozivnice za venčanje u inostranstvo",
+      "potvrda dolaska",
+      "website pozivnica",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-07-21",
+    readTime: 10,
+    featured: true,
+    content: loadContent("kada-slati-pozivnice-za-vencanje"),
+  },
+  {
     slug: "stampane-pozivnice-sa-qr-kodom-za-potvrdu",
     title: "Štampane pozivnice sa QR kodom za potvrdu dolaska — vodič",
     description:

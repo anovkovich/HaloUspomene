@@ -131,6 +131,81 @@ export default async function BlogPostPage({
       }
     : null;
 
+  // Add FAQPage schema for the invitation-timing post
+  const isInvitationTiming = post.slug === "kada-slati-pozivnice-za-vencanje";
+  const faqSchema = isInvitationTiming
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: "Kada se šalju pozivnice za venčanje?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Glavne pozivnice šalju se 6 do 8 nedelja pre venčanja. Gostima iz inostranstva 2 do 3 meseca ranije, a najavu (save the date) svima kojima treba vremena za planiranje šaljete 6 do 12 meseci ranije.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Šta je save the date i da li je obavezan?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "To je kratka najava datuma koju šaljete pre zvanične pozivnice. Nije obavezna, ali je vrlo korisna za goste iz inostranstva i za venčanja u špicu sezone, kada se kalendari brzo popune.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Koliko ranije poslati pozivnice gostima u inostranstvu?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Gostima iz inostranstva pozivnicu šaljete 2 do 3 meseca ranije, a idealno im još pre toga pošaljete najavu — 6 i više meseci unapred — da na vreme rezervišu karte i godišnji odmor.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Da li je kasno poslati pozivnice mesec dana pre venčanja?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Nije idealno, ali je rešivo — naročito digitalnom pozivnicom koja do gosta stiže odmah. Ključno je da rok za potvrdu dolaska ostane bar 2 nedelje pre venčanja.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Kada postaviti rok za potvrdu dolaska?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Rok postavite 2 do 3 nedelje pre venčanja, jer restoran obično traži konačan broj gostiju 7 do 10 dana ranije, a vama posle roka treba vremena za raspored sedenja.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Kada naručiti izradu štampanih pozivnica?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Štampane pozivnice naručujete 3 do 4 meseca pre venčanja — toliko traje dizajn, štampa i vreme potrebno da pozivnice uručite svim gostima.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Da li se pozivnice uručuju lično ili šalju?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "U Srbiji se najbližima pozivnica tradicionalno uručuje lično, uz kafu. Praktičan moderan model je kombinacija: papir za goste koje obilazite, a link i QR kod za ostale — pri čemu sve potvrde dolaska stižu na jedno mesto.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Šta ako gost ne potvrdi dolazak do roka?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Pošaljite podsetnik nedelju dana pre isteka roka. Za goste koji potvrde naknadno, njihove odgovore ručno dodajete na spisak — kod digitalne pozivnice to traje nekoliko sekundi.",
+            },
+          },
+        ],
+      }
+    : null;
+
   return (
     <>
       <Header />
@@ -143,6 +218,12 @@ export default async function BlogPostPage({
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+          />
+        )}
+        {faqSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
           />
         )}
 
