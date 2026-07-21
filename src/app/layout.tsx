@@ -225,14 +225,7 @@ export const metadata: Metadata = {
     title: "HALO Uspomene — Sve za Venčanje na Jednom Mestu",
     description:
       "Web i Premium AI pozivnice, QR Pano raspored sedenja, audio knjiga uspomena, planer venčanja i direktorijum vendora — sve za vaše venčanje u Srbiji.",
-    images: [
-      {
-        url: "/images/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "HALO Uspomene — platforma za venčanja u Srbiji",
-      },
-    ],
+    // og:image comes from src/app/opengraph-image.tsx (file-based metadata)
   },
 
   twitter: {
@@ -240,7 +233,6 @@ export const metadata: Metadata = {
     title: "HALO Uspomene — Sve za Venčanje na Jednom Mestu",
     description:
       "Web i Premium AI pozivnice, QR Pano raspored sedenja, audio knjiga uspomena, planer i vendori — sve za venčanje u Srbiji.",
-    images: ["/images/og-image.png"],
   },
 
   robots: {
@@ -305,7 +297,7 @@ export default function RootLayout({
       "HALO Uspomene — sveobuhvatna platforma za venčanja u Srbiji: web i Premium AI pozivnice sa potvrdama dolaska, QR Pano raspored sedenja, audio knjiga uspomena (digitalna i preko retro telefona), planer venčanja i direktorijum vendora.",
     url: siteUrl,
     logo: `${siteUrl}/images/logo.png`,
-    image: `${siteUrl}/images/og-image.png`,
+    image: `${siteUrl}/opengraph-image`,
     // telephone: "+381601234567",
     // email: "info@halouspomene.rs",
     email: "halouspomene@gmail.com",
