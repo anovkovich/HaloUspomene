@@ -512,3 +512,12 @@ Configured per-route in `next.config.ts`:
 5. No rebuild needed (`dynamicParams = true`); OG image generates on first request
 6. Toggle paid features (`paid_for_raspored`, `paid_for_audio`, etc.) from the admin couple list
 7. For premium AI tier: set `premium: true` and (after payment) `premium_paid: true`
+
+## DB Maintenance Scripts (`scripts/`)
+
+MongoDB one-off and reusable scripts, run as `node --env-file=.env.local scripts/<name>.mjs`. Convention: dry-run by default (prints per-collection footprint), `--apply` to actually write.
+
+- **`scripts/rename-couple-slug.mjs <old> <new> [--apply]`** — cascading slug rename across ALL slug-keyed collections (`couples`, `rsvp_responses`, `seating_layouts`, `audio_messages`, `wedding_portal`, `gallery_photos`, `share_links`, `orders`, `promo_redemptions`). ALWAYS use this instead of hand-editing a slug — renaming only `couples` silently orphans everything else. Also invocable as the local `/rename-slug` skill.
+- **`scripts/lib/couple-slug.mjs`** — shared helpers: `LINKED_COLLECTIONS` (keep in sync with the DELETE cascade in `src/app/api/admin/couples/[slug]/route.ts` when adding a new slug-keyed collection), `renameCoupleSlug(db, old, new, extraSet?)` (`extraSet` merges extra couple-field fixes into the same write), and `deleteCoupleCascade(db, slug)` (no Vercel Blob / R2 cleanup — for couples with uploads use the admin panel delete instead).
+- Past one-off scripts (e.g. `consolidate-andjela-milos.mjs` — keep-one-of-three + rename + field fixes) stay in the repo as reference examples of the pattern.
+- After a rename: old URL 404s (re-send link/QR to the couple), login cookies die with the old slug (couple just logs in again), and Blob/R2 asset paths keep the old slug prefix — prefer renaming before assets are uploaded.
