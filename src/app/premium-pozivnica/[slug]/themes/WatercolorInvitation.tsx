@@ -58,6 +58,8 @@ const CITY_BACKGROUNDS: Record<string, string> = {
     "/images/premium/watercolor-invitation/backgrounds/custom/zica.webp",
   ostrog:
     "/images/premium/watercolor-invitation/backgrounds/custom/ostrog.webp",
+  hram_pantelejmona:
+    "/images/premium/watercolor-invitation/backgrounds/custom/hram-pantelejmona.webp",
   // Legacy key aliases — map old DB values to the new files
   beograd:
     "/images/premium/watercolor-invitation/backgrounds/Saint-Sava-Temple.webp",
