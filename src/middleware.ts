@@ -1,10 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import {
+  isPathPreviewLocked,
+  previewKey,
+  PREVIEW_COOKIE,
+} from "@/lib/preview-lock";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  // ── Partner preview lock ──────────────────────────────────────────────────
+  // Pages awaiting partner approval 404 publicly while PARTNER_PREVIEW_KEY is
+  // set; ?key=<PARTNER_PREVIEW_KEY> opens them and a cookie keeps follow-up
+  // requests working. See src/lib/preview-lock.ts.
+  if (isPathPreviewLocked(pathname)) {
+    const key = previewKey()!;
+    if (request.nextUrl.searchParams.get("key") === key) {
+      const res = NextResponse.next();
+      res.cookies.set(PREVIEW_COOKIE, key, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 30,
+      });
+      return res;
+    }
+    if (request.cookies.get(PREVIEW_COOKIE)?.value === key) {
+      return NextResponse.next();
+    }
+    // Rewrite to a route that doesn't exist so Next renders the 404 page
+    // without exposing that the URL is real.
+    return NextResponse.rewrite(new URL("/404", request.url));
+  }
 
   // ── Admin routes ──────────────────────────────────────────────────────────
   if (pathname.startsWith("/admin")) {
@@ -158,5 +188,9 @@ export const config = {
     "/raspored-sedenja/:slug",
     "/raspored-sedenja/:slug/gosti",
     "/raspored-sedenja/:slug/gosti/:path*",
+    // Partner preview lock — keep in sync with PREVIEW_LOCKED_PATHS
+    // in src/lib/preview-lock.ts (matchers must be literals).
+    "/iznajmljivanje-opreme-za-vencanje",
+    "/iznajmljivanje-opreme-za-vencanje/:path*",
   ],
 };
