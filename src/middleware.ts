@@ -31,9 +31,10 @@ export async function middleware(request: NextRequest) {
     if (request.cookies.get(PREVIEW_COOKIE)?.value === key) {
       return NextResponse.next();
     }
-    // Rewrite to a route that doesn't exist so Next renders the 404 page
-    // without exposing that the URL is real.
-    return NextResponse.rewrite(new URL("/404", request.url));
+    // Rewrite to the 404 page without exposing that the URL is real. The
+    // explicit status matters on Vercel: the prerendered /404 file would
+    // otherwise be served with a soft-404 status 200.
+    return NextResponse.rewrite(new URL("/404", request.url), { status: 404 });
   }
 
   // ── Admin routes ──────────────────────────────────────────────────────────
