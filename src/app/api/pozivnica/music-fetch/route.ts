@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getYouTubeAudio, YtDlpError } from "@/lib/yt-audio";
 
-// Increased from 30s — yt-dlp cold-start (binary download) can take ~15s.
-export const maxDuration = 60;
+// loader.to's v2_stream flow needs up to ~45s of polling before yt-dlp even
+// gets a turn, and yt-dlp cold-start (binary download) adds ~15s on top.
+export const maxDuration = 120;
 export const runtime = "nodejs";
 
 const ipMap = new Map<string, { count: number; resetAt: number }>();
@@ -107,7 +108,9 @@ export async function POST(request: NextRequest) {
   // The signed CDN URL is valid from the same server IP that yt-dlp used.
   let audioRes: Response;
   try {
-    audioRes = await fetch(info.audioUrl, { signal: AbortSignal.timeout(25_000) });
+    // 60s — the signal also governs body streaming, and loader.to's v2_stream
+    // download endpoint converts on the fly (can trickle well past 25s).
+    audioRes = await fetch(info.audioUrl, { signal: AbortSignal.timeout(60_000) });
     if (!audioRes.ok || !audioRes.body) {
       throw new Error(`CDN returned ${audioRes.status}`);
     }

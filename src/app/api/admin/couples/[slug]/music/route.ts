@@ -5,7 +5,9 @@ import { getWeddingData, patchCouple, unsetCoupleFields } from "@/lib/couples";
 import { YtDlpError } from "@/lib/ytdlp";
 import { downloadYouTubeAudioBytes } from "@/lib/yt-audio";
 
-export const maxDuration = 60;
+// loader.to's v2_stream flow needs up to ~45s of polling before yt-dlp even
+// gets a turn, so 60s left no room for the fallback + blob upload.
+export const maxDuration = 120;
 export const runtime = "nodejs";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");

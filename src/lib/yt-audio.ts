@@ -56,8 +56,11 @@ async function viaLoaderTo(youtubeUrl: string): Promise<YtAudioResult> {
     init.progress_url ||
     `https://p.savenow.to/api/progress?id=${init.id}`;
 
-  // Poll up to ~21s (7 × 3s). loader.to typically finishes in 1-2 polls.
-  for (let i = 0; i < 7; i++) {
+  // Poll up to ~90s (30 × 3s). loader.to's v2_stream flow (observed 2026-07)
+  // sits on "Preparing streaming download" for 25-65s before returning the
+  // URL, so the old 21s window was no longer enough. Callers need
+  // maxDuration >= 120 to absorb this.
+  for (let i = 0; i < 30; i++) {
     await new Promise((r) => setTimeout(r, 3_000));
     let prog: { download_url?: string | null };
     try {
@@ -86,7 +89,9 @@ async function viaLoaderTo(youtubeUrl: string): Promise<YtAudioResult> {
 // servers, so it bypasses YouTube's bot wall against OUR IP).
 async function bytesViaLoaderTo(youtubeUrl: string): Promise<YtAudioBytes> {
   const { title, audioUrl, mimeType } = await viaLoaderTo(youtubeUrl);
-  const res = await fetch(audioUrl, { signal: AbortSignal.timeout(45_000) });
+  // 60s — the v2_stream download endpoint converts on the fly and can trickle
+  // for a long while before the body completes.
+  const res = await fetch(audioUrl, { signal: AbortSignal.timeout(60_000) });
   if (!res.ok) throw new Error(`loader.to file download HTTP ${res.status}`);
   const buffer = Buffer.from(await res.arrayBuffer());
   if (buffer.byteLength < 2048)
@@ -140,8 +145,8 @@ export async function getYouTubeAudio(
  *   - With cookies configured (YTDLP_COOKIES): prefer yt-dlp (fast, reliable,
  *     enforces duration/live rules), fall back to loader.to.
  *   - Without cookies: prefer loader.to (off-server extraction, dodges the bot
- *     wall), fall back to yt-dlp with a short timeout so the whole request fits
- *     inside the route's 60s budget.
+ *     wall), fall back to yt-dlp. Callers set maxDuration = 120 to fit both
+ *     attempts.
  * Throws the LAST error (a typed YtDlpError when yt-dlp ran last) so callers can
  * map it to a user-facing message.
  */
@@ -150,7 +155,7 @@ export async function downloadYouTubeAudioBytes(
 ): Promise<YtAudioBytes> {
   const attempts: Array<() => Promise<YtAudioBytes>> = hasYtCookies()
     ? [() => bytesViaYtDlp(youtubeUrl), () => bytesViaLoaderTo(youtubeUrl)]
-    : [() => bytesViaLoaderTo(youtubeUrl), () => bytesViaYtDlp(youtubeUrl, 22_000)];
+    : [() => bytesViaLoaderTo(youtubeUrl), () => bytesViaYtDlp(youtubeUrl)];
 
   let lastErr: unknown;
   for (const attempt of attempts) {
