@@ -71,6 +71,33 @@ interface Couple {
 
 type SortMode = "newest" | "event_proximity";
 
+/** Target of the "Označi kao plaćeno" modal — either a couple's receipt or a
+ *  custom receipt with no couple behind it. */
+interface MarkPaidTarget {
+  slug: string;
+  name: string;
+  premium: boolean;
+  prefillAmount: number;
+  prefillLabel: string;
+  slugEditable: boolean;
+  source: { type: "couple" } | { type: "custom"; id: string };
+}
+
+/** Latin-ASCII slug from a free-text custom-receipt recipient name. */
+function slugifyPar(s: string): string {
+  return (
+    s
+      .toLowerCase()
+      .replace(/č|ć/g, "c")
+      .replace(/š/g, "s")
+      .replace(/ž/g, "z")
+      .replace(/đ/g, "dj")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || "custom"
+  );
+}
+
 interface CoupleStats {
   rsvp: { attending: number; declined: number; totalGuests: number } | null;
   seating: { totalSeats: number; assignedSeats: number } | null;
@@ -90,6 +117,7 @@ export default function AdminPage() {
   const [bankAccountIdx, setBankAccountIdx] = useState(0); // default: Erste (340)
   const [showPhoneRental, setShowPhoneRental] = useState(false);
   const [showCustomReceipt, setShowCustomReceipt] = useState(false);
+  const [markPaid, setMarkPaid] = useState<MarkPaidTarget | null>(null);
   const [showBypassLink, setShowBypassLink] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
@@ -416,6 +444,57 @@ export default function AdminPage() {
     return `https://halouspomene.rs/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
   }
 
+  /** Receipt total (base flags, no dropdown extras) — prefill for the manual
+   *  order amount in the mark-paid modal. */
+  function receiptTotalFor(c: Couple): number {
+    const data: Record<string, unknown> = {
+      s: c.slug,
+      r: c.paid_for_raspored ? 1 : 0,
+      a: c.paid_for_audio ? 1 : 0,
+      uk: c.paid_for_audio_USB === "kaseta" ? 1 : 0,
+      ub: c.paid_for_audio_USB === "bocica" ? 1 : 0,
+      cc: c.custom_primary_color || c.custom_background_color ? 1 : 0,
+      ig: c.paid_for_images ? 1 : 0,
+      g: c.paid_for_gallery ? 1 : 0,
+      mu: c.paid_for_music ? 1 : 0,
+      p: c.premium ? 1 : 0,
+      d: c.custom_discount ?? 0,
+    };
+    const { items, bundleDiscount } = buildReceiptItems(
+      data as unknown as ReceiptFlags,
+      currentPriceTable(),
+    );
+    const sum =
+      items.reduce((acc, i) => acc + i.p, 0) -
+      (bundleDiscount || 0) -
+      (c.custom_discount ?? 0);
+    return Math.max(0, sum);
+  }
+
+  async function handleMarkPaidDone(mode: "linked" | "recorded") {
+    if (!markPaid) return;
+    if (markPaid.source.type === "couple") {
+      await handleInvalidateReceipt(markPaid.slug);
+      if (mode === "linked") {
+        // Approving an order runs unlock() server-side (draft/paid_* flags) —
+        // re-fetch so the toggles in the list reflect the new state.
+        fetch("/api/admin/couples")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (Array.isArray(d)) setCouples(d);
+          })
+          .catch(() => {});
+      }
+    } else {
+      const id = markPaid.source.id;
+      await fetch(`/api/admin/custom-receipts/${id}`, { method: "DELETE" }).catch(
+        () => {},
+      );
+      setCustomReceipts((prev) => prev.filter((x) => x.id !== id));
+    }
+    setMarkPaid(null);
+  }
+
   async function handleGenerateReceipt(slug: string) {
     const now = new Date().toISOString();
     setCouples((prev) =>
@@ -577,12 +656,19 @@ export default function AdminPage() {
                   <Copy size={12} />
                 </button>
                 <button
-                  onClick={async () => {
-                    await fetch(`/api/admin/custom-receipts/${r.id}`, { method: "DELETE" });
-                    setCustomReceipts((prev) => prev.filter((x) => x.id !== r.id));
-                  }}
+                  onClick={() =>
+                    setMarkPaid({
+                      slug: slugifyPar(r.par),
+                      name: r.par,
+                      premium: false,
+                      prefillAmount: total,
+                      prefillLabel: `Prilagođeni račun — ${r.par}`.slice(0, 120),
+                      slugEditable: true,
+                      source: { type: "custom", id: r.id },
+                    })
+                  }
                   className="p-1.5 rounded-lg hover:bg-green-500/20 text-white/30 hover:text-green-400 transition-colors cursor-pointer"
-                  title="Označi kao plaćeno (briše)"
+                  title="Označi kao plaćeno — zabeleži u tab Uplate (briše račun)"
                 >
                   <Check size={12} />
                 </button>
@@ -1033,7 +1119,19 @@ export default function AdminPage() {
                   setCopiedSlug(c.slug);
                   setTimeout(() => setCopiedSlug(null), 2500);
                 }}
-                onPaid={() => handleInvalidateReceipt(c.slug)}
+                onPaid={() =>
+                  setMarkPaid({
+                    slug: c.slug,
+                    name: c.couple_names?.full_display || c.slug,
+                    premium: !!c.premium,
+                    prefillAmount: receiptTotalFor(c),
+                    prefillLabel: c.premium
+                      ? "Premium paket — žiralna uplata"
+                      : "Žiralna uplata po računu",
+                    slugEditable: false,
+                    source: { type: "couple" },
+                  })
+                }
                 onDiscount={(amount) => handleSetDiscount(c.slug, amount)}
               />
             </div>
@@ -1045,6 +1143,14 @@ export default function AdminPage() {
         <PhoneRentalModal
           onClose={() => setShowPhoneRental(false)}
           bankAccountIdx={bankAccountIdx}
+        />
+      )}
+
+      {markPaid && (
+        <MarkPaidModal
+          target={markPaid}
+          onClose={() => setMarkPaid(null)}
+          onDone={handleMarkPaidDone}
         />
       )}
 
@@ -1203,6 +1309,243 @@ function ReceiptDropdown({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function MarkPaidModal({
+  target,
+  onClose,
+  onDone,
+}: {
+  target: MarkPaidTarget;
+  onClose: () => void;
+  onDone: (mode: "linked" | "recorded") => void;
+}) {
+  interface PendingRow {
+    orderId: string;
+    kind: string;
+    slug: string;
+    tier: string;
+    status: string;
+    amountRsd: number;
+    ipsRef: string;
+    createdAt: string;
+    dupWarning: boolean;
+  }
+  const [pending, setPending] = useState<PendingRow[] | null>(null);
+  const [slug, setSlug] = useState(target.slug);
+  const [amount, setAmount] = useState(
+    target.prefillAmount > 0 ? String(target.prefillAmount) : "",
+  );
+  const [label, setLabel] = useState(target.prefillLabel);
+  const [tier, setTier] = useState(target.premium ? "premium" : "custom");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/orders?status=pending,review")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const rows: PendingRow[] = Array.isArray(d?.orders) ? d.orders : [];
+        setPending(rows.filter((o) => o.slug === target.slug));
+      })
+      .catch(() => setPending([]));
+  }, [target.slug]);
+
+  async function link(o: PendingRow) {
+    const warn = o.dupWarning
+      ? "\n\n⚠ UPOZORENJE: postoji već aktiviran order za isti proizvod — proveri duplu uplatu."
+      : "";
+    if (
+      !window.confirm(
+        `Povezati i odobriti uplatu ${o.orderId} (${o.amountRsd.toLocaleString("sr-RS")} din)?\nAutomatski uključuje plaćene opcije na proizvodu.${warn}`,
+      )
+    )
+      return;
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await fetch(`/api/admin/orders/${o.orderId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve" }),
+      });
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        setError(d.error || "Greška pri odobravanju.");
+        return;
+      }
+      onDone("linked");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function record() {
+    const rsd = Math.round(Number(amount));
+    if (!Number.isFinite(rsd) || rsd <= 0) {
+      setError("Unesi ispravan iznos.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "pozivnica",
+          slug,
+          tier,
+          amountRsd: rsd,
+          label,
+          adminNote:
+            target.source.type === "custom"
+              ? `Ručna evidencija — prilagođeni račun (${target.name})`
+              : "Ručna evidencija — žiralna uplata",
+        }),
+      });
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        setError(d.error || "Greška pri beleženju.");
+        return;
+      }
+      onDone("recorded");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-5 max-h-[85vh] overflow-y-auto"
+        style={{ backgroundColor: "#1e1e1e", border: "1px solid rgba(255,255,255,0.1)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-white font-semibold flex items-center gap-2">
+            <Wallet size={16} className="text-green-400" /> Označi kao plaćeno
+          </h3>
+          <button onClick={onClose} className="text-white/40 hover:text-white cursor-pointer">
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="text-sm text-white/60">{target.name}</div>
+
+        {/* Existing pending/review orders for this slug */}
+        <div className="space-y-2">
+          <span className="text-[11px] text-white/40 uppercase tracking-wider">
+            Uplate na čekanju
+          </span>
+          {pending === null && (
+            <p className="text-xs text-white/30">Učitavanje…</p>
+          )}
+          {pending !== null && pending.length === 0 && (
+            <p className="text-xs text-white/30">
+              Nema uplata na čekanju za /{target.slug}.
+            </p>
+          )}
+          {pending?.map((o) => (
+            <div
+              key={o.orderId}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border ${
+                o.dupWarning
+                  ? "bg-amber-950/30 border-amber-500/30"
+                  : "bg-white/5 border-white/10"
+              }`}
+            >
+              <div className="flex-1 min-w-0">
+                <div className="text-sm text-white/80 font-medium">
+                  {o.amountRsd.toLocaleString("sr-RS")} din
+                  <span className="text-xs text-white/35 ml-2">
+                    {o.status === "review" ? "za overu" : "čeka"} · {o.tier}
+                  </span>
+                </div>
+                <div className="text-[11px] text-white/35 truncate">
+                  poziv na br. {o.ipsRef} ·{" "}
+                  {new Date(o.createdAt).toLocaleDateString("sr-RS")}
+                  {o.dupWarning && " · ⚠ proveri duplu uplatu"}
+                </div>
+              </div>
+              <button
+                onClick={() => link(o)}
+                disabled={busy}
+                className="flex items-center gap-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Check size={13} /> Poveži i odobri
+              </button>
+            </div>
+          ))}
+          {pending !== null && pending.length > 0 && (
+            <p className="text-[11px] text-white/30">
+              Odobravanje automatski uključuje plaćene opcije na proizvodu.
+            </p>
+          )}
+        </div>
+
+        {/* Manual ledger entry */}
+        <div className="space-y-2 border-t border-white/10 pt-4">
+          <span className="text-[11px] text-white/40 uppercase tracking-wider">
+            Ili zabeleži novu uplatu (odmah obrađena)
+          </span>
+          {target.slugEditable && (
+            <input
+              type="text"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder="slug (za evidenciju)"
+              className="w-full text-sm text-white/70 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/25"
+            />
+          )}
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min={0}
+              step={100}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Iznos u din"
+              className="flex-1 text-sm text-white/70 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/25"
+            />
+            <select
+              value={tier}
+              onChange={(e) => setTier(e.target.value)}
+              className="text-sm text-white/70 bg-white/5 border border-white/10 rounded-lg px-2 py-2 outline-none focus:border-white/25 cursor-pointer"
+              style={{ backgroundColor: "#2a2a2a" }}
+            >
+              <option value="osnovni">Osnovni</option>
+              <option value="kompletan">Kompletan</option>
+              <option value="premium">Premium</option>
+              <option value="custom">Kombinacija</option>
+            </select>
+          </div>
+          <input
+            type="text"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="Opis uplate"
+            className="w-full text-sm text-white/70 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/25"
+          />
+          <button
+            onClick={record}
+            disabled={busy}
+            className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-green-500/20 text-white/70 hover:text-green-300 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50"
+          >
+            <Receipt size={13} /> Zabeleži kao plaćeno
+          </button>
+          <p className="text-[11px] text-white/30">
+            Samo evidencija u tabu Uplate — ne menja opcije na proizvodu.
+          </p>
+        </div>
+
+        {error && <p className="text-xs text-red-400">{error}</p>}
+      </div>
     </div>
   );
 }

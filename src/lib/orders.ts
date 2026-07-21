@@ -220,6 +220,54 @@ export async function getOrCreatePendingOrder(
   throw new Error("Could not create order after 5 attempts");
 }
 
+/** Admin-recorded payment (žiralna uplata / keš) that never went through the
+ *  self-serve flow — inserted directly as `unlocked` with `approvedBy: admin`.
+ *  Pure ledger evidence: it does NOT flip entity flags (unlike the approve
+ *  route), because the admin has already handled those by hand. */
+export async function createManualUnlockedOrder(input: {
+  kind: PaymentKind;
+  slug: string;
+  tier: string;
+  amountRsd: number;
+  lines: CheckoutLine[];
+  adminNote?: string;
+}): Promise<OrderDocument> {
+  const c = await col();
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { orderId, ipsRef } = generateOrderId();
+    const now = new Date();
+    const doc: OrderDocument = {
+      orderId,
+      kind: input.kind,
+      slug: input.slug,
+      tier: input.tier,
+      rail: "ips",
+      status: "unlocked",
+      amountRsd: input.amountRsd,
+      // EUR prices are a fixed card-rail list, not an FX conversion — a manual
+      // bank-transfer entry has no meaningful EUR amount.
+      amountEur: 0,
+      lines: input.lines,
+      ipsRef,
+      ipsAccountIdx: 0,
+      webhookEvents: [],
+      approvedBy: "admin",
+      adminNote: input.adminNote,
+      createdAt: now,
+      updatedAt: now,
+      unlockedAt: now,
+    };
+    try {
+      const res = await c.insertOne(doc);
+      return { ...doc, _id: res.insertedId };
+    } catch (e) {
+      if ((e as { code?: number }).code === 11000 && attempt < 4) continue;
+      throw e;
+    }
+  }
+  throw new Error("Could not create order after 5 attempts");
+}
+
 export async function getOrder(orderId: string): Promise<OrderDocument | null> {
   const c = await col();
   return c.findOne({ orderId });

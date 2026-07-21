@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { listOrders, type OrderStatus } from "@/lib/orders";
+import {
+  createManualUnlockedOrder,
+  listOrders,
+  type OrderStatus,
+  type PaymentKind,
+} from "@/lib/orders";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -59,4 +64,63 @@ export async function GET(req: NextRequest) {
   }));
 
   return NextResponse.json({ orders: rows });
+}
+
+const VALID_KINDS: ReadonlySet<string> = new Set([
+  "pozivnica",
+  "rodjendan",
+  "punoletstvo",
+  "raspored",
+  "galerija",
+]);
+
+/** Manual ledger entry: admin records a bank-transfer/cash payment that has no
+ *  self-serve order to link with (e.g. a custom receipt). Created directly as
+ *  `unlocked` — evidence only, entity flags are NOT touched. */
+export async function POST(req: NextRequest) {
+  if (!(await isAdmin(req)))
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  let body: {
+    kind?: string;
+    slug?: string;
+    tier?: string;
+    amountRsd?: number;
+    label?: string;
+    adminNote?: string;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Neispravan zahtev." }, { status: 400 });
+  }
+
+  const kind = body.kind ?? "pozivnica";
+  if (!VALID_KINDS.has(kind))
+    return NextResponse.json({ error: "Nepoznat proizvod." }, { status: 400 });
+
+  const slug = (body.slug ?? "").trim().toLowerCase();
+  if (!/^[a-z0-9-]{1,80}$/.test(slug))
+    return NextResponse.json(
+      { error: "Slug: samo mala slova, brojevi i crtice." },
+      { status: 400 },
+    );
+
+  const amountRsd = Math.round(Number(body.amountRsd));
+  if (!Number.isFinite(amountRsd) || amountRsd <= 0 || amountRsd > 1_000_000)
+    return NextResponse.json({ error: "Neispravan iznos." }, { status: 400 });
+
+  const label = (body.label ?? "").trim().slice(0, 120) || "Ručna evidencija uplate";
+  const tier = (body.tier ?? "custom").trim().slice(0, 30) || "custom";
+
+  const order = await createManualUnlockedOrder({
+    kind: kind as PaymentKind,
+    slug,
+    tier,
+    amountRsd,
+    lines: [{ l: label, rsd: amountRsd, eur: 0 }],
+    adminNote: body.adminNote?.slice(0, 200),
+  });
+
+  return NextResponse.json({ ok: true, orderId: order.orderId });
 }
