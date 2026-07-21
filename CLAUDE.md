@@ -262,6 +262,7 @@ src/
 ### Shared UI Components
 
 - **DatePicker** (`src/components/ui/DatePicker.tsx`) — branded calendar with portal-rendered dropdown. **Always use this instead of `<input type="date">`.** Accepts `value`/`onChange` (ISO `YYYY-MM-DD`), `variant: "dark" | "light"`, `accentColor`, optional `minDate`, `placeholder`, `showQuickActions` (Danas / Za nedelju dana). Default accent is `#AE343F`.
+- **ConfirmDialog** (`src/components/ui/ConfirmDialog.tsx`) — branded modal replacing `window.confirm`/`window.prompt`. **Never use the native dialogs.** Hook API: `const { confirm, prompt, dialog } = useConfirmDialog({ variant: "dark" | "light" })`; render `{dialog}` in the component tree, then `await confirm({ title, message, danger, warning, confirmLabel })` → boolean, or `await prompt({ title, input: { label, defaultValue, optional } })` → string | null. Dark variant for admin, light for the couple-facing portal.
 - Other reusable UI: `Breadcrumbs`, `ScrollReveal`.
 
 ### Rendering Strategy
