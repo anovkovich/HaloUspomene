@@ -4,6 +4,7 @@ Indeks svih praćenih inicijativa (najnovije prvo). Izvor istine za status je
 `plan.md` svakog taska (ili navedeni fajl); ovaj fajl je izveden indeks.
 
 ## Aktivno / otvoreno
+- [in-progress] 2026-07-22 **Vendor promo kodovi** — per-vendor referral kod (5%/10%, reuse PROMO5HU/PROMO10HU) + collapsed admin sekcija na ORDERS tabu (aktivacije + provizija); implementirano, čeka verifikaciju + push → `docs/dev-log/2026-07-22-vendor-promo-kodovi/`
 - [in-progress] 2026-07-20 **B2B outreach salama (QR pano dobrodošlice)** — 120 verifikovanih mejlova; runda 1 (60) POSLATA, runda 2 (60) čeka; sledi telefonski follow-up → `docs/sale-round-1of2.md` · `sale-round-2of2.md` · `sale-outreach-message.md`
 - [in-progress] 2026-07-20 **HaloUspomene — opšti pregled (isporučeno + otvoreno)** — referentna slika: shipped feature-i + trajne invarijante + otvorene stavke; konsoliduje 8 gotovih planova → `docs/dev-log/2026-07-20-halouspomene-pregled/`
 - [in-progress] **DB backup (nightly Mongo → GitHub Releases)** — workflow napisan ali NIKAD nije radio (bio na `main`, fale secrets + Atlas allowlist); sadrži restore runbook → `docs/DB_BACKUP_PLAN.md`

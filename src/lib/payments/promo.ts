@@ -17,8 +17,34 @@ import type { PaymentKind, CheckoutLine } from "@/lib/orders";
  *  prices (5.000 / 9.900 / 13.900) all divide exactly → 500 / 990 / 1.390. */
 export const PROMO_PERCENT = 10;
 export const PROMO_LS_CODE = "PROMO10HU"; // the one reusable LS discount code string
+export const PROMO_LS_CODE_5 = "PROMO5HU"; // 5% sibling (LS "All products", Active)
 export const PROMO_VALIDITY_DAYS = 45; // window after couple X's event date
 export const PROMO_CAP = 25; // max redemptions per code (leak cap)
+
+/** Maps a discount percent to its LS discount code. All are "All products" on
+ *  Lemon Squeezy, so they cover every eligible kind. The card rail passes the
+ *  result as `discount_code` so LS applies the SAME percent already frozen into
+ *  order.amountRsd — a wrong code here undercharges and quarantines the webhook.
+ *
+ *  The 5%/10% codes are memorable (low abuse value). The 50%/75% friend codes live
+ *  in ENV vars and MUST be unguessable random strings: an LS discount code can be
+ *  typed directly on LS's hosted checkout, bypassing our own single-use validation
+ *  — a guessable "PROMO75HU" would hand anyone the discount. Only 5/10/50/75 exist;
+ *  any other percent throws rather than silently mis-map. */
+export function lsCodeForPercent(percent: number): string {
+  if (percent === 10) return PROMO_LS_CODE;
+  if (percent === 5) return PROMO_LS_CODE_5;
+  if (percent === 75 || percent === 50) {
+    const envName =
+      percent === 75
+        ? "LS_FRIEND_DISCOUNT_CODE_75"
+        : "LS_FRIEND_DISCOUNT_CODE_50";
+    const code = process.env[envName];
+    if (!code) throw new Error(`${envName} env not set`);
+    return code;
+  }
+  throw new Error(`No LS discount code for percent=${percent}`);
+}
 
 /** Master switch. Off in production until the whole promo + card flow is ready
  *  to launch — when off, no code is issued and none validates, so the system is
@@ -35,6 +61,14 @@ const ELIGIBLE_KINDS: ReadonlySet<PaymentKind> = new Set([
   "rodjendan",
   "punoletstvo",
 ]);
+
+/** Shared eligibility gate for BOTH guest and vendor promo codes. Vendor codes
+ *  reuse it so a partner code can't apply on `raspored`/`galerija` — those tiers
+ *  carry their own `lsDiscountCode` (e.g. RASPORED1000) and LS accepts only one
+ *  discount per checkout, so a referral code there would collide + mis-price. */
+export function isPromoEligibleKind(kind: PaymentKind): boolean {
+  return ELIGIBLE_KINDS.has(kind);
+}
 
 const SECRET =
   process.env.PROMO_SECRET || process.env.JWT_SECRET || "dev-secret";

@@ -5,8 +5,8 @@ import {
   type BuilderSelection,
 } from "@/lib/payments/builder-pricing";
 import { PaymentError } from "@/lib/payments/kinds";
-import { verifyPromo, applyPromo, PROMO_CAP } from "@/lib/payments/promo";
-import { countRedemptions } from "@/lib/promo-redemptions";
+import { applyPromo } from "@/lib/payments/promo";
+import { resolveCheckoutPromo } from "@/lib/vendor-promos";
 
 /**
  * Freezes a custom (partial-combo) pozivnica order. The amount is computed
@@ -42,24 +42,22 @@ export async function createCustomPozivnicaOrder(
   };
   const base = computeBuilderMoney(sel);
 
-  // Guest-referral promo applies to custom combos too (kind is always
+  // Guest-referral + vendor promo apply to custom combos too (kind is always
   // "pozivnica" here, which is eligible). IPS-only, so no LS discount code to
   // reconcile — we just recompute the frozen RSD amount our-side.
   let money = { lines: base.lines, totalRsd: base.totalRsd, totalEur: 0 };
   let promo:
     | { code: string; discountRsd: number; discountEur: number }
     | undefined;
-  if (promoRaw) {
-    const p = verifyPromo(promoRaw, "pozivnica");
-    if (p.valid && (await countRedemptions(p.code)) < PROMO_CAP) {
-      const applied = applyPromo(money, p);
-      money = applied;
-      promo = {
-        code: p.code,
-        discountRsd: applied.discountRsd,
-        discountEur: applied.discountEur,
-      };
-    }
+  const resolved = await resolveCheckoutPromo(promoRaw, "pozivnica");
+  if (resolved) {
+    const applied = applyPromo(money, resolved);
+    money = applied;
+    promo = {
+      code: resolved.code,
+      discountRsd: applied.discountRsd,
+      discountEur: applied.discountEur,
+    };
   }
 
   return getOrCreatePendingOrder({

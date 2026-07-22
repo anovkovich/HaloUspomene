@@ -287,6 +287,8 @@ src/
   - `vendors` — vendor directory entries
   - `endorsements` — couple↔vendor endorsement pairs (unique compound index)
   - `site_config` — admin globals (e.g. highlighted vendor IDs)
+  - `promo_redemptions` — promo-code redemption ledger (guest + vendor), counted per code
+  - `vendor_promo_codes` — per-vendor referral codes (fixed 5%/10%, commission tracking); admin-managed on the Uplate tab
   - Birthday-equivalent collections for `/deciji-rodjendan`
 - All CRUD goes through `src/lib/*.ts` facades — never read collections directly from API/page code
 - Deleting a couple cascades across `couples`, `rsvp_responses`, `seating_layouts`, `audio_messages` (with blob cleanup), and `wedding_portal`
@@ -471,6 +473,8 @@ ADMIN_PASSWORD="..."             # Admin panel login
 JWT_SECRET="..."                 # JWT signing key for all auth flows
 BLOB_READ_WRITE_TOKEN="..."      # Vercel Blob storage
 FAL_KEY="..."                    # fal.ai birefnet (background removal)
+LS_FRIEND_DISCOUNT_CODE_75="..." # RANDOM/unguessable LS 75% discount-code string for friend promo codes (must NOT be memorable — LS codes can be typed directly on the hosted checkout)
+LS_FRIEND_DISCOUNT_CODE_50="..." # RANDOM/unguessable LS 50% discount-code string for the 2nd friend tier (same secrecy requirement)
 CONTACT_EMAIL="halouspomene@gmail.com"
 ```
 

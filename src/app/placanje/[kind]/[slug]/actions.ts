@@ -10,13 +10,8 @@ import {
 import { productUrl } from "@/lib/payments/product-urls";
 import { getOrCreatePendingOrder, setOrderRail } from "@/lib/orders";
 import { createCheckout } from "@/lib/payments/lemonsqueezy";
-import {
-  verifyPromo,
-  applyPromo,
-  PROMO_CAP,
-  PROMO_LS_CODE,
-} from "@/lib/payments/promo";
-import { countRedemptions } from "@/lib/promo-redemptions";
+import { applyPromo, lsCodeForPercent } from "@/lib/payments/promo";
+import { resolveCheckoutPromo } from "@/lib/vendor-promos";
 
 /**
  * Creates a Lemon Squeezy hosted checkout for the (kind, slug, tier) and returns
@@ -64,16 +59,20 @@ export async function createCardCheckout(
   let appliedPromo:
     | { code: string; discountEur: number; discountRsd: number }
     | undefined;
-  if (!testActive && promoCode) {
-    const p = verifyPromo(promoCode, kind);
-    if (p.valid && (await countRedemptions(p.code)) < PROMO_CAP) {
-      const applied = applyPromo(money, p);
+  // The applied percent (5 or 10) picks the LS discount code below; kept separate
+  // from the persisted `order.promo` (which stores only code + dinar amounts).
+  let appliedPercent: number | undefined;
+  if (!testActive) {
+    const resolved = await resolveCheckoutPromo(promoCode, kind);
+    if (resolved) {
+      const applied = applyPromo(money, resolved);
       money = applied;
       appliedPromo = {
-        code: p.code,
+        code: resolved.code,
         discountEur: applied.discountEur,
         discountRsd: applied.discountRsd,
       };
+      appliedPercent = resolved.percent;
     }
   }
 
@@ -108,16 +107,17 @@ export async function createCardCheckout(
       receiptLinkUrl: `${site}${productUrl(kind, slug)}`,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       // LS applies the discount code; the post-discount total must equal the
-      // frozen order.amountRsd. The referral code is a percentage, the tier code
-      // a flat amount — each must mirror exactly what applyPromo/computeOrder
-      // already took off, or the webhook money invariant quarantines it. Only
-      // one ever applies: the referral promo is pozivnica-only, and
-      // lsDiscountCode is set only on other kinds' tiers. No code under test —
-      // the test product is already the flat price.
+      // frozen order.amountRsd. The referral/vendor code is a percentage
+      // (PROMO5HU/PROMO10HU via lsCodeForPercent), the tier code a flat amount —
+      // each must mirror exactly what applyPromo/computeOrder already took off, or
+      // the webhook money invariant quarantines it. Only one ever applies:
+      // referral/vendor codes are eligible only on pozivnica/rodjendan/punoletstvo
+      // (none of which set a tier lsDiscountCode — that's raspored-only). No code
+      // under test — the test product is already the flat price.
       discountCode: testActive
         ? undefined
-        : appliedPromo
-          ? PROMO_LS_CODE
+        : appliedPercent
+          ? lsCodeForPercent(appliedPercent)
           : tier.lsDiscountCode,
     });
     await setOrderRail(order.orderId, "card", {

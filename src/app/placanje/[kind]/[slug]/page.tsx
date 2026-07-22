@@ -13,13 +13,8 @@ import { getOrCreatePendingOrder } from "@/lib/orders";
 import { productUrl } from "@/lib/payments/product-urls";
 import { createCustomPozivnicaOrder } from "@/lib/payments/custom-order";
 import { getTier } from "@/data/pricing";
-import {
-  verifyPromo,
-  applyPromo,
-  PROMO_CAP,
-  isPromoEnabled,
-} from "@/lib/payments/promo";
-import { countRedemptions } from "@/lib/promo-redemptions";
+import { applyPromo, isPromoEnabled } from "@/lib/payments/promo";
+import { resolveCheckoutPromo } from "@/lib/vendor-promos";
 import CheckoutPanel from "@/components/payments/CheckoutPanel";
 
 export const dynamic = "force-dynamic";
@@ -171,18 +166,19 @@ export default async function PlacanjePage({
   const testActive = testPaymentPriceRsd() != null;
   money = applyTestPrice(money);
 
-  // Promo: verify the code (crypto + expiry + eligible kind), check the per-code
-  // redemption cap, then apply the discount BEFORE freezing so both rails carry it.
+  // Promo: resolve guest (capped) or vendor (uncapped) code, then apply the
+  // discount BEFORE freezing so both rails carry it. IPS never touches LS, so the
+  // percent is baked straight into the frozen RSD amount.
   let appliedPromo:
     | { code: string; discountEur: number; discountRsd: number }
     | undefined;
-  if (!testActive && promoRaw) {
-    const p = verifyPromo(promoRaw, kind);
-    if (p.valid && (await countRedemptions(p.code)) < PROMO_CAP) {
-      const applied = applyPromo(money, p);
+  if (!testActive) {
+    const resolved = await resolveCheckoutPromo(promoRaw, kind);
+    if (resolved) {
+      const applied = applyPromo(money, resolved);
       money = applied;
       appliedPromo = {
-        code: p.code,
+        code: resolved.code,
         discountEur: applied.discountEur,
         discountRsd: applied.discountRsd,
       };
