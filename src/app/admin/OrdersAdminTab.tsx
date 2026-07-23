@@ -418,6 +418,25 @@ function VendorPromoSection({ onNeedsLogin }: { onNeedsLogin: () => void }) {
     }
   }
 
+  // Ready-to-send message for a vendor partner — they forward the code to their
+  // clients (couples). Copied verbatim so the founder never retypes it.
+  async function copyVendorMessage(r: VendorPromoRow) {
+    const msg =
+      `Poštovani,\n\n` +
+      `na osnovu našeg dogovora, kreiran je promo kod sa ${r.percent}% popusta ` +
+      `na proizvode sa halouspomene.rs koji možete proslediti svojim klijentima (mladencima).\n\n` +
+      `Promo kod: ${r.code}\n\n` +
+      `Kod se unosi na stranici za plaćanje. Hvala na saradnji!\n\n` +
+      `HaloUspomene`;
+    try {
+      await navigator.clipboard.writeText(msg);
+      setCopied(r.code);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      /* clipboard blocked — user can select manually */
+    }
+  }
+
   const totalOwed = rows.reduce((s, r) => s + r.owedRsd, 0);
 
   return (
@@ -561,9 +580,26 @@ function VendorPromoSection({ onNeedsLogin }: { onNeedsLogin: () => void }) {
                         )}
                       </button>
                     ) : (
-                      <span className="text-sm font-bold text-white">
-                        {formatPrice(r.owedRsd)}
-                      </span>
+                      <>
+                        <button
+                          onClick={() => copyVendorMessage(r)}
+                          className="inline-flex items-center gap-1 text-xs text-white/50 hover:text-white transition-colors cursor-pointer"
+                          title="Kopiraj poruku sa kodom za vendora"
+                        >
+                          {copied === r.code ? (
+                            <>
+                              <Check size={13} className="text-emerald-400" /> kopirano
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={13} /> poruka
+                            </>
+                          )}
+                        </button>
+                        <span className="text-sm font-bold text-white">
+                          {formatPrice(r.owedRsd)}
+                        </span>
+                      </>
                     )}
                     {busy === r.code ? (
                       <Loader2 size={16} className="animate-spin text-white/50" />
