@@ -1,7 +1,7 @@
 # Vendor promo kodovi (per-vendor referral + admin sekcija)
 
 - **ID:** 2026-07-22-vendor-promo-kodovi
-- **Status:** in-progress (implementirano 2026-07-22; čeka vizuelnu verifikaciju + push)
+- **Status:** done (deployano 2026-07-23; Vercel env postavljen; kartični LS e2e u prod ostaje opcion)
 - **Created:** 2026-07-22
 - **Owner:** Aleksa
 

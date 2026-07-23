@@ -165,3 +165,22 @@
 - **Status:** in-progress (deployano; ostaje opcion LS kartični e2e u prod).
 - **Blokade / sledeći korak:** Korisnik postavi 2 Vercel env vara. Kod „TEST"
   (vendor 5%) i dalje u bazi — obrisati kad ne treba.
+
+## 2026-07-23 — Vercel env + TEST obrisan (feature live)
+
+- **Šta je urađeno:** Preko Vercel CLI (ulogovan `halouspomene-5927`, projekat
+  `halo-uspomene`) dodata oba env vara u **Production**:
+  `LS_FRIEND_DISCOUNT_CODE_75=Q4NJGZNW`, `LS_FRIEND_DISCOUNT_CODE_50=K4ODA4NQ`
+  (enkriptovano, potvrđeno `vercel env ls`). Prazan commit `8f0838f` pushovan na
+  `deploy` → svež prod build (env se aktivira tek na novom build-u) — potvrđeno
+  „Building". Vendor kod „TEST" (5%) obrisan iz `vendor_promo_codes`.
+- **Commit / PR:** `8f0838f` (empty redeploy). Feature commit: `1d8869f`.
+- **Na šta utiče dalje:** posle „Ready" build-a, kartični friend-checkout radi u
+  prod (LS `Q4NJGZNW`/`K4ODA4NQ` moraju ostati aktivni na LS-u). Nema više
+  otvorenih deploy-blokada.
+- **Šta je rešeno:** kompletan feature (vendor + prijatelj kodovi) live u
+  produkciji sa env-om.
+- **Status:** in-progress → **done** (uz napomenu: kartični LS e2e u prod nije
+  ručno odrađen — logika verifikovana + IPS live).
+- **Blokade / sledeći korak:** Ostao `PRIJATELJ6581` (75%) u bazi — korisnikov
+  test iz UI-ja; obrisati ako nije za nekoga namenjen.
