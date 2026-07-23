@@ -115,28 +115,39 @@ async function handleOrderCreated(evt: LsWebhook): Promise<Response> {
     return ok();
   }
 
-  // 4. Money invariant (currency exact, amount within the conversion band).
+  // 4. Money invariant (currency exact, PRE-TAX net within the conversion band).
+  // LS is merchant of record: for a buyer in a VAT jurisdiction it adds their
+  // country's VAT ON TOP of our tax-exclusive price (rate varies by country —
+  // 17–27% across the EU, 0% for a valid B2B reverse-charge). So `a.total`
+  // legitimately exceeds the frozen amount by that tax. Validate the net
+  // (total − tax) instead of total, so ANY VAT rate auto-approves while the net
+  // must still match the frozen amount exactly (within the FX band). Tax is
+  // LS-computed and the payload is HMAC-verified, so it can't be spoofed down to
+  // sneak a short payment through. A domestic buyer has tax = 0 → net = total.
   const a = evt.data.attributes;
   const expectedTotal = order.amountRsd * LS_MINOR_UNITS;
   const tolerance = Math.max(
     Math.round(expectedTotal * LS_AMOUNT_TOLERANCE_PCT),
     LS_AMOUNT_TOLERANCE_FLOOR,
   );
+  const tax = typeof a.tax === "number" ? a.tax : 0;
+  const net = typeof a.total === "number" ? a.total - tax : NaN;
   const withinBand =
-    typeof a.total === "number" &&
-    Math.abs(a.total - expectedTotal) <= tolerance;
+    Number.isFinite(net) && Math.abs(net - expectedTotal) <= tolerance;
   const amountOk =
     a.currency === LS_CURRENCY && a.status === "paid" && withinBand;
   if (!amountOk) {
     console.error("[webhook] amount/currency mismatch → quarantine", orderId, {
       currency: a.currency,
       total: a.total,
+      tax,
+      net,
       expected: expectedTotal,
       tolerance,
       status: a.status,
     });
     await transitionOrder(orderId, ["pending", "paid"], "review", {
-      adminNote: `Neslaganje iznosa (LS ${a.total} ${a.currency}, očekivano ${expectedTotal} ${LS_CURRENCY}).`,
+      adminNote: `Neslaganje iznosa (LS neto ${net} = ${a.total} − PDV ${tax} ${a.currency}, očekivano ${expectedTotal} ${LS_CURRENCY}).`,
     });
     return ok();
   }

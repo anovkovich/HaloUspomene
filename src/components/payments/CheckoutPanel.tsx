@@ -343,6 +343,10 @@ export default function CheckoutPanel({
                       {cardError}
                     </p>
                   )}
+                  <p className="text-[11px] text-gray-400 text-center mt-2.5 leading-relaxed">
+                    Za kartice iz inostranstva procesor plaćanja može dodati PDV
+                    vaše zemlje na prikazanu cenu.
+                  </p>
                 </PayAccordion>
               )}
 

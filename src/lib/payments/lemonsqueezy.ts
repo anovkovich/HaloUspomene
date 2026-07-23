@@ -129,12 +129,16 @@ export interface LsWebhook {
     id: string; // LS order id (numeric string)
     attributes: {
       status?: string; // "paid" | ...
-      total?: number; // cents
-      currency?: string; // "EUR"
+      total?: number; // minor units (para) — INCLUDES tax when tax-exclusive
+      tax?: number; // minor units — VAT LS added on top (0 for non-taxed buyers)
+      subtotal?: number; // minor units — pre-discount, pre-tax
+      discount_total?: number; // minor units — promo-code discount applied
+      tax_inclusive?: boolean; // false = tax charged on top of our price
+      currency?: string; // "RSD" (the store's charging currency)
       order_number?: number;
       user_email?: string;
       refunded?: boolean;
-      refunded_amount?: number; // cents
+      refunded_amount?: number; // minor units
       urls?: { receipt?: string };
     };
   };
