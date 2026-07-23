@@ -33,6 +33,7 @@ import {
 } from "@/data/pricing";
 import RasporedKontaktForm from "./RasporedKontaktForm";
 import GdeSedimInfoButton from "./GdeSedimInfoButton";
+import { resolveBypassInfo } from "@/lib/bypass-token";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
@@ -490,7 +491,13 @@ const faqs = [
   },
 ];
 
-export default function RasporedSedenjaLanding() {
+export default async function RasporedSedenjaLanding({
+  searchParams,
+}: {
+  searchParams: Promise<{ bypass?: string }>;
+}) {
+  // Foreign-customer bypass link (admin-issued) — skips SMS verification.
+  const bypassInfo = await resolveBypassInfo((await searchParams).bypass);
   const standalonePrice = getStandaloneSeatingPrice();
   const standaloneRegular = getStandaloneSeatingRegularPrice();
   const standalonePromoActive = isStandaloneSeatingPromoActive();
@@ -1167,7 +1174,7 @@ export default function RasporedSedenjaLanding() {
                 </p>
               </div>
 
-              <RasporedKontaktForm />
+              <RasporedKontaktForm bypassInfo={bypassInfo} />
             </div>
           </div>
         </section>

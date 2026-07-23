@@ -6,6 +6,10 @@ import QuestionnaireForm from "./QuestionnaireForm";
 import BirthdayTypeButton from "@/components/landing/BirthdayTypeButton";
 import type { ThemeType, ScriptFontType } from "@/app/pozivnica/[slug]/types";
 
+// Re-exported from the shared lib so existing imports keep working.
+import type { BypassInfo } from "@/lib/bypass-token";
+export type { BypassInfo };
+
 export interface UpgradeInitialFormData {
   bride: string;
   groom: string;
@@ -28,13 +32,6 @@ export interface UpgradeInitialFormData {
   extra_audio: boolean;
   extra_usb_kaseta: boolean;
   extra_usb_bocica: boolean;
-}
-
-export interface BypassInfo {
-  token: string;
-  country: "BA" | "HR" | "ME" | "RS";
-  callingCode: string;
-  countryLabel: string;
 }
 
 interface Props {
@@ -120,20 +117,6 @@ export default function FormPageWrapper({
           bypassInfo={bypassInfo}
         />
 
-        {!isUpgrade && !bypassInfo && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="mt-10 max-w-xl mx-auto text-center text-xs text-stone-400 leading-relaxed flex items-center justify-center gap-2 px-4"
-          >
-            <span>
-              Popunjavate iz Crne Gore, BiH ili Hrvatske? Javite nam se preko
-              kontakata koji se nalaze u podnožju stranice (footer) — šaljemo
-              vam personalni link za pristup iz vaše zemlje.
-            </span>
-          </motion.p>
-        )}
       </div>
 
       {/* Hidden SEO content — visible to crawlers, not to users */}

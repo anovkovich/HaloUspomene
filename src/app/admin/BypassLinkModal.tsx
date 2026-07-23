@@ -8,14 +8,35 @@ interface Props {
   onClose: () => void;
 }
 
-const COUNTRIES: { code: "BA" | "HR" | "ME"; label: string; flag: string }[] = [
-  { code: "BA", label: "Bosna i Hercegovina (+387)", flag: "BiH" },
-  { code: "HR", label: "Hrvatska (+385)", flag: "HR" },
-  { code: "ME", label: "Crna Gora (+382)", flag: "CG" },
+type CountryCode = "BA" | "HR" | "ME" | "MK" | "SI" | "INT";
+
+// Region quick-picks (customer types only the local number, prefix is shown).
+const REGION_COUNTRIES: { code: CountryCode; flag: string; dial: string }[] = [
+  { code: "BA", flag: "BiH", dial: "+387" },
+  { code: "HR", flag: "HR", dial: "+385" },
+  { code: "ME", flag: "CG", dial: "+382" },
+  { code: "MK", flag: "MK", dial: "+389" },
+  { code: "SI", flag: "SI", dial: "+386" },
+];
+
+type ProductCode =
+  | "pozivnica"
+  | "deciji"
+  | "punoletstvo"
+  | "raspored"
+  | "galerija";
+
+const PRODUCTS: { code: ProductCode; label: string }[] = [
+  { code: "pozivnica", label: "Pozivnica za venčanje" },
+  { code: "deciji", label: "Dečiji rođendan" },
+  { code: "punoletstvo", label: "Punoletstvo" },
+  { code: "raspored", label: "Raspored sedenja" },
+  { code: "galerija", label: "QR galerija fotografija" },
 ];
 
 export default function BypassLinkModal({ open, onClose }: Props) {
-  const [country, setCountry] = useState<"BA" | "HR" | "ME">("BA");
+  const [country, setCountry] = useState<CountryCode>("BA");
+  const [product, setProduct] = useState<ProductCode>("pozivnica");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +48,7 @@ export default function BypassLinkModal({ open, onClose }: Props) {
   useEffect(() => {
     if (!open) return;
     setCountry("BA");
+    setProduct("pozivnica");
     setNote("");
     setError(null);
     setResult(null);
@@ -48,7 +70,11 @@ export default function BypassLinkModal({ open, onClose }: Props) {
       const res = await fetch("/api/admin/bypass-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country, note: note.trim() || undefined }),
+        body: JSON.stringify({
+          country,
+          product,
+          note: note.trim() || undefined,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -92,7 +118,7 @@ export default function BypassLinkModal({ open, onClose }: Props) {
                 Bypass link za inostranstvo
               </h2>
               <p className="text-xs text-white/40 mt-0.5">
-                Klijent otvara link i sam popunjava /napravi-pozivnicu bez SMS
+                Klijent otvara link i sam popunjava izabranu formu bez SMS
                 verifikacije. Važi 24 sata.
               </p>
             </div>
@@ -109,10 +135,33 @@ export default function BypassLinkModal({ open, onClose }: Props) {
         <div className="space-y-4">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-[0.18em] text-white/40 mb-2">
+              Proizvod
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {PRODUCTS.map((p) => (
+                <button
+                  key={p.code}
+                  type="button"
+                  onClick={() => setProduct(p.code)}
+                  disabled={loading || !!result}
+                  className={`px-3 py-2.5 rounded-xl text-[13px] font-medium transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 text-left ${
+                    product === p.code
+                      ? "bg-[#AE343F] text-white"
+                      : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-[0.18em] text-white/40 mb-2">
               Zemlja
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {COUNTRIES.map((c) => (
+              {REGION_COUNTRIES.map((c) => (
                 <button
                   key={c.code}
                   type="button"
@@ -127,16 +176,25 @@ export default function BypassLinkModal({ open, onClose }: Props) {
                   <div className="text-[10px] uppercase tracking-wider opacity-70">
                     {c.flag}
                   </div>
-                  <div className="text-[11px] font-mono opacity-80">
-                    {c.code === "BA"
-                      ? "+387"
-                      : c.code === "HR"
-                        ? "+385"
-                        : "+382"}
-                  </div>
+                  <div className="text-[11px] font-mono opacity-80">{c.dial}</div>
                 </button>
               ))}
             </div>
+            {/* Catch-all: any other country. Customer types their full number
+                incl. their own calling code — covers everything with no per-
+                country config. */}
+            <button
+              type="button"
+              onClick={() => setCountry("INT")}
+              disabled={loading || !!result}
+              className={`mt-2 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
+                country === "INT"
+                  ? "bg-[#AE343F] text-white"
+                  : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              Ostalo — druga zemlja (klijent unosi pun broj)
+            </button>
           </div>
 
           <div>

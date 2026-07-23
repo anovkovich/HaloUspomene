@@ -5,8 +5,8 @@ import { generateUniqueSlug, InvalidSlugInputError } from "@/lib/slug";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
 import {
-  ensurePhoneVerified,
-  normalizePhone,
+  resolvePhoneAuthorization,
+  PhoneAuthError,
 } from "@/lib/phone-verification";
 import { quickRegisterCouple } from "@/lib/quick-register";
 
@@ -25,6 +25,8 @@ export async function createGalleryCouple(input: {
   eventDate?: string; // ISO date (YYYY-MM-DD)
   recaptchaToken: string;
   phoneTrustToken?: string;
+  /** Foreign-customer bypass link — skips SMS when present + valid. */
+  bypassToken?: string;
 }): Promise<CreateGalleryResult> {
   const name = input.name.trim();
   if (!name || name.length < 2) {
@@ -51,14 +53,18 @@ export async function createGalleryCouple(input: {
     throw err;
   }
 
-  const phoneE164 = normalizePhone(input.phone);
-  if (!phoneE164) {
-    return { ok: false, error: "Unesite važeći kontakt telefon." };
-  }
+  let phoneE164: string;
   try {
-    await ensurePhoneVerified(input.phoneTrustToken, phoneE164);
-  } catch {
-    return { ok: false, error: "Verifikujte broj telefona pre slanja." };
+    ({ phoneE164 } = await resolvePhoneAuthorization({
+      rawPhone: input.phone,
+      bypassToken: input.bypassToken,
+      phoneTrustToken: input.phoneTrustToken,
+    }));
+  } catch (err) {
+    if (err instanceof PhoneAuthError) {
+      return { ok: false, error: err.message };
+    }
+    throw err;
   }
 
   const [first, ...rest] = name.split(/\s+/);

@@ -19,7 +19,8 @@ import {
   type PunoletstvoGender,
   type PunoletstvoTheme,
 } from "./validators";
-import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
+import { PhoneAuthField } from "@/components/verification/PhoneAuthField";
+import type { BypassInfo } from "@/lib/bypass-token";
 import {
   useRecaptcha,
   RecaptchaDisclosure,
@@ -62,6 +63,8 @@ interface FormData {
   submit_until: string;
   contact_phone: string;
   phone_trust_token: string;
+  /** Set once from the bypass link — read by validators to skip the SMS gate. */
+  bypassActive: boolean;
   location_name: string;
   location_address: string;
   theme: PunoletstvoTheme;
@@ -128,6 +131,7 @@ const defaultFormData: FormData = {
   submit_until: "",
   contact_phone: "",
   phone_trust_token: "",
+  bypassActive: false,
   location_name: "",
   location_address: "",
   theme: "white_gold_burgundy",
@@ -406,9 +410,11 @@ function Step1({
 function Step2({
   formData,
   updateField,
+  bypassInfo,
 }: {
   formData: FormData;
   updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+  bypassInfo?: BypassInfo;
 }) {
   return (
     <div>
@@ -470,20 +476,16 @@ function Step2({
         </Field>
 
         <Field label="Vaš kontakt telefon (za naš tim, nije na pozivnici)">
-          <PhoneVerificationField
+          <PhoneAuthField
+            bypassInfo={bypassInfo}
             value={formData.contact_phone}
-            onChange={(v) => {
-              updateField("contact_phone", v);
-              if (formData.phone_trust_token) {
-                updateField("phone_trust_token", "");
-              }
-            }}
+            onChange={(v) => updateField("contact_phone", v)}
             onVerified={(token) => updateField("phone_trust_token", token)}
             onUnverified={() => updateField("phone_trust_token", "")}
           />
-          {!formData.phone_trust_token && (
+          {!bypassInfo && !formData.phone_trust_token && (
             <p className="text-[11px] text-stone-400 mt-1.5">
-              Kliknite na dugme „Kod" kako biste dobili verifikacioni kod putem SMS-a.
+              Kliknite na dugme „Kod&rdquo; kako biste dobili verifikacioni kod putem SMS-a.
             </p>
           )}
         </Field>
@@ -644,10 +646,17 @@ function Step4({
 
 // ─── Main form ──────────────────────────────────────────────────────────────
 
-export default function PunoletstvoQuestionnaireForm() {
+export default function PunoletstvoQuestionnaireForm({
+  bypassInfo,
+}: {
+  bypassInfo?: BypassInfo;
+}) {
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
-  const [formData, setFormData] = useState<FormData>(defaultFormData);
+  const [formData, setFormData] = useState<FormData>(() => ({
+    ...defaultFormData,
+    bypassActive: !!bypassInfo,
+  }));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   // B3 self-serve: preview link + one-time portal password after create.
@@ -728,8 +737,9 @@ export default function PunoletstvoQuestionnaireForm() {
         },
         countdown_enabled: formData.countdown_enabled,
         map_enabled: formData.map_enabled,
-        contact_phone: `+381${formData.contact_phone}`,
+        contact_phone: `${bypassInfo?.callingCode || "+381"}${formData.contact_phone}`,
         phone_trust_token: formData.phone_trust_token,
+        ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
         recaptcha_token: recaptchaToken,
       };
       const res = await fetch("/api/punoletstvo/create", {
@@ -774,7 +784,7 @@ export default function PunoletstvoQuestionnaireForm() {
             "Datum proslave": `${formattedDate}, ${formData.event_time}h`,
             "Rok za prijavu": formData.submit_until,
             Lokacija: `${formData.location_name}, ${formData.location_address}`,
-            "Kontakt telefon": `+381${formData.contact_phone}`,
+            "Kontakt telefon": `${bypassInfo?.callingCode || "+381"}${formData.contact_phone}`,
             Boje: themeLabel,
             Napomena: formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/rodjendan/${created.slug}`,
@@ -882,7 +892,13 @@ export default function PunoletstvoQuestionnaireForm() {
             className="p-8"
           >
             {step === 1 && <Step1 formData={formData} updateField={updateField} />}
-            {step === 2 && <Step2 formData={formData} updateField={updateField} />}
+            {step === 2 && (
+              <Step2
+                formData={formData}
+                updateField={updateField}
+                bypassInfo={bypassInfo}
+              />
+            )}
             {step === 3 && <Step3 formData={formData} updateField={updateField} />}
             {step === 4 && <Step4 formData={formData} updateField={updateField} />}
           </motion.div>
@@ -920,6 +936,7 @@ export default function PunoletstvoQuestionnaireForm() {
               onClick={goNext}
               disabled={
                 STEP_KEYS[step - 1] === "date_location" &&
+                !bypassInfo &&
                 !formData.phone_trust_token
               }
               className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#AE343F] text-white hover:bg-[#952c35] transition-all font-medium text-sm shadow-md shadow-[#AE343F]/20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"

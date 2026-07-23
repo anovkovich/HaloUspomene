@@ -11,6 +11,7 @@ import Footer from "@/components/layout/footer/Footer";
 import BirthdayQuestionnaireForm from "./BirthdayQuestionnaireForm";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
 import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
+import { resolveBypassInfo } from "@/lib/bypass-token";
 
 const fredoka = Fredoka({
   subsets: ["latin", "latin-ext"],
@@ -80,7 +81,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function NapraviDecijuPozivnicuPage() {
+export default async function NapraviDecijuPozivnicuPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ bypass?: string }>;
+}) {
+  // Foreign-customer bypass link (admin-issued) — skips SMS verification.
+  const bypassInfo = await resolveBypassInfo((await searchParams).bypass);
   return (
     <>
       <Header />
@@ -99,7 +106,7 @@ export default function NapraviDecijuPozivnicuPage() {
             </p>
           </div>
 
-          <BirthdayQuestionnaireForm />
+          <BirthdayQuestionnaireForm bypassInfo={bypassInfo} />
         </div>
 
         {/* Hidden SEO content — visible to crawlers, not to users */}

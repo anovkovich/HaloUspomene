@@ -6,7 +6,10 @@ import type {
   BirthdayThemeType,
 } from "@/app/deciji-rodjendan/[slug]/types";
 import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
-import { ensurePhoneVerified, normalizePhone } from "@/lib/phone-verification";
+import {
+  resolvePhoneAuthorization,
+  PhoneAuthError,
+} from "@/lib/phone-verification";
 
 const ipMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 5;
@@ -55,20 +58,17 @@ export async function POST(request: NextRequest) {
       throw err;
     }
 
-    const phoneE164 = normalizePhone(String(body.contact_phone || ""));
-    if (!phoneE164) {
-      return NextResponse.json(
-        { error: "Unesite važeći kontakt telefon." },
-        { status: 400 },
-      );
-    }
     try {
-      await ensurePhoneVerified(body.phone_trust_token, phoneE164);
-    } catch {
-      return NextResponse.json(
-        { error: "Verifikujte broj telefona pre slanja." },
-        { status: 403 },
-      );
+      await resolvePhoneAuthorization({
+        rawPhone: body.contact_phone,
+        bypassToken: body.bypass_token,
+        phoneTrustToken: body.phone_trust_token,
+      });
+    } catch (err) {
+      if (err instanceof PhoneAuthError) {
+        return NextResponse.json({ error: err.message }, { status: err.status });
+      }
+      throw err;
     }
 
     const theme: BirthdayThemeType =

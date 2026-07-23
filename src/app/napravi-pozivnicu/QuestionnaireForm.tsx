@@ -55,8 +55,7 @@ import {
   type BuilderSelection,
 } from "@/lib/payments/builder-pricing";
 import dynamic from "next/dynamic";
-import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
-import { BypassPhoneInput } from "@/components/verification/BypassPhoneInput";
+import { PhoneAuthField } from "@/components/verification/PhoneAuthField";
 import type { BypassInfo } from "./FormPageWrapper";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 
@@ -1752,32 +1751,18 @@ function Step2({
               text="Koristimo ga da Vas kontaktiramo ukoliko nešto zatreba. Možete dodati još jedan broj i imena koja će se prikazati na pozivnici."
             />
           </div>
-          {bypassInfo ? (
-            <BypassPhoneInput
-              value={formData.contact_phone}
-              onChange={(v) => updateField("contact_phone", v)}
-              callingCode={bypassInfo.callingCode}
-              countryLabel={bypassInfo.countryLabel}
-            />
-          ) : (
-            <>
-              <PhoneVerificationField
-                value={formData.contact_phone}
-                onChange={(v) => {
-                  updateField("contact_phone", v);
-                  if (formData.phone_trust_token) {
-                    updateField("phone_trust_token", "");
-                  }
-                }}
-                onVerified={(token) => updateField("phone_trust_token", token)}
-                onUnverified={() => updateField("phone_trust_token", "")}
-              />
-              {!formData.phone_trust_token && (
-                <p className="text-[11px] text-stone-400 mt-1.5">
-                  Kliknite na dugme „Kod" kako biste dobili verifikacioni kod putem SMS-a.
-                </p>
-              )}
-            </>
+          <PhoneAuthField
+            bypassInfo={bypassInfo}
+            value={formData.contact_phone}
+            onChange={(v) => updateField("contact_phone", v)}
+            onVerified={(token) => updateField("phone_trust_token", token)}
+            onUnverified={() => updateField("phone_trust_token", "")}
+            variant="light"
+          />
+          {!bypassInfo && !formData.phone_trust_token && (
+            <p className="text-[11px] text-stone-400 mt-1.5">
+              Kliknite na dugme „Kod&rdquo; kako biste dobili verifikacioni kod putem SMS-a.
+            </p>
           )}
           {formData.contact_phone &&
             (bypassInfo || formData.phone_trust_token) && (

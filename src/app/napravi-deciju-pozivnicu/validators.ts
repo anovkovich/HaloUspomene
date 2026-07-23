@@ -18,6 +18,8 @@ export interface DecijiFormData {
   submit_until_date: string;
   contact_phone: string;
   phone_trust_token: string;
+  /** Foreign-customer bypass link active — skips SMS + strict phone check. */
+  bypassActive?: boolean;
   location_name: string;
   location_address: string;
   theme: string;
@@ -43,6 +45,13 @@ export const decijiValidators: StepValidatorMap<DecijiStepKey, DecijiFormData> =
       return "Rok za potvrdu mora biti pre datuma proslave.";
     if (isBlank(d.location_name)) return "Unesite naziv lokacije.";
     if (isBlank(d.location_address)) return "Unesite adresu lokacije.";
+    // Bypass link (foreign customer): no SMS, soft phone check (≥6 digits) —
+    // mirrors the server-side authorization.
+    if (d.bypassActive) {
+      if ((d.contact_phone || "").replace(/\D/g, "").length < 6)
+        return "Unesite važeći kontakt telefon.";
+      return null;
+    }
     if (!isValidPhone("+381" + (d.contact_phone || "").replace(/[\s-]/g, "")))
       return "Unesite važeći kontakt telefon (npr. 6X XXX XXXX).";
     if (!d.phone_trust_token)

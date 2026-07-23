@@ -28,9 +28,14 @@ export function BypassPhoneInput({
   callingCode,
   countryLabel,
   variant = "light",
-  placeholder = "6X XXX XXX",
+  placeholder,
   required = false,
 }: Props) {
+  // "+" is the INT catch-all: the customer types their own country code as part
+  // of the number, so the prompt must ask for the full international number.
+  const international = callingCode === "+";
+  const effectivePlaceholder =
+    placeholder ?? (international ? "381 6X XXX XXX" : "6X XXX XXX");
   const styles =
     variant === "dark"
       ? {
@@ -57,9 +62,9 @@ export function BypassPhoneInput({
           required={required}
           type="tel"
           inputMode="numeric"
-          autoComplete="tel-national"
+          autoComplete={international ? "tel" : "tel-national"}
           className={styles.input}
-          placeholder={placeholder}
+          placeholder={effectivePlaceholder}
           value={value}
           onChange={(e) =>
             onChange(
@@ -71,8 +76,19 @@ export function BypassPhoneInput({
         />
       </div>
       <div className={styles.hint}>
-        <Globe size={13} /> Personalni link aktivan — verifikacija nije potrebna ({countryLabel}).
+        <Globe size={13} className="shrink-0" />
+        <span className="min-w-0 truncate">
+          Personalni link aktivan ({international ? "Internacionalno" : countryLabel})
+        </span>
       </div>
+      {international && (
+        <p
+          className={`text-[11px] mt-1 ${variant === "dark" ? "text-white/45" : "text-stone-400"}`}
+        >
+          Unesite ceo broj sa pozivnim brojem vaše zemlje (npr. 43 660 123 456 za
+          Austriju).
+        </p>
+      )}
     </div>
   );
 }

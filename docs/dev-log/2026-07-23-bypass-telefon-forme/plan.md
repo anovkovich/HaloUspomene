@@ -1,7 +1,7 @@
 # Bypass telefonske verifikacije na svim formama za kreiranje
 
 - **ID:** 2026-07-23-bypass-telefon-forme
-- **Status:** planned
+- **Status:** in-progress
 - **Created:** 2026-07-23
 - **Owner:** Aleksa
 
@@ -69,18 +69,20 @@ umesto `PhoneVerificationField`, šalje `bypass_token` u payload-u.
   nema validnog bypass tokena.
 
 ## Steps
-- [ ] **Deljeni serverski helper** — izdvojiti bypass-vs-SMS autorizaciju iz
-      `api/pozivnica/create` u reusable f-ju. _Acceptance:_ pozivnica create
-      refaktorisan da je koristi, ponašanje nepromenjeno, `tsc` prolazi.
-- [ ] **Deljena klijentska logika** — token-iz-URL + BypassPhoneInput switch kao
-      hook/komponenta. _Acceptance:_ napravi-pozivnicu koristi je bez regresije.
-- [ ] **Ožičiti 4 forme + endpointa** — deciji, punoletstvo, raspored, galerija
-      (uklj. `+381` hardkod u galeriji). _Acceptance:_ svaka forma sa validnim
-      bypass tokenom kreira entitet bez SMS-a.
-- [ ] **Admin bypass link po tipu** — BypassLinkModal bira odredišnu formu.
-      _Acceptance:_ admin generiše ispravan link za svaki tok.
-- [ ] **Test svih tokova** — `next build && next start`, po jedan bypass i jedan
-      domaći submit po formi. _Acceptance:_ bypass prolazi, domaći i dalje traži SMS.
+- [x] **Deljeni serverski helper** — `resolvePhoneAuthorization` + `PhoneAuthError`
+      u `phone-verification.ts`; pozivnica create refaktorisan, ponašanje
+      nepromenjeno, `tsc` prolazi. (log: 2026-07-23)
+- [x] **Deljena klijentska logika** — `PhoneAuthField` (SMS↔bypass switch) +
+      `resolveBypassInfo`/`BypassInfo` centralizovani u `bypass-token.ts`;
+      napravi-pozivnicu koristi ih bez regresije. (log: 2026-07-23)
+- [x] **Ožičiti 4 forme + endpointa** — deciji, punoletstvo, raspored, galerija
+      (uklj. `+381` hardkod u galeriji ispravljen na dinamički prefiks; wizard
+      validatori dobili `bypassActive` granu). (log: 2026-07-23)
+- [x] **Admin bypass link po tipu** — BypassLinkModal + `api/admin/bypass-link`
+      biraju odredišni proizvod (5 formi). (log: 2026-07-23)
+- [ ] **Test svih tokova** — `next build && next start` na Vercel/okruženju sa
+      Mongo pristupom, po jedan bypass i jedan domaći submit po formi.
+      _Acceptance:_ bypass prolazi, domaći i dalje traži SMS.
 
 ## Verification
 Po formi: (1) bez tokena → domaći SMS put i dalje obavezan (403 bez trust

@@ -134,8 +134,14 @@ export default function PremiumInvitationClient({
   // correctly. BA = +387, HR = +385, ME = +382.
   const useNumericMonths = (() => {
     if (data.useCyrillic) return false;
-    if (data.phone_country && data.phone_country !== "RS") return true;
-    if (data.phone_country === "RS") return false;
+    // Only BA/HR/ME use ijekavica; RS/MK/SI/INT stay ekavica. Fall back to the
+    // phone prefix for legacy records with no phone_country.
+    if (data.phone_country)
+      return (
+        data.phone_country === "BA" ||
+        data.phone_country === "HR" ||
+        data.phone_country === "ME"
+      );
     const primaryPhone = (data.contact_phone || "").split(",")[0]?.trim() ?? "";
     return /^\+(387|385|382)/.test(primaryPhone);
   })();

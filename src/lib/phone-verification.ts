@@ -12,6 +12,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import clientPromise from "./mongodb";
+import { verifyBypassToken, type BypassCountry } from "./bypass-token";
 
 const TRUST_SECRET_RAW =
   process.env.PHONE_VERIFY_JWT_SECRET || process.env.JWT_SECRET || "dev-secret";
@@ -134,6 +135,103 @@ export async function ensurePhoneVerified(
   expectedPhoneE164: string,
 ): Promise<void> {
   await verifyTrustToken(token, expectedPhoneE164);
+}
+
+// ---------- Combined create-endpoint authorization ----------
+
+/** Thrown by `resolvePhoneAuthorization` — carries the HTTP status + a
+ *  ready-to-show Serbian message. API routes map it to NextResponse; server
+ *  actions map it to `{ ok: false, error }`. */
+export class PhoneAuthError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "PhoneAuthError";
+  }
+}
+
+export interface PhoneAuthResult {
+  /** E.164 number to persist / use downstream. */
+  phoneE164: string;
+  /** Country attested by the bypass token, or "RS" for the SMS path. */
+  phoneCountry: BypassCountry;
+  /** true = verified via SMS; false = accepted via admin bypass link. */
+  phoneVerified: boolean;
+  /** Bypass token id (for audit), or null on the SMS path. */
+  bypassTokenId: string | null;
+}
+
+/**
+ * Single authorization gate shared by every create endpoint (pozivnica,
+ * deciji-rodjendan, punoletstvo, raspored, qr galerija). Two paths:
+ *
+ *   1. Bypass token — a signed link the admin issues to a foreign customer.
+ *      Skips SMS entirely; the number is soft-accepted (≥6 digits) since the
+ *      signed token, not SMS delivery, is the authorization. Admin can fix a
+ *      malformed number by hand later.
+ *   2. SMS trust token (default, Serbian numbers) — the number is normalized
+ *      (RS) and must have passed OTP (`ensurePhoneVerified`).
+ *
+ * Throws `PhoneAuthError` (status + Serbian message) on any failure; the caller
+ * never has to re-derive messages. `rawPhone` may be a single number or a
+ * comma-separated list — only the first entry is authorized (the primary).
+ */
+export async function resolvePhoneAuthorization(input: {
+  rawPhone: string | undefined | null;
+  bypassToken?: string | null;
+  phoneTrustToken?: string | null;
+}): Promise<PhoneAuthResult> {
+  const primaryRaw = String(input.rawPhone || "").split(",")[0]?.trim() || "";
+
+  let bypassCountry: BypassCountry | null = null;
+  let bypassTokenId: string | null = null;
+  if (input.bypassToken) {
+    try {
+      const payload = await verifyBypassToken(input.bypassToken);
+      bypassCountry = payload.country;
+      bypassTokenId = payload.tokenId;
+    } catch {
+      throw new PhoneAuthError(403, "Bypass link nije važeći ili je istekao.");
+    }
+  }
+
+  // "INT" isn't a libphonenumber country — the customer typed their own country
+  // code into the number (it arrives with a leading "+"), so parsing keys off
+  // that, not a default country. Fall back to RS for the parse hint; the soft
+  // check below is the real acceptance gate for international numbers.
+  const normCountry: CountryCode =
+    bypassCountry && bypassCountry !== "INT" ? bypassCountry : "RS";
+  let phoneE164 = normalizePhone(primaryRaw, normCountry);
+  // Bypass mode: don't gate on libphonenumber's strict length check — accept a
+  // typed value with a soft "at least 6 digits" sanity check.
+  if (!phoneE164 && bypassTokenId && primaryRaw) {
+    const digits = primaryRaw.replace(/\D/g, "");
+    if (digits.length >= 6) {
+      phoneE164 = primaryRaw.startsWith("+") ? primaryRaw : `+${digits}`;
+    }
+  }
+  if (!phoneE164) {
+    throw new PhoneAuthError(400, "Unesite važeći kontakt telefon.");
+  }
+
+  // The SMS gate stays MANDATORY whenever there is no valid bypass token — a
+  // foreign link never weakens the domestic path.
+  if (!bypassTokenId) {
+    try {
+      await ensurePhoneVerified(input.phoneTrustToken, phoneE164);
+    } catch {
+      throw new PhoneAuthError(403, "Verifikujte broj telefona pre slanja.");
+    }
+  }
+
+  return {
+    phoneE164,
+    phoneCountry: bypassCountry || "RS",
+    phoneVerified: !bypassTokenId,
+    bypassTokenId,
+  };
 }
 
 // ---------- Mongo helpers ----------

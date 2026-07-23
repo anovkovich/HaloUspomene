@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { upsertCouple } from "@/lib/couples";
 import { generateUniqueSlug, InvalidSlugInputError } from "@/lib/slug";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
-import { verifyBypassToken } from "@/lib/bypass-token";
+import { verifyBypassToken, type BypassCountry } from "@/lib/bypass-token";
 
 // Simple IP-based rate limiting
 const ipMap = new Map<string, { count: number; resetAt: number }>();
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Optional foreign-customer bypass token — same shape as classic create.
-    let bypassCountry: "RS" | "BA" | "HR" | "ME" | null = null;
+    let bypassCountry: BypassCountry | null = null;
     let bypassTokenId: string | null = null;
     if (body.bypass_token) {
       try {

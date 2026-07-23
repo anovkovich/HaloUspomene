@@ -19,6 +19,7 @@ import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { formatPrice, pricing } from "@/data/pricing";
 import GalleryLeadForm from "./GalleryLeadForm";
+import { resolveBypassInfo } from "@/lib/bypass-token";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 const pagePath = "/qr-galerija-slika-sa-vencanja";
@@ -225,7 +226,13 @@ const breadcrumbSchema = {
   ],
 };
 
-export default function QrGalerijaSlikaSaVencanja() {
+export default async function QrGalerijaSlikaSaVencanja({
+  searchParams,
+}: {
+  searchParams: Promise<{ bypass?: string }>;
+}) {
+  // Foreign-customer bypass link (admin-issued) — skips SMS verification.
+  const bypassInfo = await resolveBypassInfo((await searchParams).bypass);
   return (
     <>
       <Header />
@@ -472,7 +479,7 @@ export default function QrGalerijaSlikaSaVencanja() {
               </p>
             </div>
 
-            <GalleryLeadForm />
+            <GalleryLeadForm bypassInfo={bypassInfo} />
 
             <p className="text-center text-sm text-[#F5F4DC]/40 mt-8">
               Pogledajte i{" "}

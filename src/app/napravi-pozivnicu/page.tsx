@@ -4,14 +4,10 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import FormPageWrapper, {
   type UpgradeInitialFormData,
-  type BypassInfo,
 } from "./FormPageWrapper";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
 import { getWeddingData } from "@/lib/couples";
-import {
-  verifyBypassToken,
-  COUNTRY_CONFIGS,
-} from "@/lib/bypass-token";
+import { resolveBypassInfo } from "@/lib/bypass-token";
 
 export const metadata: Metadata = {
   title: "Napravi Pozivnicu za Venčanje Online",
@@ -59,22 +55,8 @@ export default async function NapraviPozivnicuPage({
 
   // Foreign-customer bypass: admin-issued signed link that disables SMS
   // verification and pre-sets the phone country prefix. Verified server-side.
-  let bypassInfo: BypassInfo | undefined;
-  if (params.bypass) {
-    try {
-      const payload = await verifyBypassToken(params.bypass);
-      const cfg = COUNTRY_CONFIGS[payload.country];
-      bypassInfo = {
-        token: params.bypass,
-        country: payload.country,
-        callingCode: cfg.callingCode,
-        countryLabel: cfg.label,
-      };
-    } catch {
-      // Invalid/expired bypass — render the normal form as if no token was passed.
-      // The foreign-customer notice will still be visible.
-    }
-  }
+  // Invalid/expired → undefined, so the normal SMS form renders.
+  const bypassInfo = await resolveBypassInfo(params.bypass);
 
   let initialFormData: UpgradeInitialFormData | undefined;
 

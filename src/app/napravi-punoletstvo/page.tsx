@@ -3,6 +3,7 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import PunoletstvoQuestionnaireForm from "./PunoletstvoQuestionnaireForm";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
+import { resolveBypassInfo } from "@/lib/bypass-token";
 import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
 
 export const metadata: Metadata = {
@@ -32,7 +33,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function NapraviPunoletstvoPage() {
+export default async function NapraviPunoletstvoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ bypass?: string }>;
+}) {
+  // Foreign-customer bypass link (admin-issued) — skips SMS verification.
+  const bypassInfo = await resolveBypassInfo((await searchParams).bypass);
   return (
     <>
       <Header />
@@ -51,7 +58,7 @@ export default function NapraviPunoletstvoPage() {
             </p>
           </div>
 
-          <PunoletstvoQuestionnaireForm />
+          <PunoletstvoQuestionnaireForm bypassInfo={bypassInfo} />
         </div>
 
         {/* Hidden SEO content */}

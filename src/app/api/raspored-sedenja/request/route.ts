@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
-import { ensurePhoneVerified, normalizePhone } from "@/lib/phone-verification";
+import {
+  resolvePhoneAuthorization,
+  PhoneAuthError,
+} from "@/lib/phone-verification";
 import { createStandaloneSeating } from "@/lib/standalone-seating";
 
 export const runtime = "nodejs";
@@ -12,6 +15,7 @@ interface RequestPayload {
   eventName: string;
   eventDate?: string;
   phoneTrustToken: string;
+  bypassToken?: string;
   recaptchaToken: string;
 }
 
@@ -47,24 +51,18 @@ export async function POST(req: NextRequest) {
     throw err;
   }
 
-  const phoneE164 = normalizePhone(body.phone);
-  if (!phoneE164) {
-    return NextResponse.json(
-      { error: "Unesite važeći broj telefona." },
-      { status: 400 },
-    );
-  }
-
+  let phoneE164: string;
   try {
-    await ensurePhoneVerified(body.phoneTrustToken, phoneE164);
-  } catch {
-    return NextResponse.json(
-      {
-        error:
-          "Telefon nije verifikovan. Verifikujte broj i pokušajte ponovo.",
-      },
-      { status: 403 },
-    );
+    ({ phoneE164 } = await resolvePhoneAuthorization({
+      rawPhone: body.phone,
+      bypassToken: body.bypassToken,
+      phoneTrustToken: body.phoneTrustToken,
+    }));
+  } catch (err) {
+    if (err instanceof PhoneAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    throw err;
   }
 
   const name = (body.name ?? "").trim();

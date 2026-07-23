@@ -22,16 +22,22 @@ const ISSUER = "halouspomene-bypass";
 const AUDIENCE = "halouspomene-form";
 const DEFAULT_TTL = "24h";
 
-export type BypassCountry = "BA" | "HR" | "ME" | "RS";
+// Region quick-picks + "INT" catch-all. INT means the customer types their full
+// number INCLUDING their own country calling code (callingCode is just "+"), so
+// a single option covers every remaining country (Austria, Australia, …) with
+// zero per-country metadata. Safe because bypass mode never validates by
+// country — the signed admin link authorizes the submission and the number is
+// only soft-checked (≥6 digits).
+export type BypassCountry = "BA" | "HR" | "ME" | "RS" | "MK" | "SI" | "INT";
 
 export interface CountryConfig {
   code: BypassCountry;
-  callingCode: string; // "+387"
+  callingCode: string; // "+387" (region) or "+" (INT — customer types the rest)
   label: string; // "Bosna i Hercegovina"
   // Mobile numbers without the calling code (national-significant length).
-  // BA: 8 digits (6X XXX XXX), HR: 8-9, ME: 8, RS: 8-9. Range is generous on
-  // purpose — SMS delivery is no longer the validator in bypass mode, so we
-  // only sanity-check input length.
+  // Range is generous on purpose — SMS delivery is no longer the validator in
+  // bypass mode, so we only sanity-check input length. INT spans the full E.164
+  // range since the customer's own country code is part of what they type.
   minLocalDigits: number;
   maxLocalDigits: number;
 }
@@ -65,6 +71,27 @@ export const COUNTRY_CONFIGS: Record<BypassCountry, CountryConfig> = {
     minLocalDigits: 8,
     maxLocalDigits: 8,
   },
+  MK: {
+    code: "MK",
+    callingCode: "+389",
+    label: "Severna Makedonija",
+    minLocalDigits: 8,
+    maxLocalDigits: 8,
+  },
+  SI: {
+    code: "SI",
+    callingCode: "+386",
+    label: "Slovenija",
+    minLocalDigits: 8,
+    maxLocalDigits: 8,
+  },
+  INT: {
+    code: "INT",
+    callingCode: "+",
+    label: "Druga zemlja (međunarodni broj)",
+    minLocalDigits: 6,
+    maxLocalDigits: 15, // E.164 maximum, incl. the customer's own country code
+  },
 };
 
 export interface BypassPayload {
@@ -93,6 +120,40 @@ export async function signBypassToken(
     .setExpirationTime(options.ttl || DEFAULT_TTL)
     .sign(SECRET);
   return { token, tokenId };
+}
+
+/**
+ * Client-facing shape of a resolved bypass link — everything a create form
+ * needs to render the no-SMS phone input with the right country prefix.
+ */
+export interface BypassInfo {
+  token: string;
+  country: BypassCountry;
+  callingCode: string; // "+387"
+  countryLabel: string; // "Bosna i Hercegovina"
+}
+
+/**
+ * Verify a `?bypass=` URL param and shape it for the client forms. Returns
+ * undefined on a missing/invalid/expired token, so the page just renders the
+ * normal SMS form. Call this from every create page's server component.
+ */
+export async function resolveBypassInfo(
+  token: string | undefined | null,
+): Promise<BypassInfo | undefined> {
+  if (!token) return undefined;
+  try {
+    const payload = await verifyBypassToken(token);
+    const cfg = COUNTRY_CONFIGS[payload.country];
+    return {
+      token,
+      country: payload.country,
+      callingCode: cfg.callingCode,
+      countryLabel: cfg.label,
+    };
+  } catch {
+    return undefined;
+  }
 }
 
 /**

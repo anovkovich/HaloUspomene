@@ -15,14 +15,17 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import DatePicker from "@/components/ui/DatePicker";
-import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
+import { PhoneAuthField } from "@/components/verification/PhoneAuthField";
+import type { BypassInfo } from "@/lib/bypass-token";
 import {
   useRecaptcha,
   RecaptchaDisclosure,
 } from "@/components/forms/RecaptchaProvider";
 import { createGalleryCouple } from "./actions";
 
-const GalleryLeadForm: React.FC = () => {
+const GalleryLeadForm: React.FC<{ bypassInfo?: BypassInfo }> = ({
+  bypassInfo,
+}) => {
   const router = useRouter();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +47,7 @@ const GalleryLeadForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!phoneTrustToken) {
+    if (!bypassInfo && !phoneTrustToken) {
       toast.error('Verifikujte broj telefona klikom na dugme "Kod" kako biste dobili SMS kod.');
       return;
     }
@@ -79,12 +82,14 @@ const GalleryLeadForm: React.FC = () => {
 
       // Reuses the same QuickRegister mechanism as the planner (proper couple
       // + portal auto-login); gallery stays locked until payment.
+      const phonePrefix = bypassInfo?.callingCode || "+381";
       const created = await createGalleryCouple({
         name: formData.name,
-        phone: `+381${formData.phone}`,
+        phone: `${phonePrefix}${formData.phone}`,
         eventDate: formData.date || undefined,
         recaptchaToken,
         phoneTrustToken,
+        bypassToken: bypassInfo?.token,
       });
       if (!created.ok) {
         throw new Error(created.error || "Slanje nije uspelo. Pokušajte ponovo.");
@@ -111,7 +116,7 @@ const GalleryLeadForm: React.FC = () => {
           subject: emailSubject,
           from_name: "HALO Uspomene",
           name: formData.name,
-          telefon: `+381${formData.phone}`,
+          telefon: `${bypassInfo?.callingCode || "+381"}${formData.phone}`,
           datum_dogadjaja: formattedDate,
           lokacija: formData.location || "Nije navedeno",
           slug: created.slug,
@@ -137,20 +142,6 @@ const GalleryLeadForm: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const resetForm = () => {
-    setIsSubmitted(false);
-    setCreatedSlug(null);
-    setCreatedPassword(null);
-    setError(null);
-    setFormData({
-      name: "",
-      phone: "",
-      date: "",
-      location: "",
-    });
-    setPhoneTrustToken("");
   };
 
   if (isSubmitted) {
@@ -227,7 +218,11 @@ const GalleryLeadForm: React.FC = () => {
     );
   }
 
-  const isFormValid = formData.name && formData.phone && formData.date && phoneTrustToken;
+  const isFormValid =
+    formData.name &&
+    formData.phone &&
+    formData.date &&
+    (bypassInfo || phoneTrustToken);
 
   return (
     <form
@@ -276,15 +271,12 @@ const GalleryLeadForm: React.FC = () => {
           <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
             <Phone size={14} className="text-[#AE343F]" /> Broj Telefona *
           </label>
-          <PhoneVerificationField
+          <PhoneAuthField
+            bypassInfo={bypassInfo}
             variant="dark"
             required
-            disabled={isLoading}
             value={formData.phone}
-            onChange={(v) => {
-              setFormData((prev) => ({ ...prev, phone: v }));
-              if (phoneTrustToken) setPhoneTrustToken("");
-            }}
+            onChange={(v) => setFormData((prev) => ({ ...prev, phone: v }))}
             onVerified={(token) => setPhoneTrustToken(token)}
             onUnverified={() => setPhoneTrustToken("")}
           />

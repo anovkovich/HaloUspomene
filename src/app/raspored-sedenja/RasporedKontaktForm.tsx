@@ -14,7 +14,8 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import DatePicker from "@/components/ui/DatePicker";
-import { PhoneVerificationField } from "@/components/verification/PhoneVerificationField";
+import { PhoneAuthField } from "@/components/verification/PhoneAuthField";
+import type { BypassInfo } from "@/lib/bypass-token";
 import {
   useRecaptcha,
   RecaptchaDisclosure,
@@ -27,7 +28,11 @@ const labelClass =
 const inputClass =
   "w-full bg-white/5 border border-[#F5F4DC]/15 rounded-xl py-3 px-4 text-[#F5F4DC] placeholder:text-[#F5F4DC]/30 focus:outline-none focus:border-[#AE343F] transition-colors text-base";
 
-export default function RasporedKontaktForm() {
+export default function RasporedKontaktForm({
+  bypassInfo,
+}: {
+  bypassInfo?: BypassInfo;
+}) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -53,7 +58,7 @@ export default function RasporedKontaktForm() {
       setError("Forma trenutno nije dostupna. Pišite na halouspomene@gmail.com.");
       return;
     }
-    if (!phoneTrustToken) {
+    if (!bypassInfo && !phoneTrustToken) {
       toast.error('Verifikujte broj telefona klikom na dugme "Kod" kako biste dobili SMS kod.');
       return;
     }
@@ -75,10 +80,11 @@ export default function RasporedKontaktForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
-          phone: `+381${phone}`,
+          phone: `${bypassInfo?.callingCode || "+381"}${phone}`,
           eventName: eventName.trim(),
           eventDate: eventDate || undefined,
           phoneTrustToken,
+          bypassToken: bypassInfo?.token,
           recaptchaToken,
         }),
       });
@@ -132,7 +138,7 @@ export default function RasporedKontaktForm() {
           subject: emailSubject,
           from_name: "HALO Uspomene",
           name: name.trim(),
-          telefon: `+381${phone}`,
+          telefon: `${bypassInfo?.callingCode || "+381"}${phone}`,
           tip_eventa: eventName.trim(),
           datum_eventa: formattedDate,
           paket: "Standalone raspored sedenja za organizatore",
@@ -236,15 +242,12 @@ export default function RasporedKontaktForm() {
               Broj telefona *
             </span>
           </label>
-          <PhoneVerificationField
+          <PhoneAuthField
+            bypassInfo={bypassInfo}
             variant="dark"
             required
-            disabled={submitting}
             value={phone}
-            onChange={(v) => {
-              setPhone(v);
-              if (phoneTrustToken) setPhoneTrustToken("");
-            }}
+            onChange={setPhone}
             onVerified={(token) => setPhoneTrustToken(token)}
             onUnverified={() => setPhoneTrustToken("")}
           />
