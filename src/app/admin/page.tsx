@@ -476,22 +476,23 @@ export default function AdminPage() {
     if (!markPaid) return;
     if (markPaid.source.type === "couple") {
       await handleInvalidateReceipt(markPaid.slug);
-      if (mode === "linked") {
-        // Approving an order runs unlock() server-side (draft/paid_* flags) —
-        // re-fetch so the toggles in the list reflect the new state.
-        fetch("/api/admin/couples")
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => {
-            if (Array.isArray(d)) setCouples(d);
-          })
-          .catch(() => {});
-      }
     } else {
       const id = markPaid.source.id;
       await fetch(`/api/admin/custom-receipts/${id}`, { method: "DELETE" }).catch(
         () => {},
       );
       setCustomReceipts((prev) => prev.filter((x) => x.id !== id));
+    }
+    if (mode === "linked") {
+      // Approving an order runs unlock() server-side (draft/paid_* flags) —
+      // re-fetch so the toggles in the list reflect the new state. Applies to
+      // a custom receipt linked to a real couple's order too.
+      fetch("/api/admin/couples")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (Array.isArray(d)) setCouples(d);
+        })
+        .catch(() => {});
     }
     setMarkPaid(null);
   }
@@ -1344,21 +1345,28 @@ function MarkPaidModal({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
+  const isCustom = target.source.type === "custom";
 
   useEffect(() => {
     fetch("/api/admin/orders?status=pending,review")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         const rows: PendingRow[] = Array.isArray(d?.orders) ? d.orders : [];
-        setPending(rows.filter((o) => o.slug === target.slug));
+        // Custom receipts have no real couple behind them (their slug is derived
+        // from the free-text name), so filtering by it would always be empty —
+        // show ALL open orders so the admin can link to whichever real order
+        // this receipt was actually for.
+        setPending(isCustom ? rows : rows.filter((o) => o.slug === target.slug));
       })
       .catch(() => setPending([]));
-  }, [target.slug]);
+  }, [target.slug, isCustom]);
 
   async function link(o: PendingRow) {
     const ok = await confirm({
       title: "Poveži i odobri uplatu",
-      message: `${o.orderId} — ${o.amountRsd.toLocaleString("sr-RS")} din\nAutomatski uključuje plaćene opcije na proizvodu.`,
+      message: `${o.orderId} — ${o.amountRsd.toLocaleString("sr-RS")} din${
+        isCustom ? `\nProizvod: /${o.slug} (${o.kind})` : ""
+      }\nAutomatski uključuje plaćene opcije na proizvodu.`,
       warning: o.dupWarning
         ? "Postoji već plaćen order za isti proizvod — proveri duplu uplatu."
         : undefined,
@@ -1450,7 +1458,9 @@ function MarkPaidModal({
           )}
           {pending !== null && pending.length === 0 && (
             <p className="text-xs text-white/30">
-              Nema uplata na čekanju za /{target.slug}.
+              {isCustom
+                ? "Nema uplata na čekanju."
+                : `Nema uplata na čekanju za /${target.slug}.`}
             </p>
           )}
           {pending?.map((o) => (
@@ -1470,6 +1480,9 @@ function MarkPaidModal({
                   </span>
                 </div>
                 <div className="text-[11px] text-white/35 truncate">
+                  {isCustom && (
+                    <span className="text-white/55">/{o.slug} · </span>
+                  )}
                   poziv na br. {o.ipsRef} ·{" "}
                   {new Date(o.createdAt).toLocaleDateString("sr-RS")}
                   {o.dupWarning && " · ⚠ proveri duplu uplatu"}
