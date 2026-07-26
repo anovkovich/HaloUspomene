@@ -100,10 +100,11 @@ const equipment: Equipment[] = [
     icon: <Tent size={32} />,
     image: "/images/equipment/paviljon.png",
     description:
-      "Klasičan beli paviljon sa elegantnim zavesama — idealan za doček svatova, polazak od kuće ili ceremoniju na otvorenom. Pruža hlad i svečan ambijent.",
+      "Klasičan beli paviljon sa elegantnim zavesama — idealan za doček svatova, polazak od kuće ili ceremoniju na otvorenom. Pruža hlad, UV zaštitu od sunca i svečan ambijent.",
     features: [
       "Dimenzije 3×3 metra",
       "Bele svilenkaste zavese",
+      "UV zaštita od sunca",
       "Čelična konstrukcija",
       "Brza montaža",
     ],
@@ -166,6 +167,7 @@ interface PricingPackage {
 const individualPricing: PricingItem[] = [
   { name: "Paviljon 3×3m sa zavesama", perDay: 30, perWeekend: 60 },
   { name: "Barski sto 80cm (sa navlakom)", perDay: 10, perWeekend: 20 },
+  { name: "Kible za piće (1 velika + 2 male za led)", perDay: 3, perWeekend: 6 },
   { name: "Rashladni ventilator", perDay: 40, perWeekend: 80, note: "uskoro" },
 ];
 
@@ -240,7 +242,7 @@ const included = [
   {
     icon: <Clock size={24} />,
     title: "Fleksibilni termini",
-    desc: "Najam po danu ili za ceo vikend. Postavljamo dan ranije, skupljamo dan nakon — bez žurbe.",
+    desc: "Najam po danu ili za ceo vikend. Dogovor oko postavljanja i skupljanja — bez žurbe!",
   },
   {
     icon: <ShieldCheck size={24} />,
@@ -267,7 +269,7 @@ const howItWorks = [
   {
     n: "03",
     title: "Dostava i montaža",
-    desc: "Dovozimo opremu dan pre događaja i postavljamo sve na dogovorenu lokaciju.",
+    desc: "Dovozimo i postavljamo opremu na dogovorenoj lokaciji, u terminu koji zajedno usaglasimo.",
   },
   {
     n: "04",
@@ -287,7 +289,7 @@ const faqItems = [
   },
   {
     q: "Da li je dostava i montaža uključena u cenu?",
-    a: "Dostava i montaža su besplatne za lokacije do 50km (u jednom pravcu, tj. ~100km ukupno za dovoz i odvoz). Za udaljenije lokacije — dogovaramo se individualno o simboličnim troškovima transporta. Dolazimo dan pre događaja da postavimo sve, a dan nakon dolazimo da pokupimo.",
+    a: "Dostava i montaža su besplatne za lokacije do 50km (u jednom pravcu, tj. ~100km ukupno za dovoz i odvoz). Za udaljenije lokacije — dogovaramo se individualno o simboličnim troškovima transporta. Termin postavljanja i skupljanja opreme dogovaramo zajedno — bez žurbe.",
   },
   {
     q: "Mogu li da iznajmim opremu samo za nekoliko sati?",
@@ -944,11 +946,13 @@ export default function IznajmljivanjeOpremeZaVencanje() {
           </h2>
           <p>
             HALO Uspomene posreduje najam opreme za venčanja i proslave širom
-            Srbije. U ponudi su elegantni beli paviljoni sa zavesama dimenzija
-            3×3 metra (30€/dan), visoki barski stolovi 80cm prečnika sa navlakama
-            za koktel prijeme (10€/dan), i rashladni industrijski ventilatori
-            za letnje svadbe na otvorenom (~40€/dan, uskoro dostupni). Trenutno
-            na raspolaganju: 4 paviljona i 12 visokih stolova. Starter paket
+            Srbije. U ponudi su elegantni beli paviljoni sa zavesama i UV
+            zaštitom od sunca dimenzija 3×3 metra (30€/dan), visoki barski
+            stolovi 80cm prečnika sa navlakama za koktel prijeme (10€/dan),
+            kible za piće i male kible za led (komplet 1 velika + 2 male za 3€),
+            i rashladni industrijski ventilatori za letnje svadbe na otvorenom
+            (~40€/dan, uskoro dostupni). Trenutno na raspolaganju: 4 paviljona
+            i 12 visokih stolova. Starter paket
             (1 paviljon + 3 stola) samo 55€, Komplet paket (2 paviljona + 6 stolova)
             105€. Oprema je idealna za doček svatova, polazak od kuće, ceremonije u
             dvorištu ili bašti, i koktel prijeme ispred sale. Besplatna dostava
