@@ -98,7 +98,6 @@ const equipment: Equipment[] = [
       "Klasičan beli paviljon sa elegantnim zavesama — idealan za doček svatova, polazak od kuće ili ceremoniju na otvorenom. Pruža hlad, UV zaštitu od sunca i svečan ambijent.",
     features: [
       "Dimenzije 3×3 metra",
-      "Bele svilenkaste zavese",
       "UV zaštita od sunca",
       "Čelična konstrukcija",
       "Brza montaža",
