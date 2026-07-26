@@ -9,8 +9,12 @@
  *
  *  To unlock: delete PARTNER_PREVIEW_KEY on Vercel and redeploy.
  *  NOTE: the middleware matcher in src/middleware.ts lists these paths as
- *  literals — keep it in sync when adding a path here. */
-export const PREVIEW_LOCKED_PATHS = ["/iznajmljivanje-opreme-za-vencanje"];
+ *  literals — keep it in sync when adding a path here.
+ *
+ *  Currently EMPTY — no page is preview-locked. The mechanism stays wired up
+ *  and dormant; to lock a new partner page, add its path here AND to the
+ *  middleware matcher, then set PARTNER_PREVIEW_KEY on Vercel. */
+export const PREVIEW_LOCKED_PATHS: string[] = [];
 
 export const PREVIEW_COOKIE = "partner_preview";
 

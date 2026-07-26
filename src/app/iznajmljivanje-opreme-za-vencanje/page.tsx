@@ -23,10 +23,6 @@ import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import EquipmentRentalLeadForm from "./EquipmentRentalLeadForm";
 
-// Partner preview lock (see src/lib/preview-lock.ts): while PARTNER_PREVIEW_KEY
-// is set, middleware 404s this page unless the URL carries ?key=<value>.
-const isLocked = !!process.env.PARTNER_PREVIEW_KEY;
-
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
@@ -73,7 +69,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${siteUrl}/iznajmljivanje-opreme-za-vencanje`,
   },
-  ...(isLocked ? { robots: { index: false, follow: false } } : {}),
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════

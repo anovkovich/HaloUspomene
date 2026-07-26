@@ -189,9 +189,7 @@ export const config = {
     "/raspored-sedenja/:slug",
     "/raspored-sedenja/:slug/gosti",
     "/raspored-sedenja/:slug/gosti/:path*",
-    // Partner preview lock — keep in sync with PREVIEW_LOCKED_PATHS
-    // in src/lib/preview-lock.ts (matchers must be literals).
-    "/iznajmljivanje-opreme-za-vencanje",
-    "/iznajmljivanje-opreme-za-vencanje/:path*",
+    // Partner preview lock (PREVIEW_LOCKED_PATHS in src/lib/preview-lock.ts) is
+    // currently empty — add a page's path here as a literal when locking one.
   ],
 };

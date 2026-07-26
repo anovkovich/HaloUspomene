@@ -115,16 +115,10 @@ const Footer: React.FC = () => {
                   name: "Auto za venčanje",
                   href: "/iznajmljivanje-automobila-za-vencanje",
                 },
-                // Hidden while the partner preview lock is active
-                // (see src/lib/preview-lock.ts).
-                ...(process.env.PARTNER_PREVIEW_KEY
-                  ? []
-                  : [
-                      {
-                        name: "Paviljoni i oprema",
-                        href: "/iznajmljivanje-opreme-za-vencanje",
-                      },
-                    ]),
+                {
+                  name: "Paviljoni i oprema",
+                  href: "/iznajmljivanje-opreme-za-vencanje",
+                },
                 { name: "Kako funkcioniše", href: "/#proces" },
                 { name: "Cene", href: "/cene" },
                 { name: "FAQ", href: "/#faq" },

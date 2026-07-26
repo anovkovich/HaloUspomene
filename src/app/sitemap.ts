@@ -86,18 +86,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.9,
     },
-    // Dropped from the sitemap while the partner preview lock is active
-    // (see src/lib/preview-lock.ts).
-    ...(process.env.PARTNER_PREVIEW_KEY
-      ? []
-      : ([
-          {
-            url: `${siteUrl}/iznajmljivanje-opreme-za-vencanje`,
-            lastModified,
-            changeFrequency: "weekly",
-            priority: 0.9,
-          },
-        ] as MetadataRoute.Sitemap)),
+    {
+      url: `${siteUrl}/iznajmljivanje-opreme-za-vencanje`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
     {
       url: `${siteUrl}/napravi-deciju-pozivnicu`,
       lastModified,
