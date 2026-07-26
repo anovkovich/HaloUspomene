@@ -343,45 +343,42 @@ const serviceSchema = {
     "@type": "OfferCatalog",
     name: "Oprema za venčanja na otvorenom",
     itemListElement: [
+      // Plain Offers (not Products) — this is a rental Service, not a store, so
+      // we deliberately avoid Product/merchant-listing markup (which would demand
+      // per-item image, shipping and return-policy fields that don't apply here).
       ...individualPricing.map((item) => ({
-        "@type": "Product",
+        "@type": "Offer",
         name: item.name,
-        offers: {
-          "@type": "Offer",
-          priceCurrency: "EUR",
-          price: item.perDay,
-          availability:
-            item.note === "uskoro"
-              ? "https://schema.org/PreOrder"
-              : "https://schema.org/InStock",
-          priceValidUntil,
-          priceSpecification: [
-            {
-              "@type": "UnitPriceSpecification",
-              price: item.perDay,
-              priceCurrency: "EUR",
-              unitText: "po danu",
-            },
-            {
-              "@type": "UnitPriceSpecification",
-              price: item.perWeekend,
-              priceCurrency: "EUR",
-              unitText: "vikend (petak–nedelja)",
-            },
-          ],
-        },
+        priceCurrency: "EUR",
+        price: item.perDay,
+        availability:
+          item.note === "uskoro"
+            ? "https://schema.org/PreOrder"
+            : "https://schema.org/InStock",
+        priceValidUntil,
+        priceSpecification: [
+          {
+            "@type": "UnitPriceSpecification",
+            price: item.perDay,
+            priceCurrency: "EUR",
+            unitText: "po danu",
+          },
+          {
+            "@type": "UnitPriceSpecification",
+            price: item.perWeekend,
+            priceCurrency: "EUR",
+            unitText: "vikend (petak–nedelja)",
+          },
+        ],
       })),
       ...packages.map((pkg) => ({
-        "@type": "Product",
+        "@type": "Offer",
         name: `${pkg.name} paket`,
         description: pkg.items.join(", "),
-        offers: {
-          "@type": "Offer",
-          priceCurrency: "EUR",
-          price: pkg.price,
-          availability: "https://schema.org/InStock",
-          priceValidUntil,
-        },
+        priceCurrency: "EUR",
+        price: pkg.price,
+        availability: "https://schema.org/InStock",
+        priceValidUntil,
       })),
     ],
   },
