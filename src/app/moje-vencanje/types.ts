@@ -56,6 +56,11 @@ export interface Invitee {
   status: InviteeStatus;
   linkedRsvpId?: string; // id of a matched rsvp_responses entry (manual link)
   note?: string;
+  // True when this zvanica's confirmed state came from the manual "Potvrdi
+  // dolazak" action, which ALSO inserts a matching potvrda into rsvp_responses
+  // and links it here (linkedRsvpId). Lets "Poništi potvrdu" safely delete that
+  // record — never a real guest's self-submitted potvrda.
+  manualPotvrda?: boolean;
 }
 
 /** A predefined "key role" slot (kum, barjaktar, …) — a reference album of

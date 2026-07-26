@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useTransition, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
@@ -13,10 +12,8 @@ import {
   UserPlus,
   Loader2,
   RefreshCw,
-  ExternalLink,
   AlertTriangle,
   ChevronDown,
-  Pencil,
   Trash2,
   Link2,
 } from "lucide-react";
@@ -489,7 +486,7 @@ interface Props {
   draft?: boolean;
 }
 
-export default function GuestsCard({ slug, draft }: Props) {
+export default function GuestsCard({ draft }: Props) {
   const [attending, setAttending] = useState<RSVPEntry[]>([]);
   const [notAttending, setNotAttending] = useState<RSVPEntry[]>([]);
   const [totalGuests, setTotalGuests] = useState(0);
@@ -643,12 +640,21 @@ export default function GuestsCard({ slug, draft }: Props) {
     [guestList.invitees, mutateGuestList],
   );
 
+  // Unlinking a zvanica also drops it out of "confirmed" (that status came from
+  // the link) and clears the manual-potvrda flag, keeping confirmed ⇔ linked.
   const unlinkInviteeById = useCallback(
     (inviteeId: string) => {
       mutateGuestList((gl) => ({
         ...gl,
         invitees: gl.invitees.map((i) =>
-          i.id === inviteeId ? { ...i, linkedRsvpId: undefined } : i,
+          i.id === inviteeId
+            ? {
+                ...i,
+                linkedRsvpId: undefined,
+                manualPotvrda: undefined,
+                status: i.status === "confirmed" ? "invited" : i.status,
+              }
+            : i,
         ),
       }));
     },
@@ -660,11 +666,111 @@ export default function GuestsCard({ slug, draft }: Props) {
       mutateGuestList((gl) => ({
         ...gl,
         invitees: gl.invitees.map((i) =>
-          i.linkedRsvpId === rsvpId ? { ...i, linkedRsvpId: undefined } : i,
+          i.linkedRsvpId === rsvpId
+            ? {
+                ...i,
+                linkedRsvpId: undefined,
+                manualPotvrda: undefined,
+                status: i.status === "confirmed" ? "invited" : i.status,
+              }
+            : i,
         ),
       }));
     },
     [mutateGuestList],
+  );
+
+  // Manual "Potvrdi dolazak": insert a real potvrda (rsvp_responses) as if the
+  // guest self-confirmed, add it to the Potvrde gostiju list, and link it to the
+  // zvanica (which turns it green). Mirrors the "Dodaj potvrdu ručno" + Poveži flow.
+  const confirmInviteeAttendance = useCallback(
+    async (inviteeId: string, name: string, count: number) => {
+      if (draft) {
+        toast("Dostupno nakon kreiranja pozivnice — naš tim će vas kontaktirati");
+        return;
+      }
+      const invitee = guestList.invitees.find((i) => i.id === inviteeId);
+      const cat = invitee?.category ?? "";
+      const cleanName = name.trim() || invitee?.name || "Gost";
+      const cleanCount = Math.max(1, count);
+      const result = await addManualGuestAction(cleanName, cleanCount);
+      if (!result.success || !result.id) {
+        toast(result.error ?? "Greška pri kreiranju potvrde");
+        return;
+      }
+      const id = result.id;
+      setAttending((prev) => [
+        ...prev,
+        {
+          id,
+          timestamp: new Date().toISOString(),
+          name: cleanName,
+          attending: "Da",
+          guestCount: String(cleanCount),
+          details: "",
+          category: cat,
+        },
+      ]);
+      setTotalGuests((prev) => prev + cleanCount);
+      if (cat) {
+        setCategories((prev) => ({ ...prev, [id]: cat }));
+        updateGuestCategoryAction(id, cat);
+      }
+      mutateGuestList((gl) => ({
+        ...gl,
+        invitees: gl.invitees.map((i) =>
+          i.id === inviteeId
+            ? {
+                ...i,
+                linkedRsvpId: id,
+                status: "confirmed" as const,
+                count: cleanCount,
+                manualPotvrda: true,
+              }
+            : i,
+        ),
+      }));
+      toast("Potvrda kreirana i povezana sa zvanicom");
+    },
+    [draft, guestList.invitees, mutateGuestList],
+  );
+
+  // Undo a manual confirmation: revert the zvanica and delete the potvrda we
+  // created (never a real guest's self-submitted potvrda — guarded by manualPotvrda).
+  const unconfirmInviteeAttendance = useCallback(
+    async (inviteeId: string) => {
+      const invitee = guestList.invitees.find((i) => i.id === inviteeId);
+      const rsvpId = invitee?.linkedRsvpId;
+      const wasManual = !!invitee?.manualPotvrda;
+      mutateGuestList((gl) => ({
+        ...gl,
+        invitees: gl.invitees.map((i) =>
+          i.id === inviteeId
+            ? {
+                ...i,
+                linkedRsvpId: undefined,
+                manualPotvrda: undefined,
+                status: "invited" as const,
+              }
+            : i,
+        ),
+      }));
+      if (rsvpId && wasManual) {
+        const entry = attending.find((e) => e.id === rsvpId);
+        await deleteGuestAction(rsvpId);
+        setAttending((prev) => prev.filter((e) => e.id !== rsvpId));
+        if (entry) {
+          setTotalGuests((prev) => prev - (parseInt(entry.guestCount) || 1));
+        }
+        setCategories((prev) => {
+          const next = { ...prev };
+          delete next[rsvpId];
+          return next;
+        });
+      }
+      toast("Potvrda poništena");
+    },
+    [guestList.invitees, attending, mutateGuestList],
   );
 
   const expiryBanner = useMemo(() => {
@@ -864,6 +970,8 @@ export default function GuestsCard({ slug, draft }: Props) {
           mutate={mutateGuestList}
           onLink={linkRsvpToInvitee}
           onUnlink={unlinkInviteeById}
+          onConfirmAttendance={confirmInviteeAttendance}
+          onUnconfirmAttendance={unconfirmInviteeAttendance}
         />
       ) : (
         <div className="bg-white rounded-2xl border border-[#232323]/10 p-6 shadow-sm">
