@@ -316,6 +316,13 @@ const faqItems = [
    JSON-LD SCHEMAS
 ═══════════════════════════════════════════════════════════════════════════ */
 
+// Recomputed at build/render; date-only form is what Google prefers for priceValidUntil.
+const priceValidUntil = new Date(
+  new Date().setMonth(new Date().getMonth() + 6),
+)
+  .toISOString()
+  .split("T")[0];
+
 const serviceSchema = {
   "@context": "https://schema.org",
   "@type": "Service",
@@ -338,38 +345,44 @@ const serviceSchema = {
     name: "Oprema za venčanja na otvorenom",
     itemListElement: [
       ...individualPricing.map((item) => ({
-        "@type": "Offer",
-        itemOffered: {
-          "@type": "Product",
-          name: item.name,
+        "@type": "Product",
+        name: item.name,
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "EUR",
+          price: item.perDay,
+          availability:
+            item.note === "uskoro"
+              ? "https://schema.org/PreOrder"
+              : "https://schema.org/InStock",
+          priceValidUntil,
+          priceSpecification: [
+            {
+              "@type": "UnitPriceSpecification",
+              price: item.perDay,
+              priceCurrency: "EUR",
+              unitText: "po danu",
+            },
+            {
+              "@type": "UnitPriceSpecification",
+              price: item.perWeekend,
+              priceCurrency: "EUR",
+              unitText: "vikend (petak–nedelja)",
+            },
+          ],
         },
-        priceSpecification: [
-          {
-            "@type": "UnitPriceSpecification",
-            price: item.perDay,
-            priceCurrency: "EUR",
-            unitText: "po danu",
-          },
-          {
-            "@type": "UnitPriceSpecification",
-            price: item.perWeekend,
-            priceCurrency: "EUR",
-            unitText: "vikend (petak–nedelja)",
-          },
-        ],
       })),
       ...packages.map((pkg) => ({
-        "@type": "Offer",
-        itemOffered: {
-          "@type": "Product",
-          name: `${pkg.name} paket`,
-          description: pkg.items.join(", "),
+        "@type": "Product",
+        name: `${pkg.name} paket`,
+        description: pkg.items.join(", "),
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "EUR",
+          price: pkg.price,
+          availability: "https://schema.org/InStock",
+          priceValidUntil,
         },
-        price: pkg.price,
-        priceCurrency: "EUR",
-        priceValidUntil: new Date(
-          new Date().setMonth(new Date().getMonth() + 6)
-        ).toISOString(),
       })),
     ],
   },
