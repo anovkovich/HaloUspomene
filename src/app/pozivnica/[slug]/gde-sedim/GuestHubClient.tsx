@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Armchair, Map, Images, UtensilsCrossed, Mic } from "lucide-react";
 import GdeSedimClient from "./GdeSedimClient";
 import HallMap from "./HallMap";
@@ -14,6 +14,29 @@ import type { GalleryPhase } from "@/lib/gallery-lifecycle";
 import type { MeniData } from "../types";
 
 type TabKey = "seating" | "map" | "meni" | "gallery" | "audio";
+
+// Friendly `?tab=` values → internal tab key, so a QR/link can open the hub
+// directly on Galerija/Utisci/Meni instead of the seat-search tab.
+const TAB_ALIASES: Record<string, TabKey> = {
+  seating: "seating",
+  "gde-sedim": "seating",
+  gdesedim: "seating",
+  gde: "seating",
+  map: "map",
+  "plan-sale": "map",
+  plansale: "map",
+  meni: "meni",
+  menu: "meni",
+  gallery: "gallery",
+  galerija: "gallery",
+  audio: "audio",
+  utisci: "audio",
+};
+
+function parseTabParam(value: string | null): TabKey | null {
+  if (!value) return null;
+  return TAB_ALIASES[value.trim().toLowerCase()] ?? null;
+}
 
 interface Props {
   slug: string;
@@ -101,6 +124,29 @@ export default function GuestHubClient({
           : "audio",
   );
   const showBar = tabs.length > 1;
+
+  // Deep-link: honor `?tab=` on load (client-side, so the page stays static/ISR),
+  // but only if that tab is actually enabled. Runs once after mount.
+  useEffect(() => {
+    const available = new Set(tabs.map((t) => t.key));
+    const requested = parseTabParam(
+      new URLSearchParams(window.location.search).get("tab"),
+    );
+    if (requested && available.has(requested)) setActive(requested);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Reflect the active tab in the URL so a shared link reopens the same view.
+  function selectTab(key: TabKey) {
+    setActive(key);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", key);
+      window.history.replaceState(null, "", url);
+    } catch {
+      /* non-critical */
+    }
+  }
 
   return (
     <div
@@ -228,7 +274,7 @@ export default function GuestHubClient({
             {tabs.map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setActive(tab.key)}
+                onClick={() => selectTab(tab.key)}
                 className="flex flex-col items-center gap-1 flex-1 py-2 transition-colors"
                 style={{
                   color:
