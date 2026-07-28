@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGalleryCouples, patchCouple } from "@/lib/couples";
+import {
+  listGalleryStandaloneSeatings,
+  patchStandaloneGalleryLifecycle,
+} from "@/lib/standalone-seating";
 import { deleteAllGalleryPhotos } from "@/lib/gallery";
 import { deleteByPrefix } from "@/lib/r2";
 import { sendSms } from "@/lib/infobip";
@@ -34,6 +38,11 @@ function smsLastAccess(): string {
 }
 function smsPurgeWarning(): string {
   return `HaloUspomene: Fotografije iz vase galerije bice trajno obrisane veceras. Ako vam jos trebaju, javite se timu: halouspomene@gmail.com`;
+}
+
+// Standalone events aren't weddings — link the owner portal instead of /moje-vencanje.
+function smsLastAccessStandalone(slug: string): string {
+  return `HaloUspomene: Danas je poslednji dan da preuzmete fotografije iz galerije. Otvorite: ${SITE}/raspored-sedenja/${slug}/portal`;
 }
 
 /** First phone from the comma-separated contact_phone, if E.164. */
@@ -103,6 +112,61 @@ export async function GET(req: NextRequest) {
     } catch (err) {
       result.errors.push(
         `${c.slug}: ${err instanceof Error ? err.message : "unknown"}`
+      );
+    }
+  }
+
+  // ── Standalone seatings with the gallery add-on ──────────────────────────
+  // Same lifecycle math (event_date based) with the seating record's own
+  // idempotency flags. Reminders link the owner portal, not /moje-vencanje.
+  const seatings = await listGalleryStandaloneSeatings();
+  for (const s of seatings) {
+    try {
+      if (task === "remind") {
+        const d = galleryDayOffset(s.eventDate);
+        if (d === null) continue;
+        const phone =
+          s.ownerPhone && s.ownerPhone.startsWith("+") ? s.ownerPhone : null;
+        if (!phone) continue;
+
+        if (
+          d === GALLERY_ACCESS_LAST_DAY &&
+          !s.gallery_sms_last_access_sent
+        ) {
+          await sendSms(phone, smsLastAccessStandalone(s.slug));
+          await patchStandaloneGalleryLifecycle(s.slug, {
+            gallery_sms_last_access_sent: true,
+          });
+          result.sms++;
+        } else if (
+          d === GALLERY_PURGE_WARNING_DAY &&
+          !s.gallery_sms_purge_warning_sent
+        ) {
+          await sendSms(phone, smsPurgeWarning());
+          await patchStandaloneGalleryLifecycle(s.slug, {
+            gallery_sms_purge_warning_sent: true,
+          });
+          result.sms++;
+        }
+        result.processed++;
+      } else {
+        // purge
+        if (
+          shouldPurgeGallery(s.eventDate, s.gallery_extra_days ?? 0) &&
+          !s.gallery_purged_at
+        ) {
+          await deleteByPrefix(`gallery/${s.slug}/`);
+          await deleteAllGalleryPhotos(s.slug);
+          await patchStandaloneGalleryLifecycle(s.slug, {
+            gallery_purged_at: new Date().toISOString(),
+          });
+          result.purged++;
+        }
+        result.processed++;
+      }
+    } catch (err) {
+      result.errors.push(
+        `${s.slug}: ${err instanceof Error ? err.message : "unknown"}`,
       );
     }
   }

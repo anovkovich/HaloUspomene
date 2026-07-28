@@ -4,14 +4,18 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getStandaloneSeating } from "@/lib/standalone-seating";
 import { loadSeatingLayout, type TableData } from "@/lib/seating";
+import { getGalleryPhotos } from "@/lib/gallery";
+import { galleryPhase } from "@/lib/gallery-lifecycle";
+import { getAudioMessages } from "@/lib/audio";
 import type {
   GuestLookupEntry,
   GuestTableEntry,
 } from "@/app/pozivnica/[slug]/gde-sedim/page";
 import GdeSedimClient from "@/app/pozivnica/[slug]/gde-sedim/GdeSedimClient";
+import GuestHubClient from "@/app/pozivnica/[slug]/gde-sedim/GuestHubClient";
 
 export const dynamicParams = true;
-export const revalidate = 60;
+export const revalidate = 30;
 
 export async function generateMetadata({
   params,
@@ -119,6 +123,71 @@ export default async function StandaloneGdeSedimPage({ params }: PageProps) {
       }),
     ),
   }));
+
+  // When the owner enabled audio and/or gallery, the gde-sedim URL (the QR
+  // pano destination) becomes the full guest hub with bottom tabs. Both
+  // add-ons require an event date, so its presence is implied here.
+  const hasGallery = !!(data.paid_for_gallery && data.eventDate);
+  const hasAudio = !!(data.paid_for_audio && data.eventDate);
+
+  if (hasGallery || hasAudio) {
+    const phase = data.eventDate
+      ? galleryPhase(data.eventDate, data.gallery_extra_days ?? 0)
+      : "unknown";
+
+    let galleryPhotos: Awaited<ReturnType<typeof getGalleryPhotos>> = [];
+    if (hasGallery && phase !== "expired" && phase !== "before") {
+      try {
+        galleryPhotos = await getGalleryPhotos(slug, { limit: 2000 });
+      } catch {
+        galleryPhotos = [];
+      }
+    }
+
+    let audioRecentMessages: {
+      guestName: string;
+      durationMs: number;
+      createdAt: string;
+    }[] = [];
+    if (hasAudio) {
+      try {
+        const msgs = await getAudioMessages(slug);
+        audioRecentMessages = msgs
+          .slice(-10)
+          .reverse()
+          .map((m) => ({
+            guestName: m.guestName,
+            durationMs: m.durationMs,
+            createdAt: m.createdAt,
+          }));
+      } catch {
+        audioRecentMessages = [];
+      }
+    }
+
+    return (
+      <div className="min-h-screen" style={BRAND_VARS}>
+        <GuestHubClient
+          slug={slug}
+          coupleNames={data.eventName}
+          ijekavica={false}
+          useCyrillic={false}
+          hasSeating
+          guestLookup={guestLookup}
+          tables={tables}
+          hasGallery={hasGallery}
+          galleryPhase={phase}
+          galleryPhotos={galleryPhotos}
+          hasMeni={false}
+          meni={null}
+          hasAudio={hasAudio}
+          audioRecentMessages={audioRecentMessages}
+          eventDate={data.eventDate ?? ""}
+          apiBase={`/api/raspored-sedenja/${slug}`}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={BRAND_VARS}>

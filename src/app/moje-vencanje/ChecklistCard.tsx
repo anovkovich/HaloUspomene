@@ -10,9 +10,16 @@ import { GROUP_LABELS, GROUP_ORDER } from "./defaults";
 interface Props {
   checklist: ChecklistItem[];
   setChecklist: React.Dispatch<React.SetStateAction<ChecklistItem[]>>;
+  /** Persist handler — defaults to the couple action; the standalone owner
+   *  portal passes a seating-scoped equivalent. */
+  onSave?: (checklist: ChecklistItem[]) => void | Promise<unknown>;
 }
 
-export default function ChecklistCard({ checklist, setChecklist }: Props) {
+export default function ChecklistCard({
+  checklist,
+  setChecklist,
+  onSave = saveChecklistAction,
+}: Props) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [newItemText, setNewItemText] = useState<Record<string, string>>({});
@@ -22,12 +29,15 @@ export default function ChecklistCard({ checklist, setChecklist }: Props) {
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
-  const debouncedSave = useCallback((updated: ChecklistItem[]) => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      saveChecklistAction(updated);
-    }, 300);
-  }, []);
+  const debouncedSave = useCallback(
+    (updated: ChecklistItem[]) => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => {
+        onSave(updated);
+      }, 300);
+    },
+    [onSave],
+  );
 
   const toggleItem = useCallback(
     (id: string) => {

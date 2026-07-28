@@ -1,7 +1,11 @@
 import { ObjectId } from "mongodb";
+import { del } from "@vercel/blob";
 import clientPromise from "./mongodb";
 import { deleteSeatingLayout } from "./seating";
 import { deleteShareLinksForProduct } from "./share-links";
+import { getAudioMessages, deleteAllAudioMessages } from "./audio";
+import { deleteAllGalleryPhotos } from "./gallery";
+import { deleteByPrefix } from "./r2";
 
 export interface StandaloneGuest {
   id: string;
@@ -22,6 +26,16 @@ export interface StandaloneSeating {
   password: string;
   guests: StandaloneGuest[];
   active: boolean;
+  /** Paid add-ons (admin toggles). Both require `eventDate` to be set, since
+   *  their time windows are computed from it (mirrors the couple products). */
+  paid_for_audio?: boolean;
+  paid_for_gallery?: boolean;
+  /** Extra days the gallery stays accessible/undeleted past the default d5. */
+  gallery_extra_days?: number;
+  /** Gallery lifecycle bookkeeping — set by the purge cron, keep it idempotent. */
+  gallery_sms_last_access_sent?: boolean;
+  gallery_sms_purge_warning_sent?: boolean;
+  gallery_purged_at?: string;
   /** Receipt fields — admin generates a /racun?d=... link to share with the
    *  client. `receipt_valid` gates the link; setting it false invalidates
    *  shared URLs (e.g. after payment is completed). */
@@ -43,6 +57,12 @@ interface StandaloneSeatingDocument {
   password: string;
   guests: StandaloneGuest[];
   active: boolean;
+  paid_for_audio?: boolean;
+  paid_for_gallery?: boolean;
+  gallery_extra_days?: number;
+  gallery_sms_last_access_sent?: boolean;
+  gallery_sms_purge_warning_sent?: boolean;
+  gallery_purged_at?: string;
   receipt_valid?: boolean;
   receipt_created?: string;
   custom_discount?: number;
@@ -68,6 +88,12 @@ function toApi(doc: StandaloneSeatingDocument): StandaloneSeating {
     password: doc.password,
     guests: doc.guests ?? [],
     active: doc.active,
+    paid_for_audio: doc.paid_for_audio,
+    paid_for_gallery: doc.paid_for_gallery,
+    gallery_extra_days: doc.gallery_extra_days,
+    gallery_sms_last_access_sent: doc.gallery_sms_last_access_sent,
+    gallery_sms_purge_warning_sent: doc.gallery_sms_purge_warning_sent,
+    gallery_purged_at: doc.gallery_purged_at,
     receipt_valid: doc.receipt_valid,
     receipt_created: doc.receipt_created,
     custom_discount: doc.custom_discount,
@@ -264,6 +290,28 @@ export async function setStandaloneActive(
   );
 }
 
+/** Sets (or clears) the event date on an existing seating. Needed so a
+ *  seating created without a date can later enable audio/gallery, whose
+ *  windows are computed from it. Empty string clears the date. */
+export async function setStandaloneEventDate(
+  slug: string,
+  eventDate: string,
+): Promise<void> {
+  const c = await col();
+  const trimmed = eventDate.trim();
+  if (trimmed) {
+    await c.updateOne(
+      { slug },
+      { $set: { eventDate: trimmed, updatedAt: new Date() } },
+    );
+  } else {
+    await c.updateOne(
+      { slug },
+      { $unset: { eventDate: "" }, $set: { updatedAt: new Date() } },
+    );
+  }
+}
+
 /** Patches receipt-related fields on a standalone seating record.
  *  Used by the admin panel's receipt dropdown (generate/invalidate/discount). */
 export async function patchStandaloneReceipt(
@@ -285,14 +333,77 @@ export async function patchStandaloneReceipt(
   await c.updateOne({ slug }, { $set: setOps });
 }
 
-/** Cascade deletes the seating record AND any saved layout in seating_layouts
- *  plus any share-link entries pointing at it. Used when the event has
+/** Toggles paid add-on flags (audio guest book / QR photo gallery).
+ *  Mirrors the couple `paid_for_*` toggles; admin flips these after payment. */
+export async function patchStandaloneFeatures(
+  slug: string,
+  changes: { paid_for_audio?: boolean; paid_for_gallery?: boolean },
+): Promise<void> {
+  const c = await col();
+  const setOps: Record<string, unknown> = { updatedAt: new Date() };
+  if (typeof changes.paid_for_audio === "boolean")
+    setOps.paid_for_audio = changes.paid_for_audio;
+  if (typeof changes.paid_for_gallery === "boolean")
+    setOps.paid_for_gallery = changes.paid_for_gallery;
+  await c.updateOne({ slug }, { $set: setOps });
+}
+
+/** Standalone seatings with the QR photo gallery enabled — the purge cron
+ *  iterates these alongside the gallery couples. */
+export async function listGalleryStandaloneSeatings(): Promise<
+  StandaloneSeating[]
+> {
+  const c = await col();
+  const docs = await c.find({ paid_for_gallery: true }).toArray();
+  return docs.map(toApi);
+}
+
+/** Idempotency bookkeeping written by the gallery lifecycle cron. */
+export async function patchStandaloneGalleryLifecycle(
+  slug: string,
+  changes: {
+    gallery_sms_last_access_sent?: boolean;
+    gallery_sms_purge_warning_sent?: boolean;
+    gallery_purged_at?: string;
+  },
+): Promise<void> {
+  const c = await col();
+  const setOps: Record<string, unknown> = {};
+  if (typeof changes.gallery_sms_last_access_sent === "boolean")
+    setOps.gallery_sms_last_access_sent = changes.gallery_sms_last_access_sent;
+  if (typeof changes.gallery_sms_purge_warning_sent === "boolean")
+    setOps.gallery_sms_purge_warning_sent =
+      changes.gallery_sms_purge_warning_sent;
+  if (typeof changes.gallery_purged_at === "string")
+    setOps.gallery_purged_at = changes.gallery_purged_at;
+  if (Object.keys(setOps).length === 0) return;
+  await c.updateOne({ slug }, { $set: setOps });
+}
+
+/** Cascade deletes the seating record AND any saved layout in seating_layouts,
+ *  share-link entries, audio guest-book recordings (metadata + Vercel Blob),
+ *  and QR gallery photos (metadata + R2 objects). Used when the event has
  *  passed and the admin is cleaning up. */
 export async function deleteStandaloneSeating(slug: string): Promise<void> {
   const c = await col();
+
+  // Grab audio blob URLs before we wipe the metadata so we can remove the files.
+  let audioBlobUrls: string[] = [];
+  try {
+    audioBlobUrls = (await getAudioMessages(slug)).map((m) => m.blobUrl);
+  } catch {
+    // non-critical — metadata delete below still runs
+  }
+
   await c.deleteOne({ slug });
   await Promise.all([
     deleteSeatingLayout(slug),
     deleteShareLinksForProduct("seating", slug),
+    deleteAllAudioMessages(slug),
+    deleteAllGalleryPhotos(slug),
+    deleteByPrefix(`gallery/${slug}/`),
+    audioBlobUrls.length > 0
+      ? del(audioBlobUrls).catch(() => {})
+      : Promise.resolve(),
   ]);
 }

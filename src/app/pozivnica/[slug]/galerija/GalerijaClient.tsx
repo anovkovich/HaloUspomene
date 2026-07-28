@@ -16,6 +16,9 @@ interface Props {
   /** When true, render without the full-page chrome (no min-h-screen / gradient
    *  background / couple-names header) so it can be embedded as a hub tab. */
   embedded?: boolean;
+  /** API base for the gallery endpoints. Defaults to the couple namespace;
+   *  the standalone seating hub passes `/api/raspored-sedenja/${slug}`. */
+  apiBase?: string;
 }
 
 const ALLOWED_MIME = new Set([
@@ -109,8 +112,10 @@ export default function GalerijaClient({
   phase,
   initialPhotos,
   embedded = false,
+  apiBase,
 }: Props) {
   const t = useMemo(() => strings(useCyrillic), [useCyrillic]);
+  const base = apiBase ?? `/api/pozivnica/${slug}`;
 
   const [photos, setPhotos] = useState<GalleryPhoto[]>(initialPhotos);
 
@@ -201,7 +206,7 @@ export default function GalerijaClient({
       setProgress((prev) => ({ ...prev, stage: "uploading", pct: 0 }));
 
       const signRes = await fetch(
-        `/api/pozivnica/${slug}/galerija/upload/sign`,
+        `${base}/galerija/upload/sign`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -219,7 +224,7 @@ export default function GalerijaClient({
       );
 
       const confirmRes = await fetch(
-        `/api/pozivnica/${slug}/galerija/upload/confirm`,
+        `${base}/galerija/upload/confirm`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -288,7 +293,7 @@ export default function GalerijaClient({
         /* ignore */
       }
       if (prevName && prevName !== finalName && uploaderIdRef.current) {
-        fetch(`/api/pozivnica/${slug}/galerija/rename`, {
+        fetch(`${base}/galerija/rename`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

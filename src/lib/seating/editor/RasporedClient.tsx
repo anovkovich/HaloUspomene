@@ -28,6 +28,7 @@ import {
   Link2,
   Sparkles,
   Pencil,
+  LayoutDashboard,
 } from "lucide-react";
 import GuestSidebar, { guestMatchesFilter } from "./GuestSidebar";
 import MemberNamesModal from "./MemberNamesModal";
@@ -72,6 +73,9 @@ interface Props {
   /** Optional sticky CTA rendered at the top of the GuestSidebar. Used by
    *  standalone routes to surface the "Lista gostiju" link without a back button. */
   sidebarTopAction?: { label: string; href: string };
+  /** Optional secondary CTA below the top action. Standalone uses it to link
+   *  the owner portal (audio/gallery/planner). */
+  sidebarSecondaryAction?: { label: string; href: string };
   /** Welcome-PDF generator. Each consumer (wedding/birthday/standalone) supplies its own. */
   onGenerateWelcomePDF: () => void | Promise<void>;
   /** Full URL for the guest-seat-lookup page (used in QR + copy link). */
@@ -121,6 +125,7 @@ export default function RasporedClient({
   backHref,
   hideBackButton,
   sidebarTopAction,
+  sidebarSecondaryAction,
   onGenerateWelcomePDF,
   guestLookupUrl,
   hideWeddingOnlyElements,
@@ -1160,6 +1165,19 @@ export default function RasporedClient({
                   {sidebarTopAction.label}
                 </a>
               )}
+              {sidebarSecondaryAction && (
+                <a
+                  href={sidebarSecondaryAction.href}
+                  className="mx-5 mb-3 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-raleway font-semibold transition-opacity active:opacity-80 shrink-0"
+                  style={{
+                    border: "1px solid var(--theme-primary)",
+                    color: "var(--theme-primary)",
+                  }}
+                >
+                  <LayoutDashboard size={13} />
+                  {sidebarSecondaryAction.label}
+                </a>
+              )}
               {/* Search */}
               <div className="px-5 pb-3 shrink-0">
                 <div className="relative">
@@ -1262,6 +1280,7 @@ export default function RasporedClient({
           assignedCounts={assignedCounts}
           onStartOver={handleStartOver}
           topAction={sidebarTopAction}
+          secondaryAction={sidebarSecondaryAction}
           members={members}
           onEditMembers={setMemberModalGuest}
           filter={guestFilter}
@@ -1617,6 +1636,7 @@ export default function RasporedClient({
                   assignedCounts={assignedCounts}
                   onStartOver={handleStartOver}
                   topAction={sidebarTopAction}
+                  secondaryAction={sidebarSecondaryAction}
                   filter={guestFilter}
                   onFilterChange={setGuestFilter}
                   search={guestSearch}

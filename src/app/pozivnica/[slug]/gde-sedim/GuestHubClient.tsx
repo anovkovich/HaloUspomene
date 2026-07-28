@@ -35,6 +35,9 @@ interface Props {
     createdAt: string;
   }[];
   eventDate: string;
+  /** API base for the embedded gallery/audio capture clients. Defaults to the
+   *  couple namespace; the standalone hub passes `/api/raspored-sedenja/${slug}`. */
+  apiBase?: string;
 }
 
 /**
@@ -61,6 +64,7 @@ export default function GuestHubClient({
   hasAudio,
   audioRecentMessages,
   eventDate,
+  apiBase,
 }: Props) {
   const [selected, setSelected] = useState<GuestLookupEntry | null>(null);
 
@@ -191,6 +195,7 @@ export default function GuestHubClient({
             useCyrillic={useCyrillic}
             phase={galleryPhase}
             initialPhotos={galleryPhotos}
+            apiBase={apiBase}
           />
         )}
 
@@ -204,6 +209,7 @@ export default function GuestHubClient({
             useCyrillic={useCyrillic}
             useIjekavica={ijekavica}
             recentMessages={audioRecentMessages}
+            apiBase={apiBase}
           />
         )}
       </div>

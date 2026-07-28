@@ -39,6 +39,9 @@ interface Props {
   /** When true, render without full-page chrome (no min-h-screen / gradient /
    *  couple-names header) so it can be embedded as a guest-hub tab. */
   embedded?: boolean;
+  /** API base for the audio endpoint. Defaults to the couple namespace;
+   *  the standalone seating hub passes `/api/raspored-sedenja/${slug}`. */
+  apiBase?: string;
 }
 
 export default function AudioKnjigaClient({
@@ -50,7 +53,9 @@ export default function AudioKnjigaClient({
   useIjekavica = false,
   recentMessages,
   embedded = false,
+  apiBase,
 }: Props) {
+  const base = apiBase ?? `/api/pozivnica/${slug}`;
   const t = useMemo(
     () => getTranslations(useCyrillic, useIjekavica),
     [useCyrillic, useIjekavica],
@@ -207,7 +212,7 @@ export default function AudioKnjigaClient({
     formData.append("durationMs", String(durationRef.current * 1000));
 
     try {
-      const res = await fetch(`/api/pozivnica/${slug}/audio`, {
+      const res = await fetch(`${base}/audio`, {
         method: "POST",
         body: formData,
       });

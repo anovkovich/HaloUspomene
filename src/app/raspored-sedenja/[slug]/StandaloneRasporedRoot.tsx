@@ -137,6 +137,10 @@ export default function StandaloneRasporedRoot({
           label: "Uredi listu",
           href: `/raspored-sedenja/${slug}/gosti`,
         }}
+        sidebarSecondaryAction={{
+          label: "Portal (utisci / galerija)",
+          href: `/raspored-sedenja/${slug}/portal`,
+        }}
         guestLookupUrl={`https://halouspomene.rs/raspored-sedenja/${slug}/gde-sedim/`}
         hideWeddingOnlyElements
         hideDecorations

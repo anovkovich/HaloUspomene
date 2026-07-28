@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, RotateCcw, Pencil, Users } from "lucide-react";
+import { Check, X, RotateCcw, Pencil, Users, LayoutDashboard } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
 
 // Wedding category values are stored without diacritics in the DB ("Mladozenjini"),
@@ -44,6 +44,7 @@ interface Props {
   /** Optional sticky CTA at the top of the sidebar (e.g. "Lista gostiju" link
    *  for standalone routes that have no toolbar back button). */
   topAction?: { label: string; href: string };
+  secondaryAction?: { label: string; href: string };
   /** Per-party member names, keyed by RSVP id — drives the "names entered"
    *  indicator on the per-guest button. */
   members?: Record<string, string[]>;
@@ -64,6 +65,7 @@ export default function GuestSidebar({
   assignedCounts,
   onStartOver,
   topAction,
+  secondaryAction,
   members,
   onEditMembers,
   filter,
@@ -143,13 +145,26 @@ export default function GuestSidebar({
           {topAction.label}
         </a>
       )}
+      {secondaryAction && (
+        <a
+          href={secondaryAction.href}
+          className="flex items-center justify-center gap-1.5 mx-3 mt-2 px-3 py-2 rounded-lg text-xs font-raleway font-semibold transition-opacity hover:opacity-90"
+          style={{
+            border: "1px solid var(--theme-primary)",
+            color: "var(--theme-primary)",
+          }}
+        >
+          <LayoutDashboard size={12} />
+          {secondaryAction.label}
+        </a>
+      )}
 
       {/* Header stats */}
       <div
         className="px-4 py-3 border-b"
         style={{
           borderColor: "var(--theme-border-light)",
-          marginTop: topAction ? "0.75rem" : 0,
+          marginTop: topAction || secondaryAction ? "0.75rem" : 0,
         }}
       >
         <p

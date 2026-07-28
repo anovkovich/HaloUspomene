@@ -21,6 +21,11 @@ import type { GalleryPhase } from "@/lib/gallery-lifecycle";
 
 interface Props {
   slug: string;
+  /** Data actions + download proxy base. Default to the couple namespace; the
+   *  standalone owner portal passes seating-scoped equivalents. */
+  loadAction?: typeof loadGalleryAction;
+  deleteAction?: typeof deleteGalleryPhotoAction;
+  downloadBase?: string;
 }
 
 const PAGE = 12; // small batches so the grid streams in instead of loading 200 at once
@@ -45,7 +50,13 @@ function triggerDownload(blob: Blob, filename: string) {
   }, 2000);
 }
 
-export default function GalleryCard({ slug }: Props) {
+export default function GalleryCard({
+  slug,
+  loadAction = loadGalleryAction,
+  deleteAction = deleteGalleryPhotoAction,
+  downloadBase,
+}: Props) {
+  const dlBase = downloadBase ?? `/api/pozivnica/${slug}/galerija/download`;
   const [loading, setLoading] = useState(true);
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [total, setTotal] = useState(0);
@@ -60,7 +71,7 @@ export default function GalleryCard({ slug }: Props) {
   const loadingRef = useRef(false);
 
   useEffect(() => {
-    loadGalleryAction(0, PAGE).then((res) => {
+    loadAction(0, PAGE).then((res) => {
       if (res) {
         setPhotos(res.photos);
         setTotal(res.total);
@@ -69,6 +80,7 @@ export default function GalleryCard({ slug }: Props) {
       }
       setLoading(false);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const hasMore = photos.length < total;
@@ -77,7 +89,7 @@ export default function GalleryCard({ slug }: Props) {
     if (loadingRef.current || photos.length >= total) return;
     loadingRef.current = true;
     setLoadingMore(true);
-    const res = await loadGalleryAction(photos.length, PAGE);
+    const res = await loadAction(photos.length, PAGE);
     if (res) {
       setPhotos((prev) => [...prev, ...res.photos]);
       setTotal(res.total);
@@ -131,9 +143,7 @@ export default function GalleryCard({ slug }: Props) {
       for (const p of chosen) {
         try {
           // same-origin proxy (no CORS); the R2 fetch happens server-side
-          const res = await fetch(
-            `/api/pozivnica/${slug}/galerija/download?id=${p._id}`
-          );
+          const res = await fetch(`${dlBase}?id=${p._id}`);
           if (!res.ok) continue;
           const blob = await res.blob();
           i++;
@@ -151,11 +161,11 @@ export default function GalleryCard({ slug }: Props) {
     } finally {
       setZipping(false);
     }
-  }, [selected, photos, slug]);
+  }, [selected, photos, slug, dlBase]);
 
   const downloadOne = useCallback(
     async (photo: GalleryPhoto, index: number) => {
-      const proxyUrl = `/api/pozivnica/${slug}/galerija/download?id=${photo._id}`;
+      const proxyUrl = `${dlBase}?id=${photo._id}`;
       const filename = `${safeName(photo.guestName || "gost")}-${index + 1}.jpg`;
 
       // iOS can't save a web download straight to Photos — use the native share
@@ -186,12 +196,12 @@ export default function GalleryCard({ slug }: Props) {
       a.click();
       setTimeout(() => a.remove(), 2000);
     },
-    [slug]
+    [dlBase]
   );
 
   const handleDelete = useCallback(async (photo: GalleryPhoto) => {
     setDeleting(photo._id);
-    const res = await deleteGalleryPhotoAction(photo._id);
+    const res = await deleteAction(photo._id);
     if (res.success) {
       setPhotos((prev) => prev.filter((p) => p._id !== photo._id));
       setTotal((t) => Math.max(0, t - 1));
@@ -205,7 +215,7 @@ export default function GalleryCard({ slug }: Props) {
       toast.error("Greška pri brisanju");
     }
     setDeleting(null);
-  }, []);
+  }, [deleteAction]);
 
   // ── Lightbox navigation ────────────────────────────────────────────────────
   const goPrev = useCallback(

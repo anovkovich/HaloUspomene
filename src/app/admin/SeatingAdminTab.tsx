@@ -49,6 +49,7 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
   const [receiptCopiedSlug, setReceiptCopiedSlug] = useState<string | null>(
     null,
   );
+  const [dateEditSlug, setDateEditSlug] = useState<string | null>(null);
   const [shareStats, setShareStats] = useState<
     Record<string, { visit_count: number; last_visited_at?: string }>
   >({});
@@ -133,6 +134,54 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
       setSeatings((prev) =>
         prev.map((s) => (s.slug === slug ? { ...s, active: current } : s)),
       );
+    }
+  }
+
+  async function handleToggleFeature(
+    slug: string,
+    field: "paid_for_audio" | "paid_for_gallery",
+    current: boolean,
+  ) {
+    const next = !current;
+    setSeatings((prev) =>
+      prev.map((s) => (s.slug === slug ? { ...s, [field]: next } : s)),
+    );
+    const res = await fetch(`/api/admin/seatings/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [field]: next }),
+    });
+    if (!res.ok) {
+      // revert on error (e.g. 400 when no event date is set)
+      setSeatings((prev) =>
+        prev.map((s) => (s.slug === slug ? { ...s, [field]: current } : s)),
+      );
+      if (res.status === 400) {
+        alert("Postavite datum događaja pre uključivanja audio/galerije.");
+      }
+    }
+  }
+
+  async function handleSetDate(slug: string, date: string) {
+    const current = seatings.find((s) => s.slug === slug)?.eventDate;
+    setSeatings((prev) =>
+      prev.map((s) =>
+        s.slug === slug ? { ...s, eventDate: date || undefined } : s,
+      ),
+    );
+    const res = await fetch(`/api/admin/seatings/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventDate: date }),
+    });
+    if (!res.ok) {
+      setSeatings((prev) =>
+        prev.map((s) =>
+          s.slug === slug ? { ...s, eventDate: current } : s,
+        ),
+      );
+      const err = await res.json().catch(() => ({}));
+      alert(err.error ?? "Greška pri čuvanju datuma");
     }
   }
 
@@ -344,11 +393,38 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                     <Phone size={11} /> {s.ownerPhone}
                   </span>
                 )}
-                {eventDate && (
+                {dateEditSlug === s.slug ? (
                   <span className="flex items-center gap-1.5">
-                    <Calendar size={11} />{" "}
-                    {eventDate.toLocaleDateString("sr-RS")}
+                    <Calendar size={11} />
+                    <DatePicker
+                      value={s.eventDate ?? ""}
+                      onChange={async (d) => {
+                        await handleSetDate(s.slug, d);
+                        setDateEditSlug(null);
+                      }}
+                      variant="dark"
+                      accentColor="#2563eb"
+                      placeholder="Izaberite datum"
+                      showQuickActions={false}
+                    />
                   </span>
+                ) : eventDate ? (
+                  <button
+                    onClick={() => setDateEditSlug(s.slug)}
+                    className="flex items-center gap-1.5 hover:text-white/80 transition-colors cursor-pointer"
+                    title="Izmeni datum"
+                  >
+                    <Calendar size={11} />
+                    {eventDate.toLocaleDateString("sr-RS")}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setDateEditSlug(s.slug)}
+                    className="flex items-center gap-1.5 text-amber-400/80 hover:text-amber-300 transition-colors cursor-pointer"
+                    title="Dodaj datum događaja (potreban za audio/galeriju)"
+                  >
+                    <Calendar size={11} /> Dodaj datum
+                  </button>
                 )}
                 <span className="flex items-center gap-1.5">
                   <Users size={11} /> {s.guests.length} gostiju
@@ -428,6 +504,77 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                     <Eye size={10} /> {shareStats[s.slug].visit_count}×
                   </span>
                 ) : null}
+              </div>
+
+              {/* Paid add-ons — audio guest book + QR photo gallery.
+                  Both need an event date (their windows derive from it). */}
+              <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-4 flex-wrap">
+                {!s.eventDate && (
+                  <span
+                    className="text-[10px] text-amber-400/70"
+                    title="Postavite datum događaja da biste uključili ove opcije"
+                  >
+                    Datum događaja potreban za audio/galeriju
+                  </span>
+                )}
+                <div
+                  className="flex items-center gap-2"
+                  title={
+                    s.eventDate
+                      ? "Audio knjiga utisaka za goste"
+                      : "Postavite datum događaja"
+                  }
+                >
+                  <span className="text-xs text-white/40">Audio</span>
+                  <button
+                    disabled={!s.eventDate}
+                    onClick={() =>
+                      handleToggleFeature(
+                        s.slug,
+                        "paid_for_audio",
+                        !!s.paid_for_audio,
+                      )
+                    }
+                    className={`relative w-9 h-5 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${
+                      s.paid_for_audio ? "bg-green-500" : "bg-white/10"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                        s.paid_for_audio ? "translate-x-4" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div
+                  className="flex items-center gap-2"
+                  title={
+                    s.eventDate
+                      ? "QR foto galerija za goste"
+                      : "Postavite datum događaja"
+                  }
+                >
+                  <span className="text-xs text-white/40">Galerija</span>
+                  <button
+                    disabled={!s.eventDate}
+                    onClick={() =>
+                      handleToggleFeature(
+                        s.slug,
+                        "paid_for_gallery",
+                        !!s.paid_for_gallery,
+                      )
+                    }
+                    className={`relative w-9 h-5 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${
+                      s.paid_for_gallery ? "bg-green-500" : "bg-white/10"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                        s.paid_for_gallery ? "translate-x-4" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
 
               <SeatingReceiptDropdown

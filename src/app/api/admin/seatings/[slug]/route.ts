@@ -3,8 +3,10 @@ import { jwtVerify } from "jose";
 import {
   deleteStandaloneSeating,
   setStandaloneActive,
+  setStandaloneEventDate,
   getStandaloneSeating,
   patchStandaloneReceipt,
+  patchStandaloneFeatures,
 } from "@/lib/standalone-seating";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
@@ -30,6 +32,9 @@ export async function PATCH(
   const { slug } = await params;
   const body = (await req.json().catch(() => ({}))) as {
     active?: boolean;
+    eventDate?: string;
+    paid_for_audio?: boolean;
+    paid_for_gallery?: boolean;
     receipt_valid?: boolean;
     receipt_created?: string;
     custom_discount?: number;
@@ -42,6 +47,46 @@ export async function PATCH(
 
   if (typeof body.active === "boolean") {
     await setStandaloneActive(slug, body.active);
+  }
+
+  // Allow setting/changing the event date after creation (dateless seatings
+  // otherwise can't enable audio/gallery). Block clearing it while an add-on
+  // is on — that would silently close the feature.
+  if (typeof body.eventDate === "string") {
+    if (
+      !body.eventDate.trim() &&
+      (existing.paid_for_audio || existing.paid_for_gallery)
+    ) {
+      return NextResponse.json(
+        { error: "Isključite audio/galeriju pre uklanjanja datuma." },
+        { status: 400 },
+      );
+    }
+    await setStandaloneEventDate(slug, body.eventDate);
+  }
+
+  // Paid add-ons require an event date — their time windows are computed from
+  // it (audio = event day +1; gallery upload d0–d1, purge ~d6). Enabling
+  // without a date would leave the feature permanently closed.
+  const featureChanges: {
+    paid_for_audio?: boolean;
+    paid_for_gallery?: boolean;
+  } = {};
+  if (typeof body.paid_for_audio === "boolean")
+    featureChanges.paid_for_audio = body.paid_for_audio;
+  if (typeof body.paid_for_gallery === "boolean")
+    featureChanges.paid_for_gallery = body.paid_for_gallery;
+  if (Object.keys(featureChanges).length > 0) {
+    const enabling =
+      featureChanges.paid_for_audio === true ||
+      featureChanges.paid_for_gallery === true;
+    if (enabling && !existing.eventDate) {
+      return NextResponse.json(
+        { error: "Datum događaja je obavezan za audio/galeriju." },
+        { status: 400 },
+      );
+    }
+    await patchStandaloneFeatures(slug, featureChanges);
   }
 
   const receiptChanges: {

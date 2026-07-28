@@ -10,6 +10,9 @@ const EUR_RATE = 117.5;
 interface Props {
   budget: PortalBudget;
   setBudget: React.Dispatch<React.SetStateAction<PortalBudget>>;
+  /** Persist handler — defaults to the couple action; the standalone owner
+   *  portal passes a seating-scoped equivalent. */
+  onSave?: (budget: PortalBudget) => void | Promise<unknown>;
 }
 
 function formatK(value: number): string {
@@ -25,16 +28,23 @@ function toRSD(value: number, currency?: "RSD" | "EUR"): number {
   return currency === "EUR" ? value * EUR_RATE : value;
 }
 
-export default function BudgetCard({ budget, setBudget }: Props) {
+export default function BudgetCard({
+  budget,
+  setBudget,
+  onSave = saveBudgetAction,
+}: Props) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const debouncedSave = useCallback((updated: PortalBudget) => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      saveBudgetAction(updated);
-    }, 300);
-  }, []);
+  const debouncedSave = useCallback(
+    (updated: PortalBudget) => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => {
+        onSave(updated);
+      }, 300);
+    },
+    [onSave],
+  );
 
   const updateBudget = useCallback(
     (fn: (prev: PortalBudget) => PortalBudget) => {

@@ -147,7 +147,7 @@ export async function middleware(request: NextRequest) {
     "robots",
   ]);
   const seatingMatch = pathname.match(
-    /^\/raspored-sedenja\/([^/]+)(?:\/(gosti)(?:\/|$)|$|\/$)/
+    /^\/raspored-sedenja\/([^/]+)(?:\/(gosti|portal)(?:\/|$)|$|\/$)/
   );
   if (seatingMatch) {
     const slug = seatingMatch[1];
@@ -189,6 +189,8 @@ export const config = {
     "/raspored-sedenja/:slug",
     "/raspored-sedenja/:slug/gosti",
     "/raspored-sedenja/:slug/gosti/:path*",
+    "/raspored-sedenja/:slug/portal",
+    "/raspored-sedenja/:slug/portal/:path*",
     // Partner preview lock (PREVIEW_LOCKED_PATHS in src/lib/preview-lock.ts) is
     // currently empty — add a page's path here as a literal when locking one.
   ],

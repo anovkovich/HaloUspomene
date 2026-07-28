@@ -44,6 +44,17 @@ const DEMO_MESSAGES = [
 interface Props {
   slug: string;
   coupleNames: string;
+  /** Data actions default to the couple namespace; the standalone owner portal
+   *  passes seating-scoped equivalents. */
+  loadAction?: typeof loadAudioMessagesAction;
+  refreshAction?: typeof refreshAudioMessagesAction;
+  deleteAction?: typeof deleteAudioMsgAction;
+  /** Where guests record (shown in the info box). Defaults to the couple
+   *  audio-knjiga page; standalone passes its gde-sedim hub. */
+  guestRecordUrl?: { href: string; label: string };
+  /** Couple-only extras (QR flyer, USB souvenir upsell) — hidden for standalone. */
+  showFlyer?: boolean;
+  showUsbPromo?: boolean;
 }
 
 function formatDuration(ms: number) {
@@ -69,7 +80,20 @@ function formatTimestamp(iso: string) {
   });
 }
 
-export default function AudioCard({ slug, coupleNames }: Props) {
+export default function AudioCard({
+  slug,
+  coupleNames,
+  loadAction = loadAudioMessagesAction,
+  refreshAction = refreshAudioMessagesAction,
+  deleteAction = deleteAudioMsgAction,
+  guestRecordUrl,
+  showFlyer = true,
+  showUsbPromo = true,
+}: Props) {
+  const recordUrl = guestRecordUrl ?? {
+    href: `/pozivnica/${slug}/audio-knjiga`,
+    label: `halouspomene.rs/pozivnica/${slug}/audio-knjiga/`,
+  };
   const [messages, setMessages] = useState<AudioMessage[]>([]);
   const [paidForAudio, setPaidForAudio] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
@@ -83,13 +107,14 @@ export default function AudioCard({ slug, coupleNames }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    loadAudioMessagesAction().then((result) => {
+    loadAction().then((result) => {
       if (result) {
         setMessages(result.messages);
         setPaidForAudio(result.paidForAudio);
       }
       setLoading(false);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const totalDuration = useMemo(
@@ -148,10 +173,10 @@ export default function AudioCard({ slug, coupleNames }: Props) {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    const result = await refreshAudioMessagesAction();
+    const result = await refreshAction();
     if (result.success && result.messages) setMessages(result.messages);
     setRefreshing(false);
-  }, []);
+  }, [refreshAction]);
 
   const handleDelete = useCallback(
     async (msg: AudioMessage) => {
@@ -163,12 +188,12 @@ export default function AudioCard({ slug, coupleNames }: Props) {
         setPlaybackTime(0);
         setPlaybackDuration(0);
       }
-      const result = await deleteAudioMsgAction(msg._id, msg.blobUrl);
+      const result = await deleteAction(msg._id, msg.blobUrl);
       if (result.success)
         setMessages((prev) => prev.filter((m) => m._id !== msg._id));
       setDeleting(null);
     },
-    [playing],
+    [playing, deleteAction],
   );
 
   const handleMergeDownload = useCallback(async () => {
@@ -509,26 +534,30 @@ export default function AudioCard({ slug, coupleNames }: Props) {
               Gosti snimaju poruke na:
             </p>
             <Link
-              href={`/pozivnica/${slug}/audio-knjiga`}
+              href={recordUrl.href}
               target="_blank"
               className="text-xs font-mono text-[#AE343F] break-all hover:underline"
             >
-              halouspomene.rs/pozivnica/{slug}/audio-knjiga/
+              {recordUrl.label}
             </Link>
           </div>
         </div>
-        <div className="flex items-start gap-3">
-          <QrCode size={13} className="shrink-0 mt-0.5 text-[#AE343F]" />
-          <button
-            onClick={handleDownloadFlyer}
-            className="text-sm text-[#AE343F] hover:underline cursor-pointer text-left"
-          >
-            Preuzmi flyer sa QR kodom (PDF A6)
-          </button>
-        </div>
+        {showFlyer && (
+          <div className="flex items-start gap-3">
+            <QrCode size={13} className="shrink-0 mt-0.5 text-[#AE343F]" />
+            <button
+              onClick={handleDownloadFlyer}
+              className="text-sm text-[#AE343F] hover:underline cursor-pointer text-left"
+            >
+              Preuzmi flyer sa QR kodom (PDF A6)
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Promo: USB options */}
+      {/* Promo: USB options — couple upsells, hidden in the standalone portal */}
+      {showUsbPromo && (
+      <>
       <div className="mt-4 border border-[#d4af37]/35 rounded-xl overflow-hidden bg-[#F5F4DC]/40">
         <div className="px-4 py-3 border-b border-[#d4af37]/25">
           <p className="text-xs font-semibold tracking-wider uppercase text-[#d4af37]">
@@ -595,6 +624,8 @@ export default function AudioCard({ slug, coupleNames }: Props) {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
