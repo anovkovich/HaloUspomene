@@ -1141,6 +1141,14 @@ export default function AdminPage() {
         })}
       </div>
 
+      </>
+      )}
+
+      {/* Modals sit OUTSIDE the tab ternary, next to BypassLinkModal. The
+          custom-receipt list and the header buttons that open these render
+          above the tab bar and are visible on every tab, so keeping the modals
+          inside the Pozivnice branch left those controls dead everywhere else:
+          the click set state, but the modal was never mounted to react to it. */}
       {mounted && showPhoneRental && (
         <PhoneRentalModal
           onClose={() => setShowPhoneRental(false)}
@@ -1173,8 +1181,6 @@ export default function AdminPage() {
             setDeleteSlug(null);
           }}
         />
-      )}
-      </>
       )}
     </div>
   );
