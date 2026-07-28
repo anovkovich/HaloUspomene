@@ -17,7 +17,11 @@ import {
   Lock,
   QrCode,
   Download,
+  X,
+  FileImage,
+  FileText,
 } from "lucide-react";
+import { generateQrFlyerPDF } from "@/lib/qr-flyer";
 import ChecklistCard from "@/app/moje-vencanje/ChecklistCard";
 import BudgetCard from "@/app/moje-vencanje/BudgetCard";
 import AudioCard from "@/app/moje-vencanje/AudioCard";
@@ -88,6 +92,7 @@ export default function PortalClient({
   const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklist);
   const [budget, setBudget] = useState<PortalBudget>(initialBudget);
   const [active, setActive] = useState<TabKey>("pregled");
+  const [qrModal, setQrModal] = useState<"gallery" | "audio" | null>(null);
 
   // Bind the seating slug into the shared cards' action props.
   const checklistSave = (items: ChecklistItem[]) =>
@@ -110,6 +115,36 @@ export default function PortalClient({
   const hubUrl = (tab: string) =>
     `${siteBase}/raspored-sedenja/${slug}/gde-sedim/?tab=${tab}`;
 
+  // Copy + URLs for each QR option (used by the download modal + the flyer PDF).
+  const QR_META = {
+    gallery: {
+      label: "Foto galerija",
+      url: hubUrl("gallery"),
+      pngName: `qr-galerija-${slug}.png`,
+      pdfName: `flajer-galerija-${slug}.pdf`,
+      flyerTitle: "Podelite fotografije",
+      lines: [
+        "Skenirajte QR kod i dodajte",
+        "svoje fotografije sa događaja —",
+        "direktno sa telefona, bez aplikacije.",
+      ],
+      bottom: "Vaše fotografije, zajednička uspomena",
+    },
+    audio: {
+      label: "Audio utisci",
+      url: hubUrl("utisci"),
+      pngName: `qr-utisci-${slug}.png`,
+      pdfName: `flajer-utisci-${slug}.pdf`,
+      flyerTitle: "Ostavite audio poruku",
+      lines: [
+        "Skenirajte QR kod i snimite kratku",
+        "poruku ili čestitku —",
+        "direktno sa telefona, bez aplikacije.",
+      ],
+      bottom: "Vaš glas je najlepša uspomena",
+    },
+  } as const;
+
   async function downloadQR(url: string, filename: string) {
     const QRCode = (await import("qrcode")).default;
     const dataUrl = await QRCode.toDataURL(url, {
@@ -123,6 +158,18 @@ export default function PortalClient({
     document.body.appendChild(a);
     a.click();
     setTimeout(() => a.remove(), 1000);
+  }
+
+  async function downloadFlyer(key: "gallery" | "audio") {
+    const m = QR_META[key];
+    await generateQrFlyerPDF({
+      eventName,
+      url: m.url,
+      title: m.flyerTitle,
+      lines: [...m.lines],
+      bottom: m.bottom,
+      filename: m.pdfName,
+    });
   }
 
   // Bottom navigation — main sections, mirroring the standard portal (Checklista
@@ -353,9 +400,7 @@ export default function PortalClient({
                       title="QR — Foto galerija"
                       hint="Gosti dodaju fotografije skeniranjem"
                       icon={<Images size={18} />}
-                      onDownload={() =>
-                        downloadQR(hubUrl("gallery"), `qr-galerija-${slug}.png`)
-                      }
+                      onClick={() => setQrModal("gallery")}
                     />
                   )}
                   {hasAudio && (
@@ -363,9 +408,7 @@ export default function PortalClient({
                       title="QR — Audio utisci"
                       hint="Gosti ostavljaju glasovnu poruku"
                       icon={<Mic size={18} />}
-                      onDownload={() =>
-                        downloadQR(hubUrl("utisci"), `qr-utisci-${slug}.png`)
-                      }
+                      onClick={() => setQrModal("audio")}
                     />
                   )}
                 </div>
@@ -485,6 +528,99 @@ export default function PortalClient({
           })}
         </div>
       </nav>
+
+      {/* QR download modal — choose bare QR or a print-ready A6 flyer */}
+      {qrModal && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm"
+          onClick={() => setQrModal(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-2xl p-6 relative bg-white"
+          >
+            <button
+              type="button"
+              onClick={() => setQrModal(null)}
+              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5"
+              style={{ color: "rgba(35,35,35,0.5)" }}
+              aria-label="Zatvori"
+            >
+              <X size={16} />
+            </button>
+
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+              style={{ backgroundColor: "rgba(174,52,63,0.12)" }}
+            >
+              <QrCode size={20} style={{ color: "#AE343F" }} />
+            </div>
+            <h3 className="text-lg font-semibold mb-1" style={{ color: "#232323" }}>
+              QR — {QR_META[qrModal].label}
+            </h3>
+            <p
+              className="text-xs leading-relaxed mb-5"
+              style={{ color: "rgba(35,35,35,0.6)" }}
+            >
+              Kako želite da preuzmete kod za goste?
+            </p>
+
+            <div className="space-y-2.5">
+              <button
+                onClick={() => {
+                  downloadQR(QR_META[qrModal].url, QR_META[qrModal].pngName);
+                  setQrModal(null);
+                }}
+                className="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left hover:bg-[#faf9f6] transition-colors cursor-pointer"
+                style={{ borderColor: "rgba(35,35,35,0.14)" }}
+              >
+                <FileImage size={20} style={{ color: "#AE343F" }} />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: "#232323" }}>
+                    Samo QR kod (PNG)
+                  </p>
+                  <p className="text-xs" style={{ color: "rgba(35,35,35,0.55)" }}>
+                    Sliku sami ubacite u svoj dizajn
+                  </p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  downloadFlyer(qrModal);
+                  setQrModal(null);
+                }}
+                className="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left hover:bg-[#faf9f6] transition-colors cursor-pointer"
+                style={{ borderColor: "rgba(35,35,35,0.14)" }}
+              >
+                <FileText size={20} style={{ color: "#AE343F" }} />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: "#232323" }}>
+                    Gotov flajer za zahvalnicu (A6 PDF)
+                  </p>
+                  <p className="text-xs" style={{ color: "rgba(35,35,35,0.55)" }}>
+                    Dizajn sa QR kodom i uputstvom — spremno za štampu
+                  </p>
+                </div>
+              </button>
+            </div>
+
+            {hasAudio && hasGallery && (
+              <p
+                className="text-[11px] leading-relaxed mt-4 p-3 rounded-lg"
+                style={{
+                  backgroundColor: "rgba(174,52,63,0.06)",
+                  color: "rgba(35,35,35,0.65)",
+                }}
+              >
+                <strong>Napomena:</strong> imate i audio i foto — preuzmite oba
+                flajera i odštampajte ih <strong>dvostrano</strong> na jednoj A6
+                kartici (foto s jedne, audio s druge strane).
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -521,16 +657,16 @@ function QrCard({
   title,
   hint,
   icon,
-  onDownload,
+  onClick,
 }: {
   title: string;
   hint: string;
   icon: React.ReactNode;
-  onDownload: () => void;
+  onClick: () => void;
 }) {
   return (
     <button
-      onClick={onDownload}
+      onClick={onClick}
       className="text-left rounded-2xl bg-white border p-5 shadow-sm hover:bg-[#faf9f6] transition-colors cursor-pointer flex items-center gap-4"
       style={{ borderColor: "var(--theme-border)" }}
     >
