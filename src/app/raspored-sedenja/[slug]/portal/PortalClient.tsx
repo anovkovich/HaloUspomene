@@ -8,7 +8,6 @@ import {
   Wallet,
   Mic,
   Images,
-  Armchair,
   ChevronLeft,
   UtensilsCrossed,
   Users,
@@ -16,10 +15,10 @@ import {
   ChevronRight,
   Lock,
   QrCode,
-  Download,
   X,
   FileImage,
   FileText,
+  Heart,
 } from "lucide-react";
 import { generateQrFlyerPDF } from "@/lib/qr-flyer";
 import ChecklistCard from "@/app/moje-vencanje/ChecklistCard";
@@ -72,10 +71,6 @@ function daysUntil(eventDate?: string): number | null {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return Math.round((ev.getTime() - today.getTime()) / 86_400_000);
-}
-
-function formatMoney(n: number): string {
-  return n.toLocaleString("sr-RS");
 }
 
 export default function PortalClient({
@@ -219,6 +214,9 @@ export default function PortalClient({
     budget.totalBudget ||
     0;
   const spentTotal = budget.categories.reduce((s, c) => s + (c.spent || 0), 0);
+  const budgetPct = plannedTotal
+    ? Math.min(100, Math.round((spentTotal / plannedTotal) * 100))
+    : 0;
 
   return (
     <div
@@ -262,154 +260,217 @@ export default function PortalClient({
 
         {/* Tab content */}
         {active === "pregled" && (
-          <div className="space-y-4">
-            {/* Countdown / key stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <StatTile
-                label="Do događaja"
-                value={
-                  days === null
-                    ? "—"
-                    : days > 0
-                      ? `${days} ${days === 1 ? "dan" : "dana"}`
-                      : days === 0
-                        ? "Danas!"
-                        : "Prošao"
-                }
-                icon={<LayoutDashboard size={18} />}
-              />
-              <StatTile
-                label="Datum"
-                value={
-                  eventDate
-                    ? new Date(eventDate).toLocaleDateString("sr-RS")
-                    : "—"
-                }
-                icon={<LayoutDashboard size={18} />}
-              />
-              <StatTile
-                label="Gostiju (sa pratiocima)"
-                value={String(guestCount)}
-                icon={<Users size={18} />}
-              />
-              <StatTile
-                label="Raspoređeno mesta"
-                value={
-                  seatingStats
-                    ? `${seatingStats.assignedSeats}/${seatingStats.totalSeats} (${fillPct}%)`
-                    : "—"
-                }
-                icon={<Armchair size={18} />}
-              />
-            </div>
-
-            {/* Checklista + Budžet summary cards (tap to open) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button
-                onClick={() => setActive("planer")}
-                className="text-left rounded-2xl bg-white border p-5 shadow-sm hover:bg-[#faf9f6] transition-colors cursor-pointer"
-                style={{ borderColor: "var(--theme-border)" }}
-              >
+          <div className="space-y-5">
+            {/* Hero — countdown (cream/gold, the page's emotional anchor) */}
+            <div
+              className="rounded-3xl px-6 py-8 text-center"
+              style={{
+                background:
+                  "linear-gradient(160deg, #FDFCF2 0%, var(--theme-surface) 100%)",
+                border: "1px solid rgba(212,175,55,0.35)",
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-4">
                 <div
-                  className="flex items-center gap-2 mb-3 text-xs uppercase tracking-wider"
+                  className="h-px w-10"
+                  style={{ backgroundColor: "rgba(212,175,55,0.5)" }}
+                />
+                <Heart size={13} fill="#d4af37" style={{ color: "#d4af37" }} />
+                <div
+                  className="h-px w-10"
+                  style={{ backgroundColor: "rgba(212,175,55,0.5)" }}
+                />
+              </div>
+
+              {days === null ? (
+                <p
+                  className="font-serif text-2xl"
                   style={{ color: "var(--theme-text-light)" }}
                 >
-                  <ListChecks size={16} style={{ color: "var(--theme-primary)" }} />
-                  Checklista
-                </div>
-                <div className="flex items-end justify-between mb-2">
-                  <p className="font-serif text-2xl">
-                    {checkDone}
-                    <span style={{ color: "var(--theme-text-light)" }}>
-                      /{checkTotal}
-                    </span>
-                  </p>
-                  <span
-                    className="text-sm font-semibold"
-                    style={{ color: "var(--theme-primary)" }}
-                  >
-                    {checkPct}%
-                  </span>
-                </div>
-                <div className="h-1.5 rounded-full bg-black/8 overflow-hidden">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${checkPct}%`,
-                      backgroundColor: "var(--theme-primary)",
-                    }}
-                  />
-                </div>
-              </button>
-
-              <button
-                onClick={() => setActive("budzet")}
-                className="text-left rounded-2xl bg-white border p-5 shadow-sm hover:bg-[#faf9f6] transition-colors cursor-pointer"
-                style={{ borderColor: "var(--theme-border)" }}
-              >
-                <div
-                  className="flex items-center gap-2 mb-3 text-xs uppercase tracking-wider"
-                  style={{ color: "var(--theme-text-light)" }}
-                >
-                  <Wallet size={16} style={{ color: "var(--theme-primary)" }} />
-                  Budžet
-                </div>
-                {plannedTotal > 0 || spentTotal > 0 ? (
-                  <>
-                    <p className="font-serif text-2xl mb-1">
-                      {formatMoney(spentTotal)}
-                      <span
-                        className="text-base"
-                        style={{ color: "var(--theme-text-light)" }}
-                      >
-                        {" "}
-                        / {formatMoney(plannedTotal)} RSD
-                      </span>
-                    </p>
-                    <div className="h-1.5 rounded-full bg-black/8 overflow-hidden">
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${plannedTotal ? Math.min(100, Math.round((spentTotal / plannedTotal) * 100)) : 0}%`,
-                          backgroundColor: "var(--theme-primary)",
-                        }}
-                      />
-                    </div>
-                  </>
-                ) : (
+                  Datum događaja nije postavljen
+                </p>
+              ) : days > 0 ? (
+                <>
                   <p
-                    className="font-serif text-2xl"
+                    className="font-raleway text-[11px] uppercase tracking-[0.18em] mb-1"
                     style={{ color: "var(--theme-text-light)" }}
                   >
-                    —
+                    Do događaja
                   </p>
-                )}
-              </button>
-            </div>
-
-            {/* QR kodovi za štampu na zahvalnicama — vode direktno na tab */}
-            {(hasGallery || hasAudio) && (
-              <div>
+                  <p
+                    className="font-serif leading-none"
+                    style={{ fontSize: 60, fontWeight: 600, color: "var(--theme-text)" }}
+                  >
+                    {days}
+                  </p>
+                  <p
+                    className="font-serif text-base"
+                    style={{ color: "var(--theme-text-light)" }}
+                  >
+                    {days === 1 ? "dan" : "dana"}
+                  </p>
+                </>
+              ) : days === 0 ? (
                 <p
-                  className="text-xs uppercase tracking-wider mb-2"
+                  className="font-script text-4xl"
+                  style={{ color: "var(--theme-primary)" }}
+                >
+                  Srećno slavlje!
+                </p>
+              ) : (
+                <p
+                  className="font-serif text-2xl"
                   style={{ color: "var(--theme-text-light)" }}
                 >
-                  QR kodovi za zahvalnice
+                  Događaj je prošao
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              )}
+
+              {eventDate && (
+                <p
+                  className="font-raleway text-xs uppercase tracking-[0.12em] mt-3"
+                  style={{ color: "#b9962f" }}
+                >
+                  {new Date(eventDate)
+                    .toLocaleDateString("sr-RS", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                    .toUpperCase()}
+                </p>
+              )}
+            </div>
+
+            {/* Brojke — one split white card */}
+            <div
+              className="rounded-2xl bg-white border grid grid-cols-2 overflow-hidden"
+              style={{
+                borderColor: "var(--theme-border)",
+                boxShadow: "0 1px 3px rgba(35,35,35,0.06)",
+              }}
+            >
+              <div className="py-4 px-3 text-center">
+                <p
+                  className="font-serif text-3xl leading-none"
+                  style={{ color: "var(--theme-text)" }}
+                >
+                  {guestCount}
+                </p>
+                <p
+                  className="font-raleway text-[10px] uppercase tracking-wider mt-1.5"
+                  style={{ color: "var(--theme-text-light)" }}
+                >
+                  Gostiju · sa pratiocima
+                </p>
+              </div>
+              <div
+                className="py-4 px-3 text-center"
+                style={{ borderLeft: "1px solid rgba(35,35,35,0.08)" }}
+              >
+                <p
+                  className="font-serif text-3xl leading-none"
+                  style={{ color: "var(--theme-text)" }}
+                >
+                  {seatingStats ? (
+                    <>
+                      {seatingStats.assignedSeats}
+                      <span style={{ color: "var(--theme-text-light)" }}>
+                        /{seatingStats.totalSeats}
+                      </span>
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </p>
+                {seatingStats && seatingStats.totalSeats > 0 && (
+                  <div
+                    className="h-1 rounded-full mx-auto mt-2 overflow-hidden"
+                    style={{ width: 64, backgroundColor: "rgba(35,35,35,0.08)" }}
+                  >
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${fillPct}%`,
+                        backgroundColor: "var(--theme-primary)",
+                      }}
+                    />
+                  </div>
+                )}
+                <p
+                  className="font-raleway text-[10px] uppercase tracking-wider mt-1.5"
+                  style={{ color: "var(--theme-text-light)" }}
+                >
+                  Raspoređena mesta
+                </p>
+              </div>
+            </div>
+
+            {/* Planiranje */}
+            <div>
+              <SectionHeader title="Planiranje" />
+              <div className="grid grid-cols-2 gap-3">
+                <PlanCard
+                  title="Checklista"
+                  icon={<ListChecks size={16} />}
+                  fraction={`${checkDone}/${checkTotal}`}
+                  pct={checkPct}
+                  barColor="var(--theme-primary)"
+                  onClick={() => setActive("planer")}
+                />
+                <PlanCard
+                  title="Budžet"
+                  icon={<Wallet size={16} />}
+                  fraction={`${formatCompact(spentTotal)}/${formatCompact(plannedTotal)}`}
+                  pct={budgetPct}
+                  barColor="#d4af37"
+                  empty={plannedTotal === 0 && spentTotal === 0}
+                  onClick={() => setActive("budzet")}
+                />
+              </div>
+            </div>
+
+            {/* Zahvalnice — distinct burgundy band with print-style cards */}
+            {(hasGallery || hasAudio) && (
+              <div
+                className="rounded-3xl px-4 py-5 relative overflow-hidden"
+                style={{ backgroundColor: "var(--theme-primary)" }}
+              >
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 20% 0%, rgba(255,255,255,0.10), transparent 60%)",
+                  }}
+                />
+                <div className="relative text-center mb-4">
+                  <p
+                    className="font-script text-3xl leading-tight"
+                    style={{ color: "var(--theme-surface)" }}
+                  >
+                    Zahvalnice
+                  </p>
+                  <p
+                    className="font-raleway text-[11px] mt-0.5"
+                    style={{ color: "rgba(245,244,220,0.72)" }}
+                  >
+                    QR kodovi za vaše stolove — spremni za štampu
+                  </p>
+                </div>
+                <div
+                  className={`relative grid gap-2.5 ${
+                    hasGallery && hasAudio ? "grid-cols-2" : "grid-cols-1"
+                  }`}
+                >
                   {hasGallery && (
-                    <QrCard
-                      title="QR — Foto galerija"
-                      hint="Gosti dodaju fotografije skeniranjem"
-                      icon={<Images size={18} />}
+                    <PrintCard
+                      label="Foto galerija"
                       onClick={() => setQrModal("gallery")}
                     />
                   )}
                   {hasAudio && (
-                    <QrCard
-                      title="QR — Audio utisci"
-                      hint="Gosti ostavljaju glasovnu poruku"
-                      icon={<Mic size={18} />}
+                    <PrintCard
+                      label="Audio utisci"
                       onClick={() => setQrModal("audio")}
                     />
                   )}
@@ -417,17 +478,30 @@ export default function PortalClient({
               </div>
             )}
 
-            {/* Guest-facing page link */}
-            <Link
+            {/* Stranica za goste — quiet utility row */}
+            <a
               href={`/raspored-sedenja/${slug}/gde-sedim`}
               target="_blank"
-              className="inline-flex items-center gap-2 text-sm font-medium hover:underline"
-              style={{ color: "var(--theme-primary)" }}
+              rel="noopener"
+              className="flex items-center justify-between rounded-2xl bg-white px-4 py-3.5 transition-colors hover:bg-[#faf9f6]"
+              style={{ border: "1px solid rgba(174,52,63,0.3)" }}
             >
-              <Armchair size={15} />
-              Otvori stranicu za goste (Gde sedim / Utisci / Galerija)
-              <ChevronRight size={14} />
-            </Link>
+              <div>
+                <p
+                  className="text-sm font-semibold"
+                  style={{ color: "var(--theme-text)" }}
+                >
+                  Stranica za goste
+                </p>
+                <p
+                  className="text-[11px]"
+                  style={{ color: "var(--theme-text-light)" }}
+                >
+                  Gde sedim · Utisci · Galerija
+                </p>
+              </div>
+              <ChevronRight size={18} style={{ color: "var(--theme-primary)" }} />
+            </a>
           </div>
         )}
 
@@ -655,51 +729,142 @@ function Pill({
   );
 }
 
-function QrCard({
+function formatCompact(n: number): string {
+  if (n >= 1000) {
+    const k = n / 1000;
+    return `${k >= 10 ? Math.round(k) : k.toFixed(1)}k`;
+  }
+  return String(Math.round(n));
+}
+
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-2.5">
+      <p
+        className="font-raleway text-[11px] uppercase tracking-[0.15em] shrink-0"
+        style={{ color: "var(--theme-text-light)" }}
+      >
+        {title}
+      </p>
+      <div
+        className="h-px flex-1"
+        style={{ backgroundColor: "var(--theme-border)" }}
+      />
+    </div>
+  );
+}
+
+function PlanCard({
   title,
-  hint,
   icon,
+  fraction,
+  pct,
+  barColor,
+  empty,
   onClick,
 }: {
   title: string;
-  hint: string;
   icon: React.ReactNode;
+  fraction: string;
+  pct: number;
+  barColor: string;
+  empty?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className="text-left rounded-2xl bg-white border p-5 shadow-sm hover:bg-[#faf9f6] transition-colors cursor-pointer flex items-center gap-4"
+      className="relative text-left rounded-2xl bg-white border p-4 shadow-sm hover:bg-[#faf9f6] transition-colors cursor-pointer"
       style={{ borderColor: "var(--theme-border)" }}
     >
+      <ChevronRight
+        size={15}
+        className="absolute top-3 right-3"
+        style={{ color: "var(--theme-text-light)" }}
+      />
       <div
-        className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-        style={{ backgroundColor: "var(--theme-primary-muted, rgba(174,52,63,0.12))" }}
+        className="w-8 h-8 rounded-lg flex items-center justify-center mb-2"
+        style={{ backgroundColor: "var(--theme-surface)" }}
       >
         <span style={{ color: "var(--theme-primary)" }}>{icon}</span>
       </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5">
-          <QrCode size={14} style={{ color: "var(--theme-primary)" }} />
-          <p
-            className="text-sm font-semibold truncate"
-            style={{ color: "var(--theme-text)" }}
-          >
-            {title}
-          </p>
-        </div>
+      <p
+        className="text-[13px] font-semibold"
+        style={{ color: "var(--theme-text)" }}
+      >
+        {title}
+      </p>
+      {empty ? (
         <p
-          className="text-xs mt-0.5"
+          className="font-serif text-xl mt-0.5"
           style={{ color: "var(--theme-text-light)" }}
         >
-          {hint}
+          —
+        </p>
+      ) : (
+        <>
+          <div className="flex items-baseline justify-between mt-0.5">
+            <p
+              className="font-serif text-xl leading-none"
+              style={{ color: "var(--theme-text)" }}
+            >
+              {fraction}
+            </p>
+            <span
+              className="text-[11px]"
+              style={{ color: "var(--theme-text-light)" }}
+            >
+              {pct}%
+            </span>
+          </div>
+          <div
+            className="h-1 rounded-full mt-1.5 overflow-hidden"
+            style={{ backgroundColor: "rgba(35,35,35,0.08)" }}
+          >
+            <div
+              className="h-full rounded-full"
+              style={{ width: `${pct}%`, backgroundColor: barColor }}
+            />
+          </div>
+        </>
+      )}
+    </button>
+  );
+}
+
+function PrintCard({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full rounded-xl p-1.5 cursor-pointer"
+      style={{ backgroundColor: "var(--theme-surface)" }}
+    >
+      <div
+        className="rounded-lg px-3 py-4 flex flex-col items-center text-center"
+        style={{ border: "1.5px dashed rgba(174,52,63,0.35)" }}
+      >
+        <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mb-2">
+          <QrCode size={20} style={{ color: "#232323" }} />
+        </div>
+        <p
+          className="font-serif text-[15px] font-semibold"
+          style={{ color: "#232323" }}
+        >
+          {label}
+        </p>
+        <p
+          className="font-raleway text-[9px] uppercase tracking-[0.1em] mt-0.5"
+          style={{ color: "#b9962f" }}
+        >
+          PNG · A6 PDF
         </p>
       </div>
-      <Download
-        size={16}
-        className="shrink-0"
-        style={{ color: "var(--theme-text-light)" }}
-      />
     </button>
   );
 }
@@ -733,30 +898,3 @@ function LockedTab({ title, message }: { title: string; message: string }) {
   );
 }
 
-function StatTile({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div
-      className="rounded-2xl bg-white border p-5 shadow-sm"
-      style={{ borderColor: "var(--theme-border)" }}
-    >
-      <div
-        className="flex items-center gap-2 mb-2 text-xs uppercase tracking-wider"
-        style={{ color: "var(--theme-text-light)" }}
-      >
-        <span style={{ color: "var(--theme-primary)" }}>{icon}</span>
-        {label}
-      </div>
-      <p className="font-serif text-2xl" style={{ color: "var(--theme-text)" }}>
-        {value}
-      </p>
-    </div>
-  );
-}
