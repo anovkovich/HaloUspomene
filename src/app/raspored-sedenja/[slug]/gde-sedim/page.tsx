@@ -129,8 +129,13 @@ export default async function StandaloneGdeSedimPage({ params }: PageProps) {
   // add-ons require an event date, so its presence is implied here.
   const hasGallery = !!(data.paid_for_gallery && data.eventDate);
   const hasAudio = !!(data.paid_for_audio && data.eventDate);
+  const hasMeni = !!(
+    data.meni &&
+    ((data.meni.food && data.meni.food.length > 0) ||
+      (data.meni.drinks && data.meni.drinks.length > 0))
+  );
 
-  if (hasGallery || hasAudio) {
+  if (hasGallery || hasAudio || hasMeni) {
     const phase = data.eventDate
       ? galleryPhase(data.eventDate, data.gallery_extra_days ?? 0)
       : "unknown";
@@ -178,8 +183,8 @@ export default async function StandaloneGdeSedimPage({ params }: PageProps) {
           hasGallery={hasGallery}
           galleryPhase={phase}
           galleryPhotos={galleryPhotos}
-          hasMeni={false}
-          meni={null}
+          hasMeni={hasMeni}
+          meni={data.meni ?? null}
           hasAudio={hasAudio}
           audioRecentMessages={audioRecentMessages}
           eventDate={data.eventDate ?? ""}

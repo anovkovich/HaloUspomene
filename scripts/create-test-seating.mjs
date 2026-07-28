@@ -34,6 +34,19 @@ const guests = [
   { id: "g4", name: "Ana Anić", guestCount: 1, category: "" },
 ];
 
+// Sample menu so the "Meni" tab shows up in both the guest hub and the portal.
+const meni = {
+  food: [
+    { id: "mf1", kategorija: "predjelo", naziv: "Dalmatinski pršut i sir", opis: "Masline, domaći hleb" },
+    { id: "mf2", kategorija: "glavno", naziv: "Punjena teletina", opis: "Mladi krompir, sezonsko povrće" },
+    { id: "mf3", kategorija: "desert", naziv: "Torta", opis: "" },
+  ],
+  drinks: [
+    { id: "md1", kategorija: "alkoholno", naziv: "Vranac", opis: "Crveno vino" },
+    { id: "md2", kategorija: "bezalkoholno", naziv: "Prirodni sokovi", opis: "" },
+  ],
+};
+
 // Two circle tables of 8; assign the guests to the first seats so "Gde sedim"
 // and the portal fill-stats show real numbers.
 function circle(id, label, x, assigned) {
@@ -75,6 +88,7 @@ try {
         eventDate: today,
         password: PIN,
         guests,
+        meni,
         active: true,
         paid_for_audio: true,
         paid_for_gallery: true,

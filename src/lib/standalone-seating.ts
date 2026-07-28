@@ -6,6 +6,7 @@ import { deleteShareLinksForProduct } from "./share-links";
 import { getAudioMessages, deleteAllAudioMessages } from "./audio";
 import { deleteAllGalleryPhotos } from "./gallery";
 import { deleteByPrefix } from "./r2";
+import type { MeniData } from "@/app/pozivnica/[slug]/types";
 
 export interface StandaloneGuest {
   id: string;
@@ -36,6 +37,9 @@ export interface StandaloneSeating {
   gallery_sms_last_access_sent?: boolean;
   gallery_sms_purge_warning_sent?: boolean;
   gallery_purged_at?: string;
+  /** Free value-add menu (food/drinks) the owner fills in the portal; shown in
+   *  the guest hub's Meni tab. No admin toggle — presence of items enables it. */
+  meni?: MeniData;
   /** Receipt fields — admin generates a /racun?d=... link to share with the
    *  client. `receipt_valid` gates the link; setting it false invalidates
    *  shared URLs (e.g. after payment is completed). */
@@ -63,6 +67,7 @@ interface StandaloneSeatingDocument {
   gallery_sms_last_access_sent?: boolean;
   gallery_sms_purge_warning_sent?: boolean;
   gallery_purged_at?: string;
+  meni?: MeniData;
   receipt_valid?: boolean;
   receipt_created?: string;
   custom_discount?: number;
@@ -94,6 +99,7 @@ function toApi(doc: StandaloneSeatingDocument): StandaloneSeating {
     gallery_sms_last_access_sent: doc.gallery_sms_last_access_sent,
     gallery_sms_purge_warning_sent: doc.gallery_sms_purge_warning_sent,
     gallery_purged_at: doc.gallery_purged_at,
+    meni: doc.meni,
     receipt_valid: doc.receipt_valid,
     receipt_created: doc.receipt_created,
     custom_discount: doc.custom_discount,
@@ -346,6 +352,18 @@ export async function patchStandaloneFeatures(
   if (typeof changes.paid_for_gallery === "boolean")
     setOps.paid_for_gallery = changes.paid_for_gallery;
   await c.updateOne({ slug }, { $set: setOps });
+}
+
+/** Sets the free value-add menu (food/drinks) shown in the guest hub. */
+export async function setStandaloneMeni(
+  slug: string,
+  meni: MeniData,
+): Promise<void> {
+  const c = await col();
+  await c.updateOne(
+    { slug },
+    { $set: { meni, updatedAt: new Date() } },
+  );
 }
 
 /** Standalone seatings with the QR photo gallery enabled — the purge cron

@@ -13,6 +13,13 @@ import {
 import { loadMeniAction, saveMeniAction } from "./actions";
 import type { MeniData, MeniItem } from "@/app/pozivnica/[slug]/types";
 
+interface MeniCardProps {
+  /** Data actions default to the couple namespace; the standalone owner portal
+   *  passes seating-scoped equivalents. */
+  loadAction?: typeof loadMeniAction;
+  saveAction?: typeof saveMeniAction;
+}
+
 const FOOD_CATS = [
   { v: "predjelo", l: "Predjelo" },
   { v: "glavno", l: "Glavno jelo" },
@@ -119,7 +126,10 @@ function Section({
   );
 }
 
-export default function MeniCard() {
+export default function MeniCard({
+  loadAction = loadMeniAction,
+  saveAction = saveMeniAction,
+}: MeniCardProps = {}) {
   const [food, setFood] = useState<MeniItem[]>([]);
   const [drinks, setDrinks] = useState<MeniItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,11 +137,12 @@ export default function MeniCard() {
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
-    loadMeniAction().then((m) => {
+    loadAction().then((m) => {
       setFood(m?.food ?? []);
       setDrinks(m?.drinks ?? []);
       setLoading(false);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const setListFor = (which: Which) => (which === "food" ? setFood : setDrinks);
@@ -167,7 +178,7 @@ export default function MeniCard() {
       ...(cleanFood.length ? { food: cleanFood } : {}),
       ...(cleanDrinks.length ? { drinks: cleanDrinks } : {}),
     };
-    const res = await saveMeniAction(payload);
+    const res = await saveAction(payload);
     setSaving(false);
     if (res && "ok" in res && res.ok) {
       setFood(cleanFood);

@@ -10,16 +10,20 @@ import {
   Images,
   Armchair,
   ChevronLeft,
+  UtensilsCrossed,
+  ChevronRight,
 } from "lucide-react";
 import ChecklistCard from "@/app/moje-vencanje/ChecklistCard";
 import BudgetCard from "@/app/moje-vencanje/BudgetCard";
 import AudioCard from "@/app/moje-vencanje/AudioCard";
 import GalleryCard from "@/app/moje-vencanje/GalleryCard";
+import MeniCard from "@/app/moje-vencanje/MeniCard";
 import type { ChecklistItem, PortalBudget } from "@/app/moje-vencanje/types";
 import {
-  loadPortalDataAction,
   saveChecklistAction,
   saveBudgetAction,
+  loadMeniAction,
+  saveMeniAction,
   loadAudioMessagesAction,
   refreshAudioMessagesAction,
   deleteAudioMsgAction,
@@ -27,7 +31,7 @@ import {
   deleteGalleryPhotoAction,
 } from "./actions";
 
-type TabKey = "pregled" | "planer" | "budzet" | "utisci" | "galerija";
+type TabKey = "pregled" | "planer" | "budzet" | "meni" | "utisci" | "galerija";
 
 // HALO brand palette — the portal cards read these hard-coded, but the shell
 // uses the tokens so the tab bar matches the guest hub.
@@ -87,11 +91,15 @@ export default function PortalClient({
   const galleryLoad = (skip = 0, limit = 60) =>
     loadGalleryAction(slug, skip, limit);
   const galleryDelete = (id: string) => deleteGalleryPhotoAction(slug, id);
+  const meniLoad = () => loadMeniAction(slug);
+  const meniSave = (m: Parameters<typeof saveMeniAction>[1]) =>
+    saveMeniAction(slug, m);
 
   const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
     { key: "pregled", label: "Pregled", icon: <LayoutDashboard size={20} /> },
     { key: "planer", label: "Planer", icon: <ListChecks size={20} /> },
     { key: "budzet", label: "Budžet", icon: <Wallet size={20} /> },
+    { key: "meni", label: "Meni", icon: <UtensilsCrossed size={20} /> },
   ];
   if (hasAudio)
     tabs.push({ key: "utisci", label: "Utisci", icon: <Mic size={20} /> });
@@ -130,7 +138,26 @@ export default function PortalClient({
 
         {/* Tab content */}
         {active === "pregled" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <>
+            {/* Quick links — like the standard portal overview */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <ShortcutTile
+                label="Planer"
+                icon={<ListChecks size={18} />}
+                onClick={() => setActive("planer")}
+              />
+              <ShortcutTile
+                label="Budžet"
+                icon={<Wallet size={18} />}
+                onClick={() => setActive("budzet")}
+              />
+              <ShortcutTile
+                label="Meni"
+                icon={<UtensilsCrossed size={18} />}
+                onClick={() => setActive("meni")}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <StatTile
               label="Do događaja"
               value={
@@ -178,7 +205,8 @@ export default function PortalClient({
                 Otvori stranicu za goste (Gde sedim / Utisci / Galerija)
               </Link>
             </div>
-          </div>
+            </div>
+          </>
         )}
 
         {active === "planer" && (
@@ -191,6 +219,10 @@ export default function PortalClient({
 
         {active === "budzet" && (
           <BudgetCard budget={budget} setBudget={setBudget} onSave={budgetSave} />
+        )}
+
+        {active === "meni" && (
+          <MeniCard loadAction={meniLoad} saveAction={meniSave} />
         )}
 
         {active === "utisci" && hasAudio && (
@@ -250,6 +282,36 @@ export default function PortalClient({
         </div>
       </nav>
     </div>
+  );
+}
+
+function ShortcutTile({
+  label,
+  icon,
+  onClick,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white border p-4 shadow-sm transition-colors hover:bg-[#faf9f6] cursor-pointer"
+      style={{ borderColor: "var(--theme-border)" }}
+    >
+      <span style={{ color: "var(--theme-primary)" }}>{icon}</span>
+      <span
+        className="text-xs font-medium font-raleway"
+        style={{ color: "var(--theme-text)" }}
+      >
+        {label}
+      </span>
+      <ChevronRight
+        size={13}
+        style={{ color: "var(--theme-text-light)" }}
+      />
+    </button>
   );
 }
 

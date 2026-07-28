@@ -26,8 +26,12 @@ import {
   canCoupleAccess,
   type GalleryPhase,
 } from "@/lib/gallery-lifecycle";
-import { getStandaloneSeating } from "@/lib/standalone-seating";
+import {
+  getStandaloneSeating,
+  setStandaloneMeni,
+} from "@/lib/standalone-seating";
 import type { ChecklistItem, PortalBudget } from "@/app/moje-vencanje/types";
+import type { MeniData } from "@/app/pozivnica/[slug]/types";
 
 /**
  * Seating-scoped portal actions. Each verifies the caller holds the
@@ -71,6 +75,20 @@ export async function saveChecklistAction(
 export async function saveBudgetAction(slug: string, budget: PortalBudget) {
   if (!(await isOwner(slug))) return { error: "Niste prijavljeni" };
   await dbSaveBudget(slug, budget);
+  return { ok: true };
+}
+
+/* ── Meni (free value-add shown in the guest hub) ───────────── */
+
+export async function loadMeniAction(slug: string): Promise<MeniData | null> {
+  if (!(await isOwner(slug))) return null;
+  const seating = await getStandaloneSeating(slug);
+  return seating?.meni ?? null;
+}
+
+export async function saveMeniAction(slug: string, meni: MeniData) {
+  if (!(await isOwner(slug))) return { error: "Niste prijavljeni" };
+  await setStandaloneMeni(slug, meni);
   return { ok: true };
 }
 
