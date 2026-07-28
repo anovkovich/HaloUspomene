@@ -373,8 +373,8 @@ export default function OverviewCard({
         <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-56 w-[28rem] max-w-full rounded-full bg-[#d4af37]/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-28 left-1/2 -translate-x-1/2 h-48 w-[24rem] max-w-full rounded-full bg-[#AE343F]/[0.06] blur-3xl" />
 
-        <div className="relative px-6 py-9 sm:py-11">
-          <div className="flex items-center justify-center gap-3 mb-5">
+        <div className="relative px-6 py-6 sm:py-7">
+          <div className="flex items-center justify-center gap-3 mb-4">
             <span className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent to-[#d4af37]/70" />
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#232323]/60 flex items-center gap-2">
               <Heart size={11} className="text-[#AE343F] fill-[#AE343F]/20" />
@@ -386,13 +386,13 @@ export default function OverviewCard({
 
           {hasValidDate ? (
             <>
-              <p className="font-serif text-7xl sm:text-8xl font-semibold text-[#AE343F] leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(174,52,63,0.12)]">
+              <p className="font-serif text-6xl sm:text-7xl font-semibold text-[#AE343F] leading-none tracking-tight drop-shadow-[0_2px_8px_rgba(174,52,63,0.12)]">
                 {days}
               </p>
-              <p className="mt-3 font-serif text-xl text-[#232323]/80 italic">
+              <p className="mt-1.5 font-serif text-lg text-[#232323]/80 italic">
                 {days === 1 ? "dan" : "dana"}
               </p>
-              <div className="mt-4 flex items-center justify-center gap-2.5">
+              <div className="mt-3 flex items-center justify-center gap-2.5">
                 <span className="h-1 w-1 rounded-full bg-[#d4af37]" />
                 <p className="text-sm font-medium uppercase tracking-[0.14em] text-[#232323]/70">
                   {new Date(coupleInfo.eventDate).toLocaleDateString("sr-Latn-RS", {
@@ -406,11 +406,11 @@ export default function OverviewCard({
             </>
           ) : (
             <>
-              <p className="font-serif text-7xl sm:text-8xl font-semibold text-[#232323]/30 leading-none tracking-tight">
+              <p className="font-serif text-6xl sm:text-7xl font-semibold text-[#232323]/30 leading-none tracking-tight">
                 XX
               </p>
-              <p className="mt-3 font-serif text-xl text-[#232323]/50 italic">dana</p>
-              <div className="mt-4 flex items-center justify-center gap-2.5">
+              <p className="mt-1.5 font-serif text-lg text-[#232323]/50 italic">dana</p>
+              <div className="mt-3 flex items-center justify-center gap-2.5">
                 <span className="h-1 w-1 rounded-full bg-[#d4af37]/50" />
                 <p className="text-sm font-medium uppercase tracking-[0.14em] text-[#232323]/45">
                   XX. XX. XXXX.
@@ -421,7 +421,7 @@ export default function OverviewCard({
           )}
 
           {!coupleInfo.draft && (
-            <div className="mt-6 flex justify-center">
+            <div className="mt-5 flex justify-center">
               <button
                 onClick={handleCopyLink}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium bg-white/70 border border-[#232323]/12 text-[#232323]/80 hover:border-[#AE343F]/40 hover:text-[#AE343F] transition-colors cursor-pointer"
@@ -711,12 +711,6 @@ export default function OverviewCard({
             />
             <div className="grid grid-cols-2 gap-2.5">
               <PrintCard
-                title="PDF pozivnica"
-                sub="Verzija za štampu ili slanje."
-                formats={["PDF"]}
-                onClick={handleDownloadPDF}
-              />
-              <PrintCard
                 title="QR — Gde sedim"
                 sub="Gosti pronalaze svoje mesto."
                 formats={["PNG", "PDF A6"]}
@@ -727,6 +721,12 @@ export default function OverviewCard({
                     ? setPrintSheet("gdesedim")
                     : toast("Raspored sedenja nije aktiviran")
                 }
+              />
+              <PrintCard
+                title="PDF pozivnica"
+                sub="Verzija za štampu ili slanje."
+                formats={["PDF"]}
+                onClick={handleDownloadPDF}
               />
               <PrintCard
                 title="Flajer za audio knjigu"
@@ -993,18 +993,18 @@ function PrintCard({
       <div
         className={`rounded border flex items-center justify-center shrink-0 ${featured ? "" : "mb-2.5"}`}
         style={{
-          width: 48,
-          height: 60,
+          width: featured ? 60 : 48,
+          height: featured ? 76 : 60,
           backgroundColor: "#F5F4DC",
           borderColor: "rgba(35,35,35,0.12)",
           filter: locked ? "grayscale(1)" : "none",
         }}
       >
-        <QrCode size={20} className="text-[#232323]/70" />
+        <QrCode size={featured ? 26 : 20} className="text-[#232323]/70" />
       </div>
       <div className="min-w-0 flex-1">
         <p
-          className={`font-serif font-semibold text-[#232323] ${featured ? "text-lg" : "text-[13px]"}`}
+          className={`font-serif font-semibold text-[#232323] ${featured ? "text-xl" : "text-base"}`}
         >
           {title}
         </p>
