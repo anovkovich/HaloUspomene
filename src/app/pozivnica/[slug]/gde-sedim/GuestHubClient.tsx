@@ -90,6 +90,9 @@ export default function GuestHubClient({
   apiBase,
 }: Props) {
   const [selected, setSelected] = useState<GuestLookupEntry | null>(null);
+  // Free-table ids to highlight on "Plan sale" when a searched name isn't in
+  // the plan (loose-seating custom).
+  const [freeHighlight, setFreeHighlight] = useState<string[]>([]);
 
   const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [];
   if (hasSeating) {
@@ -190,6 +193,7 @@ export default function GuestHubClient({
             selected={selected}
             onSelectChange={setSelected}
             showMap={false}
+            onFreeTablesChange={setFreeHighlight}
           />
         )}
 
@@ -215,7 +219,9 @@ export default function GuestHubClient({
               <HallMap
                 tables={tables}
                 highlightTableIds={
-                  selected ? selected.tables.map((t) => t.tableId) : []
+                  selected
+                    ? selected.tables.map((t) => t.tableId)
+                    : freeHighlight
                 }
               />
             ) : (

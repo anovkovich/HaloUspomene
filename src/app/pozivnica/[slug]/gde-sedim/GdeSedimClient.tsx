@@ -21,6 +21,10 @@ interface Props {
   /** When false, the inline hall map is not rendered — the hub shows the map
    *  in its own "Plan sale" tab instead. Defaults to true (standalone page). */
   showMap?: boolean;
+  /** Called with the ids of the completely-free tables when a searched name is
+   *  NOT in the plan (loose-seating custom: leave empty tables for arrivals).
+   *  The hub uses it to highlight those tables on its "Plan sale" tab. */
+  onFreeTablesChange?: (tableIds: string[]) => void;
 }
 
 const normalize = (s: string) =>
@@ -36,6 +40,7 @@ export default function GdeSedimClient({
   selected: controlledSelected,
   onSelectChange,
   showMap = true,
+  onFreeTablesChange,
 }: Props) {
   // All BA/HR/ME-aware copy in one place \u2014 keeps the JSX below readable
   // and avoids 6+ inline ternaries. Named `tr` not `t` to avoid shadowing
@@ -47,6 +52,15 @@ export default function GdeSedimClient({
         yourSeatPlural: "Va\u0161a mjesta",
         welcome: "Smjestite se i u\u017eivajte \u2014 hvala \u0161to ste tu",
         seatUnit: (n: number) => (n === 1 ? "mjesto" : "mjesta"),
+        notFoundTitle: "Dobro do\u0161li!",
+        notAssigned:
+          "Va\u0161e mjesto nije raspore\u0111eno za konkretan sto.",
+        takeFree:
+          "Slobodno zauzmite mjesto za neki od slobodnih stolova:",
+        noFree:
+          "Molimo obratite se doma\u0107inima za va\u0161e mjesto.",
+        freeTablesLabel: "Slobodni stolovi",
+        seatsUnit: (n: number) => (n === 1 ? "mjesto" : "mjesta"),
       }
     : {
         enterYourName: "Unesite ime i prona\u0111ite svoje mesto",
@@ -54,6 +68,15 @@ export default function GdeSedimClient({
         yourSeatPlural: "Va\u0161a mesta",
         welcome: "Smestite se i u\u017eivajte \u2014 hvala \u0161to ste tu",
         seatUnit: (n: number) => (n === 1 ? "mesto" : "mesta"),
+        notFoundTitle: "Dobro do\u0161li!",
+        notAssigned:
+          "Va\u0161e mesto nije raspore\u0111eno za konkretan sto.",
+        takeFree:
+          "Slobodno zauzmite mesto za neki od slobodnih stolova:",
+        noFree:
+          "Molimo obratite se doma\u0107inima za va\u0161e mesto.",
+        freeTablesLabel: "Slobodni stolovi",
+        seatsUnit: (n: number) => (n === 1 ? "mesto" : "mesta"),
       };
 
   const [query, setQuery] = useState("");
@@ -83,10 +106,34 @@ export default function GdeSedimClient({
     [guestLookup, query],
   );
 
+  // Completely-free tables (no one seated) — offered when a searched name isn't
+  // in the plan, for events that leave empty tables for guests to fill in.
+  const freeTables = useMemo(
+    () =>
+      tables
+        .filter(
+          (t) =>
+            t.type !== "decoration" &&
+            t.seats > 0 &&
+            t.assignments.filter(Boolean).length === 0,
+        )
+        .map((t) => ({ id: t.id, label: t.label, seats: t.seats })),
+    [tables],
+  );
+
+  // "Not found" once the guest has typed enough and nothing matches.
+  const notFound = query.trim().length >= 2 && suggestions.length === 0;
+
   // Reset active index when suggestions change
   useEffect(() => {
     setActiveIndex(-1);
   }, [suggestions]);
+
+  // Tell the hub which tables to highlight on its "Plan sale" tab (free tables
+  // when unmatched; cleared otherwise so a matched guest's tables take over).
+  useEffect(() => {
+    onFreeTablesChange?.(notFound ? freeTables.map((f) => f.id) : []);
+  }, [notFound, freeTables, onFreeTablesChange]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -365,6 +412,125 @@ export default function GdeSedimClient({
         )}
       </AnimatePresence>
 
+      {/* Not-found → free-tables card. Shown when a typed name isn't in the
+          plan (loose-seating custom). Welcomes the guest and lists the tables
+          that are completely empty. */}
+      <AnimatePresence initial={false}>
+        {notFound && !selected && (
+          <motion.div
+            key="notfound-card"
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: "auto", marginTop: "2rem" }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            style={{ overflow: "hidden" }}
+          >
+            <div
+              className="relative rounded-3xl overflow-hidden"
+              style={{
+                backgroundColor: "var(--theme-surface)",
+                border: "1px solid var(--theme-border)",
+                boxShadow:
+                  "0 20px 48px -16px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.04)",
+              }}
+            >
+              <div
+                className="h-[3px] w-full"
+                style={{
+                  background:
+                    "linear-gradient(90deg, transparent 0%, var(--theme-primary) 50%, transparent 100%)",
+                }}
+              />
+              <div className="px-6 py-8 sm:px-10 sm:py-10 text-center space-y-5">
+                <div>
+                  <p
+                    className="font-script text-3xl sm:text-4xl leading-tight"
+                    style={{ color: "var(--theme-primary)" }}
+                  >
+                    {tr.notFoundTitle}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center gap-3">
+                  <div
+                    className="h-px w-12"
+                    style={{ backgroundColor: "var(--theme-border)" }}
+                  />
+                  <Armchair
+                    size={14}
+                    style={{ color: "var(--theme-primary)", opacity: 0.7 }}
+                  />
+                  <div
+                    className="h-px w-12"
+                    style={{ backgroundColor: "var(--theme-border)" }}
+                  />
+                </div>
+
+                <p
+                  className="font-raleway text-sm leading-relaxed"
+                  style={{ color: "var(--theme-text-muted)" }}
+                >
+                  {tr.notAssigned}
+                </p>
+
+                {freeTables.length > 0 ? (
+                  <>
+                    <p
+                      className="font-raleway text-sm leading-relaxed"
+                      style={{ color: "var(--theme-text-muted)" }}
+                    >
+                      {tr.takeFree}
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-2 pt-1">
+                      {freeTables.map((f) => (
+                        <span
+                          key={f.id}
+                          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5"
+                          style={{
+                            backgroundColor: "var(--theme-primary-muted)",
+                            border: "1px solid var(--theme-border)",
+                            color: "var(--theme-text)",
+                          }}
+                        >
+                          <Armchair
+                            size={13}
+                            style={{ color: "var(--theme-primary)" }}
+                          />
+                          <span className="font-raleway text-sm font-medium">
+                            {f.label}
+                          </span>
+                          <span
+                            className="font-raleway text-xs"
+                            style={{ color: "var(--theme-text-light)" }}
+                          >
+                            ({f.seats} {tr.seatsUnit(f.seats)})
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p
+                    className="font-raleway text-sm leading-relaxed"
+                    style={{ color: "var(--theme-text-muted)" }}
+                  >
+                    {tr.noFree}
+                  </p>
+                )}
+              </div>
+              <div
+                className="h-[3px] w-full"
+                style={{
+                  background:
+                    "linear-gradient(90deg, transparent 0%, var(--theme-primary) 50%, transparent 100%)",
+                  opacity: 0.4,
+                }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Hall map — fixed top margin so it always sits 32px below the
           previous element (search input, or the result card when present).
           Hidden when the hub renders the map in its own "Plan sale" tab. */}
@@ -391,7 +557,9 @@ export default function GdeSedimClient({
             highlightTableIds={
               selected
                 ? selected.tables.map((t: GuestTableEntry) => t.tableId)
-                : []
+                : notFound
+                  ? freeTables.map((f) => f.id)
+                  : []
             }
           />
         </div>
