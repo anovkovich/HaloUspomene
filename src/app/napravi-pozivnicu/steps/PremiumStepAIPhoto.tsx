@@ -692,7 +692,7 @@ export default function PremiumStepAIPhoto({
               onChange={(e) => onCustomBgNoteChange(e.target.value)}
               rows={3}
               maxLength={400}
-              placeholder="npr. Crkva Svetog Đorđa u Oplencu, iz žablje perspektive, u sumrak…"
+              placeholder="npr. Crkva Svetog Đorđa u Oplencu…"
               className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-[#232323] placeholder:text-stone-400 focus:outline-none focus:border-[#d4af37]/50 transition-colors resize-none"
             />
           </div>
@@ -727,8 +727,8 @@ export default function PremiumStepAIPhoto({
               </span>{" "}
               Slika koju ovde izgenerišete služi našem ilustratoru kao smernica
               — finalnu verziju, ručno doteranu i u visokoj rezoluciji,
-              izrađujemo nakon porudžbine i menjamo je na pozivnici u roku od 3
-              radna dana.
+              izrađujemo nakon porudžbine i menjamo je na pozivnici, najčešće u
+              roku od 24 sata.
             </p>
           </div>
 
