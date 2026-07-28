@@ -14,6 +14,7 @@ import {
   Users,
   LayoutGrid,
   ChevronRight,
+  Lock,
 } from "lucide-react";
 import ChecklistCard from "@/app/moje-vencanje/ChecklistCard";
 import BudgetCard from "@/app/moje-vencanje/BudgetCard";
@@ -119,10 +120,10 @@ export default function PortalClient({
       href: `/raspored-sedenja/${slug}/gosti`,
     },
   ];
-  if (hasAudio)
-    navItems.push({ key: "utisci", label: "Utisci", icon: <Mic size={20} />, tab: "utisci" });
-  if (hasGallery)
-    navItems.push({ key: "galerija", label: "Galerija", icon: <Images size={20} />, tab: "galerija" });
+  // Utisci + Galerija are always shown; when not purchased the tab renders a
+  // locked message (the portal is the client's single destination either way).
+  navItems.push({ key: "utisci", label: "Utisci", icon: <Mic size={20} />, tab: "utisci" });
+  navItems.push({ key: "galerija", label: "Galerija", icon: <Images size={20} />, tab: "galerija" });
   navItems.push({ key: "meni", label: "Meni", icon: <UtensilsCrossed size={20} />, tab: "meni" });
   navItems.push({
     key: "raspored",
@@ -344,30 +345,42 @@ export default function PortalClient({
           <MeniCard loadAction={meniLoad} saveAction={meniSave} />
         )}
 
-        {active === "utisci" && hasAudio && (
-          <AudioCard
-            slug={slug}
-            coupleNames={eventName}
-            loadAction={audioLoad}
-            refreshAction={audioRefresh}
-            deleteAction={audioDelete}
-            guestRecordUrl={{
-              href: `/raspored-sedenja/${slug}/gde-sedim`,
-              label: `halouspomene.rs/raspored-sedenja/${slug}/gde-sedim/`,
-            }}
-            showFlyer={false}
-            showUsbPromo={false}
-          />
-        )}
+        {active === "utisci" &&
+          (hasAudio ? (
+            <AudioCard
+              slug={slug}
+              coupleNames={eventName}
+              loadAction={audioLoad}
+              refreshAction={audioRefresh}
+              deleteAction={audioDelete}
+              guestRecordUrl={{
+                href: `/raspored-sedenja/${slug}/gde-sedim`,
+                label: `halouspomene.rs/raspored-sedenja/${slug}/gde-sedim/`,
+              }}
+              showFlyer={false}
+              showUsbPromo={false}
+            />
+          ) : (
+            <LockedTab
+              title="Audio knjiga utisaka"
+              message="Gosti ostavljaju glasovne poruke koje vi slušate i čuvate. Ova opcija nije uključena za vaš događaj."
+            />
+          ))}
 
-        {active === "galerija" && hasGallery && (
-          <GalleryCard
-            slug={slug}
-            loadAction={galleryLoad}
-            deleteAction={galleryDelete}
-            downloadBase={`/api/raspored-sedenja/${slug}/galerija/download`}
-          />
-        )}
+        {active === "galerija" &&
+          (hasGallery ? (
+            <GalleryCard
+              slug={slug}
+              loadAction={galleryLoad}
+              deleteAction={galleryDelete}
+              downloadBase={`/api/raspored-sedenja/${slug}/galerija/download`}
+            />
+          ) : (
+            <LockedTab
+              title="QR foto galerija"
+              message="Gosti dodaju fotografije skeniranjem QR koda, a vi ih preuzimate. Ova opcija nije uključena za vaš događaj."
+            />
+          ))}
       </div>
 
       {/* Fixed bottom tab bar */}
@@ -444,6 +457,35 @@ function Pill({
     >
       {label}
     </button>
+  );
+}
+
+function LockedTab({ title, message }: { title: string; message: string }) {
+  return (
+    <div className="max-w-md mx-auto text-center py-16 px-6">
+      <div
+        className="w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center"
+        style={{ backgroundColor: "var(--theme-primary-muted, rgba(174,52,63,0.12))" }}
+      >
+        <Lock size={24} style={{ color: "var(--theme-primary)" }} />
+      </div>
+      <h2 className="font-serif text-xl mb-2" style={{ color: "var(--theme-text)" }}>
+        {title}
+      </h2>
+      <p
+        className="text-sm leading-relaxed mb-5"
+        style={{ color: "var(--theme-text-light)" }}
+      >
+        {message}
+      </p>
+      <a
+        href="mailto:halouspomene@gmail.com"
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
+        style={{ backgroundColor: "var(--theme-primary)" }}
+      >
+        Kontaktirajte nas da dodamo
+      </a>
+    </div>
   );
 }
 
