@@ -15,6 +15,8 @@ import {
   LayoutGrid,
   ChevronRight,
   Lock,
+  QrCode,
+  Download,
 } from "lucide-react";
 import ChecklistCard from "@/app/moje-vencanje/ChecklistCard";
 import BudgetCard from "@/app/moje-vencanje/BudgetCard";
@@ -101,6 +103,27 @@ export default function PortalClient({
   const meniLoad = () => loadMeniAction(slug);
   const meniSave = (m: Parameters<typeof saveMeniAction>[1]) =>
     saveMeniAction(slug, m);
+
+  // Guest-facing hub URL (absolute — QR is printed on thank-you cards).
+  const siteBase =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
+  const hubUrl = (tab: string) =>
+    `${siteBase}/raspored-sedenja/${slug}/gde-sedim/?tab=${tab}`;
+
+  async function downloadQR(url: string, filename: string) {
+    const QRCode = (await import("qrcode")).default;
+    const dataUrl = await QRCode.toDataURL(url, {
+      width: 1400,
+      margin: 2,
+      color: { dark: "#232323", light: "#ffffff" },
+    });
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 1000);
+  }
 
   // Bottom navigation — main sections, mirroring the standard portal (Checklista
   // and Budžet live in the top pills, NOT here). Gosti + Raspored are the
@@ -315,6 +338,40 @@ export default function PortalClient({
               </button>
             </div>
 
+            {/* QR kodovi za štampu na zahvalnicama — vode direktno na tab */}
+            {(hasGallery || hasAudio) && (
+              <div>
+                <p
+                  className="text-xs uppercase tracking-wider mb-2"
+                  style={{ color: "var(--theme-text-light)" }}
+                >
+                  QR kodovi za zahvalnice
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {hasGallery && (
+                    <QrCard
+                      title="QR — Foto galerija"
+                      hint="Gosti dodaju fotografije skeniranjem"
+                      icon={<Images size={18} />}
+                      onDownload={() =>
+                        downloadQR(hubUrl("gallery"), `qr-galerija-${slug}.png`)
+                      }
+                    />
+                  )}
+                  {hasAudio && (
+                    <QrCard
+                      title="QR — Audio utisci"
+                      hint="Gosti ostavljaju glasovnu poruku"
+                      icon={<Mic size={18} />}
+                      onDownload={() =>
+                        downloadQR(hubUrl("utisci"), `qr-utisci-${slug}.png`)
+                      }
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Guest-facing page link */}
             <Link
               href={`/raspored-sedenja/${slug}/gde-sedim`}
@@ -456,6 +513,55 @@ function Pill({
       }
     >
       {label}
+    </button>
+  );
+}
+
+function QrCard({
+  title,
+  hint,
+  icon,
+  onDownload,
+}: {
+  title: string;
+  hint: string;
+  icon: React.ReactNode;
+  onDownload: () => void;
+}) {
+  return (
+    <button
+      onClick={onDownload}
+      className="text-left rounded-2xl bg-white border p-5 shadow-sm hover:bg-[#faf9f6] transition-colors cursor-pointer flex items-center gap-4"
+      style={{ borderColor: "var(--theme-border)" }}
+    >
+      <div
+        className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+        style={{ backgroundColor: "var(--theme-primary-muted, rgba(174,52,63,0.12))" }}
+      >
+        <span style={{ color: "var(--theme-primary)" }}>{icon}</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <QrCode size={14} style={{ color: "var(--theme-primary)" }} />
+          <p
+            className="text-sm font-semibold truncate"
+            style={{ color: "var(--theme-text)" }}
+          >
+            {title}
+          </p>
+        </div>
+        <p
+          className="text-xs mt-0.5"
+          style={{ color: "var(--theme-text-light)" }}
+        >
+          {hint}
+        </p>
+      </div>
+      <Download
+        size={16}
+        className="shrink-0"
+        style={{ color: "var(--theme-text-light)" }}
+      />
     </button>
   );
 }
