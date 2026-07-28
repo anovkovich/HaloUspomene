@@ -88,6 +88,7 @@ export default function PortalClient({
   const [budget, setBudget] = useState<PortalBudget>(initialBudget);
   const [active, setActive] = useState<TabKey>("pregled");
   const [qrModal, setQrModal] = useState<"gallery" | "audio" | null>(null);
+  const [upsell, setUpsell] = useState<"gallery" | "audio" | null>(null);
 
   // Bind the seating slug into the shared cards' action props.
   const checklistSave = (items: ChecklistItem[]) =>
@@ -155,6 +156,21 @@ export default function PortalClient({
     setTimeout(() => a.remove(), 1000);
   }
 
+  // Upsell copy ("šta je ovo") for the two add-ons — shown when a locked
+  // Zahvalnice card is tapped, to attract the client to purchase.
+  const UPSELL_META = {
+    gallery: {
+      label: "QR foto galerija",
+      what: "Gosti skeniraju QR kod i dodaju svoje fotografije sa događaja — direktno sa telefona, bez ikakve aplikacije. Sve slike se skupljaju na jednom mestu, a vi ih preuzimate kad god poželite.",
+      why: "Umesto da jurite fotografije po grupama i telefonima, dobijate kompletan album očima vaših gostiju.",
+    },
+    audio: {
+      label: "Audio knjiga utisaka",
+      what: "Gosti ostavljaju kratku glasovnu poruku ili čestitku skeniranjem QR koda. Sve poruke slušate i čuvate kao trajnu, emotivnu uspomenu na dan.",
+      why: "Glas drage osobe je uspomena koju fotografija ne može da zabeleži.",
+    },
+  } as const;
+
   async function downloadFlyer(key: "gallery" | "audio") {
     const m = QR_META[key];
     await generateQrFlyerPDF({
@@ -187,11 +203,12 @@ export default function PortalClient({
       href: `/raspored-sedenja/${slug}/gosti`,
     },
   ];
+  // Order: Pregled · Gosti · Meni · Galerija · Utisci · Raspored.
   // Utisci + Galerija are always shown; when not purchased the tab renders a
   // locked message (the portal is the client's single destination either way).
-  navItems.push({ key: "utisci", label: "Utisci", icon: <Mic size={20} />, tab: "utisci" });
-  navItems.push({ key: "galerija", label: "Galerija", icon: <Images size={20} />, tab: "galerija" });
   navItems.push({ key: "meni", label: "Meni", icon: <UtensilsCrossed size={20} />, tab: "meni" });
+  navItems.push({ key: "galerija", label: "Galerija", icon: <Images size={20} />, tab: "galerija" });
+  navItems.push({ key: "utisci", label: "Utisci", icon: <Mic size={20} />, tab: "utisci" });
   navItems.push({
     key: "raspored",
     label: "Raspored",
@@ -430,53 +447,49 @@ export default function PortalClient({
               </div>
             </div>
 
-            {/* Zahvalnice — distinct burgundy band with print-style cards */}
-            {(hasGallery || hasAudio) && (
+            {/* Zahvalnice — always shown; unpaid cards open an upsell modal */}
+            <div
+              className="rounded-3xl px-4 py-5 relative overflow-hidden"
+              style={{ backgroundColor: "var(--theme-primary)" }}
+            >
               <div
-                className="rounded-3xl px-4 py-5 relative overflow-hidden"
-                style={{ backgroundColor: "var(--theme-primary)" }}
-              >
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 20% 0%, rgba(255,255,255,0.10), transparent 60%)",
-                  }}
-                />
-                <div className="relative text-center mb-4">
-                  <p
-                    className="font-script text-3xl leading-tight"
-                    style={{ color: "var(--theme-surface)" }}
-                  >
-                    Zahvalnice
-                  </p>
-                  <p
-                    className="font-raleway text-[11px] mt-0.5"
-                    style={{ color: "rgba(245,244,220,0.72)" }}
-                  >
-                    QR kodovi za vaše stolove — spremni za štampu
-                  </p>
-                </div>
-                <div
-                  className={`relative grid gap-2.5 ${
-                    hasGallery && hasAudio ? "grid-cols-2" : "grid-cols-1"
-                  }`}
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(circle at 20% 0%, rgba(255,255,255,0.10), transparent 60%)",
+                }}
+              />
+              <div className="relative text-center mb-4">
+                <p
+                  className="font-script text-3xl leading-tight"
+                  style={{ color: "var(--theme-surface)" }}
                 >
-                  {hasGallery && (
-                    <PrintCard
-                      label="Foto galerija"
-                      onClick={() => setQrModal("gallery")}
-                    />
-                  )}
-                  {hasAudio && (
-                    <PrintCard
-                      label="Audio utisci"
-                      onClick={() => setQrModal("audio")}
-                    />
-                  )}
-                </div>
+                  Zahvalnice
+                </p>
+                <p
+                  className="font-raleway text-[11px] mt-0.5"
+                  style={{ color: "rgba(245,244,220,0.72)" }}
+                >
+                  QR kodovi za vaše stolove — spremni za štampu
+                </p>
               </div>
-            )}
+              <div className="relative grid gap-2.5 grid-cols-2">
+                <PrintCard
+                  label="Foto galerija"
+                  locked={!hasGallery}
+                  onClick={() =>
+                    hasGallery ? setQrModal("gallery") : setUpsell("gallery")
+                  }
+                />
+                <PrintCard
+                  label="Audio utisci"
+                  locked={!hasAudio}
+                  onClick={() =>
+                    hasAudio ? setQrModal("audio") : setUpsell("audio")
+                  }
+                />
+              </div>
+            </div>
 
             {/* Stranica za goste — quiet utility row */}
             <a
@@ -697,6 +710,72 @@ export default function PortalClient({
           </div>
         </div>
       )}
+
+      {/* Upsell modal — shown when a locked Zahvalnice card is tapped */}
+      {upsell && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm"
+          onClick={() => setUpsell(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-2xl p-6 relative bg-white"
+          >
+            <button
+              type="button"
+              onClick={() => setUpsell(null)}
+              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5"
+              style={{ color: "rgba(35,35,35,0.5)" }}
+              aria-label="Zatvori"
+            >
+              <X size={16} />
+            </button>
+
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+              style={{ backgroundColor: "rgba(174,52,63,0.12)" }}
+            >
+              {upsell === "gallery" ? (
+                <Images size={20} style={{ color: "#AE343F" }} />
+              ) : (
+                <Mic size={20} style={{ color: "#AE343F" }} />
+              )}
+            </div>
+            <h3 className="text-lg font-semibold mb-1" style={{ color: "#232323" }}>
+              {UPSELL_META[upsell].label}
+            </h3>
+            <p
+              className="text-sm leading-relaxed mb-3"
+              style={{ color: "rgba(35,35,35,0.7)" }}
+            >
+              {UPSELL_META[upsell].what}
+            </p>
+            <p
+              className="text-[13px] italic leading-relaxed mb-4"
+              style={{ color: "rgba(35,35,35,0.55)" }}
+            >
+              {UPSELL_META[upsell].why}
+            </p>
+            <p
+              className="text-[12px] mb-4 p-3 rounded-lg"
+              style={{
+                backgroundColor: "rgba(174,52,63,0.06)",
+                color: "rgba(35,35,35,0.7)",
+              }}
+            >
+              Ova opcija <strong>nije aktivirana</strong> za vaš događaj.
+              Možemo je dodati u bilo kom trenutku.
+            </p>
+            <a
+              href="mailto:halouspomene@gmail.com?subject=Dodavanje%20opcije%20—%20raspored%20sedenja"
+              className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#AE343F" }}
+            >
+              Želim da dodam ovu opciju
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -835,9 +914,11 @@ function PlanCard({
 function PrintCard({
   label,
   onClick,
+  locked = false,
 }: {
   label: string;
   onClick: () => void;
+  locked?: boolean;
 }) {
   return (
     <button
@@ -849,8 +930,15 @@ function PrintCard({
         className="rounded-lg px-3 py-4 flex flex-col items-center text-center"
         style={{ border: "1.5px dashed rgba(174,52,63,0.35)" }}
       >
-        <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mb-2">
-          <QrCode size={20} style={{ color: "#232323" }} />
+        <div
+          className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mb-2"
+          style={{ filter: locked ? "grayscale(1)" : "none" }}
+        >
+          {locked ? (
+            <Lock size={18} style={{ color: "rgba(35,35,35,0.5)" }} />
+          ) : (
+            <QrCode size={20} style={{ color: "#232323" }} />
+          )}
         </div>
         <p
           className="font-serif text-[15px] font-semibold"
@@ -860,9 +948,9 @@ function PrintCard({
         </p>
         <p
           className="font-raleway text-[9px] uppercase tracking-[0.1em] mt-0.5"
-          style={{ color: "#b9962f" }}
+          style={{ color: locked ? "rgba(35,35,35,0.4)" : "#b9962f" }}
         >
-          PNG · A6 PDF
+          {locked ? "Saznajte više" : "PNG · A6 PDF"}
         </p>
       </div>
     </button>

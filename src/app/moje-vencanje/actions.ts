@@ -456,6 +456,7 @@ export async function loadOverviewAction(): Promise<{
   };
   audioStats: { count: number; totalDurationMs: number; paidForAudio: boolean };
   paidForRaspored: boolean;
+  paidForGallery: boolean;
 } | null> {
   const slug = await getAuthSlug();
   if (!slug) return null;
@@ -501,7 +502,13 @@ export async function loadOverviewAction(): Promise<{
     } catch { /* ignore */ }
   }
 
-  return { slug, guestStats, audioStats, paidForRaspored: data.paid_for_raspored ?? false };
+  return {
+    slug,
+    guestStats,
+    audioStats,
+    paidForRaspored: data.paid_for_raspored ?? false,
+    paidForGallery: data.paid_for_gallery ?? false,
+  };
 }
 
 /* ── Guest Edit ────────────────────────────────────────────── */
