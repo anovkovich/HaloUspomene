@@ -22,6 +22,16 @@ import type { PaymentKind } from "@/lib/orders";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import VendorPromoModal from "./VendorPromoModal";
 
+/**
+ * Tiers used for products that have no `kind` of their own. The payments
+ * registry only covers self-serve products, so a manually recorded retro-phone
+ * rental has to be filed under `pozivnica` and would otherwise render as
+ * "Pozivnica · retro_telefon". These labels stand on their own instead.
+ */
+const STANDALONE_TIER_LABEL: Record<string, string> = {
+  retro_telefon: "Retro telefon",
+};
+
 interface OrderRow {
   orderId: string;
   kind: PaymentKind;
@@ -243,12 +253,16 @@ function OrderCard({
               {st.label}
             </span>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50">
-              {KIND_LABEL_SR[o.kind]}
-              {o.tier === "custom"
-                ? " · Vaša kombinacija"
-                : o.tier !== "default"
-                  ? ` · ${o.tier}`
-                  : ""}
+              {STANDALONE_TIER_LABEL[o.tier] ?? (
+                <>
+                  {KIND_LABEL_SR[o.kind]}
+                  {o.tier === "custom"
+                    ? " · Vaša kombinacija"
+                    : o.tier !== "default"
+                      ? ` · ${o.tier}`
+                      : ""}
+                </>
+              )}
             </span>
             {o.rail && (
               <span className="text-[10px] text-white/35 uppercase">

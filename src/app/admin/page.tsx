@@ -1544,6 +1544,10 @@ function MarkPaidModal({
               <option value="kompletan">Kompletan</option>
               <option value="premium">Premium</option>
               <option value="custom">Kombinacija</option>
+              {/* Retro telefon nema svoj `kind` u registru placanja (nije
+                  samousluzan proizvod), pa se rucna evidencija vodi kao tier.
+                  OrdersAdminTab ga zato ispisuje samostalno, bez prefiksa. */}
+              <option value="retro_telefon">Retro telefon</option>
             </select>
           </div>
           <input
