@@ -9,6 +9,9 @@ import { getAudioMessages, deleteAllAudioMessages } from "@/lib/audio";
 import { deleteAllGalleryPhotos } from "@/lib/gallery";
 import { deleteByPrefix } from "@/lib/r2";
 import { deleteShareLinksForProduct } from "@/lib/share-links";
+import { deleteMoneylessOrders } from "@/lib/orders";
+import { deletePremiumBlobs } from "@/lib/premium-blobs";
+import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 import { del } from "@vercel/blob";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
@@ -71,6 +74,15 @@ export async function DELETE(
 
   const { slug } = await params;
 
+  // Read the record once, up front — the premium blob cleanup below needs
+  // couple_names and ai_couple_image_url, which are unreachable once it's gone.
+  let coupleData: WeddingData | null = null;
+  try {
+    coupleData = await getWeddingData(slug);
+  } catch {
+    // Continue with deletion even if the record can't be read
+  }
+
   // Delete audio blobs from Vercel Blob before clearing metadata
   try {
     const audioMessages = await getAudioMessages(slug);
@@ -85,7 +97,6 @@ export async function DELETE(
 
   // Delete image + music blobs from Vercel Blob
   try {
-    const coupleData = await getWeddingData(slug);
     const blobUrls: string[] = [];
     if (coupleData?.images && coupleData.images.length > 0) {
       for (const img of coupleData.images) blobUrls.push(img.url);
@@ -98,6 +109,9 @@ export async function DELETE(
     // Continue with deletion even if blob cleanup fails
   }
 
+  // Delete premium AI blobs — generated, whitened and uploaded (best-effort)
+  await deletePremiumBlobs(slug, coupleData);
+
   // Delete gallery photo objects from R2 (best-effort; never throws)
   await deleteByPrefix(`gallery/${slug}/`);
 
@@ -109,6 +123,9 @@ export async function DELETE(
     deleteAllAudioMessages(slug),
     deleteAllGalleryPhotos(slug),
     deleteShareLinksForProduct("couple", slug),
+    // `pozivnica` and `galerija` are the two kinds that resolve to a couple.
+    // Only moneyless orders go — settled ones stay as an accounting trail.
+    deleteMoneylessOrders(["pozivnica", "galerija"], slug),
   ]);
   revalidateCouplePaths(slug);
   return NextResponse.json({ ok: true });

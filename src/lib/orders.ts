@@ -353,6 +353,40 @@ export async function listOrders(opts?: {
 }
 
 /** Count of orders awaiting admin action — feeds the "Uplate" badge. */
+/**
+ * Statuses that never had money attached to them, so they carry no accounting
+ * value once the entity they belong to is gone.
+ *
+ * `review` is deliberately NOT here: the buyer has claimed an IPS payment that
+ * no admin has ruled on yet, so the money may already be sitting in the account.
+ * `paid`/`unlocked`/`refunded`/`revoked` are settled money and outlive the
+ * entity on purpose — an orphaned order is recoverable, a deleted one is not.
+ */
+export const MONEYLESS_ORDER_STATUSES: OrderStatus[] = [
+  "pending",
+  "expired",
+  "canceled",
+];
+
+/**
+ * Delete the moneyless orders belonging to a slug, scoped to the kinds that
+ * actually resolve to that entity — slugs are only unique within a kind's own
+ * namespace, so an unscoped delete could take out an unrelated product's order.
+ * Returns how many were removed.
+ */
+export async function deleteMoneylessOrders(
+  kinds: PaymentKind[],
+  slug: string,
+): Promise<number> {
+  const c = await col();
+  const r = await c.deleteMany({
+    kind: { $in: kinds },
+    slug,
+    status: { $in: MONEYLESS_ORDER_STATUSES },
+  });
+  return r.deletedCount ?? 0;
+}
+
 export async function countReviewOrders(): Promise<number> {
   const c = await col();
   return c.countDocuments({ status: "review" });

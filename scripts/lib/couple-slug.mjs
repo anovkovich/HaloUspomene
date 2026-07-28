@@ -59,17 +59,36 @@ export async function renameCoupleSlug(db, oldSlug, newSlug, extraSet = {}) {
   console.log(`  couples: matched=${res.matchedCount} modified=${res.modifiedCount}`);
 }
 
+// Order statuses that never had money attached — the only ones safe to delete.
+// Keep in sync with MONEYLESS_ORDER_STATUSES in src/lib/orders.ts. `review` is
+// excluded on purpose: the buyer claims an IPS payment no admin has ruled on.
+const MONEYLESS_ORDER_STATUSES = ["pending", "expired", "canceled"];
+
 /**
  * Cascading delete of a couple and all its slug-keyed documents.
+ *
+ * Orders are filtered, not wiped: settled money (`paid`, `unlocked`, `refunded`,
+ * `revoked`) and unresolved IPS claims (`review`) survive as an accounting
+ * trail, matching the DELETE handler in the admin API.
+ *
  * NOTE: does NOT clean up Vercel Blob / R2 objects — check for blobs first
  * (reportSlugFootprint warns) and use the admin panel delete for couples
- * with uploaded images/audio/gallery.
+ * with uploaded images/audio/gallery or a premium AI illustration.
  */
 export async function deleteCoupleCascade(db, slug) {
   for (const name of LINKED_COLLECTIONS) {
-    const res = await db.collection(name).deleteMany({ slug });
+    const filter =
+      name === "orders"
+        ? { slug, status: { $in: MONEYLESS_ORDER_STATUSES } }
+        : { slug };
+    const res = await db.collection(name).deleteMany(filter);
     if (res.deletedCount > 0)
       console.log(`  ${name}: deleted ${res.deletedCount} doc(s)`);
+    if (name === "orders") {
+      const kept = await db.collection(name).countDocuments({ slug });
+      if (kept > 0)
+        console.log(`  orders: KEPT ${kept} settled/under-review doc(s)`);
+    }
   }
   const res = await db.collection("couples").deleteOne({ slug });
   console.log(`  couples: deleted ${res.deletedCount}`);
