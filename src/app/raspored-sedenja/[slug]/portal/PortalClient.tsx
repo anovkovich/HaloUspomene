@@ -167,6 +167,8 @@ export default function PortalClient({
       url: m.url,
       title: m.flyerTitle,
       lines: [...m.lines],
+      thankYou:
+        "Hvala što ste svojim prisustvom ulepšali naš poseban dan.",
       bottom: m.bottom,
       filename: m.pdfName,
     });
