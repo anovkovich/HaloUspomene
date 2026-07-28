@@ -982,7 +982,7 @@ function PrintCard({
   return (
     <button
       onClick={onClick}
-      className={`relative bg-white rounded-lg shadow-[0_1px_3px_rgba(35,35,35,0.08)] overflow-hidden text-left cursor-pointer hover:shadow-[0_8px_20px_-8px_rgba(174,52,63,0.28)] transition-shadow ${
+      className={`relative w-full bg-white rounded-lg shadow-[0_1px_3px_rgba(35,35,35,0.08)] overflow-hidden text-left cursor-pointer hover:shadow-[0_8px_20px_-8px_rgba(174,52,63,0.28)] transition-shadow ${
         featured ? "flex items-center gap-4 p-4" : "p-3.5"
       }`}
     >
