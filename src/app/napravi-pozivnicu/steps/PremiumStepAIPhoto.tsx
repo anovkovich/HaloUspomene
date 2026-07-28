@@ -716,6 +716,22 @@ export default function PremiumStepAIPhoto({
           <div className="h-px bg-gradient-to-r from-transparent via-[#d4af37]/20 to-transparent mb-2" />
           <CoupleDescriptionBuilder onChange={onDescriptionChange} />
 
+          {/* Expectation-setting — deliberately ABOVE the generate button and
+              not gated on an existing render: the couple should know the AI
+              output is only a guideline before they spend a generation on it,
+              not after they've already grown attached to one. */}
+          <div className="mt-3 rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.04] p-3">
+            <p className="text-[11px] text-[#8B7355] leading-relaxed">
+              <span className="font-bold text-[#d4af37]">
+                Ovo je skica, ne finalna ilustracija.
+              </span>{" "}
+              Slika koju ovde izgenerišete služi našem ilustratoru kao smernica
+              — finalnu verziju, ručno doteranu i u visokoj rezoluciji,
+              izrađujemo nakon porudžbine i menjamo je na pozivnici u roku od 3
+              radna dana.
+            </p>
+          </div>
+
           {/* Generate / Regenerate button */}
           <button
             type="button"
@@ -840,19 +856,6 @@ export default function PremiumStepAIPhoto({
             </motion.div>
           )}
 
-          {/* Expectation-setting: the rough render is a guideline, not the final. */}
-          {aiCoupleImageUrl && (
-            <div className="mt-3 rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.04] p-3">
-              <p className="text-[11px] text-[#8B7355] leading-relaxed">
-                <span className="font-bold text-[#d4af37]">
-                  Ovo je skica, ne finalna ilustracija.
-                </span>{" "}
-                Vaša slika služi našem ilustratoru kao smernica — finalnu, ručno
-                doteranu verziju izrađujemo nakon porudžbine i menjamo je na
-                pozivnici u roku od 3 radna dana.
-              </p>
-            </div>
-          )}
         </motion.div>
       )}
 
