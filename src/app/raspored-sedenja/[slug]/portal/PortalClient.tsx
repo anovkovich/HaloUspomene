@@ -11,6 +11,8 @@ import {
   Armchair,
   ChevronLeft,
   UtensilsCrossed,
+  Users,
+  LayoutGrid,
   ChevronRight,
 } from "lucide-react";
 import ChecklistCard from "@/app/moje-vencanje/ChecklistCard";
@@ -65,6 +67,10 @@ function daysUntil(eventDate?: string): number | null {
   return Math.round((ev.getTime() - today.getTime()) / 86_400_000);
 }
 
+function formatMoney(n: number): string {
+  return n.toLocaleString("sr-RS");
+}
+
 export default function PortalClient({
   slug,
   eventName,
@@ -95,22 +101,51 @@ export default function PortalClient({
   const meniSave = (m: Parameters<typeof saveMeniAction>[1]) =>
     saveMeniAction(slug, m);
 
-  const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-    { key: "pregled", label: "Pregled", icon: <LayoutDashboard size={20} /> },
-    { key: "planer", label: "Planer", icon: <ListChecks size={20} /> },
-    { key: "budzet", label: "Budžet", icon: <Wallet size={20} /> },
-    { key: "meni", label: "Meni", icon: <UtensilsCrossed size={20} /> },
+  // Bottom navigation — main sections, mirroring the standard portal (Checklista
+  // and Budžet live in the top pills, NOT here). Gosti + Raspored are the
+  // existing standalone pages; the rest are portal tabs.
+  type NavItem = {
+    key: string;
+    label: string;
+    icon: React.ReactNode;
+  } & ({ tab: TabKey } | { href: string });
+
+  const navItems: NavItem[] = [
+    { key: "pregled", label: "Pregled", icon: <LayoutDashboard size={20} />, tab: "pregled" },
+    {
+      key: "gosti",
+      label: "Gosti",
+      icon: <Users size={20} />,
+      href: `/raspored-sedenja/${slug}/gosti`,
+    },
   ];
   if (hasAudio)
-    tabs.push({ key: "utisci", label: "Utisci", icon: <Mic size={20} /> });
+    navItems.push({ key: "utisci", label: "Utisci", icon: <Mic size={20} />, tab: "utisci" });
   if (hasGallery)
-    tabs.push({ key: "galerija", label: "Galerija", icon: <Images size={20} /> });
+    navItems.push({ key: "galerija", label: "Galerija", icon: <Images size={20} />, tab: "galerija" });
+  navItems.push({ key: "meni", label: "Meni", icon: <UtensilsCrossed size={20} />, tab: "meni" });
+  navItems.push({
+    key: "raspored",
+    label: "Raspored",
+    icon: <LayoutGrid size={20} />,
+    href: `/raspored-sedenja/${slug}`,
+  });
 
   const days = daysUntil(eventDate);
   const fillPct =
     seatingStats && seatingStats.totalSeats > 0
       ? Math.round((seatingStats.assignedSeats / seatingStats.totalSeats) * 100)
       : 0;
+
+  const checkDone = checklist.filter((i) => i.completed).length;
+  const checkTotal = checklist.length;
+  const checkPct = checkTotal ? Math.round((checkDone / checkTotal) * 100) : 0;
+
+  const plannedTotal =
+    budget.categories.reduce((s, c) => s + (c.planned || 0), 0) ||
+    budget.totalBudget ||
+    0;
+  const spentTotal = budget.categories.reduce((s, c) => s + (c.spent || 0), 0);
 
   return (
     <div
@@ -119,94 +154,178 @@ export default function PortalClient({
     >
       <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
         {/* Header */}
-        <div className="mb-6">
-          <Link
-            href={`/raspored-sedenja/${slug}`}
-            className="inline-flex items-center gap-1.5 text-sm mb-4 transition-opacity hover:opacity-60"
-            style={{ color: "var(--theme-text-light)" }}
-          >
-            <ChevronLeft size={15} />
-            Nazad na raspored
-          </Link>
+        <div className="mb-6 text-center">
+          <div className="flex justify-start mb-3">
+            <Link
+              href={`/raspored-sedenja/${slug}`}
+              className="inline-flex items-center gap-1.5 text-sm transition-opacity hover:opacity-60"
+              style={{ color: "var(--theme-text-light)" }}
+            >
+              <ChevronLeft size={15} />
+              Nazad na raspored
+            </Link>
+          </div>
           <h1
-            className="font-script text-4xl sm:text-5xl"
+            className="font-script text-4xl sm:text-5xl mb-4"
             style={{ color: "var(--theme-primary)" }}
           >
             {eventName}
           </h1>
+
+          {/* Top pills — Checklista / Budžet, like the standard portal */}
+          <div className="flex items-center justify-center gap-2.5">
+            <Pill
+              label="Checklista"
+              activeState={active === "planer"}
+              onClick={() => setActive("planer")}
+            />
+            <Pill
+              label="Budžet"
+              activeState={active === "budzet"}
+              onClick={() => setActive("budzet")}
+            />
+          </div>
         </div>
 
         {/* Tab content */}
         {active === "pregled" && (
-          <>
-            {/* Quick links — like the standard portal overview */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <ShortcutTile
-                label="Planer"
-                icon={<ListChecks size={18} />}
-                onClick={() => setActive("planer")}
-              />
-              <ShortcutTile
-                label="Budžet"
-                icon={<Wallet size={18} />}
-                onClick={() => setActive("budzet")}
-              />
-              <ShortcutTile
-                label="Meni"
-                icon={<UtensilsCrossed size={18} />}
-                onClick={() => setActive("meni")}
-              />
-            </div>
+          <div className="space-y-4">
+            {/* Countdown / key stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <StatTile
-              label="Do događaja"
-              value={
-                days === null
-                  ? "—"
-                  : days > 0
-                    ? `${days} ${days === 1 ? "dan" : "dana"}`
-                    : days === 0
-                      ? "Danas!"
-                      : "Prošao"
-              }
-              icon={<LayoutDashboard size={18} />}
-            />
-            <StatTile
-              label="Gostiju (sa pratiocima)"
-              value={String(guestCount)}
-              icon={<ListChecks size={18} />}
-            />
-            <StatTile
-              label="Raspoređeno mesta"
-              value={
-                seatingStats
-                  ? `${seatingStats.assignedSeats}/${seatingStats.totalSeats} (${fillPct}%)`
-                  : "—"
-              }
-              icon={<Armchair size={18} />}
-            />
-            <StatTile
-              label="Datum"
-              value={
-                eventDate
-                  ? new Date(eventDate).toLocaleDateString("sr-RS")
-                  : "—"
-              }
-              icon={<LayoutDashboard size={18} />}
-            />
-            <div className="sm:col-span-2 mt-2">
-              <Link
-                href={`/raspored-sedenja/${slug}/gde-sedim`}
-                target="_blank"
-                className="inline-flex items-center gap-2 text-sm font-medium hover:underline"
-                style={{ color: "var(--theme-primary)" }}
+              <StatTile
+                label="Do događaja"
+                value={
+                  days === null
+                    ? "—"
+                    : days > 0
+                      ? `${days} ${days === 1 ? "dan" : "dana"}`
+                      : days === 0
+                        ? "Danas!"
+                        : "Prošao"
+                }
+                icon={<LayoutDashboard size={18} />}
+              />
+              <StatTile
+                label="Datum"
+                value={
+                  eventDate
+                    ? new Date(eventDate).toLocaleDateString("sr-RS")
+                    : "—"
+                }
+                icon={<LayoutDashboard size={18} />}
+              />
+              <StatTile
+                label="Gostiju (sa pratiocima)"
+                value={String(guestCount)}
+                icon={<Users size={18} />}
+              />
+              <StatTile
+                label="Raspoređeno mesta"
+                value={
+                  seatingStats
+                    ? `${seatingStats.assignedSeats}/${seatingStats.totalSeats} (${fillPct}%)`
+                    : "—"
+                }
+                icon={<Armchair size={18} />}
+              />
+            </div>
+
+            {/* Checklista + Budžet summary cards (tap to open) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                onClick={() => setActive("planer")}
+                className="text-left rounded-2xl bg-white border p-5 shadow-sm hover:bg-[#faf9f6] transition-colors cursor-pointer"
+                style={{ borderColor: "var(--theme-border)" }}
               >
-                <Armchair size={15} />
-                Otvori stranicu za goste (Gde sedim / Utisci / Galerija)
-              </Link>
+                <div
+                  className="flex items-center gap-2 mb-3 text-xs uppercase tracking-wider"
+                  style={{ color: "var(--theme-text-light)" }}
+                >
+                  <ListChecks size={16} style={{ color: "var(--theme-primary)" }} />
+                  Checklista
+                </div>
+                <div className="flex items-end justify-between mb-2">
+                  <p className="font-serif text-2xl">
+                    {checkDone}
+                    <span style={{ color: "var(--theme-text-light)" }}>
+                      /{checkTotal}
+                    </span>
+                  </p>
+                  <span
+                    className="text-sm font-semibold"
+                    style={{ color: "var(--theme-primary)" }}
+                  >
+                    {checkPct}%
+                  </span>
+                </div>
+                <div className="h-1.5 rounded-full bg-black/8 overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${checkPct}%`,
+                      backgroundColor: "var(--theme-primary)",
+                    }}
+                  />
+                </div>
+              </button>
+
+              <button
+                onClick={() => setActive("budzet")}
+                className="text-left rounded-2xl bg-white border p-5 shadow-sm hover:bg-[#faf9f6] transition-colors cursor-pointer"
+                style={{ borderColor: "var(--theme-border)" }}
+              >
+                <div
+                  className="flex items-center gap-2 mb-3 text-xs uppercase tracking-wider"
+                  style={{ color: "var(--theme-text-light)" }}
+                >
+                  <Wallet size={16} style={{ color: "var(--theme-primary)" }} />
+                  Budžet
+                </div>
+                {plannedTotal > 0 || spentTotal > 0 ? (
+                  <>
+                    <p className="font-serif text-2xl mb-1">
+                      {formatMoney(spentTotal)}
+                      <span
+                        className="text-base"
+                        style={{ color: "var(--theme-text-light)" }}
+                      >
+                        {" "}
+                        / {formatMoney(plannedTotal)} RSD
+                      </span>
+                    </p>
+                    <div className="h-1.5 rounded-full bg-black/8 overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${plannedTotal ? Math.min(100, Math.round((spentTotal / plannedTotal) * 100)) : 0}%`,
+                          backgroundColor: "var(--theme-primary)",
+                        }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <p
+                    className="font-serif text-2xl"
+                    style={{ color: "var(--theme-text-light)" }}
+                  >
+                    —
+                  </p>
+                )}
+              </button>
             </div>
-            </div>
-          </>
+
+            {/* Guest-facing page link */}
+            <Link
+              href={`/raspored-sedenja/${slug}/gde-sedim`}
+              target="_blank"
+              className="inline-flex items-center gap-2 text-sm font-medium hover:underline"
+              style={{ color: "var(--theme-primary)" }}
+            >
+              <Armchair size={15} />
+              Otvori stranicu za goste (Gde sedim / Utisci / Galerija)
+              <ChevronRight size={14} />
+            </Link>
+          </div>
         )}
 
         {active === "planer" && (
@@ -261,56 +380,69 @@ export default function PortalClient({
         }}
       >
         <div className="max-w-4xl mx-auto flex justify-around items-center h-16">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActive(tab.key)}
-              className="flex flex-col items-center gap-1 flex-1 py-2 transition-colors"
-              style={{
-                color:
-                  active === tab.key
-                    ? "var(--theme-primary)"
-                    : "var(--theme-text-light)",
-              }}
-            >
-              {tab.icon}
-              <span className="text-[10px] font-medium font-raleway">
-                {tab.label}
-              </span>
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const isActive = "tab" in item && active === item.tab;
+            const cls =
+              "flex flex-col items-center gap-1 flex-1 py-2 transition-colors";
+            const color = isActive
+              ? "var(--theme-primary)"
+              : "var(--theme-text-light)";
+            return "tab" in item ? (
+              <button
+                key={item.key}
+                onClick={() => setActive(item.tab)}
+                className={cls}
+                style={{ color }}
+              >
+                {item.icon}
+                <span className="text-[10px] font-medium font-raleway">
+                  {item.label}
+                </span>
+              </button>
+            ) : (
+              <Link
+                key={item.key}
+                href={item.href}
+                className={cls}
+                style={{ color }}
+              >
+                {item.icon}
+                <span className="text-[10px] font-medium font-raleway">
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </nav>
     </div>
   );
 }
 
-function ShortcutTile({
+function Pill({
   label,
-  icon,
+  activeState,
   onClick,
 }: {
   label: string;
-  icon: React.ReactNode;
+  activeState: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white border p-4 shadow-sm transition-colors hover:bg-[#faf9f6] cursor-pointer"
-      style={{ borderColor: "var(--theme-border)" }}
+      className="px-5 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer"
+      style={
+        activeState
+          ? { backgroundColor: "var(--theme-primary)", color: "#fff" }
+          : {
+              backgroundColor: "#fff",
+              color: "var(--theme-text)",
+              border: "1px solid var(--theme-border)",
+            }
+      }
     >
-      <span style={{ color: "var(--theme-primary)" }}>{icon}</span>
-      <span
-        className="text-xs font-medium font-raleway"
-        style={{ color: "var(--theme-text)" }}
-      >
-        {label}
-      </span>
-      <ChevronRight
-        size={13}
-        style={{ color: "var(--theme-text-light)" }}
-      />
+      {label}
     </button>
   );
 }
