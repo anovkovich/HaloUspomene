@@ -1,5 +1,10 @@
 import type { RSVPEntry } from "@/lib/rsvp";
 import type { TableData } from "../types";
+import {
+  buildGuestIndex,
+  buildTableGuestLists,
+  type PartyRow,
+} from "./guestList";
 
 async function loadFont(path: string): Promise<string> {
   const res = await fetch(path);
@@ -16,6 +21,9 @@ export async function generateAndDownloadPDF(
   attending: RSVPEntry[],
   coupleNames: string,
   slug: string,
+  /** Guest seat-lookup URL encoded in the QR. Defaults to the couple route;
+   *  birthday/standalone consumers pass their own. */
+  lookupUrl?: string,
 ) {
   // ── Floor plan SVG ────────────────────────────────────────────────────────
   const SEAT_SZ = 30,
@@ -157,37 +165,8 @@ export async function generateAndDownloadPDF(
 
   const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" style="background:#fff">${shapes.join("\n")}</svg>`;
 
-  // ── Guest list data ────────────────────────────────────────────────────────
-  const guestMap = Object.fromEntries(attending.map((g) => [g.id, g]));
-  const seatingTables = tables
-    .filter((t) => t.type !== "decoration")
-    .sort((a, b) => {
-      const special = (l: string) =>
-        l.toLowerCase().includes("mladen") ? -1 : 0;
-      const sa = special(a.label),
-        sb = special(b.label);
-      if (sa !== sb) return sa - sb;
-      return a.label.localeCompare(b.label, "sr");
-    })
-    .map((table) => {
-      const guestSeats: Record<
-        string,
-        { name: string; here: number; total: number }
-      > = {};
-      for (const seat of table.assignments) {
-        if (!seat) continue;
-        const g = guestMap[seat.guestId];
-        if (!guestSeats[seat.guestId])
-          guestSeats[seat.guestId] = {
-            name: seat.guestName,
-            here: 0,
-            total: parseInt(g?.guestCount || "1") || 1,
-          };
-        guestSeats[seat.guestId].here++;
-      }
-      return { label: table.label, guests: Object.values(guestSeats) };
-    })
-    .filter((t) => t.guests.length > 0);
+  // ── Guest list data (grouping rules live in ./guestList) ───────────────────
+  const seatingTables = buildTableGuestLists(tables, attending);
 
   // ── SVG → PNG via canvas ───────────────────────────────────────────────────
   const svgImgData = await new Promise<string>((resolve) => {
@@ -264,7 +243,8 @@ export async function generateAndDownloadPDF(
   // ── QR code for /gde-sedim ─────────────────────────────────────────────────
   try {
     const QRCode = await import("qrcode");
-    const qrUrl = `https://halouspomene.rs/pozivnica/${slug}/gde-sedim`;
+    const qrUrl =
+      lookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim`;
     const qrDataUrl = await QRCode.toDataURL(qrUrl, {
       width: 512,
       margin: 1,
@@ -310,7 +290,8 @@ export async function generateAndDownloadPDF(
   // while keeping the file tiny (vector text instead of full-page bitmaps).
   const COL_GAP = 6; // mm between the two columns
   const COL_W = (CW - COL_GAP) / 2;
-  const ROW_H = 6; // mm per guest row
+  const ROW_H = 6; // mm per party row
+  const SUB_H = 4.6; // mm per named member listed under a party
   const LABEL_H = 9; // mm for a table label + its divider
   const BLOCK_GAP = 4; // mm after each table block
   const TITLE_H = 10; // mm reserved for a page title
@@ -328,14 +309,16 @@ export async function generateAndDownloadPDF(
   type GBlock = {
     c: number;
     y: number;
-    t: { label: string; guests: { name: string; here: number; total: number }[] };
+    t: { label: string; guests: PartyRow[] };
   };
+  const blockHeight = (guests: PartyRow[]) =>
+    guests.reduce((h, g) => h + ROW_H + g.members.length * SUB_H, 0);
   const gPages: GBlock[][] = [];
   let gPage: GBlock[] = [];
   let gColY = [TITLE_H, TITLE_H];
 
   for (const t of seatingTables) {
-    const bh = LABEL_H + t.guests.length * ROW_H + BLOCK_GAP;
+    const bh = LABEL_H + blockHeight(t.guests) + BLOCK_GAP;
     let c = gColY[0] <= gColY[1] ? 0 : 1;
     if (gColY[c] + bh > USABLE_H) {
       const oc = 1 - c;
@@ -369,16 +352,29 @@ export async function generateAndDownloadPDF(
       doc.setDrawColor(221, 221, 221);
       doc.setLineWidth(0.4);
       doc.line(x, top + LABEL_H, x + COL_W, top + LABEL_H);
-      // Guest rows
-      doc.setFontSize(10.5);
+      // Party rows (+ the individual members seated under each)
       let gy = top + LABEL_H;
       for (const g of t.guests) {
+        doc.setFontSize(10.5);
         const ty = gy + ROW_H * 0.68;
         doc.setTextColor(35, 35, 35);
         doc.text(g.name, x + 1, ty);
         doc.setTextColor(170, 170, 170);
         doc.text(`${g.here}/${g.total}`, x + COL_W - 1, ty, { align: "right" });
         gy += ROW_H;
+
+        doc.setFontSize(9);
+        for (const m of g.members) {
+          const my = gy + SUB_H * 0.72;
+          doc.setTextColor(120, 120, 120);
+          doc.text(`· ${m.name}`, x + 4, my);
+          if (m.seats > 1) {
+            doc.setTextColor(180, 180, 180);
+            doc.text(`${m.seats}`, x + COL_W - 1, my, { align: "right" });
+          }
+          gy += SUB_H;
+        }
+
         doc.setDrawColor(240, 240, 240);
         doc.setLineWidth(0.2);
         doc.line(x, gy, x + COL_W, gy);
@@ -387,16 +383,9 @@ export async function generateAndDownloadPDF(
   }
 
   // ── Alphabetical guest index ───────────────────────────────────────────────
-  const guestTableMap: Record<string, Set<string>> = {};
-  for (const t of seatingTables) {
-    for (const g of t.guests) {
-      if (!guestTableMap[g.name]) guestTableMap[g.name] = new Set();
-      guestTableMap[g.name].add(t.label);
-    }
-  }
-  const allGuests = Object.entries(guestTableMap)
-    .map(([name, tableSet]) => ({ name, tables: [...tableSet].join(", ") }))
-    .sort((a, b) => a.name.localeCompare(b.name, "sr"));
+  // Every individual name is indexed, not just the party holder — that's what
+  // makes the printed list usable at the door.
+  const allGuests = buildGuestIndex(seatingTables);
 
   if (allGuests.length > 0) {
     type ABlock = { c: number; y: number; g: { name: string; tables: string } };

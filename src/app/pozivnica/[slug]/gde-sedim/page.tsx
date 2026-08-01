@@ -8,6 +8,8 @@ import {
   getPremiumWeddingSlugs,
 } from "@/data/pozivnice";
 import { loadSeatingLayout } from "@/lib/seating";
+import { buildGuestLookup } from "@/lib/seating/lookup";
+import { getRSVPResponses } from "@/lib/rsvp";
 import { getGalleryPhotos } from "@/lib/gallery";
 import { getAudioMessages } from "@/lib/audio";
 import { galleryPhase } from "@/lib/gallery-lifecycle";
@@ -66,18 +68,12 @@ export async function generateStaticParams() {
   return [...classic, ...premium].map((slug) => ({ slug }));
 }
 
-export interface GuestTableEntry {
-  tableId: string;
-  tableLabel: string;
-  assignedSeats: number; // how many seats this guest occupies at this table
-  seatCount: number;     // total capacity of the table
-  occupiedCount: number; // total occupied seats at this table
-}
-
-export interface GuestLookupEntry {
-  guestName: string;
-  tables: GuestTableEntry[];
-}
+// Canonical shapes live in @/lib/seating/lookup (shared with the birthday and
+// standalone lookup pages); re-exported here for existing importers.
+export type {
+  GuestTableEntry,
+  GuestLookupEntry,
+} from "@/lib/seating/lookup";
 
 export default async function GdeSedimPage({ params }: PageProps) {
   const { slug } = await params;
@@ -107,45 +103,20 @@ export default async function GdeSedimPage({ params }: PageProps) {
   }
 
   // ── Build guest lookup ───────────────────────────────────────────────────
-  // Group by guestName → map of tableId → assigned seat count
-  const guestTableMap = new Map<string, Map<string, { assignedSeats: number; tableLabel: string; seatCount: number; occupiedCount: number }>>();
-
-  for (const table of tables) {
-    if (table.type === "decoration") continue;
-    const occupiedCount = table.assignments.filter(Boolean).length;
-
-    for (const seat of table.assignments) {
-      if (!seat) continue;
-      if (!guestTableMap.has(seat.guestName)) {
-        guestTableMap.set(seat.guestName, new Map());
-      }
-      const tableMap = guestTableMap.get(seat.guestName)!;
-      const existing = tableMap.get(table.id);
-      if (existing) {
-        existing.assignedSeats += 1;
-      } else {
-        tableMap.set(table.id, {
-          assignedSeats: 1,
-          tableLabel: table.label,
-          seatCount: table.seats,
-          occupiedCount,
-        });
-      }
+  // The RSVP roster supplies the party ("zvanica") holder names, so a guest who
+  // searches any member of a family sees the whole party's arrangement.
+  let parties: { id: string; name: string }[] = [];
+  if (hasSeating) {
+    try {
+      parties = (await getRSVPResponses(slug)).map((r) => ({
+        id: r.id,
+        name: r.name,
+      }));
+    } catch {
+      parties = [];
     }
   }
-
-  const guestLookup: GuestLookupEntry[] = Array.from(guestTableMap.entries()).map(
-    ([guestName, tableMap]) => ({
-      guestName,
-      tables: Array.from(tableMap.entries()).map(([tableId, info]) => ({
-        tableId,
-        tableLabel: info.tableLabel,
-        assignedSeats: info.assignedSeats,
-        seatCount: info.seatCount,
-        occupiedCount: info.occupiedCount,
-      })),
-    }),
-  );
+  const guestLookup = buildGuestLookup(tables, parties);
 
   // ── Gallery ──────────────────────────────────────────────────────────────
   const phase = galleryPhase(

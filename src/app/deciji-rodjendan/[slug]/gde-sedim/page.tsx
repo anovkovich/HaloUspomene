@@ -4,12 +4,10 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getBirthdayData, getAllBirthdaySlugs } from "@/lib/birthday";
 import { loadSeatingLayout } from "@/lib/seating";
+import { buildGuestLookup } from "@/lib/seating/lookup";
+import { getBirthdayRSVP } from "@/lib/birthday-rsvp";
 import { getBirthdayThemeCSSVariables } from "../constants";
 import type { TableData } from "@/lib/seating";
-import type {
-  GuestLookupEntry,
-  GuestTableEntry,
-} from "@/app/pozivnica/[slug]/gde-sedim/page";
 import GdeSedimClient from "@/app/pozivnica/[slug]/gde-sedim/GdeSedimClient";
 
 export const dynamicParams = true;
@@ -67,57 +65,18 @@ export default async function BirthdayGdeSedimPage({ params }: PageProps) {
   }
 
   // ── Build guest lookup — same algorithm as the wedding page ─────────────
-  const guestTableMap = new Map<
-    string,
-    Map<
-      string,
-      {
-        assignedSeats: number;
-        tableLabel: string;
-        seatCount: number;
-        occupiedCount: number;
-      }
-    >
-  >();
-
-  for (const table of tables) {
-    if (table.type === "decoration") continue;
-    const occupiedCount = table.assignments.filter(Boolean).length;
-
-    for (const seat of table.assignments) {
-      if (!seat) continue;
-      if (!guestTableMap.has(seat.guestName)) {
-        guestTableMap.set(seat.guestName, new Map());
-      }
-      const tableMap = guestTableMap.get(seat.guestName)!;
-      const existing = tableMap.get(table.id);
-      if (existing) {
-        existing.assignedSeats += 1;
-      } else {
-        tableMap.set(table.id, {
-          assignedSeats: 1,
-          tableLabel: table.label,
-          seatCount: table.seats,
-          occupiedCount,
-        });
-      }
-    }
+  // The RSVP roster supplies the party ("zvanica") holder names, so any member
+  // of a party finds the whole party's arrangement.
+  let parties: { id: string; name: string }[] = [];
+  try {
+    parties = (await getBirthdayRSVP(slug)).map((r) => ({
+      id: r.id,
+      name: r.name,
+    }));
+  } catch {
+    parties = [];
   }
-
-  const guestLookup: GuestLookupEntry[] = Array.from(
-    guestTableMap.entries(),
-  ).map(([guestName, tableMap]) => ({
-    guestName,
-    tables: Array.from(tableMap.entries()).map<GuestTableEntry>(
-      ([tableId, info]) => ({
-        tableId,
-        tableLabel: info.tableLabel,
-        assignedSeats: info.assignedSeats,
-        seatCount: info.seatCount,
-        occupiedCount: info.occupiedCount,
-      }),
-    ),
-  }));
+  const guestLookup = buildGuestLookup(tables, parties);
 
   const honoree =
     data.type === "eighteenth"

@@ -3,7 +3,11 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Search, Armchair } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { GuestLookupEntry, GuestTableEntry } from "./page";
+import type {
+  GuestLookupEntry,
+  GuestTableEntry,
+} from "@/lib/seating/lookup";
+import { normalizeName, searchGuestLookup } from "@/lib/seating/lookup";
 import type { TableData } from "@/lib/seating";
 import HallMap from "./HallMap";
 
@@ -27,12 +31,6 @@ interface Props {
   onFreeTablesChange?: (tableIds: string[]) => void;
 }
 
-const normalize = (s: string) =>
-  s
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-
 export default function GdeSedimClient({
   guestLookup,
   tables,
@@ -52,6 +50,7 @@ export default function GdeSedimClient({
         yourSeatPlural: "Va\u0161a mjesta",
         welcome: "Smjestite se i u\u017eivajte \u2014 hvala \u0161to ste tu",
         seatUnit: (n: number) => (n === 1 ? "mjesto" : "mjesta"),
+        partyHeading: "Mjesta za zvanicu",
         notFoundTitle: "Dobro do\u0161li!",
         notAssigned:
           "Va\u0161e mjesto nije raspore\u0111eno za konkretan sto.",
@@ -68,6 +67,7 @@ export default function GdeSedimClient({
         yourSeatPlural: "Va\u0161a mesta",
         welcome: "Smestite se i u\u017eivajte \u2014 hvala \u0161to ste tu",
         seatUnit: (n: number) => (n === 1 ? "mesto" : "mesta"),
+        partyHeading: "Mesta za zvanicu",
         notFoundTitle: "Dobro do\u0161li!",
         notAssigned:
           "Va\u0161e mesto nije raspore\u0111eno za konkretan sto.",
@@ -95,14 +95,10 @@ export default function GdeSedimClient({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // One entry per unique guest name — no duplicates possible
+  // Script- and order-insensitive: "Ognjen Ikovic", "ikovic ognjen" and
+  // "Огњен" all find the same guest (see @/lib/seating/lookup).
   const suggestions = useMemo(
-    () =>
-      query.length === 0
-        ? []
-        : guestLookup
-            .filter((e) => normalize(e.guestName).includes(normalize(query)))
-            .slice(0, 8),
+    () => (query.length === 0 ? [] : searchGuestLookup(guestLookup, query, 8)),
     [guestLookup, query],
   );
 
@@ -123,11 +119,6 @@ export default function GdeSedimClient({
 
   // "Not found" once the guest has typed enough and nothing matches.
   const notFound = query.trim().length >= 2 && suggestions.length === 0;
-
-  // Reset active index when suggestions change
-  useEffect(() => {
-    setActiveIndex(-1);
-  }, [suggestions]);
 
   // Tell the hub which tables to highlight on its "Plan sale" tab (free tables
   // when unmatched; cleared otherwise so a matched guest's tables take over).
@@ -213,6 +204,9 @@ export default function GdeSedimClient({
             onChange={(e) => {
               setQuery(e.target.value);
               setShowDropdown(true);
+              // Suggestions change with every keystroke — keep the keyboard
+              // highlight from pointing at a stale row.
+              setActiveIndex(-1);
               if (selected) setSelected(null);
             }}
             onFocus={() => {
@@ -244,7 +238,7 @@ export default function GdeSedimClient({
           >
             {suggestions.map((entry, i) => (
               <button
-                key={entry.guestName}
+                key={`${entry.guestName}-${i}`}
                 onMouseDown={(e) => {
                   e.preventDefault();
                   handleSelect(entry);
@@ -263,6 +257,16 @@ export default function GdeSedimClient({
                 }}
               >
                 {entry.guestName}
+                {entry.partyName &&
+                  normalizeName(entry.partyName) !==
+                    normalizeName(entry.guestName) && (
+                    <span
+                      className="block text-xs mt-0.5"
+                      style={{ color: "var(--theme-text-light)" }}
+                    >
+                      {tr.partyHeading} {entry.partyName}
+                    </span>
+                  )}
               </button>
             ))}
           </div>
@@ -396,6 +400,62 @@ export default function GdeSedimClient({
                 </div>
               )}
             </div>
+
+            {/* Party ("zvanica") breakdown — when the couple named the members
+                of a family, whoever searches sees where everyone from that
+                invitation sits, with their own row highlighted. */}
+            {selected.partyMembers && selected.partyMembers.length > 1 && (
+              <div className="pt-3">
+                <p
+                  className="font-raleway text-[10px] uppercase tracking-[0.25em] mb-3"
+                  style={{ color: "var(--theme-text-light)" }}
+                >
+                  {tr.partyHeading}
+                  {selected.partyName ? ` ${selected.partyName}` : ""}
+                </p>
+                <div className="space-y-1.5 max-w-xs mx-auto text-left">
+                  {selected.partyMembers.map((m, i) => {
+                    const isMe =
+                      normalizeName(m.name) === normalizeName(selected.guestName);
+                    return (
+                      <div
+                        key={`${m.name}-${m.tableId}-${i}`}
+                        className="flex items-baseline justify-between gap-3 rounded-xl px-3 py-2"
+                        style={{
+                          backgroundColor: isMe
+                            ? "var(--theme-primary-muted)"
+                            : "transparent",
+                          border: `1px solid ${
+                            isMe ? "var(--theme-border)" : "transparent"
+                          }`,
+                        }}
+                      >
+                        <span
+                          className="font-raleway text-sm"
+                          style={{
+                            color: isMe
+                              ? "var(--theme-text)"
+                              : "var(--theme-text-muted)",
+                            fontWeight: isMe ? 600 : 400,
+                          }}
+                        >
+                          {m.name}
+                        </span>
+                        <span
+                          className="font-raleway text-sm whitespace-nowrap"
+                          style={{ color: "var(--theme-primary)" }}
+                        >
+                          {m.tableLabel}
+                          {m.assignedSeats > 1
+                            ? ` (${m.assignedSeats} ${tr.seatUnit(m.assignedSeats)})`
+                            : ""}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Bottom accent strip */}

@@ -860,7 +860,7 @@ export default function RasporedClient({
                       if (isDirty) { showToast("Sačuvaj pre preuzimanja"); return; }
                       setPdfLoading(true);
                       try {
-                        await generateAndDownloadPDF(tables, attending, coupleNames, slug);
+                        await generateAndDownloadPDF(tables, attending, coupleNames, slug, resolvedLookupUrl);
                       } finally {
                         setPdfLoading(false);
                       }
@@ -1316,7 +1316,7 @@ export default function RasporedClient({
             guestLookupUrl={resolvedLookupUrl}
             onSave={() => handleSave()}
             onDownloadPDF={() =>
-              generateAndDownloadPDF(tables, attending, coupleNames, slug)
+              generateAndDownloadPDF(tables, attending, coupleNames, slug, resolvedLookupUrl)
             }
             onRequestPanoDesign={onRequestPanoDesign}
             onDownloadRsvpQR={onDownloadRsvpQR}
@@ -1513,7 +1513,7 @@ export default function RasporedClient({
                     setShowPWAMenu(false);
                     setPdfLoading(true);
                     try {
-                      await generateAndDownloadPDF(tables, attending, coupleNames, slug);
+                      await generateAndDownloadPDF(tables, attending, coupleNames, slug, resolvedLookupUrl);
                     } finally {
                       setPdfLoading(false);
                     }

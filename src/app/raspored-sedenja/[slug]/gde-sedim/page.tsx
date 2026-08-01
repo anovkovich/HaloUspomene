@@ -4,13 +4,10 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getStandaloneSeating } from "@/lib/standalone-seating";
 import { loadSeatingLayout, type TableData } from "@/lib/seating";
+import { buildGuestLookup } from "@/lib/seating/lookup";
 import { getGalleryPhotos } from "@/lib/gallery";
 import { galleryPhase } from "@/lib/gallery-lifecycle";
 import { getAudioMessages } from "@/lib/audio";
-import type {
-  GuestLookupEntry,
-  GuestTableEntry,
-} from "@/app/pozivnica/[slug]/gde-sedim/page";
 import GdeSedimClient from "@/app/pozivnica/[slug]/gde-sedim/GdeSedimClient";
 import GuestHubClient from "@/app/pozivnica/[slug]/gde-sedim/GuestHubClient";
 
@@ -72,57 +69,12 @@ export default async function StandaloneGdeSedimPage({ params }: PageProps) {
   }
 
   // ── Build guest lookup (mirrors wedding /gde-sedim) ────────────────────
-  const guestTableMap = new Map<
-    string,
-    Map<
-      string,
-      {
-        assignedSeats: number;
-        tableLabel: string;
-        seatCount: number;
-        occupiedCount: number;
-      }
-    >
-  >();
-
-  for (const table of tables) {
-    if (table.type === "decoration") continue;
-    const occupiedCount = table.assignments.filter(Boolean).length;
-
-    for (const seat of table.assignments) {
-      if (!seat) continue;
-      if (!guestTableMap.has(seat.guestName)) {
-        guestTableMap.set(seat.guestName, new Map());
-      }
-      const tableMap = guestTableMap.get(seat.guestName)!;
-      const existing = tableMap.get(table.id);
-      if (existing) {
-        existing.assignedSeats += 1;
-      } else {
-        tableMap.set(table.id, {
-          assignedSeats: 1,
-          tableLabel: table.label,
-          seatCount: table.seats,
-          occupiedCount,
-        });
-      }
-    }
-  }
-
-  const guestLookup: GuestLookupEntry[] = Array.from(
-    guestTableMap.entries(),
-  ).map(([guestName, tableMap]) => ({
-    guestName,
-    tables: Array.from(tableMap.entries()).map<GuestTableEntry>(
-      ([tableId, info]) => ({
-        tableId,
-        tableLabel: info.tableLabel,
-        assignedSeats: info.assignedSeats,
-        seatCount: info.seatCount,
-        occupiedCount: info.occupiedCount,
-      }),
-    ),
-  }));
+  // The owner's guest list supplies the party ("zvanica") holder names, so any
+  // member of a party finds the whole party's arrangement.
+  const guestLookup = buildGuestLookup(
+    tables,
+    data.guests.map((g) => ({ id: g.id, name: g.name })),
+  );
 
   // When the owner enabled audio and/or gallery, the gde-sedim URL (the QR
   // pano destination) becomes the full guest hub with bottom tabs. Both
