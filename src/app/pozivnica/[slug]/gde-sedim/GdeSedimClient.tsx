@@ -403,7 +403,8 @@ export default function GdeSedimClient({
 
             {/* Party ("zvanica") breakdown — when the couple named the members
                 of a family, whoever searches sees where everyone from that
-                invitation sits, with their own row highlighted. */}
+                invitation sits. Rows are styled alike: the searched guest is
+                already named at the top of the card. */}
             {selected.partyMembers && selected.partyMembers.length > 1 && (
               <div className="pt-3">
                 <p
@@ -414,45 +415,28 @@ export default function GdeSedimClient({
                   {selected.partyName ? ` ${selected.partyName}` : ""}
                 </p>
                 <div className="space-y-1.5 max-w-xs mx-auto text-left">
-                  {selected.partyMembers.map((m, i) => {
-                    const isMe =
-                      normalizeName(m.name) === normalizeName(selected.guestName);
-                    return (
-                      <div
-                        key={`${m.name}-${m.tableId}-${i}`}
-                        className="flex items-baseline justify-between gap-3 rounded-xl px-3 py-2"
-                        style={{
-                          backgroundColor: isMe
-                            ? "var(--theme-primary-muted)"
-                            : "transparent",
-                          border: `1px solid ${
-                            isMe ? "var(--theme-border)" : "transparent"
-                          }`,
-                        }}
+                  {selected.partyMembers.map((m, i) => (
+                    <div
+                      key={`${m.name}-${m.tableId}-${i}`}
+                      className="flex items-baseline justify-between gap-3 px-3 py-1.5"
+                    >
+                      <span
+                        className="font-raleway text-sm"
+                        style={{ color: "var(--theme-text-muted)" }}
                       >
-                        <span
-                          className="font-raleway text-sm"
-                          style={{
-                            color: isMe
-                              ? "var(--theme-text)"
-                              : "var(--theme-text-muted)",
-                            fontWeight: isMe ? 600 : 400,
-                          }}
-                        >
-                          {m.name}
-                        </span>
-                        <span
-                          className="font-raleway text-sm whitespace-nowrap"
-                          style={{ color: "var(--theme-primary)" }}
-                        >
-                          {m.tableLabel}
-                          {m.assignedSeats > 1
-                            ? ` (${m.assignedSeats} ${tr.seatUnit(m.assignedSeats)})`
-                            : ""}
-                        </span>
-                      </div>
-                    );
-                  })}
+                        {m.name}
+                      </span>
+                      <span
+                        className="font-raleway text-sm whitespace-nowrap"
+                        style={{ color: "var(--theme-primary)" }}
+                      >
+                        {m.tableLabel}
+                        {m.assignedSeats > 1
+                          ? ` (${m.assignedSeats} ${tr.seatUnit(m.assignedSeats)})`
+                          : ""}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

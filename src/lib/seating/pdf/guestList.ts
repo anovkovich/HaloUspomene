@@ -86,7 +86,14 @@ export function buildTableGuestLists(
     .filter((t) => t.guests.length > 0);
 }
 
-/** Alphabetical index: every individual name, plus each party holder. */
+/**
+ * Alphabetical index — one row per person.
+ *
+ * A party contributes its named members when it has them, otherwise the party
+ * itself. Listing both would print the same person twice (an "Ognjen Ikovic"
+ * party whose first member is "Огњен Иковић"), which is exactly what this list
+ * is meant to make easy to scan.
+ */
 export function buildGuestIndex(
   guestLists: TableGuestList[],
 ): { name: string; tables: string }[] {
@@ -97,8 +104,11 @@ export function buildGuestIndex(
   };
   for (const t of guestLists) {
     for (const g of t.guests) {
-      add(g.name, t.label);
-      for (const m of g.members) add(m.name, t.label);
+      if (g.members.length > 0) {
+        for (const m of g.members) add(m.name, t.label);
+      } else {
+        add(g.name, t.label);
+      }
     }
   }
   return Object.entries(byName)
