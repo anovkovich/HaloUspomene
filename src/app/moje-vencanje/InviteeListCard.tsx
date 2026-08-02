@@ -16,6 +16,7 @@ import {
   Search,
   UserPlus,
   UserCheck,
+  UserX,
   FolderPlus,
   Users,
   Star,
@@ -274,16 +275,17 @@ function ConfirmAttendanceModal({
   invitee: Invitee;
   linkedRsvp: RSVPEntry | null;
   onClose: () => void;
-  onConfirm: (name: string, count: number) => void;
+  onConfirm: (name: string, count: number, attends: "Da" | "Ne") => void;
   onUndo: () => void;
 }) {
   const manual = !!invitee.manualPotvrda;
   const [name, setName] = useState(invitee.name);
   const [count, setCount] = useState(Math.max(1, invitee.count));
 
-  // Confirmed by the manual "Potvrdi dolazak" — a real potvrda was created in the
-  // Potvrde gostiju list and linked here. Summary + undo (which deletes it).
+  // Answered through this dialog — a real potvrda was created in the Potvrde
+  // gostiju list and linked here. Summary + undo (which deletes it).
   if (linkedRsvp && manual) {
+    const declined = linkedRsvp.attending === "Ne";
     return (
       <div
         className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
@@ -295,7 +297,7 @@ function ConfirmAttendanceModal({
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-serif text-lg text-[#232323]">
-              Potvrđen dolazak
+              {declined ? "Otkazan dolazak" : "Potvrđen dolazak"}
             </h3>
             <button
               onClick={onClose}
@@ -304,15 +306,27 @@ function ConfirmAttendanceModal({
               <X size={18} />
             </button>
           </div>
-          <div className="flex items-center gap-2 px-3 py-3 rounded-xl border border-[#4a8a5c]/45 bg-[#4a8a5c]/[0.06] mb-4">
-            <Check size={15} className="text-[#3a6e49] shrink-0" />
+          <div
+            className={`flex items-center gap-2 px-3 py-3 rounded-xl border mb-4 ${
+              declined
+                ? "border-[#AE343F]/40 bg-[#AE343F]/[0.06]"
+                : "border-[#4a8a5c]/45 bg-[#4a8a5c]/[0.06]"
+            }`}
+          >
+            {declined ? (
+              <X size={15} className="text-[#AE343F] shrink-0" />
+            ) : (
+              <Check size={15} className="text-[#3a6e49] shrink-0" />
+            )}
             <span className="text-sm text-[#232323]">
-              <strong>{linkedRsvp.name}</strong> · {linkedRsvp.guestCount} os.
+              <strong>{linkedRsvp.name}</strong> ·{" "}
+              {declined ? "ne dolazi" : `${linkedRsvp.guestCount} os.`}
             </span>
           </div>
           <p className="text-xs text-[#232323]/55 mb-5 leading-relaxed">
-            Potvrda je kreirana i vidljiva u listi „Potvrde gostiju”. Ako je
-            poništite, briše se i ta potvrda.
+            {declined
+              ? "Otkazivanje je zavedeno u listi „Potvrde gostiju” (Ne dolaze). Ako ga poništite, briše se i taj odgovor."
+              : "Potvrda je kreirana i vidljiva u listi „Potvrde gostiju”. Ako je poništite, briše se i ta potvrda."}
           </p>
           <button
             onClick={() => {
@@ -322,7 +336,7 @@ function ConfirmAttendanceModal({
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-[#AE343F]/[0.08] text-[#AE343F] hover:bg-[#AE343F]/[0.14] transition-colors cursor-pointer"
           >
             <Unlink size={15} />
-            Poništi potvrdu
+            {declined ? "Poništi otkazivanje" : "Poništi potvrdu"}
           </button>
         </div>
       </div>
@@ -373,7 +387,7 @@ function ConfirmAttendanceModal({
     );
   }
 
-  // Not confirmed — create a potvrda for this zvanica (as if the guest self-confirmed).
+  // No answer yet — record one for this zvanica (as if the guest answered).
   return (
     <div
       className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
@@ -384,7 +398,7 @@ function ConfirmAttendanceModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-1">
-          <h3 className="font-serif text-lg text-[#232323]">Potvrdi dolazak</h3>
+          <h3 className="font-serif text-lg text-[#232323]">Odgovor gosta</h3>
           <button
             onClick={onClose}
             className="text-[#232323]/60 hover:text-[#232323] transition-colors cursor-pointer"
@@ -393,8 +407,8 @@ function ConfirmAttendanceModal({
           </button>
         </div>
         <p className="text-xs text-[#232323]/55 mb-5 leading-relaxed">
-          Pravimo potvrdu u listi „Potvrde gostiju” i vezujemo je za ovu zvanicu
-          — kao da je gost sam potvrdio dolazak.
+          Pravimo odgovor u listi „Potvrde gostiju” i vezujemo ga za ovu zvanicu
+          — kao da je gost sam odgovorio.
         </p>
 
         {/* Naziv potvrde */}
@@ -409,9 +423,9 @@ function ConfirmAttendanceModal({
           className="w-full bg-white px-3 py-2.5 text-sm rounded-lg border border-[#232323]/20 outline-none focus:border-[#4a8a5c] transition-colors mb-4"
         />
 
-        {/* Broj osoba */}
+        {/* Broj osoba — samo za dolazak; otkazivanje se vodi bez broja osoba */}
         <label className="block text-xs font-medium text-[#232323]/70 mb-1.5">
-          Broj osoba
+          Broj osoba <span className="text-[#232323]/45">(ako dolazi)</span>
         </label>
         <div className="flex items-center gap-4 mb-6">
           <button
@@ -433,13 +447,24 @@ function ConfirmAttendanceModal({
 
         <button
           onClick={() => {
-            onConfirm(name.trim() || invitee.name, Math.max(1, count));
+            onConfirm(name.trim() || invitee.name, Math.max(1, count), "Da");
             onClose();
           }}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-[#4a8a5c] hover:bg-[#3a6e49] text-white transition-colors cursor-pointer"
         >
           <UserCheck size={15} />
           Potvrdi dolazak
+        </button>
+
+        <button
+          onClick={() => {
+            onConfirm(name.trim() || invitee.name, 1, "Ne");
+            onClose();
+          }}
+          className="w-full mt-2.5 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold border border-[#AE343F]/35 text-[#AE343F] hover:bg-[#AE343F]/[0.08] transition-colors cursor-pointer"
+        >
+          <UserX size={15} />
+          Otkazao dolazak
         </button>
       </div>
     </div>
@@ -599,19 +624,24 @@ function InviteeEditor({
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const isConfirmed = invitee.status === "confirmed";
+  // A zvanica with a real potvrda (confirmed OR cancelled through the answer
+  // dialog) takes its status from that potvrda — the planning chips are hidden
+  // so the two can't drift apart.
+  const hasAnswer = isConfirmed || !!invitee.linkedRsvpId;
+  const answerDeclined = hasAnswer && !isConfirmed;
 
   const handleSave = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    // Never let the editor's planning-status buttons produce "confirmed" — that
-    // state is owned by the Potvrdi dolazak flow. (isConfirmed short-circuits the
-    // grid, so `status` here is always one of the planning states.)
+    // Never let the editor's planning-status buttons override a status that came
+    // from a potvrda. (hasAnswer short-circuits the grid, so `status` here is
+    // always one of the planning states.)
     onSave({
       name: trimmed,
       count: Math.max(1, count),
       sectionId,
       category,
-      status: isConfirmed ? invitee.status : status,
+      status: hasAnswer ? invitee.status : status,
     });
     onClose();
   };
@@ -672,17 +702,31 @@ function InviteeEditor({
         <label className="block text-xs font-medium text-[#232323]/70 mb-1.5">
           Status
         </label>
-        {isConfirmed ? (
-          <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-[#4a8a5c]/50 bg-[#4a8a5c]/[0.06] mb-4">
+        {hasAnswer ? (
+          <div
+            className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border mb-4 ${
+              answerDeclined
+                ? "border-[#AE343F]/45 bg-[#AE343F]/[0.06]"
+                : "border-[#4a8a5c]/50 bg-[#4a8a5c]/[0.06]"
+            }`}
+          >
             <span className="text-sm text-[#232323] min-w-0 truncate">
-              <Check size={13} className="inline text-[#3a6e49] mr-1" />
-              Potvrđen dolazak
-              {linkedRsvp ? ` — ${linkedRsvp.name}` : ""} · {Math.max(1, count)}{" "}
-              os.
+              {answerDeclined ? (
+                <X size={13} className="inline text-[#AE343F] mr-1" />
+              ) : (
+                <Check size={13} className="inline text-[#3a6e49] mr-1" />
+              )}
+              {answerDeclined ? "Otkazan dolazak" : "Potvrđen dolazak"}
+              {linkedRsvp ? ` — ${linkedRsvp.name}` : ""}
+              {answerDeclined ? "" : ` · ${Math.max(1, count)} os.`}
             </span>
             <button
               onClick={onOpenConfirm}
-              className="shrink-0 text-xs font-semibold text-[#3a6e49] hover:text-[#AE343F] transition-colors cursor-pointer"
+              className={`shrink-0 text-xs font-semibold transition-colors cursor-pointer ${
+                answerDeclined
+                  ? "text-[#AE343F] hover:text-[#232323]"
+                  : "text-[#3a6e49] hover:text-[#AE343F]"
+              }`}
             >
               Izmeni
             </button>
@@ -863,6 +907,9 @@ function InviteeRow({
 }) {
   const meta = STATUS_META[invitee.status];
   const isConfirmed = invitee.status === "confirmed";
+  // A linked zvanica takes its status from the potvrda, so the dot must not
+  // cycle it out of sync — it opens the answer dialog instead.
+  const hasAnswer = isConfirmed || !!invitee.linkedRsvpId;
   return (
     <motion.div
       layout
@@ -884,16 +931,16 @@ function InviteeRow({
       />
 
       {/* Status dot — tap to cycle planning states (Nepozvan/Pozvan/Otkazao).
-          When confirmed (green), the dot is owned by the Potvrdi dolazak flow:
-          tapping it opens that dialog instead of cycling, so the dot never toggles
-          the green state on or off. */}
+          Once the zvanica has a real answer (potvrda), the dot is owned by that
+          flow: tapping it opens the answer dialog instead of cycling, so the dot
+          never desyncs the zvanica from its potvrda. */}
       <button
         onClick={() =>
-          isConfirmed ? onConfirm(invitee.id) : onStatusCycle(invitee.id)
+          hasAnswer ? onConfirm(invitee.id) : onStatusCycle(invitee.id)
         }
         title={
-          isConfirmed
-            ? "Potvrđen dolazak (klik za izmenu)"
+          hasAnswer
+            ? `${meta.label} (klik za izmenu)`
             : `${meta.label} (klik za promenu)`
         }
         className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-transform active:scale-90 cursor-pointer ${meta.dot}`}
@@ -952,12 +999,12 @@ function InviteeRow({
         </button>
       </div>
 
-      {/* Potvrdi dolazak — dedicated confirm action (only while not confirmed;
-          once green, the status dot itself reopens the confirm dialog). */}
-      {!isConfirmed && (
+      {/* Odgovor gosta — dedicated action (only while the zvanica has no potvrda;
+          once it has one, the status dot itself reopens the dialog). */}
+      {!hasAnswer && (
         <button
           onClick={() => onConfirm(invitee.id)}
-          title="Potvrdi dolazak"
+          title="Potvrdi ili otkaži dolazak"
           className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg border border-[#4a8a5c]/40 text-[#4a8a5c] hover:bg-[#4a8a5c]/10 hover:border-[#4a8a5c]/60 transition-colors cursor-pointer"
         >
           <UserCheck size={14} />
@@ -1089,9 +1136,15 @@ interface Props {
   mutate: (fn: (gl: GuestList) => GuestList) => void;
   onLink: (inviteeId: string, rsvp: RSVPEntry) => void;
   onUnlink: (inviteeId: string) => void;
-  // Manual "Potvrdi dolazak": create a matching potvrda in rsvp_responses + link
-  // it here (parent owns the write and the Potvrde gostiju list).
-  onConfirmAttendance: (inviteeId: string, name: string, count: number) => void;
+  // Manual answer ("Potvrdi dolazak" / "Otkazao dolazak"): create a matching
+  // potvrda in rsvp_responses + link it here (parent owns the write and the
+  // Potvrde gostiju list).
+  onConfirmAttendance: (
+    inviteeId: string,
+    name: string,
+    count: number,
+    attends: "Da" | "Ne",
+  ) => void;
   onUnconfirmAttendance: (inviteeId: string) => void;
 }
 
@@ -1895,8 +1948,8 @@ export default function InviteeListCard({
               : null
           }
           onClose={() => setConfirmingId(null)}
-          onConfirm={(name, count) =>
-            onConfirmAttendance(confirmingInvitee.id, name, count)
+          onConfirm={(name, count, attends) =>
+            onConfirmAttendance(confirmingInvitee.id, name, count, attends)
           }
           onUndo={() => onUnconfirmAttendance(confirmingInvitee.id)}
         />

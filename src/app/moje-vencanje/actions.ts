@@ -358,14 +358,18 @@ export async function refreshGuestsAction(): Promise<{
 export async function addManualGuestAction(
   name: string,
   guestCount: number,
+  /** "Ne" records a declined potvrda (guest cancelled), mirroring what the
+   *  guest-facing RSVP form writes. */
+  attending: "Da" | "Ne" = "Da",
 ): Promise<{ success: boolean; id?: string; error?: string }> {
   const slug = await getAuthSlug();
   if (!slug) return { success: false, error: "Niste prijavljeni" };
   try {
     const id = await addRSVPResponse(slug, {
       name,
-      attending: "Da",
-      guestCount,
+      attending,
+      // Declines carry no party size — same as a guest-submitted "Ne".
+      guestCount: attending === "Ne" ? 1 : guestCount,
       details: "",
     });
     return { success: true, id };

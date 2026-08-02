@@ -680,38 +680,48 @@ export default function GuestsCard({ draft }: Props) {
     [mutateGuestList],
   );
 
-  // Manual "Potvrdi dolazak": insert a real potvrda (rsvp_responses) as if the
-  // guest self-confirmed, add it to the Potvrde gostiju list, and link it to the
-  // zvanica (which turns it green). Mirrors the "Dodaj potvrdu ručno" + Poveži flow.
+  // Manual answer for a zvanica: insert a real potvrda (rsvp_responses) as if the
+  // guest answered themselves, add it to the Potvrde gostiju list, and link it to
+  // the zvanica. Mirrors the "Dodaj potvrdu ručno" + Poveži flow.
+  // `attending: "Ne"` records a cancellation — it lands in "Ne dolaze", carries no
+  // party size and no category (same as a guest-submitted decline).
   const confirmInviteeAttendance = useCallback(
-    async (inviteeId: string, name: string, count: number) => {
+    async (
+      inviteeId: string,
+      name: string,
+      count: number,
+      attends: "Da" | "Ne" = "Da",
+    ) => {
       if (draft) {
         toast("Dostupno nakon kreiranja pozivnice — naš tim će vas kontaktirati");
         return;
       }
+      const coming = attends === "Da";
       const invitee = guestList.invitees.find((i) => i.id === inviteeId);
-      const cat = invitee?.category ?? "";
+      const cat = coming ? invitee?.category ?? "" : "";
       const cleanName = name.trim() || invitee?.name || "Gost";
-      const cleanCount = Math.max(1, count);
-      const result = await addManualGuestAction(cleanName, cleanCount);
+      const cleanCount = coming ? Math.max(1, count) : 1;
+      const result = await addManualGuestAction(cleanName, cleanCount, attends);
       if (!result.success || !result.id) {
         toast(result.error ?? "Greška pri kreiranju potvrde");
         return;
       }
       const id = result.id;
-      setAttending((prev) => [
-        ...prev,
-        {
-          id,
-          timestamp: new Date().toISOString(),
-          name: cleanName,
-          attending: "Da",
-          guestCount: String(cleanCount),
-          details: "",
-          category: cat,
-        },
-      ]);
-      setTotalGuests((prev) => prev + cleanCount);
+      const entry = {
+        id,
+        timestamp: new Date().toISOString(),
+        name: cleanName,
+        attending: attends,
+        guestCount: String(cleanCount),
+        details: "",
+        category: cat,
+      };
+      if (coming) {
+        setAttending((prev) => [...prev, entry]);
+        setTotalGuests((prev) => prev + cleanCount);
+      } else {
+        setNotAttending((prev) => [...prev, entry]);
+      }
       if (cat) {
         setCategories((prev) => ({ ...prev, [id]: cat }));
         updateGuestCategoryAction(id, cat);
@@ -723,14 +733,19 @@ export default function GuestsCard({ draft }: Props) {
             ? {
                 ...i,
                 linkedRsvpId: id,
-                status: "confirmed" as const,
-                count: cleanCount,
+                status: coming ? ("confirmed" as const) : ("declined" as const),
+                // A cancelled zvanica keeps the party size it was planned with.
+                count: coming ? cleanCount : i.count,
                 manualPotvrda: true,
               }
             : i,
         ),
       }));
-      toast("Potvrda kreirana i povezana sa zvanicom");
+      toast(
+        coming
+          ? "Potvrda kreirana i povezana sa zvanicom"
+          : "Otkazivanje zabeleženo i povezano sa zvanicom",
+      );
     },
     [draft, guestList.invitees, mutateGuestList],
   );
@@ -756,11 +771,17 @@ export default function GuestsCard({ draft }: Props) {
         ),
       }));
       if (rsvpId && wasManual) {
-        const entry = attending.find((e) => e.id === rsvpId);
+        const entry =
+          attending.find((e) => e.id === rsvpId) ??
+          notAttending.find((e) => e.id === rsvpId);
         await deleteGuestAction(rsvpId);
-        setAttending((prev) => prev.filter((e) => e.id !== rsvpId));
-        if (entry) {
-          setTotalGuests((prev) => prev - (parseInt(entry.guestCount) || 1));
+        if (entry?.attending === "Ne") {
+          setNotAttending((prev) => prev.filter((e) => e.id !== rsvpId));
+        } else {
+          setAttending((prev) => prev.filter((e) => e.id !== rsvpId));
+          if (entry) {
+            setTotalGuests((prev) => prev - (parseInt(entry.guestCount) || 1));
+          }
         }
         setCategories((prev) => {
           const next = { ...prev };
@@ -768,9 +789,11 @@ export default function GuestsCard({ draft }: Props) {
           return next;
         });
       }
-      toast("Potvrda poništena");
+      toast(
+        invitee?.status === "declined" ? "Otkazivanje poništeno" : "Potvrda poništena",
+      );
     },
-    [guestList.invitees, attending, mutateGuestList],
+    [guestList.invitees, attending, notAttending, mutateGuestList],
   );
 
   const expiryBanner = useMemo(() => {
