@@ -8,6 +8,29 @@ import {
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
+/**
+ * Verifies a session cookie **and its claims**.
+ *
+ * A bare `jwtVerify` only proves the string was signed with `JWT_SECRET` — and
+ * everything we issue shares that key, including the trust token the public SMS
+ * flow hands to anyone (`phone-verification.ts` falls back to `JWT_SECRET` when
+ * `PHONE_VERIFY_JWT_SECRET` is unset). Without the `slug` claim, one customer
+ * could rename their own cookie to another couple's slug and open that couple's
+ * dashboard. Every login route signs `{ slug }`; admin signs `{ role: "admin" }`.
+ */
+async function hasSessionFor(
+  cookieValue: string | undefined,
+  slug: string,
+): Promise<boolean> {
+  if (!cookieValue) return false;
+  try {
+    const { payload } = await jwtVerify(cookieValue, secret);
+    return payload.slug === slug;
+  } catch {
+    return false;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -45,8 +68,10 @@ export async function middleware(request: NextRequest) {
     const cookie = request.cookies.get("admin_token");
     if (cookie) {
       try {
-        await jwtVerify(cookie.value, secret);
-        return NextResponse.next();
+        // Role claim required: any of our other tokens is signed with the same
+        // key and must not open the admin panel.
+        const { payload } = await jwtVerify(cookie.value, secret);
+        if (payload.role === "admin") return NextResponse.next();
       } catch {
         // Expired — fall through to redirect
       }
@@ -67,13 +92,8 @@ export async function middleware(request: NextRequest) {
     const slug = match[1];
     const cookie = request.cookies.get(`auth_${slug}`);
 
-    if (cookie) {
-      try {
-        await jwtVerify(cookie.value, secret);
-        return NextResponse.next();
-      } catch {
-        // Expired or invalid — fall through to redirect
-      }
+    if (await hasSessionFor(cookie?.value, slug)) {
+      return NextResponse.next();
     }
 
     const next = encodeURIComponent(pathname);
@@ -90,13 +110,8 @@ export async function middleware(request: NextRequest) {
     const slug = birthdayMatch[1];
     const cookie = request.cookies.get(`auth_birthday_${slug}`);
 
-    if (cookie) {
-      try {
-        await jwtVerify(cookie.value, secret);
-        return NextResponse.next();
-      } catch {
-        // Expired or invalid — fall through to redirect
-      }
+    if (await hasSessionFor(cookie?.value, slug)) {
+      return NextResponse.next();
     }
 
     const next = encodeURIComponent(pathname);
@@ -115,13 +130,8 @@ export async function middleware(request: NextRequest) {
     const slug = punoletstvoMatch[1];
     const cookie = request.cookies.get(`auth_punoletstvo_${slug}`);
 
-    if (cookie) {
-      try {
-        await jwtVerify(cookie.value, secret);
-        return NextResponse.next();
-      } catch {
-        // Expired or invalid — fall through to redirect
-      }
+    if (await hasSessionFor(cookie?.value, slug)) {
+      return NextResponse.next();
     }
 
     const next = encodeURIComponent(pathname);
@@ -156,13 +166,8 @@ export async function middleware(request: NextRequest) {
     }
     const cookie = request.cookies.get(`auth_seating_${slug}`);
 
-    if (cookie) {
-      try {
-        await jwtVerify(cookie.value, secret);
-        return NextResponse.next();
-      } catch {
-        // Expired or invalid — fall through to redirect
-      }
+    if (await hasSessionFor(cookie?.value, slug)) {
+      return NextResponse.next();
     }
 
     const next = encodeURIComponent(pathname);

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
 import * as XLSX from "xlsx";
 import { isStandaloneActive } from "@/lib/standalone-seating";
-
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
+import { hasEventSession } from "@/lib/seating/action-auth";
 
 const MAX_BYTES = 2 * 1024 * 1024; // 2MB
 const MAX_ROWS = 1000;
@@ -28,14 +26,10 @@ export async function POST(
 ) {
   const { slug } = await params;
 
-  // Auth: require valid seating session cookie
-  const cookie = request.cookies.get(`auth_seating_${slug}`);
-  if (!cookie) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  try {
-    await jwtVerify(cookie.value, secret);
-  } catch {
+  // Auth: valid seating session for THIS slug. The slug claim matters — every
+  // token we issue is signed with the same key, so a signature-only check would
+  // accept another organizer's session renamed onto this cookie.
+  if (!(await hasEventSession(`auth_seating_${slug}`, slug))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

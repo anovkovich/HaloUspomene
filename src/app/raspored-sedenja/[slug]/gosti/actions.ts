@@ -8,13 +8,29 @@ import {
   isStandaloneActive,
   type StandaloneGuest,
 } from "@/lib/standalone-seating";
+import { hasEventSession } from "@/lib/seating/action-auth";
 
 interface ActionResult {
   success: boolean;
   error?: string;
 }
 
+/**
+ * Owner-only gate for every guest-list mutation.
+ *
+ * These actions add, edit, delete and wholesale-replace the guest list, so
+ * `isStandaloneActive` alone is not a gate — it only says the product is
+ * switched on, which is true for every live seating. The session cookie check
+ * mirrors what the Excel import route already enforces.
+ */
 async function guard(slug: string): Promise<ActionResult | null> {
+  // Claims, not just the signature: every token we issue shares `JWT_SECRET`,
+  // so a bare verify would accept another organizer's session (renamed onto
+  // this slug's cookie) or the trust token from the public SMS flow.
+  if (!(await hasEventSession(`auth_seating_${slug}`, slug))) {
+    return { success: false, error: "Sesija je istekla. Prijavite se ponovo." };
+  }
+
   const active = await isStandaloneActive(slug);
   if (!active) {
     return {
