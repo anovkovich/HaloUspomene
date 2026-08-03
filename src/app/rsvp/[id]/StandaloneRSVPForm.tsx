@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Loader2, CheckCircle2, Minus, Plus } from "lucide-react";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
+import { isPastSubmitDeadline } from "@/lib/rsvp-deadline";
 import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
 import {
   type CalendarEvent,
@@ -20,6 +21,8 @@ interface Props {
   promoCode?: string;
   promoValidUntil?: string;
   ctaBase?: string;
+  /** RSVP deadline (ISO date). Empty ⇒ no deadline, the historical behavior. */
+  submitUntil?: string;
 }
 
 export default function StandaloneRSVPForm({
@@ -29,14 +32,22 @@ export default function StandaloneRSVPForm({
   promoCode,
   promoValidUntil,
   ctaBase,
+  submitUntil,
 }: Props) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
   const [attending, setAttending] = useState<"Da" | "Ne" | null>(null);
   const [guestCount, setGuestCount] = useState(1);
+  const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Mirrors the server check in api/raspored-sedenja/[slug]/rsvp — the guest
+  // sees a closed form instead of a rejected submit. Server stays the gate.
+  // The caller only passes a deadline when the invitation add-on is paid for,
+  // so `true` here is safe.
+  const isPastDeadline = isPastSubmitDeadline(submitUntil, true);
 
   if (isSubmitted) {
     return (
@@ -118,6 +129,7 @@ export default function StandaloneRSVPForm({
           name: name.trim(),
           attending,
           guestCount: attending === "Da" ? guestCount : 0,
+          message: message.trim(),
           recaptcha_token: recaptchaToken,
         }),
       });
@@ -134,6 +146,28 @@ export default function StandaloneRSVPForm({
       setIsSubmitting(false);
     }
   };
+
+  if (isPastDeadline) {
+    return (
+      <div
+        className="text-center p-8 rounded-3xl"
+        style={{
+          backgroundColor: "var(--theme-surface)",
+          border: "1px solid var(--theme-border-light)",
+        }}
+      >
+        <p
+          className="text-lg font-bold mb-2"
+          style={{ color: "var(--theme-text)" }}
+        >
+          Rok za potvrdu je istekao
+        </p>
+        <p className="text-sm" style={{ color: "var(--theme-text-muted)" }}>
+          Za sve dodatne informacije obratite se organizatoru.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -247,6 +281,29 @@ export default function StandaloneRSVPForm({
           </div>
         </div>
       )}
+
+      {/* Message — optional, stored as the reply's note */}
+      <div>
+        <label
+          className="block text-sm font-bold mb-2"
+          style={{ color: "var(--theme-text)" }}
+        >
+          Napomena (opciono)
+        </label>
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={3}
+          maxLength={500}
+          placeholder="Npr. dolazim malo kasnije, vegetarijanski meni…"
+          className="w-full px-4 py-3 rounded-xl text-base outline-none transition-colors resize-none"
+          style={{
+            backgroundColor: "var(--theme-background)",
+            border: "1px solid var(--theme-border-light)",
+            color: "var(--theme-text)",
+          }}
+        />
+      </div>
 
       {error && (
         <p className="text-sm text-center" style={{ color: "#c0392b" }}>

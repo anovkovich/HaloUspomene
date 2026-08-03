@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getWeddingData } from "@/lib/couples";
 import { getBirthdayData } from "@/lib/birthday";
-import { getStandaloneSeating } from "@/lib/standalone-seating";
+import {
+  getStandaloneSeating,
+  isWeddingSeating,
+} from "@/lib/standalone-seating";
 import { issuePromo } from "@/lib/payments/promo";
 import RsvpClient from "./RsvpClient";
 
@@ -91,14 +94,37 @@ export default async function RsvpPage({ params }: PageProps) {
 
     const promo = issuePromo(seating.eventDate, slug);
 
+    const loc = seating.invitation?.location;
+    const eventLocation = loc
+      ? [loc.name, loc.address].filter(Boolean).join(", ")
+      : undefined;
+
+    // Feed the calendar entry a real start time when the organizer set one —
+    // eventTime is a separate field precisely so it can be composed here
+    // without disturbing the audio/gallery windows that parse eventDate.
+    const eventDateTime =
+      seating.eventDate && seating.eventTime
+        ? `${seating.eventDate}T${seating.eventTime}`
+        : (seating.eventDate ?? "");
+
     return (
       <RsvpClient
         kind="standalone"
         slug={slug}
         title={seating.eventName}
-        subtitle="Događaj"
-        eventDate={seating.eventDate ?? ""}
-        submitUntil=""
+        subtitle={isWeddingSeating(seating) ? "Venčanje" : "Događaj"}
+        eventDate={eventDateTime}
+        eventLocation={eventLocation}
+        eventUrl={
+          seating.paid_for_invitation
+            ? `${process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs"}/dogadjaj/${slug}/`
+            : undefined
+        }
+        submitUntil={
+          seating.paid_for_invitation
+            ? (seating.invitation?.submitUntil ?? "")
+            : ""
+        }
         promoCode={promo?.code}
         promoValidUntil={promo?.validUntil}
       />

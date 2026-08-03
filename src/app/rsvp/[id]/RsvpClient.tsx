@@ -416,6 +416,7 @@ export default function RsvpClient(props: Props) {
             promoCode={props.promoCode}
             promoValidUntil={props.promoValidUntil}
             ctaBase={props.ctaBase}
+            submitUntil={props.submitUntil}
           />,
         )}
       </div>
