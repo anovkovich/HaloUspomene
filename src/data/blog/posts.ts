@@ -17,6 +17,32 @@ function loadContent(slug: string): string {
 // All posts including scheduled/unpublished ones
 const allBlogPosts: BlogPost[] = [
   {
+    slug: "tekst-za-pozivnicu-za-vencanje",
+    title:
+      "Tekst za Pozivnicu za Venčanje: 25 Gotovih Primera Koje Možete Odmah Iskoristiti",
+    description:
+      "25 gotovih tekstova za pozivnice za venčanje: klasični, moderni, duhoviti i kratki primeri, poziv za kuma, ćirilica i saveti kako napisati pozivnicu.",
+    category: "Vodič",
+    tags: [
+      "tekst za pozivnicu za venčanje",
+      "tekstovi za pozivnice",
+      "kako napisati pozivnicu za venčanje",
+      "šta napisati u pozivnici za venčanje",
+      "tekst pozivnice za svadbu",
+      "pozivnica za venčanje tekst primeri",
+      "poziv za venčanje tekst",
+      "tekst za pozivnicu kum",
+      "kratak tekst za pozivnicu",
+      "duhovit tekst za pozivnicu",
+      "tekst za pozivnicu na ćirilici",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-08-03",
+    readTime: 13,
+    featured: true,
+    content: loadContent("tekst-za-pozivnicu-za-vencanje"),
+  },
+  {
     slug: "lazni-maticar-kako-izgleda",
     title: "Kobajagi Matičar, Prave Suze: Kako Izgleda Kad Vas Venča Glumac",
     description:
@@ -36,7 +62,7 @@ const allBlogPosts: BlogPost[] = [
       "kobajagi matičar",
       "HALO Uspomene",
     ],
-    publishDate: "2026-08-03",
+    publishDate: "2026-08-02",
     readTime: 11,
     featured: true,
     content: loadContent("lazni-maticar-kako-izgleda"),
@@ -62,7 +88,7 @@ const allBlogPosts: BlogPost[] = [
       "svadbena kolona",
       "HALO Uspomene",
     ],
-    publishDate: "2026-08-03",
+    publishDate: "2026-08-01",
     readTime: 13,
     featured: true,
     content: loadContent("oldtajmer-za-vencanje-zasto-retro"),
@@ -148,7 +174,7 @@ const allBlogPosts: BlogPost[] = [
       "prvi rođendan",
       "HALO Uspomene",
     ],
-    publishDate: "2026-08-03",
+    publishDate: "2026-07-29",
     readTime: 9,
     featured: true,
     content: loadContent("pozivnica-za-prvi-rodjendan-ideje"),

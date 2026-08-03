@@ -1,11 +1,13 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Clock, ArrowLeft, ArrowRight, Tag, Sparkles } from "lucide-react";
+import { Clock, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { getPublishedPosts, getBlogPost, getRelatedPosts } from "@/data/blog/posts";
 import { mdxComponents } from "@/components/blog/mdx-components";
+import TableOfContents from "@/components/blog/TableOfContents";
+import { extractTableOfContents } from "@/lib/slugify-heading";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
@@ -56,6 +58,8 @@ export default async function BlogPostPage({
 
   const relatedPosts = getRelatedPosts(slug);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
+  const toc = extractTableOfContents(post.content);
+  const hasToc = toc.length >= 2;
 
   const { content } = await compileMDX({
     source: post.content,
@@ -227,109 +231,128 @@ export default async function BlogPostPage({
           />
         )}
 
-        <article className="container mx-auto px-4 max-w-3xl">
-          <div className="mb-8">
-            <Breadcrumbs
-              items={[
-                { label: "Početna", href: "/" },
-                { label: "Blog", href: "/blog" },
-                { label: post.title },
-              ]}
-            />
-          </div>
-
-          {/* Post Header */}
-          <header className="mb-10 sm:mb-12">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="px-3 py-1 bg-[#AE343F]/10 rounded-full text-xs font-bold text-[#AE343F] uppercase tracking-wider">
-                {post.category}
-              </span>
-              <span className="flex items-center gap-1 text-xs text-[#232323]/40">
-                <Clock size={12} />
-                {post.readTime} min čitanja
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-4 leading-tight">
-              {post.title}
-            </h1>
-            <p className="text-lg text-[#232323]/50">{post.description}</p>
-            <div className="flex flex-wrap gap-2 mt-6">
-              {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-white rounded-full text-xs text-[#232323]/40 border border-stone-100"
-                >
-                  <Tag size={10} />
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <p className="text-sm text-[#232323]/30 mt-4">
-              Objavljeno:{" "}
-              {new Date(post.publishDate).toLocaleDateString("sr-Latn-RS", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-          </header>
-
-          {/* Post Content */}
-          <div className="prose-custom">{content}</div>
-
-          {/* AI-generated content disclaimer */}
-          <div className="mt-12 sm:mt-14 p-4 sm:p-5 bg-[#F5F4DC]/60 border border-stone-200 rounded-xl flex items-start gap-3">
-            <Sparkles
-              size={18}
-              className="text-[#AE343F] mt-0.5 shrink-0"
-              aria-hidden="true"
-            />
-            <p className="text-sm text-[#232323]/70 leading-relaxed italic">
-              AI generisan sadržaj! Ispravnost informacija proverite direktno sa
-              timom HaloUspomene — kontakt se nalazi u podnožju sajta (u
-              footeru).
-            </p>
-          </div>
-
-          {/* Related Posts */}
-          {relatedPosts.length > 0 && (
-            <section className="mt-16 pt-12 border-t border-stone-200">
-              <h2 className="text-2xl font-serif text-[#232323] mb-8">
-                Povezani članci
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {relatedPosts.map((related) => (
-                  <Link
-                    key={related.slug}
-                    href={`/blog/${related.slug}`}
-                    className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100 hover:shadow-lg transition-shadow group"
-                  >
-                    <span className="px-2 py-1 bg-[#AE343F]/10 rounded-full text-xs font-bold text-[#AE343F] uppercase">
-                      {related.category}
-                    </span>
-                    <h3 className="font-serif font-semibold text-[#232323] mt-3 mb-2 group-hover:text-[#AE343F] transition-colors">
-                      {related.title}
-                    </h3>
-                    <span className="inline-flex items-center gap-1 text-sm text-[#AE343F]">
-                      Pročitaj <ArrowRight size={14} />
-                    </span>
-                  </Link>
-                ))}
+        <div
+          className={`container mx-auto px-4 ${
+            hasToc ? "max-w-3xl xl:max-w-6xl" : "max-w-3xl"
+          }`}
+        >
+          <div
+            className={
+              hasToc
+                ? "xl:grid xl:grid-cols-[minmax(0,48rem)_15rem] xl:justify-center xl:gap-16"
+                : undefined
+            }
+          >
+            <article className="min-w-0">
+              <div className="mb-6">
+                <Breadcrumbs
+                  items={[
+                    { label: "Početna", href: "/" },
+                    { label: "Blog", href: "/blog" },
+                    { label: post.title },
+                  ]}
+                />
               </div>
-            </section>
-          )}
 
-          {/* Back to blog */}
-          <div className="mt-8 text-center">
-            <Link
-              href="/blog"
-              className="inline-flex items-center gap-2 text-[#232323]/50 hover:text-[#AE343F] transition-colors"
-            >
-              <ArrowLeft size={16} />
-              Nazad na blog
-            </Link>
+              {/* Post Header */}
+              <header className="mb-8 border-b border-[#232323]/10 pb-6">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+                  <span className="px-3 py-1 bg-[#AE343F]/10 rounded-full text-xs font-bold text-[#AE343F] uppercase tracking-wider">
+                    {post.category}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-[#232323]/40">
+                    <Clock size={12} />
+                    {post.readTime} min čitanja
+                  </span>
+                  <span className="text-[#232323]/20" aria-hidden="true">
+                    ·
+                  </span>
+                  <span className="text-xs text-[#232323]/40">
+                    {new Date(post.publishDate).toLocaleDateString("sr-Latn-RS", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#232323] mb-3 leading-tight">
+                  {post.title}
+                </h1>
+                <p className="text-base sm:text-lg text-[#232323]/55 leading-relaxed">
+                  {post.description}
+                </p>
+              </header>
+
+              {/* Collapsible TOC (below xl) */}
+              {hasToc && <TableOfContents items={toc} variant="collapsible" />}
+
+              {/* Post Content */}
+              <div className="prose-custom">{content}</div>
+
+              {/* AI-generated content disclaimer */}
+              <div className="mt-12 sm:mt-14 p-4 sm:p-5 bg-[#F5F4DC]/60 border border-stone-200 rounded-xl flex items-start gap-3">
+                <Sparkles
+                  size={18}
+                  className="text-[#AE343F] mt-0.5 shrink-0"
+                  aria-hidden="true"
+                />
+                <p className="text-sm text-[#232323]/70 leading-relaxed italic">
+                  AI generisan sadržaj! Ispravnost informacija proverite
+                  direktno sa timom HaloUspomene — kontakt se nalazi u podnožju
+                  sajta (u footeru).
+                </p>
+              </div>
+
+              {/* Related Posts */}
+              {relatedPosts.length > 0 && (
+                <section className="mt-16 pt-12 border-t border-stone-200">
+                  <h2 className="text-2xl font-serif text-[#232323] mb-8">
+                    Povezani članci
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {relatedPosts.map((related) => (
+                      <Link
+                        key={related.slug}
+                        href={`/blog/${related.slug}`}
+                        className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100 hover:shadow-lg transition-shadow group"
+                      >
+                        <span className="px-2 py-1 bg-[#AE343F]/10 rounded-full text-xs font-bold text-[#AE343F] uppercase">
+                          {related.category}
+                        </span>
+                        <h3 className="font-serif font-semibold text-[#232323] mt-3 mb-2 group-hover:text-[#AE343F] transition-colors">
+                          {related.title}
+                        </h3>
+                        <span className="inline-flex items-center gap-1 text-sm text-[#AE343F]">
+                          Pročitaj <ArrowRight size={14} />
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Back to blog */}
+              <div className="mt-8 text-center">
+                <Link
+                  href="/blog"
+                  className="inline-flex items-center gap-2 text-[#232323]/50 hover:text-[#AE343F] transition-colors"
+                >
+                  <ArrowLeft size={16} />
+                  Nazad na blog
+                </Link>
+              </div>
+            </article>
+
+            {/* Sticky TOC (xl and up) */}
+            {hasToc && (
+              <aside className="hidden xl:block">
+                <div className="sticky top-28">
+                  <TableOfContents items={toc} variant="sidebar" />
+                </div>
+              </aside>
+            )}
           </div>
-        </article>
+        </div>
       </main>
       <Footer />
     </>

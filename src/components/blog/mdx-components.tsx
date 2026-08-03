@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Lightbulb, Info } from "lucide-react";
 import type { MDXComponents } from "mdx/types";
+import { flattenNodeToText, slugifyHeading } from "@/lib/slugify-heading";
 
 // ── Custom blog components ────────────────────────────────────────────────────
 
@@ -105,19 +106,26 @@ export const mdxComponents: MDXComponents = {
   PriceCard,
   CtaBlock,
 
-  // Headings
+  // Headings — h2/h3 get anchor ids derived from their plain text so the
+  // table of contents (built from raw MDX via the same slugifyHeading) links up.
   h1: ({ children }) => (
     <h1 className="text-3xl sm:text-4xl font-serif font-semibold text-[#232323] mb-6 mt-8 first:mt-0">
       {children}
     </h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-2xl sm:text-3xl font-serif font-semibold text-[#232323] mb-4 mt-10">
+    <h2
+      id={slugifyHeading(flattenNodeToText(children))}
+      className="scroll-mt-28 text-2xl sm:text-3xl font-serif font-semibold text-[#232323] leading-snug mt-12 sm:mt-16 mb-5 before:content-[''] before:block before:h-[3px] before:w-12 before:rounded-full before:bg-gradient-to-r before:from-[#AE343F] before:to-[#d4af37] before:mb-4"
+    >
       {children}
     </h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-xl font-serif font-semibold text-[#232323] mb-3 mt-8">
+    <h3
+      id={slugifyHeading(flattenNodeToText(children))}
+      className="scroll-mt-28 text-xl sm:text-2xl font-serif font-semibold text-[#232323] leading-snug mb-3 mt-9"
+    >
       {children}
     </h3>
   ),
