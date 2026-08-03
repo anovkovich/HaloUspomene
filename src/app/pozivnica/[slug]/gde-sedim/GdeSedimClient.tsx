@@ -29,6 +29,11 @@ interface Props {
    *  NOT in the plan (loose-seating custom: leave empty tables for arrivals).
    *  The hub uses it to highlight those tables on its "Plan sale" tab. */
   onFreeTablesChange?: (tableIds: string[]) => void;
+  /** Optional extra block rendered at the bottom of the found-guest card.
+   *  Used by the standalone hostess mode to add a check-in control, so the
+   *  guest-facing lookup keeps working exactly as before for everyone else —
+   *  this component stays free of any check-in logic or imports. */
+  renderExtra?: (entry: GuestLookupEntry) => React.ReactNode;
 }
 
 export default function GdeSedimClient({
@@ -39,6 +44,7 @@ export default function GdeSedimClient({
   onSelectChange,
   showMap = true,
   onFreeTablesChange,
+  renderExtra,
 }: Props) {
   // All BA/HR/ME-aware copy in one place \u2014 keeps the JSX below readable
   // and avoids 6+ inline ternaries. Named `tr` not `t` to avoid shadowing
@@ -439,6 +445,9 @@ export default function GdeSedimClient({
                   ))}
                 </div>
               </div>
+            )}
+            {renderExtra && (
+              <div className="pt-4">{renderExtra(selected)}</div>
             )}
           </div>
 

@@ -19,6 +19,8 @@ import {
   FileImage,
   FileText,
   Heart,
+  Sparkles,
+  UserCheck,
 } from "lucide-react";
 import { generateQrFlyerPDF } from "@/lib/qr-flyer";
 import ChecklistCard from "@/app/moje-vencanje/ChecklistCard";
@@ -37,6 +39,8 @@ import {
   deleteAudioMsgAction,
   loadGalleryAction,
   deleteGalleryPhotoAction,
+  issueCheckinTokenAction,
+  revokeCheckinTokenAction,
 } from "./actions";
 
 type TabKey = "pregled" | "planer" | "budzet" | "meni" | "utisci" | "galerija";
@@ -59,6 +63,14 @@ interface Props {
   seatingStats: { totalSeats: number; assignedSeats: number } | null;
   hasAudio: boolean;
   hasGallery: boolean;
+  hasInvitation: boolean;
+  /** Wedding-only surfaces (checklist, budget, heart, "naš poseban dan" copy)
+   *  are hidden for corporate and other celebrations. */
+  isWedding: boolean;
+  /** Current hostess check-in token, if one has been issued. */
+  initialCheckinToken?: string;
+  /** Arrival tally across the guest list — {arrived, expected}. */
+  arrivals: { arrived: number; expected: number };
   initialChecklist: ChecklistItem[];
   initialBudget: PortalBudget;
 }
@@ -81,6 +93,10 @@ export default function PortalClient({
   seatingStats,
   hasAudio,
   hasGallery,
+  hasInvitation,
+  isWedding,
+  initialCheckinToken,
+  arrivals,
   initialChecklist,
   initialBudget,
 }: Props) {
@@ -89,6 +105,10 @@ export default function PortalClient({
   const [active, setActive] = useState<TabKey>("pregled");
   const [qrModal, setQrModal] = useState<"gallery" | "audio" | null>(null);
   const [upsell, setUpsell] = useState<"gallery" | "audio" | null>(null);
+  const [checkinToken, setCheckinToken] = useState(initialCheckinToken ?? "");
+  const [checkinBusy, setCheckinBusy] = useState(false);
+  const [checkinCopied, setCheckinCopied] = useState(false);
+  const [checkinError, setCheckinError] = useState("");
 
   // Bind the seating slug into the shared cards' action props.
   const checklistSave = (items: ChecklistItem[]) =>
@@ -110,6 +130,35 @@ export default function PortalClient({
     process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
   const hubUrl = (tab: string) =>
     `${siteBase}/raspored-sedenja/${slug}/gde-sedim/?tab=${tab}`;
+
+  const checkinUrl = checkinToken
+    ? `${siteBase}/raspored-sedenja/${slug}/prijem/?h=${checkinToken}`
+    : "";
+
+  async function handleIssueCheckin() {
+    setCheckinBusy(true);
+    const res = await issueCheckinTokenAction(slug);
+    setCheckinBusy(false);
+    if ("token" in res && res.token) {
+      setCheckinToken(res.token);
+      setCheckinError("");
+      return;
+    }
+    // An expired PIN cookie used to make this button do nothing at all.
+    setCheckinError("Sesija je istekla. Osvežite stranicu i prijavite se ponovo.");
+  }
+
+  async function handleRevokeCheckin() {
+    setCheckinBusy(true);
+    const res = await revokeCheckinTokenAction(slug);
+    setCheckinBusy(false);
+    if ("ok" in res && res.ok) {
+      setCheckinToken("");
+      setCheckinError("");
+      return;
+    }
+    setCheckinError("Sesija je istekla. Osvežite stranicu i prijavite se ponovo.");
+  }
 
   // Copy + URLs for each QR option (used by the download modal + the flyer PDF).
   const QR_META = {
@@ -178,8 +227,9 @@ export default function PortalClient({
       url: m.url,
       title: m.flyerTitle,
       lines: [...m.lines],
-      thankYou:
-        "Hvala što ste svojim prisustvom ulepšali naš poseban dan.",
+      thankYou: isWedding
+        ? "Hvala što ste svojim prisustvom ulepšali naš poseban dan."
+        : "Hvala što ste svojim prisustvom uveličali naš događaj.",
       bottom: m.bottom,
       filename: m.pdfName,
     });
@@ -260,19 +310,22 @@ export default function PortalClient({
             {eventName}
           </h1>
 
-          {/* Top pills — Checklista / Budžet, like the standard portal */}
-          <div className="flex items-center justify-center gap-2.5">
-            <Pill
-              label="Checklista"
-              activeState={active === "planer"}
-              onClick={() => setActive("planer")}
-            />
-            <Pill
-              label="Budžet"
-              activeState={active === "budzet"}
-              onClick={() => setActive("budzet")}
-            />
-          </div>
+          {/* Top pills — Checklista / Budžet. Both are wedding planning tools;
+              a conference organizer has no use for "Burme" or "Medeni mesec". */}
+          {isWedding && (
+            <div className="flex items-center justify-center gap-2.5">
+              <Pill
+                label="Checklista"
+                activeState={active === "planer"}
+                onClick={() => setActive("planer")}
+              />
+              <Pill
+                label="Budžet"
+                activeState={active === "budzet"}
+                onClick={() => setActive("budzet")}
+              />
+            </div>
+          )}
         </div>
 
         {/* Tab content */}
@@ -292,7 +345,11 @@ export default function PortalClient({
                   className="h-px w-10"
                   style={{ backgroundColor: "rgba(212,175,55,0.5)" }}
                 />
-                <Heart size={13} fill="#d4af37" style={{ color: "#d4af37" }} />
+                {isWedding ? (
+                  <Heart size={13} fill="#d4af37" style={{ color: "#d4af37" }} />
+                ) : (
+                  <Sparkles size={13} style={{ color: "#d4af37" }} />
+                )}
                 <div
                   className="h-px w-10"
                   style={{ backgroundColor: "rgba(212,175,55,0.5)" }}
@@ -359,6 +416,41 @@ export default function PortalClient({
               )}
             </div>
 
+            {/* Arrivals — only once the hostess has ticked someone off, so the
+                card never shows a bare 0 for events that don't use check-in. */}
+            {arrivals.arrived > 0 && (
+              <div
+                className="rounded-2xl bg-white border px-4 py-3.5 flex items-center justify-between"
+                style={{
+                  borderColor: "var(--theme-border)",
+                  boxShadow: "0 1px 3px rgba(35,35,35,0.06)",
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <UserCheck size={16} style={{ color: "var(--theme-primary)" }} />
+                  <span
+                    className="font-raleway text-[11px] uppercase tracking-wider"
+                    style={{ color: "var(--theme-text-light)" }}
+                  >
+                    Stiglo na događaj
+                  </span>
+                </div>
+                <p
+                  className="font-serif text-2xl leading-none"
+                  style={{ color: "var(--theme-text)" }}
+                >
+                  {arrivals.arrived}
+                  <span
+                    className="text-base"
+                    style={{ color: "var(--theme-text-light)" }}
+                  >
+                    {" "}
+                    / {arrivals.expected}
+                  </span>
+                </p>
+              </div>
+            )}
+
             {/* Brojke — one split white card */}
             <div
               className="rounded-2xl bg-white border grid grid-cols-2 overflow-hidden"
@@ -423,29 +515,31 @@ export default function PortalClient({
               </div>
             </div>
 
-            {/* Planiranje */}
-            <div>
-              <SectionHeader title="Planiranje" />
-              <div className="grid grid-cols-2 gap-3">
-                <PlanCard
-                  title="Checklista"
-                  icon={<ListChecks size={16} />}
-                  fraction={`${checkDone}/${checkTotal}`}
-                  pct={checkPct}
-                  barColor="var(--theme-primary)"
-                  onClick={() => setActive("planer")}
-                />
-                <PlanCard
-                  title="Budžet"
-                  icon={<Wallet size={16} />}
-                  fraction={`${formatCompact(spentTotal)}/${formatCompact(plannedTotal)}`}
-                  pct={budgetPct}
-                  barColor="#d4af37"
-                  empty={plannedTotal === 0 && spentTotal === 0}
-                  onClick={() => setActive("budzet")}
-                />
+            {/* Planiranje — wedding-only, see the pills above */}
+            {isWedding && (
+              <div>
+                <SectionHeader title="Planiranje" />
+                <div className="grid grid-cols-2 gap-3">
+                  <PlanCard
+                    title="Checklista"
+                    icon={<ListChecks size={16} />}
+                    fraction={`${checkDone}/${checkTotal}`}
+                    pct={checkPct}
+                    barColor="var(--theme-primary)"
+                    onClick={() => setActive("planer")}
+                  />
+                  <PlanCard
+                    title="Budžet"
+                    icon={<Wallet size={16} />}
+                    fraction={`${formatCompact(spentTotal)}/${formatCompact(plannedTotal)}`}
+                    pct={budgetPct}
+                    barColor="#d4af37"
+                    empty={plannedTotal === 0 && spentTotal === 0}
+                    onClick={() => setActive("budzet")}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Zahvalnice — always shown; unpaid cards open an upsell modal */}
             <div
@@ -491,6 +585,36 @@ export default function PortalClient({
               </div>
             </div>
 
+            {/* Public invitation — only once the add-on is unlocked */}
+            {hasInvitation && (
+              <a
+                href={`/dogadjaj/${slug}/`}
+                target="_blank"
+                rel="noopener"
+                className="flex items-center justify-between rounded-2xl bg-white px-4 py-3.5 transition-colors hover:bg-[#faf9f6]"
+                style={{ border: "1px solid rgba(174,52,63,0.3)" }}
+              >
+                <div>
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: "var(--theme-text)" }}
+                  >
+                    Pozivnica za goste
+                  </p>
+                  <p
+                    className="text-[11px]"
+                    style={{ color: "var(--theme-text-light)" }}
+                  >
+                    Pošaljite ovaj link zvanicama
+                  </p>
+                </div>
+                <ChevronRight
+                  size={18}
+                  style={{ color: "var(--theme-primary)" }}
+                />
+              </a>
+            )}
+
             {/* Stranica za goste — quiet utility row */}
             <a
               href={`/raspored-sedenja/${slug}/gde-sedim`}
@@ -515,10 +639,105 @@ export default function PortalClient({
               </div>
               <ChevronRight size={18} style={{ color: "var(--theme-primary)" }} />
             </a>
+
+            {/* Hostess check-in link. Scoped to marking arrivals — it does not
+                expose the PIN, the portal, or the guest-list editor. */}
+            <div
+              className="rounded-2xl bg-white px-4 py-3.5"
+              style={{ border: "1px solid rgba(35,35,35,0.12)" }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: "var(--theme-text)" }}
+                  >
+                    Prijem gostiju (hostesa)
+                  </p>
+                  <p
+                    className="text-[11px] mt-0.5"
+                    style={{ color: "var(--theme-text-light)" }}
+                  >
+                    {checkinUrl
+                      ? "Pošaljite link osobi na ulazu — označava ko je stigao."
+                      : "Napravite link za osobu koja dočekuje goste."}
+                  </p>
+                </div>
+                <UserCheck
+                  size={18}
+                  className="shrink-0"
+                  style={{ color: "var(--theme-primary)" }}
+                />
+              </div>
+
+              {checkinUrl && (
+                <p
+                  className="mt-2.5 text-[11px] break-all rounded-lg px-2.5 py-2"
+                  style={{
+                    backgroundColor: "var(--theme-surface)",
+                    color: "var(--theme-text-light)",
+                  }}
+                >
+                  {checkinUrl}
+                </p>
+              )}
+
+              <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+                {checkinUrl && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(checkinUrl);
+                      setCheckinCopied(true);
+                      setTimeout(() => setCheckinCopied(false), 1600);
+                    }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-white cursor-pointer"
+                    style={{ backgroundColor: "var(--theme-primary)" }}
+                  >
+                    {checkinCopied ? "Kopirano" : "Kopiraj link"}
+                  </button>
+                )}
+                <button
+                  onClick={handleIssueCheckin}
+                  disabled={checkinBusy}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium disabled:opacity-50 cursor-pointer"
+                  style={{
+                    border: "1px solid var(--theme-border)",
+                    color: "var(--theme-text)",
+                  }}
+                >
+                  {checkinUrl ? "Napravi novi" : "Napravi link"}
+                </button>
+                {checkinUrl && (
+                  <button
+                    onClick={handleRevokeCheckin}
+                    disabled={checkinBusy}
+                    className="px-3 py-1.5 rounded-lg text-xs disabled:opacity-50 cursor-pointer"
+                    style={{ color: "var(--theme-text-light)" }}
+                  >
+                    Povuci
+                  </button>
+                )}
+              </div>
+
+              {checkinError && (
+                <p className="mt-2 text-[11px]" style={{ color: "#c0392b" }}>
+                  {checkinError}
+                </p>
+              )}
+
+              {checkinUrl && (
+                <p
+                  className="mt-2 text-[10px]"
+                  style={{ color: "var(--theme-text-light)" }}
+                >
+                  &bdquo;Napravi novi&ldquo; poništava prethodni link.
+                </p>
+              )}
+            </div>
           </div>
         )}
 
-        {active === "planer" && (
+        {isWedding && active === "planer" && (
           <ChecklistCard
             checklist={checklist}
             setChecklist={setChecklist}
@@ -526,7 +745,7 @@ export default function PortalClient({
           />
         )}
 
-        {active === "budzet" && (
+        {isWedding && active === "budzet" && (
           <BudgetCard budget={budget} setBudget={setBudget} onSave={budgetSave} />
         )}
 

@@ -6,15 +6,7 @@
  * places that would otherwise each roll their own.
  */
 
-/** 1 → one · 2–4 → few · 5+ → many. 11–14 take the `many` form. */
-function pluralForm(n: number, one: string, few: string, many: string): string {
-  const mod100 = Math.abs(n) % 100;
-  const mod10 = Math.abs(n) % 10;
-  if (mod100 >= 11 && mod100 <= 14) return many;
-  if (mod10 === 1) return one;
-  if (mod10 >= 2 && mod10 <= 4) return few;
-  return many;
-}
+import { pluralForm } from "../serbian-plural";
 
 /** "1 sto" · "3 stola" · "12 stolova" */
 export function tablesLabel(n: number): string {

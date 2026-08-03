@@ -9,13 +9,18 @@ import {
   Users,
   Upload,
   FileSpreadsheet,
-  ArrowLeft,
   ArrowRight,
   AlertTriangle,
   Check,
   Minus,
 } from "lucide-react";
 import type { StandaloneGuest } from "@/lib/standalone-seating";
+import type { RSVPEntry } from "@/lib/rsvp";
+import {
+  cancellationsLabel,
+  itemsLabel,
+  peopleLabel,
+} from "@/lib/serbian-plural";
 import {
   addGuestAction,
   updateGuestAction,
@@ -41,12 +46,15 @@ interface Props {
   slug: string;
   eventName: string;
   initialGuests: StandaloneGuest[];
+  /** Every reply to the invitation, decliners included. */
+  responses: RSVPEntry[];
 }
 
 export default function GuestsClient({
   slug,
   eventName,
   initialGuests,
+  responses,
 }: Props) {
   const router = useRouter();
   const [guests, setGuests] = useState<StandaloneGuest[]>(initialGuests);
@@ -75,25 +83,44 @@ export default function GuestsClient({
   const [committing, setCommitting] = useState(false);
 
   const totalGuestCount = guests.reduce((s, g) => s + g.guestCount, 0);
+  const declines = responses.filter((r) => r.attending === "Ne");
+  const arrivedCount = guests.filter((g) => (g.arrived ?? 0) > 0).length;
 
   // Detect duplicates by normalized name (case-insensitive, trimmed). Display
   // order clusters duplicate-name groups together while preserving the
   // original order of unique entries (group ordered by first appearance).
+  //
+  // On top of that, groups containing a guest-submitted RSVP float to the
+  // front, newest first: a confirmation that just arrived is the one thing the
+  // organizer is looking for, and at the bottom of a 200-row imported list it
+  // would never be seen. Clustering still wins inside a group, so an RSVP that
+  // duplicates a manually-entered name surfaces next to it.
   const { displayGuests, dupKeys } = useMemo(() => {
     const norm = (s: string) => s.trim().toLowerCase();
     const groups = new Map<string, StandaloneGuest[]>();
     const order: string[] = [];
-    for (const g of guests) {
+    // `guests` is append-ordered, so a higher index is a later arrival.
+    const newestRsvp = new Map<string, number>();
+    guests.forEach((g, i) => {
       const key = norm(g.name);
       if (!groups.has(key)) {
         groups.set(key, []);
         order.push(key);
       }
       groups.get(key)!.push(g);
-    }
+      if (g.category === "RSVP") newestRsvp.set(key, i);
+    });
+
+    const sorted = [...order].sort((a, b) => {
+      const ra = newestRsvp.get(a) ?? -1;
+      const rb = newestRsvp.get(b) ?? -1;
+      if (ra !== rb) return rb - ra; // RSVP groups first, newest at the top
+      return order.indexOf(a) - order.indexOf(b); // otherwise original order
+    });
+
     const display: StandaloneGuest[] = [];
     const dups = new Set<string>();
-    for (const key of order) {
+    for (const key of sorted) {
       const items = groups.get(key)!;
       display.push(...items);
       if (items.length > 1) dups.add(key);
@@ -293,6 +320,77 @@ export default function GuestsClient({
             </p>
           </div>
         </div>
+
+        {/* Replies to the invitation. Attendees are already merged into the
+            list above; this block exists so declines and notes are visible. */}
+        {responses.length > 0 && (
+          <div
+            className="rounded-2xl p-4 mb-5"
+            style={{
+              backgroundColor: "#FFFFFF",
+              border: "1px solid rgba(35,35,35,0.08)",
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2
+                className="text-sm font-semibold"
+                style={{ color: "#232323" }}
+              >
+                Odgovori na pozivnicu
+              </h2>
+              <span className="text-xs" style={{ color: "rgba(35,35,35,0.5)" }}>
+                {cancellationsLabel(declines.length)} od {responses.length}
+              </span>
+            </div>
+            <ul className="space-y-1.5">
+              {responses.map((r) => {
+                const isAttending = r.attending !== "Ne";
+                return (
+                  <li
+                    key={r.id}
+                    className="flex items-start justify-between gap-3 py-1.5 border-b last:border-b-0"
+                    style={{ borderColor: "rgba(35,35,35,0.06)" }}
+                  >
+                    <div className="min-w-0">
+                      <p
+                        className="text-sm truncate"
+                        style={{ color: "#232323" }}
+                      >
+                        {r.name}
+                      </p>
+                      {r.details && (
+                        <p
+                          className="text-xs mt-0.5"
+                          style={{ color: "rgba(35,35,35,0.55)" }}
+                        >
+                          {r.details}
+                        </p>
+                      )}
+                    </div>
+                    <span
+                      className="text-[11px] px-2 py-0.5 rounded shrink-0"
+                      style={
+                        isAttending
+                          ? {
+                              backgroundColor: "rgba(22,163,74,0.12)",
+                              color: "#15803d",
+                            }
+                          : {
+                              backgroundColor: "rgba(174,52,63,0.12)",
+                              color: "#AE343F",
+                            }
+                      }
+                    >
+                      {isAttending
+                        ? peopleLabel(parseInt(r.guestCount, 10) || 1)
+                        : "Neće doći"}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
 
         {/* Excel import */}
         <div
@@ -750,6 +848,27 @@ export default function GuestsClient({
                 </tbody>
               </table>
             </div>
+
+            {arrivedCount > 0 && (
+              <div
+                className="mx-5 mb-1 rounded-lg px-3 py-2.5 flex items-start gap-2"
+                style={{
+                  backgroundColor: "rgba(174,52,63,0.08)",
+                  border: "1px solid rgba(174,52,63,0.25)",
+                }}
+              >
+                <AlertTriangle
+                  size={14}
+                  className="mt-0.5 shrink-0"
+                  style={{ color: "#AE343F" }}
+                />
+                <p className="text-xs" style={{ color: "#AE343F" }}>
+                  Uvoz zamenjuje celu listu — obrisaće i evidenciju dolazaka za{" "}
+                  {itemsLabel(arrivedCount)} koje je hostesa već
+                  označila.
+                </p>
+              </div>
+            )}
 
             <div className="px-5 py-4 border-t border-black/5 flex justify-end gap-2">
               <button

@@ -29,6 +29,8 @@ import {
 import {
   getStandaloneSeating,
   setStandaloneMeni,
+  patchStandaloneCheckinToken,
+  generateCheckinToken,
 } from "@/lib/standalone-seating";
 import type { ChecklistItem, PortalBudget } from "@/app/moje-vencanje/types";
 import type { MeniData } from "@/app/pozivnica/[slug]/types";
@@ -53,6 +55,26 @@ async function isOwner(slug: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/* ── Hostess check-in link ──────────────────────────────────── */
+
+/**
+ * Issues a fresh check-in token, invalidating any link already handed out.
+ * The organizer holds the PIN; the hostess only ever receives the resulting
+ * URL, which grants check-in and nothing else.
+ */
+export async function issueCheckinTokenAction(slug: string) {
+  if (!(await isOwner(slug))) return { error: "Niste prijavljeni" };
+  const token = generateCheckinToken();
+  await patchStandaloneCheckinToken(slug, token);
+  return { ok: true, token };
+}
+
+export async function revokeCheckinTokenAction(slug: string) {
+  if (!(await isOwner(slug))) return { error: "Niste prijavljeni" };
+  await patchStandaloneCheckinToken(slug, null);
+  return { ok: true };
 }
 
 /* ── Planner (checklist / budget) ───────────────────────────── */
