@@ -1,17 +1,32 @@
 import React from "react";
-import { Star, MapPin, Package, BadgeCheck } from "lucide-react";
-import { testimonials } from "@/data/testimonials";
+import { Star, ExternalLink } from "lucide-react";
+import { googleReviews, testimonials } from "@/data/testimonials";
 
+/**
+ * Sekcija sa utiscima.
+ *
+ * Ne prikazuje recenzije prepisane na sajt nego vodi na Google Business Profile,
+ * gde su ih ostavili stvarni parovi. Recenzija na tuđoj platformi, koju mi ne
+ * možemo da uredimo, vredi znatno više — i posetiocu i pretraživaču — od citata
+ * na sopstvenom sajtu.
+ *
+ * Namerno NEMA dugmeta za ostavljanje recenzije: javni poziv bi pozvao i
+ * konkurenciju da obori ocenu. Link za ostavljanje recenzije šalje se ciljano
+ * zadovoljnim parovima, preko /recenzija stranice.
+ *
+ * Ako `testimonials` ikad bude popunjen stvarnim recenzijama, kartice se
+ * prikazuju ispod ovog bloka; do tada blok stoji sam.
+ */
 const Testimonials: React.FC = () => {
+  const { ratingValue, reviewCount, profileUrl } = googleReviews;
 
   return (
     <section
       id="utisci"
       className="pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32 bg-[#F5F4DC] relative overflow-hidden"
     >
-
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-12 sm:mb-16 md:mb-20">
+        <div className="text-center mb-10 sm:mb-14">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
             Utisci naših parova
           </p>
@@ -19,37 +34,57 @@ const Testimonials: React.FC = () => {
             Glasovi koji govore za nas
           </h2>
           <p className="text-lg text-[#232323]/50 max-w-2xl mx-auto">
-            Parovi širom Srbije koriste naše pozivnice, raspored sedenja i retro
-            telefon. Evo šta kažu o svom iskustvu sa HALO Uspomene.
+            Recenzije ne prepisujemo na svoj sajt — pročitajte ih tamo gde su ih
+            parovi zaista ostavili, na našem Google profilu.
           </p>
         </div>
 
-        {/* Mobile & Tablet: Horizontal scrolling */}
-        <div className="lg:hidden">
-          <div className="flex gap-6 sm:gap-8 overflow-x-auto pb-4 scroll-pl-4 scroll-pr-4">
+        <div className="max-w-2xl mx-auto bg-white rounded-3xl border border-stone-100 shadow-sm p-8 sm:p-10 text-center">
+          <div
+            className="flex items-center justify-center gap-1 mb-4"
+            aria-hidden="true"
+          >
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                size={26}
+                className="text-[#d4af37] fill-[#d4af37]"
+              />
+            ))}
+          </div>
+
+          <p className="font-serif text-5xl sm:text-6xl text-[#232323] mb-2">
+            {ratingValue.toFixed(1)}
+          </p>
+          <p className="text-[#232323]/55 mb-8">
+            Prosečna ocena na osnovu {reviewCount} recenzija na Google-u
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href={profileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] rounded-full px-8 border-none"
+              data-track="cta_click"
+              data-track-cta-name="google_recenzije"
+              data-track-cta-location="utisci"
+            >
+              Pročitaj recenzije na Google-u
+              <ExternalLink size={16} />
+            </a>
+          </div>
+        </div>
+
+        {/* Prikazuje se tek kada u testimonials.ts uđu stvarne recenzije. */}
+        {testimonials.length > 0 && (
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {testimonials.map((t) => (
               <div
                 key={t.id}
-                className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-100 hover:shadow-lg transition-shadow duration-300 flex flex-col"
+                className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-100 flex flex-col"
               >
-                {/* Header: Avatar + Info */}
-                <div className="flex items-start gap-4 mb-5">
-                  <div className="w-12 h-12 bg-[#AE343F]/10 rounded-2xl flex items-center justify-center text-[#AE343F] font-bold text-sm shrink-0">
-                    {t.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-serif font-semibold text-[#232323] truncate">
-                        {t.coupleName}
-                      </h3>
-                      <BadgeCheck size={16} className="text-[#AE343F] shrink-0" />
-                    </div>
-                    <p className="text-sm text-[#232323]/40">{t.date}</p>
-                  </div>
-                </div>
-
-                {/* Stars */}
-                <div className="flex gap-1 mb-4">
+                <div className="flex gap-1 mb-3">
                   {Array.from({ length: t.rating }).map((_, i) => (
                     <Star
                       key={i}
@@ -58,81 +93,26 @@ const Testimonials: React.FC = () => {
                     />
                   ))}
                 </div>
-
-                {/* Quote */}
-                <p className="text-[#232323]/70 leading-relaxed flex-1 mb-5">
-                  &ldquo;{t.quote}&rdquo;
+                <p className="text-[#232323]/70 leading-relaxed mb-4 italic flex-1">
+                  {t.quote}
                 </p>
-
-                {/* Badges */}
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
-                    <MapPin size={12} />
-                    {t.city}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
-                    <Package size={12} />
-                    {t.service}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#AE343F]/10 rounded-xl flex items-center justify-center text-[#AE343F] font-bold text-xs">
+                    {t.initials}
+                  </div>
+                  <div>
+                    <p className="font-serif font-semibold text-[#232323] text-sm">
+                      {t.coupleName}
+                    </p>
+                    <p className="text-xs text-[#232323]/40">
+                      {t.city} · {t.date}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Desktop: Grid layout */}
-        <div className="hidden lg:grid lg:grid-cols-3 lg:gap-8">
-          {testimonials.map((t) => (
-            <div
-              key={t.id}
-              className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-100 hover:shadow-lg transition-shadow duration-300 flex flex-col"
-            >
-              {/* Header: Avatar + Info */}
-              <div className="flex items-start gap-4 mb-5">
-                <div className="w-12 h-12 bg-[#AE343F]/10 rounded-2xl flex items-center justify-center text-[#AE343F] font-bold text-sm shrink-0">
-                  {t.initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-serif font-semibold text-[#232323] truncate">
-                      {t.coupleName}
-                    </h3>
-                    <BadgeCheck size={16} className="text-[#AE343F] shrink-0" />
-                  </div>
-                  <p className="text-sm text-[#232323]/40">{t.date}</p>
-                </div>
-              </div>
-
-              {/* Stars */}
-              <div className="flex gap-1 mb-4">
-                {Array.from({ length: t.rating }).map((_, i) => (
-                  <Star
-                    key={i}
-                    size={16}
-                    className="text-[#d4af37] fill-[#d4af37]"
-                  />
-                ))}
-              </div>
-
-              {/* Quote */}
-              <p className="text-[#232323]/70 leading-relaxed flex-1 mb-5">
-                &ldquo;{t.quote}&rdquo;
-              </p>
-
-              {/* Badges */}
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
-                  <MapPin size={12} />
-                  {t.city}
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
-                  <Package size={12} />
-                  {t.service}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        )}
       </div>
     </section>
   );

@@ -10,7 +10,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { locations, getLocation } from "@/data/locations";
-import { testimonials } from "@/data/testimonials";
+import { testimonials, googleReviews } from "@/data/testimonials";
 import { getAllVendors } from "@/lib/vendors";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { Header } from "@/components/layout";
@@ -272,6 +272,39 @@ export default async function CityPage({
               </div>
             </section>
           )}
+
+          {/* Recenzije — vodimo na Google profil umesto da prepisujemo tuđi
+              sadržaj; v. komentar u src/data/testimonials.ts */}
+          <section className="mb-12">
+            <div className="bg-white rounded-2xl border border-stone-100 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-5">
+              <div className="flex items-center gap-4 shrink-0">
+                <div className="flex gap-0.5" aria-hidden="true">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      size={18}
+                      className="text-[#d4af37] fill-[#d4af37]"
+                    />
+                  ))}
+                </div>
+                <span className="font-serif text-3xl text-[#232323]">
+                  {googleReviews.ratingValue.toFixed(1)}
+                </span>
+              </div>
+              <p className="text-sm text-[#232323]/60 flex-1 leading-relaxed">
+                Prosečna ocena na osnovu {googleReviews.reviewCount} recenzija
+                parova širom Srbije, ostavljenih na našem Google profilu.
+              </p>
+              <a
+                href={googleReviews.profileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-sm bg-[#232323] hover:bg-[#AE343F] text-[#F5F4DC] rounded-full border-none shrink-0"
+              >
+                Pročitaj recenzije
+              </a>
+            </div>
+          </section>
 
           {/* Local FAQ */}
           <section className="mb-12">
