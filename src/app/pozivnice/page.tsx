@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
+import ThemeGallery from "./ThemeGallery";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import BirthdayTypeButton from "@/components/landing/BirthdayTypeButton";
 import {
@@ -407,12 +408,12 @@ export default function PozivnicePage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                  <Link
-                    href="/izrada-pozivnica-online#primeri"
+                  <a
+                    href="#teme"
                     className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full"
                   >
                     Pogledajte primere
-                  </Link>
+                  </a>
                   <Link
                     href="/cene"
                     className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-[#232323]/10 text-[#232323]/70 text-sm uppercase tracking-widest font-medium hover:border-[#AE343F] hover:text-[#AE343F] transition-all rounded-full"
@@ -448,46 +449,11 @@ export default function PozivnicePage() {
           </div>
         </section>
 
-        {/* ═══ ŠTA UKLJUČUJE ═══ */}
-        <section className="py-16 sm:py-20 bg-white">
-          <div className="container mx-auto px-4 max-w-5xl">
-            <div className="text-center mb-12">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
-                Šta dobijate
-              </p>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-4">
-                Sve uključeno u jednu pozivnicu
-              </h2>
-            </div>
+        {/* ═══ GALERIJA TEMA — primeri uživo ═══ */}
+        <ThemeGallery />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {features.map((f) => (
-                <div
-                  key={f.title}
-                  className="bg-[#faf9f6] rounded-2xl p-5 border border-stone-100"
-                >
-                  <div className="w-11 h-11 bg-[#AE343F]/10 rounded-xl flex items-center justify-center mb-4 text-[#AE343F]">
-                    {f.icon}
-                  </div>
-                  <h3 className="text-sm font-semibold text-[#232323] mb-1">
-                    {f.title}
-                  </h3>
-                  <p className="text-xs text-[#232323]/50 leading-relaxed">
-                    {f.desc}
-                  </p>
-                  {"badge" in f && (
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-green-500/10 text-green-700 text-[10px] font-bold uppercase tracking-wider rounded-full">
-                      {(f as { badge: string }).badge}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ 5 TEMA ═══ */}
-        <section className="py-16 sm:py-24 bg-[#232323] relative overflow-hidden">
+        {/* ═══ 5 TEMA — nastavlja galeriju iznad, ista tamna podloga ═══ */}
+        <section className="pb-16 sm:pb-24 bg-[#232323] relative overflow-hidden">
           <style>{`
             @keyframes dotWavePozivnice {
               0%   { background-position: 0px 0px; }
@@ -508,13 +474,13 @@ export default function PozivnicePage() {
           <div className="container mx-auto px-4 max-w-5xl relative z-10">
             <div className="text-center mb-12">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
-                Dizajn
+                Boje
               </p>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#F5F4DC] mb-4">
-                5 dizajnerskih tema za svaki stil
+                Pet boja, svaka sa svojim značenjem
               </h2>
               <p className="text-[#F5F4DC]/50 max-w-2xl mx-auto">
-                Svaka tema ima pažljivo odabrane boje, fontove i atmosferu.
+                Ili boja potpuno po vašem izboru.
               </p>
             </div>
 
@@ -554,6 +520,44 @@ export default function PozivnicePage() {
                       />
                     ))}
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ ŠTA UKLJUČUJE ═══ */}
+        <section className="py-16 sm:py-20 bg-white">
+          <div className="container mx-auto px-4 max-w-5xl">
+            <div className="text-center mb-12">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
+                Šta dobijate
+              </p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-4">
+                Sve uključeno u jednu pozivnicu
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {features.map((f) => (
+                <div
+                  key={f.title}
+                  className="bg-[#faf9f6] rounded-2xl p-5 border border-stone-100"
+                >
+                  <div className="w-11 h-11 bg-[#AE343F]/10 rounded-xl flex items-center justify-center mb-4 text-[#AE343F]">
+                    {f.icon}
+                  </div>
+                  <h3 className="text-sm font-semibold text-[#232323] mb-1">
+                    {f.title}
+                  </h3>
+                  <p className="text-xs text-[#232323]/50 leading-relaxed">
+                    {f.desc}
+                  </p>
+                  {"badge" in f && (
+                    <span className="inline-block mt-2 px-2 py-0.5 bg-green-500/10 text-green-700 text-[10px] font-bold uppercase tracking-wider rounded-full">
+                      {(f as { badge: string }).badge}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
@@ -893,7 +897,7 @@ export default function PozivnicePage() {
               <div className="space-y-4 mb-6">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-[#232323]/70">
-                    Website pozivnica
+                    Standardna pozivnica
                   </span>
                   <span className="text-sm font-bold text-[#232323]">
                     {formatPrice(pricing.pozivnica.website.price)}

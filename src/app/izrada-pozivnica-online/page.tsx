@@ -158,7 +158,7 @@ const liveExamples = [
     createHref: "/napravi-pozivnicu?premium=1&raspored=1&audio=1&galerija=1&paket=premium",
     variants: [
       { theme: "Watercolor", gradient: "linear-gradient(160deg, #24303f, #3a2b40)", initials: "T & B", initialsColor: "#e8c9a0", liveHref: "/premium-pozivnica/teodora-bojan", ...clip("pre-watercolor") },
-      { theme: "Papirna", gradient: "linear-gradient(160deg, #7d7f6e, #585a49)", initials: "A & M", liveHref: "/premium-pozivnica/ana-marko", ...clip("pre-paper") },
+      { theme: "Parallax", gradient: "linear-gradient(160deg, #7d7f6e, #585a49)", initials: "A & M", liveHref: "/premium-pozivnica/ana-marko", ...clip("pre-paper") },
       { theme: "Fountain", gradient: "linear-gradient(160deg, #8a1f28, #AE343F)", initials: "M & N", initialsColor: "#f0d9b0", liveHref: "/premium-pozivnica/milica-nikola", ...clip("pre-burgundy") },
     ],
   },
