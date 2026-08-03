@@ -12,6 +12,7 @@ import {
   Scale,
   PartyPopper,
   CalendarHeart,
+  FileCheck,
   Plane,
   Trees,
   FileText,
@@ -143,19 +144,14 @@ const scenarios = [
     desc: "Papiri su odavno gotovi, ali porodica i prijatelji u Srbiji nisu videli ništa. Ovo je najčešći razlog zbog kog se ceremonija naručuje.",
   },
   {
-    icon: <Clock size={26} />,
-    title: "Svadba je uveče ili vikendom",
-    desc: "Zvanični čin ide radnim danom, u opštini, u zakazanom terminu. Ceremonija pred gostima može tačno kad vama odgovara.",
-  },
-  {
     icon: <CalendarHeart size={26} />,
     title: "Obnova zaveta i godišnjice",
     desc: "Deset, dvadeset ili trideset godina braka — ista pitanja, isti odgovori, samo sa decom u prvom redu. Za mnoge parove emotivnije nego prvi put.",
   },
   {
-    icon: <PartyPopper size={26} />,
-    title: "Čist program i iznenađenje",
-    desc: "Gosti sede, izlazi čovek u odelu sa knjigom, svi se uozbilje — i onda ceremonija krene u potpuno drugom pravcu. Deo svadbe o kom se priča najduže.",
+    icon: <FileCheck size={26} />,
+    title: "Građansko venčanje ste obavili pre svadbe",
+    desc: "Potpisali ste u opštini nekoliko dana ili nedelja ranije, u uskom krugu. Na dan svadbe zato nema ceremonije — gosti dođu pravo na večeru. Ovo je način da taj trenutak ipak dobiju.",
   },
 ];
 
@@ -346,10 +342,13 @@ export default function LazniMaticar() {
                   src="/images/lazni-maticar/ceremonija.webp"
                   alt="Knjiga venčanih, mikrofon, lenta i veo — rekviziti simbolične ceremonije venčanja"
                   width={1200}
-                  height={449}
+                  height={496}
                   priority
                   sizes="(max-width: 768px) 100vw, 768px"
-                  className="relative z-10 h-auto w-full"
+                  // Fotografija je bez pozadine, pa senka ide preko drop-shadow
+                  // filtera (prati alfa kanal) umesto box-shadow, koji bi pratio
+                  // pravougaonik i visio u praznom prostoru oko objekta.
+                  className="relative z-10 h-auto w-full [filter:drop-shadow(0_16px_14px_rgba(35,35,35,0.20))]"
                 />
               </div>
 
@@ -426,31 +425,42 @@ export default function LazniMaticar() {
                 <span className="italic text-[#AE343F]">lažni matičar</span>?
               </h2>
             </div>
-            <div className="space-y-5 text-[#232323]/65 leading-relaxed text-[17px]">
+            <div className="space-y-5 text-[#232323]/65 leading-relaxed text-[17px] text-justify hyphens-auto">
               <p>
                 Lažni matičar je glumac koji vodi ceremoniju venčanja koja
                 izgleda i zvuči kao prava — odelo, lenta, knjiga, pečat i
-                mikrofon — ali nema pravno dejstvo. Sve što se vidi i pamti je
-                tu; nedostaje samo deo koji se ionako odvija u opštini, na
-                šalteru, bez gostiju.
-              </p>
-              <p>
-                Poslednjih nekoliko sezona to je jedan od najbrže rastućih
-                trendova na srpskim svadbama, i razlog je vrlo praktičan:{" "}
+                mikrofon.{" "}
                 <strong className="text-[#232323]">
-                  zvanični čin i lepa ceremonija skoro nikada ne mogu na istom
-                  mestu
+                  Ceremonija je simbolična i nema nijedan zakonski element
                 </strong>
-                . Matičar radi radnim danom, u sali koju određuje matična
-                služba. Vi želite zalazak sunca na salašu, u subotu, pred sto
-                pedeset ljudi.
+                : ništa se ne prijavljuje, ništa se pravno ne potpisuje i ništa
+                se ne upisuje ni u kakvu evidenciju. Namenjena je parovima koji
+                su brak već sklopili — u opštini kod nas ili negde u
+                inostranstvu — pa žele i pravu ceremoniju, pred svima koje vole.
               </p>
               <p>
-                Rešenje je jednostavno: papire potpišete u opštini kad vam
-                odgovara, a veliko DA izgovorite pred svima koje volite, tamo
-                gde ste to oduvek zamišljali. Ideja nije nova ni kod nas —
-                srpske svadbe vekovima imaju odigrane uloge, od lažne mlade do
-                kupovine mlade. Ovo je samo najnovija u nizu.
+                Najveća razlika u odnosu na zvanični čin nije mesto nego
+                osećaj.{" "}
+                <strong className="text-[#232323]">
+                  Mladenci su neuporedivo opušteniji
+                </strong>{" "}
+                — nema obrasca koji se čita, nema strepnje da li ćete nešto
+                pogrešiti i nema osećaja da vas neko požuruje jer sledeći par
+                čeka pred vratima. Za to da je matičar glumac znaju samo
+                mladenci i kumovi; gosti ne znaju, pa je i njihova reakcija
+                potpuno iskrena.
+              </p>
+              <p>
+                Zato ovakve ceremonije ispadnu i lepše i fotogeničnije od
+                zvaničnog čina: ljudi se smeju i plaču u pravim trenucima,
+                fotograf ima vremena, a ceo tekst je{" "}
+                <strong className="text-[#232323]">
+                  personalizovan po želji mladenaca
+                </strong>{" "}
+                — od toga kako ste se upoznali do zaveta koje sami napišete.
+                Ideja nije ni nova kod nas: srpske svadbe vekovima imaju
+                odigrane uloge, od lažne mlade do kupovine mlade. Ovo je samo
+                najnovija u nizu.
               </p>
             </div>
           </div>
@@ -541,7 +551,7 @@ export default function LazniMaticar() {
                 <span className="italic text-[#AE343F]">lažni matičar</span>
               </h2>
               <p className="text-[#232323]/55 max-w-2xl mx-auto">
-                Pet situacija u kojima parovi najčešće naruče ceremoniju.
+                Četiri situacije u kojima parovi najčešće naruče ceremoniju.
               </p>
             </div>
 
@@ -679,18 +689,31 @@ export default function LazniMaticar() {
               </div>
               <div className="space-y-4 text-[#232323]/65 leading-relaxed">
                 <p>
-                  Da nema zabune: simbolična ceremonija{" "}
-                  <strong className="text-[#232323]">nema pravno dejstvo</strong>
+                  Da nema nikakve zabune: simbolična ceremonija{" "}
+                  <strong className="text-[#232323]">
+                    nema pravno dejstvo i ne sadrži nijedan zakonski element
+                  </strong>
                   . U Srbiji je brak zaključen isključivo pred ovlašćenim
-                  matičarem, u postupku koji propisuje zakon. Ono što mi radimo
-                  je ceremonija — sve što se vidi, čuje i pamti, ali bez pravnih
-                  posledica.
+                  matičarem, u postupku koji propisuje zakon. Kod nas se ne
+                  potpisuje nijedan pravni dokument, ne izdaje se nikakav
+                  izvod i ništa se ne prijavljuje nadležnim organima.
                 </p>
                 <p>
-                  To nije mana nego podela posla. Zvanični deo obavite u
-                  opštini, radnim danom, u pet minuta i uz minimalnu taksu — bez
-                  gostiju, bez fotografa, bez stresa. A ceremoniju pred svima
-                  koje volite napravite tamo gde ste je zamislili.
+                  Zbog toga je ovo usluga za parove{" "}
+                  <strong className="text-[#232323]">
+                    koji su brak već sklopili
+                  </strong>{" "}
+                  — u opštini pre ili posle proslave, ili ranije u inostranstvu.
+                  Zvanični deo je pet minuta na šalteru, bez gostiju i bez
+                  stresa; ceremonija je ono zbog čega su svi došli.
+                </p>
+                <p>
+                  A pošto nema propisanog obrasca, ceremonija se{" "}
+                  <strong className="text-[#232323]">
+                    piše po želji mladenaca
+                  </strong>
+                  : vaše reči, vaša priča, vaši zaveti, u tonu koji vi izaberete
+                  i u trajanju koje vama odgovara.
                 </p>
                 <p className="text-sm text-[#232323]/50">
                   Za simboličnu ceremoniju ne treba nikakva dokumentacija. Ako
@@ -839,8 +862,11 @@ export default function LazniMaticar() {
             HALO Uspomene posreduje uslugu lažnog matičara za venčanja, svadbe i
             proslave u Srbiji. Lazni maticar je glumac koji vodi simboličnu
             ceremoniju venčanja — u odelu, sa lentom, knjigom i mikrofonom —
-            koja izgleda kao zvanična, ali nema pravno dejstvo. Ceremonija može
-            biti emotivna ili šaljiva, a govor se piše po priči mladenaca.
+            koja izgleda kao zvanična, ali nema pravno dejstvo i ne sadrži
+            nijedan zakonski element. Namenjena je parovima koji su brak već
+            sklopili — u opštini ili u inostranstvu — a ceremonija se u
+            potpunosti personalizuje po želji mladenaca. Može biti emotivna ili
+            šaljiva, a govor se piše po njihovoj priči.
             Najčešći povodi su venčanje na lokaciji na koju matičar ne izlazi
             (salaš, vinarija, dvorište, priroda), ceremonija za goste kada je
             par venčan u inostranstvu, obnova bračnih zaveta i godišnjice braka,

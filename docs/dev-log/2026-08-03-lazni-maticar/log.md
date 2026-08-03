@@ -46,3 +46,28 @@
      schema i verovatno jedini video rich snippet u ovom SERP-u.
   4. Deploy, pa Search Console: `/lazni-maticar/` i
      `/blog/lazni-maticar-kako-izgleda/` na indeksiranje.
+
+## 2026-08-03 — Doterivanje posle pregleda
+
+- **Šta je urađeno:**
+  - Zamenjena hero fotografija (novi kadar, 1200×496, providna pozadina); OG
+    PNG regenerisan iz iste slike. Obrisan `.next/cache/images` pre builda.
+  - Senka ispod hero slike preko `drop-shadow` filtera, ne `box-shadow` —
+    fotografija je bez pozadine, pa bi `box-shadow` pratio pravougaonik i visio
+    u praznom prostoru oko objekta.
+  - **Izbačena tvrdnja** da zvanični čin i lepa ceremonija "skoro nikada ne mogu
+    na istom mestu" — bila je prejaka i nije tačna. Novi ugao: razlika nije u
+    mestu nego u osećaju; mladenci su opušteniji jer nema obrasca ni pritiska, a
+    za glumca znaju samo oni i kumovi, pa je reakcija gostiju iskrena.
+  - Pravni status objašnjen na dva mesta i preciznije: ceremonija nema nijedan
+    zakonski element i namenjena je parovima koji su brak **već sklopili** (u
+    opštini ili inostranstvu), a piše se po želji mladenaca. Isto uneto i u
+    skriveni SEO pasus.
+  - Scenariji: izbačen "Svadba je uveče ili vikendom"; "Čist program i
+    iznenađenje" zamenjen sa "Građansko venčanje ste obavili pre svadbe"
+    (najčešći domaći slučaj). Sekcija sada ima 4 kartice u rasporedu 2×2.
+  - Uvodni pasusi obostrano poravnati (`text-justify` + `hyphens-auto`, radi jer
+    je `<html lang="sr">`).
+- **Verifikacija:** `tsc` + `eslint` čisti, build prolazi, provereno u HTML-u da
+  su stare formulacije nestale a nove prisutne.
+- **Status:** code-complete
