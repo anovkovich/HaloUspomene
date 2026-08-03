@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   title:
     "Iznajmljivanje Paviljona i Barskih Stolova za Venčanje",
   description:
-    "Paviljoni i barski stolovi za venčanje i svadbu. Doček svatova, polazak od kuće, ceremonija na otvorenom. Besplatna dostava do 50km — od 30€ po danu.",
+    "Paviljoni i barski stolovi za venčanje i svadbu — doček svatova, polazak od kuće, ceremonija na otvorenom. Od 30 € po danu, gratis dostava do 50 km.",
   keywords: [
     "iznajmljivanje paviljona za venčanje",
     "paviljon za svadbu",

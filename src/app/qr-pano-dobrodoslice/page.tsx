@@ -30,7 +30,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 export const metadata: Metadata = {
   title: "QR Pano Dobrodošlice — Digitalni Vodič za Goste na Svadbi",
   description:
-    "QR Pano dobrodošlice za venčanje ili event — gosti skeniraju QR kod na ulazu u salu, ukucaju ime i telefon ih vodi do njihovog stola. B1 pano spreman za štampu. Bez gužve, bez spiskova, bez hostese.",
+    "QR pano dobrodošlice za venčanje: gosti skeniraju QR kod na ulazu, ukucaju ime i telefon ih vodi do stola. B1 pano za štampu — bez spiskova i hostese.",
   keywords: [
     "qr pano dobrodošlice",
     "qr pano za venčanje",

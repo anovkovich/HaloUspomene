@@ -20,7 +20,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 export const metadata: Metadata = {
   title: "Pozivnica za Prvi Rođendan — Digitalna Online",
   description:
-    "Napravite šarenu digitalnu pozivnicu za prvi rođendan online. Teme za dečaka, devojčicu ili neutralne, sa formom za potvrdu dolaska, odbrojavanjem i mapom. Gotova odmah, deli se jednim linkom.",
+    "Šarena digitalna pozivnica za prvi rođendan — teme za dečaka i devojčicu, potvrde dolaska, odbrojavanje i mapa. Gotova odmah, deli se jednim linkom.",
   keywords: [
     "pozivnica za prvi rođendan",
     "pozivnica za prvi rođendan online",

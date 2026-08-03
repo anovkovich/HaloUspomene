@@ -21,7 +21,7 @@ export const locations: Location[] = [
     description:
       "HALO Uspomene nudi audio guest book uslugu za venčanja u Beogradu i okolini. Kao glavni grad Srbije sa najvećim brojem venčanja godišnje, Beograd je naše najtraženije tržište. Dostava se vrši putem kurirske službe — telefon stiže direktno na vašu adresu.",
     shortDescription:
-      "Audio guest book za venčanja u Beogradu — telefon na adresi za 2 dana!",
+      "Audio guest book za venčanja u Beogradu — retro telefon uspomena stiže na vašu adresu za 2 dana. Gosti ostavljaju glasovne poruke koje čuvate zauvek.",
     popularVenues: [
       "Restoran Madera",
       "Hotel Hyatt Regency",
@@ -57,7 +57,7 @@ export const locations: Location[] = [
     description:
       "HALO Uspomene ima sedište u Novom Sadu, što znači da ovde nudimo i ličnu dostavu i profesionalnu montažu telefona na lokaciji. Novi Sad je naš domaći grad i mesto gde je sve počelo.",
     shortDescription:
-      "Audio guest book sa ličnom dostavom i instalacijom u Novom Sadu.",
+      "Audio guest book za venčanja u Novom Sadu — lična dostava i instalacija retro telefona uspomena. HALO Uspomene ima sedište baš u Novom Sadu.",
     popularVenues: [
       "Restoran Aqua Doria",
       "Čarda Ribarsko Ostrvo",

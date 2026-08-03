@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   title:
     "Iznajmljivanje Luksuznih Automobila za Venčanje — Mercedes",
   description:
-    "Luksuzan automobil za mladence, kuma i barjaktara na svadbi. Mercedes E, S, GLE i G klasa sa profesionalnim šoferom — po satu ili za ceo dan. Cene i dostupnost za venčanja širom Srbije.",
+    "Luksuzan automobil za mladence, kuma i barjaktara — Mercedes E, S, GLE i G klasa sa profesionalnim šoferom, po satu ili za ceo dan. Cela Srbija.",
   keywords: [
     "iznajmljivanje automobila za venčanje",
     "auto za venčanje",

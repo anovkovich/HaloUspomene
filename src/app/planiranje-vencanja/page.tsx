@@ -29,7 +29,7 @@ import {
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
-  title: "Planer za Venčanje — Checklista i Budžet",
+  title: "Planiranje Venčanja — Besplatan Planer i Checklista",
   description:
     "Besplatan online planer za planiranje venčanja u Srbiji — checklista zadataka i kalkulator budžeta na jednom mestu. Registrujte se za 10 sekundi.",
   keywords: [

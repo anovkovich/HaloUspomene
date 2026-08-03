@@ -10,9 +10,9 @@ import { getWeddingData } from "@/lib/couples";
 import { resolveBypassInfo } from "@/lib/bypass-token";
 
 export const metadata: Metadata = {
-  title: "Napravi Pozivnicu za Venčanje Online",
+  title: "Napravi Pozivnicu za Venčanje Online — Gotova Odmah",
   description:
-    "Napravite svoju digitalnu pozivnicu za venčanje online — gotova odmah. Popunite kratki upitnik, mi dizajniramo. Forma za potvrdu dolaska, odbrojavanje i besplatna PDF uključeni.",
+    "Popunite kratki upitnik, mi dizajniramo vašu digitalnu pozivnicu za venčanje — gotova odmah. Potvrde dolaska, odbrojavanje i gratis PDF za štampu.",
   keywords: [
     "website venčana pozivnica",
     "napravi pozivnicu online",

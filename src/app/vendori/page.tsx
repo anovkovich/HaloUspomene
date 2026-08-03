@@ -44,7 +44,7 @@ const VENDOR_FAQ: { q: string; a: string }[] = [
 ];
 
 export const metadata: Metadata = {
-  title: "Vendori za venčanje u Srbiji",
+  title: "Vendori za Venčanje u Srbiji — Sale, Muzika, Fotografi",
   description:
     "Pregled vendora za venčanje u Srbiji — sale, muzika, fotografi, torte, dekoracija, cveće i ostalo. Pun pristup u besplatnom planeru.",
   keywords: [

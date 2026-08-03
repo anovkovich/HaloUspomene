@@ -51,7 +51,7 @@ const modelNames = Array.from(
 
 export const metadata: Metadata = {
   title: "Iznajmljivanje Oldtajmera za Venčanje — Cene i Flota",
-  description: `Oldtajmer za venčanje sa vozačem — retro automobili za mladence, svadbenu kolonu i fotografisanje. Cene od ${priceLow} EUR, Beograd, Pancevo i cela Srbija.`,
+  description: `Oldtajmer za venčanje sa vozačem — retro automobili za mladence, svadbenu kolonu i fotografisanje. Cene od ${priceLow} EUR, Beograd, Pančevo i cela Srbija.`,
   keywords: [
     "iznajmljivanje oldtajmera za venčanje",
     "iznajmljivanje oldtajmera",

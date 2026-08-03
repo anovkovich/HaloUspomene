@@ -124,7 +124,7 @@ export const metadata: Metadata = {
 
   title: {
     default:
-      "HALO Uspomene — Sve za Venčanje: Pozivnice, QR Pano, Audio...",
+      "HALO Uspomene — Digitalne Pozivnice i Sve za Venčanje",
     template: "%s | HALO Uspomene",
   },
 

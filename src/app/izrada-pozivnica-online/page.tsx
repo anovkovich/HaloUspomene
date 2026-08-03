@@ -27,10 +27,9 @@ import PromoCapture from "@/components/PromoCapture";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
-  title:
-    "Izrada Pozivnica Online — Napravi Digitalnu Pozivnicu za Svaku Priliku",
+  title: "Izrada Pozivnica Online — Venčanja i Rođendani",
   description:
-    "Napravite pozivnicu online za venčanje, dečiji rođendan, prvi rođendan ili punoletstvo. Personalizovana digitalna pozivnica sa potvrdama dolaska, odbrojavanjem i mapom — gotova odmah.",
+    "Napravite pozivnicu online za venčanje, rođendan ili punoletstvo. Digitalna pozivnica sa potvrdama dolaska, odbrojavanjem i mapom — gotova odmah.",
   keywords: [
     "izrada pozivnica",
     "izrada pozivnica online",

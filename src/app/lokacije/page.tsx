@@ -8,9 +8,9 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 
 export const metadata: Metadata = {
-  title: "Lokacije — Audio Guest Book Dostava u Celoj Srbiji",
+  title: "Audio Guest Book — Dostava u Celoj Srbiji",
   description:
-    "HALO Uspomene dostavlja audio guest book za venčanja u Beogradu, Novom Sadu, Nišu, Kragujevcu, Subotici i celoj Srbiji. Saznajte detalje o dostavi za vaš grad.",
+    "Dostavljamo audio guest book za venčanja u Beograd, Novi Sad, Niš, Kragujevac, Suboticu i celu Srbiju. Detalji dostave i termini za vaš grad.",
   alternates: {
     canonical: "/lokacije",
   },

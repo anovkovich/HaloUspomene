@@ -40,7 +40,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 export const metadata: Metadata = {
   title: "Raspored Sedenja za Svadbu — Online Alat",
   description:
-    'Raspored sedenja i stolova za svadbu online — raspoređivanje gostiju, QR pano dobrodošlice i "gde sedim?" pretraga. Uvoz gostiju, demo i cena po upitu.',
+    'Raspored sedenja i stolova za svadbu online — rasporedite goste, dodajte QR pano dobrodošlice i pretragu gde sedim. Uvoz gostiju, demo i cena po upitu.',
   keywords: [
     "raspored sedenja",
     "raspored sedenja online",
@@ -900,7 +900,7 @@ export default async function RasporedSedenjaLanding({
                 Zašto baš mi
               </p>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] leading-tight">
-                "Besplatno" ima sitna slova
+                &bdquo;Besplatno&ldquo; ima sitna slova
               </h2>
               <p className="text-base text-[#232323]/65 leading-relaxed mt-4">
                 Drugi vam poklone 5 stolova i šezdesetak gostiju — a onda, kad
@@ -959,7 +959,7 @@ export default async function RasporedSedenjaLanding({
                       za ulaz u salu
                     </>,
                     <>
-                      Stranica "Gde sedim?" — gost skenira, ukuca ime i za pet
+                      Stranica &bdquo;Gde sedim?&ldquo; — gost skenira, ukuca ime i za pet
                       sekundi zna svoj sto
                       <GdeSedimInfoButton />
                     </>,

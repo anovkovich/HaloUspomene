@@ -33,10 +33,9 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 const priceLabel = (n: number) => (n === 0 ? "GRATIS" : formatPrice(n));
 
 export const metadata: Metadata = {
-  title:
-    "Telefon Uspomena za Venčanje — Retro Telefon za Audio Poruke",
+  title: "Audio Guest Book za Venčanje — Retro Telefon Uspomena",
   description:
-    "Telefon uspomena za venčanja u Srbiji. Iznajmite retro telefon sa brojčanikom — gosti ostavljaju glasovne poruke. Audio guest book sa dostavom u Beograd, Novi Sad i celu Srbiju.",
+    "Audio guest book za venčanje — retro telefon sa brojčanikom na koji gosti ostavljaju glasovne poruke. USB suveniri, dostava u celu Srbiju. Od 6.900 din.",
   keywords: [
     "telefon uspomena",
     "telefon uspomena za venčanje",

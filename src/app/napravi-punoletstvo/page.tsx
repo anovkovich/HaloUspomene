@@ -7,9 +7,9 @@ import { resolveBypassInfo } from "@/lib/bypass-token";
 import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
 
 export const metadata: Metadata = {
-  title: "Pozivnice za 18. Rođendan i Punoletstvo",
+  title: "Digitalne Pozivnice za 18. Rođendan i Punoletstvo",
   description:
-    "Elegantna digitalna pozivnica za 18. rođendan (punoletstvo) — script font, forma za potvrdu dolaska, odbrojavanje i mapa. Gotova odmah, deli se jednim linkom.",
+    "Elegantna digitalna pozivnica za 18. rođendan i punoletstvo — potvrde dolaska, odbrojavanje i mapa. Gotova odmah, deli se jednim linkom.",
   keywords: [
     "pozivnica za punoletstvo",
     "pozivnica za 18 rođendan",

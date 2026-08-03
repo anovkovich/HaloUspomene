@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import PricingClient from "./PricingClient";
 
 export const metadata: Metadata = {
-  title: "Paketi i Cene za Venčanje — Pozivnica, Raspored, Galerija, Audio",
+  title: "Cene Digitalnih Pozivnica i Paketa za Venčanje",
   description:
-    "Tri jednostavna paketa za venčanje: Osnovno (5.000 din), Kompletno (9.900 din) i Premium. Website pozivnica, raspored sedenja, QR galerija fotografija, audio knjiga utisaka i besplatna PDF za štampu. Izaberite gotov paket ili sastavite svoj.",
+    "Tri paketa za venčanje: Osnovno (5.000 din), Kompletno (9.900 din) i Premium. Pozivnica, raspored sedenja, QR galerija i gratis PDF za štampu.",
   keywords: [
     "pozivnica za venčanje",
     "pozivnice za vencanje",

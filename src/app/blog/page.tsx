@@ -11,9 +11,9 @@ import BlogClient from "./BlogClient";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Blog — Audio Guest Book Saveti i Vodiči",
+  title: "Blog za Venčanja — Saveti, Vodiči i Trendovi",
   description:
-    "Saznajte sve o audio guest book usluzi za venčanja u Srbiji. Vodiči, saveti, poređenja i trendovi od HALO Uspomene tima.",
+    "Saveti, vodiči i poređenja za planiranje venčanja — od digitalnih pozivnica do audio guest book uspomena. Piše tim HALO Uspomene.",
   alternates: {
     canonical: "/blog",
   },

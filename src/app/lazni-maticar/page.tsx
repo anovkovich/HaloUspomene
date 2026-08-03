@@ -37,7 +37,7 @@ const pageUrl = `${siteUrl}/lazni-maticar`;
 
 export const metadata: Metadata = {
   title: "Lažni matičar — simbolična ceremonija i cene",
-  description: `Glumac u ulozi matičara vodi ceremoniju po vašoj priči — emotivnu ili šaljivu. Cene od ${priceFrom} EUR, dolazimo u celu Srbiju. Saznajte kako izgleda i zakažite termin.`,
+  description: `Glumac u ulozi matičara vodi simboličnu ceremoniju po vašoj priči — emotivnu ili šaljivu. Cene od ${priceFrom} EUR, dolazimo u celu Srbiju. Zakažite termin.`,
   keywords: [
     "lažni matičar",
     "lazni maticar",

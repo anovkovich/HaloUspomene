@@ -29,10 +29,10 @@ const galleryPrice = pricing.pozivnica.galerija.price;
 export const metadata: Metadata = {
   title: {
     absolute:
-      "QR Galerija Slika sa Venčanja — Sve Fotografije Gostiju na Jednom Mestu | HALO Uspomene",
+      "QR Galerija Slika sa Venčanja — Fotografije Gostiju | HALO Uspomene",
   },
   description:
-    "Gosti skeniraju QR kod i dodaju svoje fotografije sa vašeg venčanja — bez aplikacije. Sve slike sa svadbe na jednom mestu, a vi kasnije pregledate i preuzmete celu galeriju. Za venčanja širom Srbije.",
+    "Gosti skeniraju QR kod i dodaju svoje fotografije sa venčanja — bez aplikacije. Sve slike sa svadbe na jednom mestu — pregledajte i preuzmite galeriju.",
   keywords: [
     "qr galerija slika sa venčanja",
     "galerija slika sa venčanja",
