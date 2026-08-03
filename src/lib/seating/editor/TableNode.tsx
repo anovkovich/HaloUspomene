@@ -25,6 +25,7 @@ import type {
   DecorationType,
   EntranceDirection,
 } from "../types";
+import { WALL_DEFAULT_W, WALL_DEFAULT_H } from "../geometry";
 
 const SEAT_SIZE = 30;
 const CIRCLE_TABLE_R = 52;
@@ -92,6 +93,15 @@ const DECO_MIN_W = 100;
 const DECO_MAX_W = 500;
 const DECO_MIN_H = 60;
 const DECO_MAX_H = 400;
+
+// Hall outline. Far larger bounds than a decoration zone — this rectangle has to
+// fit a whole hall's worth of tables inside it.
+const WALL_MIN_W = 200;
+const WALL_MAX_W = 6000;
+const WALL_MIN_H = 200;
+const WALL_MAX_H = 4500;
+/** Thickness of the invisible grab strips laid over the wall's edges. */
+const WALL_GRIP = 14;
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -535,6 +545,258 @@ function ResizableZone({
   );
 }
 
+// ── HALL OUTLINE (wall) ─────────────────────────────────────────────────────
+/**
+ * The hall perimeter: a border-only rectangle that tables sit inside.
+ *
+ * Its whole area would otherwise swallow every click meant for a table inside
+ * it, so the wrapper is `pointerEvents: "none"` and only the four edge strips,
+ * the corner resize handle and the label chip take pointer events back. The
+ * node also never bumps `TABLE_Z_SEQ` — the outline must stay behind the tables.
+ */
+function WallOutline({
+  table,
+  onUpdate,
+  onDelete,
+  onElementHover,
+  scale = 1,
+  readOnly,
+}: {
+  table: TableData;
+  onUpdate: (id: string, changes: Partial<TableData>) => void;
+  onDelete: (id: string) => void;
+  onElementHover?: (hint: string | null) => void;
+  scale?: number;
+  readOnly?: boolean;
+}) {
+  const nodeRef = useRef<HTMLDivElement>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [labelInput, setLabelInput] = useState(table.label);
+  const dragStart = useRef<{
+    mouseX: number;
+    mouseY: number;
+    w: number;
+    h: number;
+  } | null>(null);
+
+  const w = table.decoWidth ?? WALL_DEFAULT_W;
+  const h = table.decoHeight ?? WALL_DEFAULT_H;
+  const border = "3px solid color-mix(in srgb, var(--theme-text) 45%, transparent)";
+
+  const handleLabelSave = () => {
+    setIsEditing(false);
+    const trimmed = labelInput.trim();
+    if (trimmed) onUpdate(table.id, { label: trimmed });
+    else setLabelInput(table.label);
+  };
+
+  const handleResizeMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragStart.current = { mouseX: e.clientX, mouseY: e.clientY, w, h };
+
+    const onMove = (ev: MouseEvent) => {
+      if (!dragStart.current) return;
+      const newW = Math.max(
+        WALL_MIN_W,
+        Math.min(
+          WALL_MAX_W,
+          dragStart.current.w + (ev.clientX - dragStart.current.mouseX) / scale,
+        ),
+      );
+      const newH = Math.max(
+        WALL_MIN_H,
+        Math.min(
+          WALL_MAX_H,
+          dragStart.current.h + (ev.clientY - dragStart.current.mouseY) / scale,
+        ),
+      );
+      onUpdate(table.id, {
+        decoWidth: Math.round(newW),
+        decoHeight: Math.round(newH),
+      });
+    };
+
+    const onUp = () => {
+      dragStart.current = null;
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
+
+  // The frame itself is inert; only the strips below accept the pointer.
+  const frame = (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        border,
+        borderRadius: 6,
+        pointerEvents: "none",
+      }}
+    />
+  );
+
+  if (readOnly) {
+    return (
+      <div
+        className="absolute"
+        style={{
+          left: table.x,
+          top: table.y,
+          width: w,
+          height: h,
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      >
+        {frame}
+      </div>
+    );
+  }
+
+  const startDrag = (e: React.PointerEvent) =>
+    beginNodeDrag(e, {
+      node: nodeRef.current,
+      baseX: table.x,
+      baseY: table.y,
+      scale,
+      ignore: "button, input, .resize-handle",
+      onCommit: (x, y) => onUpdate(table.id, { x, y }),
+    });
+
+  const edges: React.CSSProperties[] = [
+    { left: 0, top: -WALL_GRIP / 2, width: w, height: WALL_GRIP },
+    { left: 0, top: h - WALL_GRIP / 2, width: w, height: WALL_GRIP },
+    { left: -WALL_GRIP / 2, top: 0, width: WALL_GRIP, height: h },
+    { left: w - WALL_GRIP / 2, top: 0, width: WALL_GRIP, height: h },
+  ];
+
+  return (
+    <div
+      ref={nodeRef}
+      className="absolute"
+      style={{
+        userSelect: "none",
+        width: w,
+        height: h,
+        // Keep the outline below every table. Tables use z-index auto until they
+        // are hovered, at which point they jump to TABLE_Z_SEQ (10 and up).
+        zIndex: 0,
+        transform: `translate(${table.x}px, ${table.y}px)`,
+        // Interior clicks must reach the tables inside the hall.
+        pointerEvents: "none",
+      }}
+    >
+      {frame}
+
+      {edges.map((pos, i) => (
+        <div
+          key={i}
+          className="absolute cursor-grab active:cursor-grabbing"
+          style={{ ...pos, pointerEvents: "auto" }}
+          onPointerDown={startDrag}
+          onMouseEnter={() => onElementHover?.("Pomeri zidove sale")}
+          onMouseLeave={() => onElementHover?.(null)}
+        />
+      ))}
+
+      {/* Label chip — sits above the top edge so it never covers a table */}
+      <div
+        className="absolute flex items-center gap-1.5 px-2 py-1 rounded"
+        style={{
+          left: 0,
+          top: -30,
+          pointerEvents: "auto",
+          backgroundColor: "var(--theme-surface)",
+          border: "1px solid var(--theme-border-light)",
+        }}
+      >
+        {isEditing ? (
+          <input
+            autoFocus
+            value={labelInput}
+            onChange={(e) => setLabelInput(e.target.value)}
+            onBlur={handleLabelSave}
+            onKeyDown={(e) => e.key === "Enter" && handleLabelSave()}
+            onClick={(e) => e.stopPropagation()}
+            className="text-[11px] font-raleway font-semibold bg-transparent outline-none w-28"
+            style={{
+              color: "var(--theme-text)",
+              borderBottom: "1px solid var(--theme-primary)",
+            }}
+          />
+        ) : (
+          <span
+            className="text-[11px] font-raleway font-semibold cursor-text"
+            style={{ color: "var(--theme-text-light)" }}
+            onDoubleClick={() => {
+              setLabelInput(table.label);
+              setIsEditing(true);
+            }}
+            onMouseEnter={() =>
+              onElementHover?.("Dupli klik za preimenovanje")
+            }
+            onMouseLeave={() => onElementHover?.(null)}
+          >
+            {table.label}
+          </span>
+        )}
+        <span
+          className="text-[10px] font-raleway"
+          style={{ color: "var(--theme-text-light)", opacity: 0.7 }}
+        >
+          {Math.round(w)}×{Math.round(h)}
+        </span>
+        <button
+          onClick={() => onDelete(table.id)}
+          onMouseEnter={() => onElementHover?.("Obriši zidove")}
+          onMouseLeave={() => onElementHover?.(null)}
+          className="w-4 h-4 flex items-center justify-center rounded hover:opacity-60 transition-opacity"
+          style={{ color: "var(--theme-primary)" }}
+        >
+          <Trash2 size={10} />
+        </button>
+      </div>
+
+      {/* Resize handle — bottom-right corner, after the edges so it wins */}
+      <div
+        className="resize-handle absolute"
+        onMouseDown={handleResizeMouseDown}
+        onMouseEnter={() => onElementHover?.("Promeni veličinu sale")}
+        onMouseLeave={() => onElementHover?.(null)}
+        style={{
+          left: w - 18,
+          top: h - 18,
+          width: 22,
+          height: 22,
+          pointerEvents: "auto",
+          cursor: "nwse-resize",
+        }}
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          style={{
+            position: "absolute",
+            bottom: 2,
+            right: 2,
+            opacity: 0.5,
+            color: "var(--theme-text)",
+          }}
+        >
+          <line x1="4" y1="12" x2="12" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="8" y1="12" x2="12" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 interface Props {
   table: TableData;
@@ -586,6 +848,20 @@ export default function TableNode({
 
   // ── Route to specialised decoration components ───────────────────────────
   if (table.type === "decoration") {
+    // The hall outline handles its own read-only rendering — it must stay a
+    // border-only rectangle, never collapse to a label chip like the zones do.
+    if (table.decorationType === "wall") {
+      return (
+        <WallOutline
+          table={table}
+          onUpdate={onUpdate}
+          onDelete={onDelete}
+          onElementHover={elementHover}
+          scale={scale}
+          readOnly={readOnly}
+        />
+      );
+    }
     if (readOnly) {
       // Simple positioned label for decorations in read-only mode
       const dw = table.decorationType === "entrance" ? 140 : (table.decoWidth ?? DECO_DEFAULT_W);

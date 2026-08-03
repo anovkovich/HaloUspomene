@@ -25,6 +25,7 @@ import {
 } from "@/lib/receipt-items";
 import DatePicker from "@/components/ui/DatePicker";
 import ShareLinkButton from "./ShareLinkButton";
+import HallSchemesSection from "./HallSchemesSection";
 
 interface Props {
   onNeedsLogin: () => void;
@@ -294,6 +295,8 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
 
   return (
     <div>
+      <HallSchemesSection onNeedsLogin={onNeedsLogin} />
+
       <div className="flex items-center justify-between mb-5 sm:mb-6 gap-3 flex-wrap">
         <h2 className="text-xl sm:text-2xl font-semibold text-white">
           <span className="hidden sm:inline">Standalone raspored sedenja</span>

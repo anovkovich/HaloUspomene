@@ -11,6 +11,8 @@ import {
   DoorOpen,
   Disc3,
   Minus,
+  Frame,
+  Building2,
 } from "lucide-react";
 import type { TableType, TableData } from "../types";
 
@@ -27,6 +29,12 @@ interface Props {
   /** When true, hide the entire "Specijalni elementi" dropdown and instead expose
    *  a standalone "Jednostran sto" button. Used by non-wedding event organizers. */
   hideDecorations?: boolean;
+  /** Admin hall-scheme mode: adds the hall-outline button. Couples get walls
+   *  only through a loaded scheme, so the button stays out of their editor. */
+  templateMode?: boolean;
+  /** When provided, shows the "Učitaj šemu sale" button that opens the venue
+   *  scheme picker. Omitted in the admin template editor. */
+  onLoadHallScheme?: () => void;
 }
 
 export default function AddTablePanel({
@@ -36,6 +44,8 @@ export default function AddTablePanel({
   occupiedSeats,
   hideWeddingOnlyElements,
   hideDecorations,
+  templateMode,
+  onLoadHallScheme,
 }: Props) {
   const [specialOpen, setSpecialOpen] = useState(false);
   const specialRef = useRef<HTMLDivElement>(null);
@@ -71,7 +81,21 @@ export default function AddTablePanel({
         },
       ];
 
+  const hallOutline = templateMode
+    ? [
+        {
+          icon: <Frame size={13} />,
+          label: "Zidovi sale",
+          action: () => {
+            onAddDecoration("Sala", "wall");
+            setSpecialOpen(false);
+          },
+        },
+      ]
+    : [];
+
   const specialItems = [
+    ...hallOutline,
     ...weddingOnly,
     {
       icon: <Music size={13} />,
@@ -180,7 +204,24 @@ export default function AddTablePanel({
         </div>
       )}
 
-      {totalSeats > 0 && (
+      {onLoadHallScheme && (
+        <button
+          onClick={onLoadHallScheme}
+          className="flex items-center gap-2 px-3 py-2 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 shadow-sm"
+          style={{
+            backgroundColor: "var(--theme-surface)",
+            border: "1px solid var(--theme-primary)",
+            color: "var(--theme-primary)",
+          }}
+        >
+          <Building2 size={13} />
+          Učitaj šemu sale
+        </button>
+      )}
+
+      {/* Free-seat counter is meaningless for a hall template — the toolbar
+          already reports table and seat totals there. */}
+      {totalSeats > 0 && !templateMode && (
         <div
           className="flex items-center px-3 rounded text-xs font-raleway shadow-sm self-stretch"
           style={{

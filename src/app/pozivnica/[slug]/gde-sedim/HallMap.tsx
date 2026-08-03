@@ -21,11 +21,36 @@ export default function HallMap({ tables, highlightTableIds }: Props) {
 
   const elements: React.ReactNode[] = [];
 
-  tables.forEach((t) => {
+  // Hall outlines are emitted first so the tables draw on top of them.
+  const isWall = (t: TableData) =>
+    t.type === "decoration" && t.decorationType === "wall";
+  const ordered = tables.some(isWall)
+    ? [...tables.filter(isWall), ...tables.filter((t) => !isWall(t))]
+    : tables;
+
+  ordered.forEach((t) => {
     const r = rectFor(t);
     const isHighlight = highlightTableIds.includes(t.id);
 
     if (t.type === "decoration") {
+      // Hall outline — the quietest mark on the map, at full opacity so it
+      // reads as the room rather than as another dimmed element.
+      if (isWall(t)) {
+        elements.push(
+          <rect
+            key={t.id}
+            x={r.x}
+            y={r.y}
+            width={r.w}
+            height={r.h}
+            rx={6}
+            fill="none"
+            stroke="#d5d5d5"
+            strokeWidth={2}
+          />,
+        );
+        return;
+      }
       elements.push(
         <g key={t.id} opacity={0.45}>
           <rect
@@ -221,12 +246,13 @@ export default function HallMap({ tables, highlightTableIds }: Props) {
         border: "1px solid var(--theme-border-light)",
       }}
     >
+      {/* height goes through CSS: `height="auto"` is not a valid SVG length and
+          the browser logs an attribute error for it. */}
       <svg
         width="100%"
-        height="auto"
         viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
         preserveAspectRatio="xMidYMid meet"
-        style={{ display: "block", minWidth: 280 }}
+        style={{ display: "block", height: "auto", minWidth: 280 }}
       >
         {elements}
       </svg>

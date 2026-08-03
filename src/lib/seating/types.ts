@@ -1,7 +1,15 @@
 /** rectangular: seats top+bottom | circle: radial | single-sided: one row only | decoration: no seats */
 export type TableType = "rectangular" | "circle" | "single-sided" | "decoration";
 
-export type DecorationType = "music" | "dancing" | "entrance" | "custom";
+/** `wall` outlines the hall perimeter: a border-only rectangle that always sits
+ *  behind the tables and holds no seats. Added for the venue scheme library, so
+ *  layouts saved before it never contain one. */
+export type DecorationType =
+  | "music"
+  | "dancing"
+  | "entrance"
+  | "custom"
+  | "wall";
 
 export type EntranceDirection = "up" | "down" | "left" | "right";
 

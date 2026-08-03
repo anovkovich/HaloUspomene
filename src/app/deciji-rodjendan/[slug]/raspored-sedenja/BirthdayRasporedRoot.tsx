@@ -55,6 +55,7 @@ export default function BirthdayRasporedRoot({
       }
       guestLookupUrl={`https://halouspomene.rs/deciji-rodjendan/${slug}/gde-sedim/`}
       hideWeddingOnlyElements
+      enableHallSchemes
       onGenerateWelcomePDF={() =>
         generateBirthdayWelcomePDF({
           slug,

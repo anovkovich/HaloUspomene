@@ -1,5 +1,6 @@
 import type { RSVPEntry } from "@/lib/rsvp";
 import type { TableData } from "../types";
+import { WALL_DEFAULT_W, WALL_DEFAULT_H } from "../geometry";
 import {
   buildGuestIndex,
   buildTableGuestLists,
@@ -41,6 +42,14 @@ export async function generateAndDownloadPDF(
     if (t.type === "decoration") {
       if (t.decorationType === "entrance")
         return { x: t.x + 32, y: t.y + 32, w: 150, h: 36 };
+      // Hall outline — no header strip, so the height is the raw value.
+      if (t.decorationType === "wall")
+        return {
+          x: t.x,
+          y: t.y,
+          w: t.decoWidth ?? WALL_DEFAULT_W,
+          h: t.decoHeight ?? WALL_DEFAULT_H,
+        };
       return {
         x: t.x,
         y: t.y,
@@ -60,7 +69,14 @@ export async function generateAndDownloadPDF(
     return { x: t.x, y: t.y, w: long, h: SURFACE_H + SEAT_ZONE };
   };
 
-  const rects = tables.map(rectFor);
+  // Hall outlines are drawn first so the tables print on top of them.
+  const isWall = (t: TableData) =>
+    t.type === "decoration" && t.decorationType === "wall";
+  const drawTables = tables.some(isWall)
+    ? [...tables.filter(isWall), ...tables.filter((t) => !isWall(t))]
+    : tables;
+
+  const rects = drawTables.map(rectFor);
   let minX = Infinity,
     minY = Infinity,
     maxX = -Infinity,
@@ -88,7 +104,7 @@ export async function generateAndDownloadPDF(
   const fcx = (r: Rect) => ((r.x - minX + PAD + r.w / 2) * sc).toFixed(1);
   const fcy = (r: Rect) => ((r.y - minY + PAD + r.h / 2) * sc).toFixed(1);
 
-  const shapes = tables.map((t, i) => {
+  const shapes = drawTables.map((t, i) => {
     const r = rects[i],
       cx = fcx(r),
       cy = fcy(r);
@@ -103,6 +119,11 @@ export async function generateAndDownloadPDF(
 
     if (t.type === "decoration") {
       const sz = Math.max(7, Math.round(9 * sc));
+      // Hall outline — the quietest mark on the plan, so it frames the tables
+      // without competing with them.
+      if (t.decorationType === "wall") {
+        return `<rect x="${fx(r.x)}" y="${fy(r.y)}" width="${fs(r.w)}" height="${fs(r.h)}" rx="4" fill="none" stroke="#c9c9c9" stroke-width="2"/>`;
+      }
       if (t.decorationType === "entrance") {
         const arrow =
           t.entranceDirection === "down"

@@ -12,6 +12,15 @@ import { toast } from "sonner";
 import type { RSVPEntry } from "@/lib/rsvp";
 import type { TableData, TableType, SeatAssignment } from "../types";
 import {
+  computeBoundingBox,
+  computeLayoutStats,
+  normalizeTablesToOrigin,
+  WALL_DEFAULT_W,
+  WALL_DEFAULT_H,
+} from "../geometry";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
+import LoadHallSchemeModal from "./LoadHallSchemeModal";
+import {
   Menu,
   ZoomIn,
   ZoomOut,
@@ -97,6 +106,13 @@ interface Props {
    *  item. Generates a QR linking to the standalone /rsvp/dogadjaj-{slug} page
    *  so guests can self-RSVP from a printed invitation. */
   onDownloadRsvpQR?: () => void;
+  /** Admin hall-scheme mode: the editor draws a venue template, not an event.
+   *  Hides every guest surface and the download menu, and unlocks the hall
+   *  outline in the add panel. Callers pass `attending: []` alongside it. */
+  templateMode?: boolean;
+  /** When true, the add panel offers "Učitaj šemu sale" — the venue scheme
+   *  library. Desktop only; the mobile card list has no entry point. */
+  enableHallSchemes?: boolean;
 }
 
 function createTable(
@@ -133,6 +149,8 @@ export default function RasporedClient({
   themeVarsOverride,
   onRequestPanoDesign,
   onDownloadRsvpQR,
+  templateMode = false,
+  enableHallSchemes = false,
 }: Props) {
   const saveRaspored = actions.save;
   const loadRaspored = actions.load;
@@ -177,6 +195,10 @@ export default function RasporedClient({
   const [showLayoutScreen, setShowLayoutScreen] = useState(false);
   const [mobileGuestSearch, setMobileGuestSearch] = useState("");
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [showHallSchemes, setShowHallSchemes] = useState(false);
+  const { confirm, dialog: confirmDialog } = useConfirmDialog({
+    variant: "light",
+  });
 
   // Desktop PWA mode (legacy, kept for tablet/desktop PWA)
   const [isPWADesktop, setIsPWADesktop] = useState(false);
@@ -510,17 +532,44 @@ export default function RasporedClient({
     decorationType: TableData["decorationType"],
   ) => {
     const pos = findSpawnPosition();
+    // A hall outline is nearly always drawn around tables that already exist,
+    // so wrap them instead of dropping a default box in the corner.
+    let wall: Pick<TableData, "x" | "y" | "decoWidth" | "decoHeight"> | null =
+      null;
+    if (decorationType === "wall") {
+      const drawn = tables.filter((t) => t.type !== "decoration");
+      if (drawn.length > 0) {
+        const PAD = 60;
+        const bbox = computeBoundingBox(drawn);
+        wall = {
+          x: bbox.minX - PAD,
+          y: bbox.minY - PAD,
+          decoWidth: Math.round(bbox.width + PAD * 2),
+          decoHeight: Math.round(bbox.height + PAD * 2),
+        };
+      } else {
+        wall = {
+          x: pos.x,
+          y: pos.y,
+          decoWidth: WALL_DEFAULT_W,
+          decoHeight: WALL_DEFAULT_H,
+        };
+      }
+    }
     setTables((prev) => [
       ...prev,
       {
         id: `deco-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         type: "decoration",
         seats: 0,
-        x: pos.x,
-        y: pos.y,
+        x: wall?.x ?? pos.x,
+        y: wall?.y ?? pos.y,
         label,
         assignments: [],
         decorationType,
+        ...(wall
+          ? { decoWidth: wall.decoWidth, decoHeight: wall.decoHeight }
+          : {}),
       },
     ]);
   };
@@ -608,6 +657,76 @@ export default function RasporedClient({
     startSave(async () => {
       await saveRaspored(slug, JSON.stringify({ tables: [], members: {} }));
     });
+  };
+
+  /**
+   * Replaces the current layout with a venue hall scheme.
+   *
+   * Table ids are regenerated so a second load can't collide with the first,
+   * and every seat comes in empty — the scheme carries furniture, not people.
+   * `members` is keyed by RSVP id and has nothing to do with tables, so it
+   * survives untouched. Nothing is persisted until the user presses Sačuvaj.
+   */
+  const loadHallScheme = async (templateTables: TableData[]) => {
+    // A scheme is always bigger than the free tier's two-tables-per-type, so it
+    // has to pass the same gate `addTable` uses — otherwise an unpaid couple
+    // could load a finished venue layout and print it (PDF is never gated).
+    if (!paidForRaspored) {
+      const paid = await recheckPaid();
+      if (!paid) {
+        setShowHallSchemes(false);
+        setShowUpgradeModal(true);
+        return;
+      }
+    }
+
+    if (tables.length > 0) {
+      const ok = await confirm({
+        title: "Zameniti postojeći raspored?",
+        message:
+          "Učitavanje šeme briše sve trenutne stolove i gostima poništava mesta.\nLista gostiju i potvrde dolaska ostaju sačuvani.",
+        danger: true,
+        confirmLabel: "Učitaj šemu",
+      });
+      if (!ok) return;
+    }
+
+    const stamp = Date.now();
+    const fresh = normalizeTablesToOrigin(
+      templateTables.map((t, i) => ({
+        ...t,
+        id: `table-${stamp}-${i.toString(36)}`,
+        assignments: Array(Math.max(0, t.seats)).fill(null),
+      })),
+    );
+
+    setTables(fresh);
+    setSelectedGuest(null);
+    setHoverSeat(null);
+    setHoverHint(null);
+    setShowHallSchemes(false);
+
+    // Frame the scheme so it lands visible instead of wherever the user
+    // happened to be panned to.
+    const el = canvasRef.current;
+    if (el && fresh.length > 0) {
+      const bbox = computeBoundingBox(fresh);
+      const PAD = 80;
+      const vw = el.clientWidth || 1200;
+      const vh = el.clientHeight || 800;
+      const z = Math.max(
+        MIN_ZOOM,
+        Math.min(
+          MAX_ZOOM,
+          Math.min(vw / (bbox.width + PAD * 2), vh / (bbox.height + PAD * 2)),
+        ),
+      );
+      setCanvasZoomSynced(z);
+      setPanSynced({
+        x: vw / 2 - (bbox.minX + bbox.width / 2) * z,
+        y: vh / 2 - (bbox.minY + bbox.height / 2) * z,
+      });
+    }
   };
 
   const handleSave = (tablesToSave?: TableData[]) => {
@@ -738,6 +857,31 @@ export default function RasporedClient({
   const unassignedGuests = attending.filter(
     (g) => (assignedCounts[g.id] || 0) < (parseInt(g.guestCount) || 1),
   ).length;
+
+  /** Template-mode toolbar figures. The mobile/PWA canvas is a fixed 1600×1100
+   *  with schemes normalised to (80,80), so anything past ~1440×940 will spill
+   *  off a phone — worth flagging while the admin is still drawing. */
+  const layoutStats = useMemo(() => {
+    const { tableCount, totalSeats } = computeLayoutStats(tables);
+    const bbox = computeBoundingBox(tables);
+    return {
+      tableCount,
+      totalSeats,
+      width: bbox.width,
+      height: bbox.height,
+      fitsMobile: bbox.width <= 1440 && bbox.height <= 940,
+    };
+  }, [tables]);
+
+  /** Hall outlines are painted first so tables always sit on top of them.
+   *  Both are `position: absolute` with no z-index of their own, so DOM order
+   *  is what decides — sorting here rather than styling keeps it simple. */
+  const canvasTables = useMemo(() => {
+    const isWall = (t: TableData) =>
+      t.type === "decoration" && t.decorationType === "wall";
+    if (!tables.some(isWall)) return tables;
+    return [...tables.filter(isWall), ...tables.filter((t) => !isWall(t))];
+  }, [tables]);
 
   const defaultThemeVars = {
     backgroundColor: "var(--theme-background)",
@@ -1025,7 +1169,8 @@ export default function RasporedClient({
             {occupiedSeats}/{totalSeats} mesta
           </span>
 
-          {/* Guest list */}
+          {/* Guest list — a hall template has no guests */}
+          {!templateMode && (
           <button
             onClick={() => setShowMobileGuests(true)}
             className="relative flex items-center gap-1.5 h-10 px-4 rounded-xl text-xs font-raleway font-semibold active:opacity-80"
@@ -1046,6 +1191,7 @@ export default function RasporedClient({
               </span>
             )}
           </button>
+          )}
         </div>
 
         {/* ── Add Table Type Picker Sheet ── */}
@@ -1272,7 +1418,7 @@ export default function RasporedClient({
   // ══════════════════════════════════════════════════════════════════════════
   return (
     <div className="flex h-screen overflow-hidden" style={themeVars}>
-      {!isPWADesktop && (
+      {!isPWADesktop && !templateMode && (
         <GuestSidebar
           attending={attending}
           selectedGuest={selectedGuest}
@@ -1320,6 +1466,8 @@ export default function RasporedClient({
             }
             onRequestPanoDesign={onRequestPanoDesign}
             onDownloadRsvpQR={onDownloadRsvpQR}
+            templateMode={templateMode}
+            templateStats={templateMode ? layoutStats : undefined}
           />
         )}
 
@@ -1332,6 +1480,10 @@ export default function RasporedClient({
               occupiedSeats={occupiedSeats}
               hideWeddingOnlyElements={hideWeddingOnlyElements}
               hideDecorations={hideDecorations}
+              templateMode={templateMode}
+              onLoadHallScheme={
+                enableHallSchemes ? () => setShowHallSchemes(true) : undefined
+              }
             />
           )}
 
@@ -1389,7 +1541,7 @@ export default function RasporedClient({
                   }}
                 >
                   {hydrated &&
-                    tables.map((table) => (
+                    canvasTables.map((table) => (
                       <TableNode
                         key={table.id}
                         table={table}
@@ -1418,7 +1570,7 @@ export default function RasporedClient({
                 }}
               >
                 {hydrated &&
-                  tables.map((table) => (
+                  canvasTables.map((table) => (
                     <TableNode
                       key={table.id}
                       table={table}
@@ -1739,6 +1891,15 @@ export default function RasporedClient({
       {showUpgradeModal && (
         <UpgradeModal onClose={() => setShowUpgradeModal(false)} />
       )}
+
+      {showHallSchemes && (
+        <LoadHallSchemeModal
+          onClose={() => setShowHallSchemes(false)}
+          onLoad={loadHallScheme}
+        />
+      )}
+
+      {confirmDialog}
     </div>
   );
 }

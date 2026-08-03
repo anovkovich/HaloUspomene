@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { TableData } from "../types";
+import { seatsLabel, tablesLabel } from "../labels";
 
 interface Props {
   slug: string;
@@ -41,6 +42,18 @@ interface Props {
   /** When provided, the download dropdown shows an extra "Preuzmi QR za RSVP" item.
    *  Used to share an online RSVP link guests can scan from a printed invitation. */
   onDownloadRsvpQR?: () => void;
+  /** Admin hall-scheme mode: drops the whole download menu (nothing here is
+   *  meant for a venue template) and reports table/seat totals instead. */
+  templateMode?: boolean;
+  /** Table + seat counters shown in template mode, plus the scheme's overall
+   *  size so the admin can see whether it fits the mobile canvas. */
+  templateStats?: {
+    tableCount: number;
+    totalSeats: number;
+    width: number;
+    height: number;
+    fitsMobile: boolean;
+  };
 }
 
 async function downloadQR(slug: string, guestLookupUrl: string) {
@@ -77,6 +90,8 @@ export default function Toolbar({
   guestLookupUrl,
   onRequestPanoDesign,
   onDownloadRsvpQR,
+  templateMode = false,
+  templateStats,
 }: Props) {
   const lookupUrl =
     guestLookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
@@ -134,12 +149,42 @@ export default function Toolbar({
         className="font-raleway text-xs uppercase tracking-widest hidden sm:block"
         style={{ color: "var(--theme-text-light)" }}
       >
-        — Raspored sedenja
+        {templateMode ? "— Šema sale" : "— Raspored sedenja"}
       </p>
 
       <div className="flex-1" />
 
-      {/* Download dropdown */}
+      {templateMode && templateStats && (
+        <p
+          className="font-raleway text-xs hidden sm:block"
+          style={{ color: "var(--theme-text-light)" }}
+        >
+          {tablesLabel(templateStats.tableCount)} ·{" "}
+          {seatsLabel(templateStats.totalSeats)}
+          {templateStats.tableCount > 0 && (
+            <>
+              {" · "}
+              <span
+                title={
+                  templateStats.fitsMobile
+                    ? "Šema staje na ekran telefona"
+                    : "Šema je šira od telefonskog platna — klijenti na telefonu je neće videti celu"
+                }
+                style={{
+                  color: templateStats.fitsMobile ? undefined : "#c0392b",
+                }}
+              >
+                {Math.round(templateStats.width)}×
+                {Math.round(templateStats.height)}{" "}
+                {templateStats.fitsMobile ? "✓" : "⚠"}
+              </span>
+            </>
+          )}
+        </p>
+      )}
+
+      {/* Download dropdown — nothing in it applies to a hall template */}
+      {!templateMode && (
       <div ref={dropdownRef} className="relative">
         <button
           onClick={() => setDownloadOpen((v) => !v)}
@@ -271,6 +316,7 @@ export default function Toolbar({
           </div>
         )}
       </div>
+      )}
 
       <button
         onClick={onSave}
@@ -292,7 +338,13 @@ export default function Toolbar({
         }}
       >
         {saveSuccess ? <Check size={13} /> : <Save size={13} />}
-        {isSaving ? "Čuvam..." : saveSuccess ? "Sačuvano" : "Sačuvaj"}
+        {isSaving
+          ? "Čuvam..."
+          : saveSuccess
+            ? "Sačuvano"
+            : templateMode
+              ? "Sačuvaj šemu"
+              : "Sačuvaj"}
       </button>
 
       {saveError && (

@@ -139,6 +139,7 @@ export default function StandaloneRasporedRoot({
         }}
         guestLookupUrl={`https://halouspomene.rs/raspored-sedenja/${slug}/gde-sedim/`}
         hideWeddingOnlyElements
+        enableHallSchemes
         hideDecorations
         themeVarsOverride={HALO_BRAND_VARS}
         onGenerateWelcomePDF={() =>

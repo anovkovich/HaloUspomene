@@ -31,6 +31,7 @@ export default function WeddingRasporedRoot({
       slug={slug}
       coupleNames={coupleNames}
       paidForRaspored={paidForRaspored}
+      enableHallSchemes
       actions={{
         save: saveRaspored,
         load: loadRaspored,
