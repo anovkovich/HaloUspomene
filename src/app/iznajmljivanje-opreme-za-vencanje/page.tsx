@@ -27,7 +27,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
   title:
-    "Iznajmljivanje Paviljona i Barskih Stolova za Venčanje | HALO Uspomene",
+    "Iznajmljivanje Paviljona i Barskih Stolova za Venčanje",
   description:
     "Paviljoni i barski stolovi za venčanje i svadbu. Doček svatova, polazak od kuće, ceremonija na otvorenom. Besplatna dostava do 50km — od 30€ po danu.",
   keywords: [

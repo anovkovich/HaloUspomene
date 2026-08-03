@@ -19,13 +19,29 @@ import {
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
-import CarRentalLeadForm from "./CarRentalLeadForm";
+import VehicleRentalLeadForm from "@/components/forms/VehicleRentalLeadForm";
+
+const VEHICLE_OPTIONS = [
+  "Mercedes E Class",
+  "Mercedes S Class (VIP limuzina)",
+  "Mercedes GLE SUV",
+  "Mercedes G Class",
+  "Više vozila / svadbena kolona",
+  "Nisam siguran — treba mi savet",
+];
+
+const SERVICE_OPTIONS = [
+  "Po satu (min. 2h)",
+  "Ceo dan (8h)",
+  "Samo ceremonija i fotografisanje",
+  "Transfer (dolazak / odlazak)",
+];
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
 export const metadata: Metadata = {
   title:
-    "Iznajmljivanje Luksuznih Automobila za Venčanje — Mercedes sa Šoferom | HALO Uspomene",
+    "Iznajmljivanje Luksuznih Automobila za Venčanje — Mercedes",
   description:
     "Luksuzan automobil za mladence, kuma i barjaktara na svadbi. Mercedes E, S, GLE i G klasa sa profesionalnim šoferom — po satu ili za ceo dan. Cene i dostupnost za venčanja širom Srbije.",
   keywords: [
@@ -300,7 +316,7 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
             <Breadcrumbs
               items={[
                 { label: "Početna", href: "/" },
-                { label: "Iznajmljivanje automobila za venčanje" },
+                { label: "Iznajmljivanje luksuznih automobila za venčanje" },
               ]}
             />
             <div className="text-center mt-10">
@@ -490,6 +506,27 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
               Cene su informativne i izražene u evrima (€). Tačna ponuda zavisi
               od datuma, trajanja i lokacije — pošaljite upit za potvrdu.
             </p>
+
+            {/* Ukrštanje sa retro ponudom — druga namera pretrage, druga stranica */}
+            <div className="mt-12 p-7 sm:p-8 rounded-3xl bg-[#232323] text-[#F5F4DC] flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+              <div className="flex-1">
+                <h3 className="font-serif text-2xl mb-2">
+                  Više volite retro stil?
+                </h3>
+                <p className="text-[#F5F4DC]/55 text-sm leading-relaxed">
+                  Uz modernu flotu nudimo i oldtajmere sa vozačem — klasike iz
+                  šezdesetih i predratne kabriolete. Mnogi parovi kombinuju:
+                  retro auto za mladence, moderno vozilo za kumove.
+                </p>
+              </div>
+              <Link
+                href="/iznajmljivanje-oldtajmera-za-vencanje"
+                className="btn bg-[#d4af37] hover:bg-[#c19f2c] text-[#232323] rounded-full px-8 border-none shrink-0"
+              >
+                Pogledaj oldtajmere
+                <ArrowRight size={16} />
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -628,7 +665,13 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
                 ponudom prilagođenom vašoj satnici. Bez obaveze.
               </p>
             </div>
-            <CarRentalLeadForm />
+            <VehicleRentalLeadForm
+              vehicleOptions={VEHICLE_OPTIONS}
+              serviceOptions={SERVICE_OPTIONS}
+              subjectLabel="Najam vozila za venčanje"
+              paket="Iznajmljivanje automobila za venčanje"
+              introHighlight="najam luksuznog vozila"
+            />
           </div>
         </section>
 

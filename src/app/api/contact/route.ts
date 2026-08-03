@@ -9,6 +9,10 @@ interface ContactPayload {
   phone: string;
   phoneTrustToken: string;
   recaptchaToken: string;
+  /** Proizvod za koji treba interno rutiranje upita (za sada samo oldtajmeri). */
+  routingProduct?: string;
+  /** Izabrana stavka iz padajuće liste "Vozilo" — po njoj se traži partner. */
+  vehicle?: string;
 }
 
 function clientIp(req: NextRequest): string {
@@ -57,6 +61,17 @@ export async function POST(req: NextRequest) {
       { error: "Telefon nije verifikovan. Verifikujte broj i pokušajte ponovo." },
       { status: 403 },
     );
+  }
+
+  // Interno rutiranje: tek OVDE, posle reCAPTCHA i SMS verifikacije, klijent
+  // sme da sazna kom partneru ide upit. Kontakti partnera se nikada ne
+  // renderuju na stranici — v. src/lib/oldtajmeri-partneri.ts.
+  if (body.routingProduct === "oldtajmeri") {
+    const { resolvePartnerRouting } = await import("@/lib/oldtajmeri-partneri");
+    return NextResponse.json({
+      ok: true,
+      routing: resolvePartnerRouting(body.vehicle),
+    });
   }
 
   return NextResponse.json({ ok: true });

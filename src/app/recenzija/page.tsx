@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import RecenzijaClient from "./RecenzijaClient";
 
-const title = "Ostavite Recenziju — HALO Uspomene";
+const title = "Ostavite Recenziju";
 const description =
   "Podelite vaše iskustvo sa HALO Uspomene — ostavite Google recenziju.";
 

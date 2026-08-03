@@ -17,6 +17,32 @@ function loadContent(slug: string): string {
 // All posts including scheduled/unpublished ones
 const allBlogPosts: BlogPost[] = [
   {
+    slug: "oldtajmer-za-vencanje-zasto-retro",
+    title:
+      "Oldtajmer za Venčanje: Zašto Mladenci Sve Češće Biraju Retro Umesto Modernih Limuzina",
+    description:
+      "Zašto parovi sve češće biraju oldtajmer za venčanje umesto moderne limuzine: trend u brojkama, poređenje, najtraženiji retro modeli, cene i saveti.",
+    category: "Trendovi",
+    tags: [
+      "oldtajmer za venčanje",
+      "oldtajmer za svadbu",
+      "oldtimer za venčanje",
+      "retro auto za svadbu",
+      "vintage venčanje",
+      "oldtajmer ili limuzina za svadbu",
+      "stari automobili za venčanje",
+      "fića na svadbi",
+      "buba za venčanje",
+      "oldtajmer cena",
+      "svadbena kolona",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-08-03",
+    readTime: 13,
+    featured: true,
+    content: loadContent("oldtajmer-za-vencanje-zasto-retro"),
+  },
+  {
     slug: "kada-slati-pozivnice-za-vencanje",
     title: "Kada Slati Pozivnice za Venčanje: Kompletan Vremenski Vodič",
     description:

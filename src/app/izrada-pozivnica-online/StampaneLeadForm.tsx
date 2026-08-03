@@ -21,7 +21,7 @@ import {
 
 /**
  * Lead form for requesting hand-made PRINTED invitations and/or thank-you cards
- * with QR codes. Mirrors GalleryLeadForm/CarRentalLeadForm: phone verification
+ * with QR codes. Mirrors GalleryLeadForm/VehicleRentalLeadForm: phone verification
  * (Infobip via /api/contact) + reCAPTCHA, then a client-side Web3Forms submit
  * (Cloudflare blocks server-side requests to web3forms from Vercel).
  */

@@ -112,7 +112,11 @@ const Footer: React.FC = () => {
                 },
                 { name: "Telefon Uspomena", href: "/telefon-uspomena" },
                 {
-                  name: "Auto za venčanje",
+                  name: "Oldtajmeri za venčanje",
+                  href: "/iznajmljivanje-oldtajmera-za-vencanje",
+                },
+                {
+                  name: "Luksuzni automobili",
                   href: "/iznajmljivanje-automobila-za-vencanje",
                 },
                 {

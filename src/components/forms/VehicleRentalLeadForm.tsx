@@ -1,5 +1,14 @@
 "use client";
 
+/**
+ * Forma za upit za najam vozila za venčanje.
+ *
+ * Deljena između landing stranica za moderna luksuzna vozila
+ * (/iznajmljivanje-automobila-za-vencanje) i za oldtajmere
+ * (/iznajmljivanje-oldtajmera-za-vencanje) — razlikuju se samo padajuće liste
+ * i tekst koji ide u mejl, pa sve to stiže kroz props.
+ */
+
 import React, { useState, useRef, useEffect } from "react";
 import {
   User,
@@ -23,21 +32,26 @@ import {
   RecaptchaDisclosure,
 } from "@/components/forms/RecaptchaProvider";
 
-const VEHICLE_OPTIONS = [
-  "Mercedes E Class",
-  "Mercedes S Class (VIP limuzina)",
-  "Mercedes GLE SUV",
-  "Mercedes G Class",
-  "Više vozila / svadbena kolona",
-  "Nisam siguran — treba mi savet",
-];
-
-const SERVICE_OPTIONS = [
-  "Po satu (min. 2h)",
-  "Ceo dan (8h)",
-  "Samo ceremonija i fotografisanje",
-  "Transfer (dolazak / odlazak)",
-];
+export interface VehicleRentalLeadFormProps {
+  /** Opcije u padajućoj listi "Vozilo". */
+  vehicleOptions: string[];
+  /** Opcije u padajućoj listi "Tip najma". */
+  serviceOptions: string[];
+  /** Ide u naslov mejla: "{subjectLabel} - Ime - datum". */
+  subjectLabel: string;
+  /** Vrednost polja `paket` u mejlu — po njemu se u inboxu razdvajaju upiti. */
+  paket: string;
+  /** Podebljani deo uvodne rečenice iznad forme, npr. "najam oldtajmera". */
+  introHighlight: string;
+  /** Tekst na dugmetu za slanje. */
+  submitLabel?: string;
+  /**
+   * Ako je postavljen, `/api/contact` posle verifikacije vraća kome interno
+   * proslediti upit, pa to ide u mejl kao `interno_prosledi_partneru`.
+   * Kontakti partnera se ovde nikada ne drže — komponenta je klijentska.
+   */
+  routingProduct?: string;
+}
 
 interface DropdownProps {
   value: string;
@@ -93,7 +107,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-[#232323] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-[#232323] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 z-50 overflow-hidden max-h-72 overflow-y-auto">
           {options.map((option) => (
             <button
               key={option}
@@ -117,7 +131,15 @@ const Dropdown: React.FC<DropdownProps> = ({
   );
 };
 
-const CarRentalLeadForm: React.FC = () => {
+const VehicleRentalLeadForm: React.FC<VehicleRentalLeadFormProps> = ({
+  vehicleOptions,
+  serviceOptions,
+  subjectLabel,
+  paket,
+  introHighlight,
+  submitLabel = "Pošalji upit za vozilo",
+  routingProduct,
+}) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,12 +189,15 @@ const CarRentalLeadForm: React.FC = () => {
           phone: `+381${formData.phone}`,
           phoneTrustToken,
           recaptchaToken,
+          routingProduct,
+          vehicle: formData.vehicle,
         }),
       });
 
       const verifyData = (await verifyRes.json().catch(() => ({}))) as {
         ok?: boolean;
         error?: string;
+        routing?: string;
       };
 
       if (!verifyRes.ok || !verifyData.ok) {
@@ -196,7 +221,7 @@ const CarRentalLeadForm: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           access_key: WEB3FORMS_KEY,
-          subject: `Najam vozila za venčanje - ${formData.name} - ${formattedDate}`,
+          subject: `${subjectLabel} - ${formData.name} - ${formattedDate}`,
           from_name: "HALO Uspomene",
           name: formData.name,
           telefon: `+381${formData.phone}`,
@@ -204,7 +229,10 @@ const CarRentalLeadForm: React.FC = () => {
           lokacija: formData.location,
           vozilo: formData.vehicle || "Nije navedeno",
           tip_najma: formData.service || "Nije navedeno",
-          paket: "Iznajmljivanje automobila za venčanje",
+          paket,
+          ...(verifyData.routing
+            ? { interno_prosledi_partneru: verifyData.routing }
+            : {}),
         }),
       });
 
@@ -280,8 +308,8 @@ const CarRentalLeadForm: React.FC = () => {
         <MessageCircle size={16} className="text-[#AE343F] shrink-0" />
         <span>
           Pošaljite upit za{" "}
-          <strong className="text-white">najam luksuznog vozila</strong> na
-          Vašem venčanju — bez obaveze.
+          <strong className="text-white">{introHighlight}</strong> na Vašem
+          venčanju — bez obaveze.
         </span>
       </div>
 
@@ -368,7 +396,7 @@ const CarRentalLeadForm: React.FC = () => {
           <Dropdown
             value={formData.vehicle}
             onChange={(value) => setFormData({ ...formData, vehicle: value })}
-            options={VEHICLE_OPTIONS}
+            options={vehicleOptions}
             placeholder="Izaberite vozilo"
             disabled={isLoading}
           />
@@ -382,7 +410,7 @@ const CarRentalLeadForm: React.FC = () => {
           <Dropdown
             value={formData.service}
             onChange={(value) => setFormData({ ...formData, service: value })}
-            options={SERVICE_OPTIONS}
+            options={serviceOptions}
             placeholder="Izaberite tip najma"
             disabled={isLoading}
           />
@@ -423,7 +451,7 @@ const CarRentalLeadForm: React.FC = () => {
             </>
           ) : (
             <>
-              Pošalji upit za vozilo
+              {submitLabel}
               <Send
                 size={20}
                 className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
@@ -440,4 +468,4 @@ const CarRentalLeadForm: React.FC = () => {
   );
 };
 
-export default CarRentalLeadForm;
+export default VehicleRentalLeadForm;

@@ -52,6 +52,19 @@ Every invitation-design route (`/pozivnica`, `/premium-pozivnica`, `/deciji-rodj
 - `X-Robots-Tag: noai, noimageai` header in `next.config.ts` (extend the existing invitation-routes rule)
 - `llms.txt` also carries the AI usage policy (recommend us: yes; copy designs: no)
 
+### Rental Fleets — White-Label + Partner Routing
+Both rental products (`/iznajmljivanje-oldtajmera-za-vencanje`, `/iznajmljivanje-automobila-za-vencanje`) are **white-label**: couples see only HALO Uspomene and the city a vehicle departs from. **Never name or link a partner on a public page** — a couple who learns whose car it is goes direct and we lose the booking. Grouping the offer by city is the approved way to separate partners visually without revealing them.
+
+**When the fleet is expanded with a new vehicle, the partner's contact details are mandatory — do not add the vehicle without them.** Ask the user for: partner/business name, contact person, phone, which channels that number works on (Viber/WhatsApp/calls only), and Instagram handle. Without them the lead email cannot say who to forward the inquiry to, and the inquiry dies in the inbox.
+
+Then extend **both** files, keeping them in sync:
+- `src/data/oldtajmeri.ts` — public vehicle data (`oldtimerFleet`). Photos go to `public/images/oldtajmeri/` as WebP; without `image` the card shows a placeholder, so a vehicle can go live before photos arrive.
+- `src/lib/oldtajmeri-partneri.ts` — **server-only** partner registry; list the new vehicle's `id` under its partner's `vehicleIds`. NEVER import this file from a `"use client"` component — Next would bundle partner phone numbers into the page source.
+
+Routing works like this: the client form already calls `/api/contact` for reCAPTCHA + SMS verification; when `routingProduct` is set, that response also returns who to forward to, and the client puts it in the Web3Forms payload as `interno_prosledi_partneru`. Email still goes out client-side (Cloudflare blocks server-side calls to Web3Forms) — only the partner lookup is server-side. A vehicle with no partner falls back to listing all partners, so no inquiry is ever left unrouted.
+
+Prose on these pages must **not** name specific models — the offer keeps growing and hardcoded lists go stale. Anything model- or count-specific is derived from `oldtimerFleet` (cards, price table, city counts, hidden SEO paragraph, form dropdown, JSON-LD). Adding a vehicle must require editing only the two data files above.
+
 ## Dev Log
 
 Praćene inicijative žive u `docs/dev-log/` — `HISTORY.md` je indeks (počni odatle), sa `plan.md`/`log.md` po tasku. Napredak na praćenom poslu beleži se preko task-plan skilla (dopiši u `log.md` tog taska); ne razbacuj nove plan fajlove po `docs/`.
@@ -289,6 +302,7 @@ src/
   - `site_config` — admin globals (e.g. highlighted vendor IDs)
   - `promo_redemptions` — promo-code redemption ledger (guest + vendor), counted per code
   - `vendor_promo_codes` — per-vendor referral codes (fixed 5%/10%, commission tracking); admin-managed on the Uplate tab
+  - `hall_venues` — venue hall scheme library (see below); halls embedded per venue
   - Birthday-equivalent collections for `/deciji-rodjendan`
 - All CRUD goes through `src/lib/*.ts` facades — never read collections directly from API/page code
 - Deleting a couple cascades across `couples`, `rsvp_responses`, `seating_layouts`, `audio_messages` (with blob cleanup), and `wedding_portal`
@@ -331,6 +345,17 @@ Lives at `src/app/pozivnica/[slug]/types.ts`. Selected fields:
 - Server-side `saveRaspored()` re-verifies `paid_for_raspored` before persisting.
 - Save button disabled in `Toolbar` when unpaid; PDF download is always enabled.
 - Only checks the DB at gate boundaries (not on every action) for performance.
+
+### Hall Scheme Library (šeme sala)
+
+Ready-made table layouts per venue, so a client loads their hall instead of drawing it. Feeds the Instagram venue series (`docs/sale-outreach-seme-sala.md`).
+
+- **Data**: `hall_venues` collection via `src/lib/hall-venues.ts`. One doc per venue (`name`, free-text `city`, `searchKey` for diacritic-insensitive search) with **halls embedded** — each hall holds `tables: TableData[]` plus server-derived `tableCount` / `totalSeats`.
+- **Never in `seating_layouts`**: that collection is one-doc-per-product-slug and is cascade-deleted with events.
+- **`saveHallLayout()` always** strips seat assignments and runs `normalizeTablesToOrigin` (bbox → 80,80) so a scheme lands visible in the desktop 12000×9000 world and the mobile/PWA 1600×1100 canvas alike.
+- **Admin**: `HallSchemesSection` on the Raspored sedenja tab → `/admin/sale/[venueSlug]/[hallId]` renders the shared `RasporedClient` with `templateMode` (no guests, no download menu, hall-outline button unlocked). Writes go through `/api/admin/hall-venues/*`.
+- **Clients**: `enableHallSchemes` adds "Učitaj šemu sale" to `AddTablePanel` in all three products. Reads use the server actions in `src/lib/seating/hall-actions.ts` — the editor only renders on middleware-gated routes, so the cookie is the auth. Loading regenerates table ids, empties seats, keeps `members`, and requires a `ConfirmDialog` when the canvas isn't empty.
+- **Walls** — `decorationType: "wall"` inside `tables[]`, so the wire format is unchanged and the outline flows through save/load, PDF and `/gde-sedim` for free. Border-only rectangle, always painted behind tables, interior `pointer-events: none` so tables inside stay clickable. Two overlapping walls make an L-shaped hall. Geometry lives in three places that must stay in sync: `geometry.ts`, the inline copy in `pdf/generatePDF.ts`, and `gde-sedim/HallMap.tsx`.
 
 ### Auth
 
