@@ -1,6 +1,84 @@
 import data from "./pricing.json";
 
-export const pricing = data;
+/**
+ * Shape of `pricing.json`.
+ *
+ * Declared by hand rather than inferred, because TypeScript types a JSON import
+ * by its *current literal contents*: a promo that happens to be switched off
+ * today has no `promoPrice` key, so the inferred type has no such field and
+ * every reader has to reach for `as any`. Marking the promo fields optional
+ * describes what the file may legitimately contain, and the readers below
+ * become type-checked instead of type-erased.
+ */
+interface PriceEntry {
+  label: string;
+  price: number;
+}
+
+/** Entry that is also sold by card, so it carries a fixed EUR price. */
+interface PriceEntryEur extends PriceEntry {
+  priceEur: number;
+}
+
+/** Entry whose price can be temporarily overridden by an active promo. When the
+ *  promo is off, `promoPrice` is simply absent from the JSON — hence optional. */
+interface PromoPriceEntry extends PriceEntry {
+  promoPrice?: number | null;
+  promoActive?: boolean;
+}
+
+interface Pricing {
+  packages: {
+    essential: {
+      name: string;
+      price: number;
+      discountPrice?: number | null;
+      discountActive?: boolean;
+    };
+  };
+  pozivnica: {
+    website: PriceEntry;
+    pdf: PriceEntry;
+    raspored: PriceEntry;
+    audio: PriceEntry;
+    galerija: PriceEntryEur;
+    bundlePrice: number;
+    bundleFullPrice: number;
+  };
+  /** Bundle tiers on /cene. Keys are optional so `getTier` can keep returning
+   *  null for a tier that has been pulled from the page. */
+  tiers?: Partial<
+    Record<
+      "osnovno" | "kompletno" | "premium",
+      PriceEntryEur & { fullPrice?: number; includes?: string[] }
+    >
+  >;
+  addons: Array<{
+    id: string;
+    label: string;
+    price: number;
+    note?: string;
+    for_retro_phone?: boolean;
+  }>;
+  /** `rasporedPrice` / `audioPrice` are the bundled add-on prices that apply
+   *  only when bought together with Premium; absent means "no discount". */
+  premium: PromoPriceEntry & {
+    rasporedPrice?: number;
+    audioPrice?: number;
+  };
+  rodjendan: {
+    pozivnica: PriceEntryEur;
+    punoletstvo: PriceEntryEur;
+    raspored: PriceEntry;
+  };
+  standalone_seating: PromoPriceEntry & { priceEur: number };
+  dogadjaj: {
+    pozivnica: PriceEntryEur;
+    paket: PriceEntryEur;
+  };
+}
+
+export const pricing = data as Pricing;
 
 /** Formats a number as Serbian price string, e.g. 8000 → "8.000 din" */
 export function formatPrice(price: number): string {
@@ -16,78 +94,75 @@ export function formatEur(price: number): string {
 
 /** Returns effective price: discountPrice when active, otherwise regular price */
 export function getAudioPrice(): number {
-  const { price, discountPrice, discountActive } = pricing.packages.essential as any;
+  const { price, discountPrice, discountActive } = pricing.packages.essential;
   return discountActive && discountPrice ? discountPrice : price;
 }
 
 /** True if a discount is currently configured and active */
 export function isAudioDiscountActive(): boolean {
-  const { discountPrice, discountActive } = pricing.packages.essential as any;
+  const { discountPrice, discountActive } = pricing.packages.essential;
   return !!(discountActive && discountPrice);
 }
 
 /** Returns effective premium price: promoPrice when active, otherwise regular price */
 export function getPremiumPrice(): number {
-  const { price, promoPrice, promoActive } = pricing.premium as any;
+  const { price, promoPrice, promoActive } = pricing.premium;
   return promoActive && promoPrice ? promoPrice : price;
 }
 
 /** True if a premium promo is currently active */
 export function isPremiumPromoActive(): boolean {
-  const { promoPrice, promoActive } = pricing.premium as any;
+  const { promoPrice, promoActive } = pricing.premium;
   return !!(promoActive && promoPrice);
 }
 
 /** Regular (non-promo) premium price */
 export function getPremiumRegularPrice(): number {
-  return (pricing.premium as any).price;
+  return pricing.premium.price;
 }
 
 /** Premium-bundled raspored price (discounted when purchased with Premium) */
 export function getPremiumRasporedPrice(): number {
   return (
-    (pricing.premium as any).rasporedPrice ?? pricing.pozivnica.raspored.price
+    pricing.premium.rasporedPrice ?? pricing.pozivnica.raspored.price
   );
 }
 
 /** Premium-bundled audio price (discounted when purchased with Premium) */
 export function getPremiumAudioPrice(): number {
-  return (pricing.premium as any).audioPrice ?? pricing.pozivnica.audio.price;
+  return pricing.premium.audioPrice ?? pricing.pozivnica.audio.price;
 }
 
 export function getRodjendanPozivnicaPrice(t18 = false): number {
-  const r = (pricing as any).rodjendan;
-  if (!r) return 0;
+  const r = pricing.rodjendan;
   return t18 ? r.punoletstvo.price : r.pozivnica.price;
 }
 
 export function getRodjendanPozivnicaLabel(t18 = false): string {
-  const r = (pricing as any).rodjendan;
-  if (!r) return t18 ? "Pozivnica za punoletstvo" : "Rođendanska pozivnica";
+  const r = pricing.rodjendan;
   return t18 ? r.punoletstvo.label : r.pozivnica.label;
 }
 
 export function getRodjendanRasporedPrice(): number {
-  return (pricing as any).rodjendan?.raspored?.price ?? 0;
+  return pricing.rodjendan.raspored.price;
 }
 
 /** Effective price for the standalone seating tool (raspored za organizatore):
  *  promoPrice when promo is active, otherwise the regular price. */
 export function getStandaloneSeatingPrice(): number {
-  const ss = (pricing as any).standalone_seating;
-  if (!ss) return 0;
+  const ss = pricing.standalone_seating;
   return ss.promoActive && ss.promoPrice ? ss.promoPrice : ss.price;
 }
 
 /** True if a standalone seating promo is currently configured and active. */
 export function isStandaloneSeatingPromoActive(): boolean {
-  const ss = (pricing as any).standalone_seating;
-  return !!(ss?.promoActive && ss?.promoPrice);
+  const ss = pricing.standalone_seating;
+  return !!(ss.promoActive && ss.promoPrice);
 }
 
 /** Regular (non-promo) standalone seating price. */
 export function getStandaloneSeatingRegularPrice(): number {
-  return (pricing as any).standalone_seating?.price ?? 0;
+  return pricing.standalone_seating.price;
 }
 
 /** Event invitation as an add-on for a client who already has the seating
@@ -119,7 +194,7 @@ export function getTier(id: "osnovno" | "kompletno" | "premium"): {
   fullPrice?: number;
   includes?: string[];
 } | null {
-  return (pricing as any).tiers?.[id] ?? null;
+  return pricing.tiers?.[id] ?? null;
 }
 
 /** Savings of the Kompletno tier vs à-la-carte full price (e.g. 14000 - 9900 = 4100). */
