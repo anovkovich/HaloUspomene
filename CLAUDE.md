@@ -134,7 +134,7 @@ src/
 │   ├── error.tsx / global-error.tsx  # Error boundaries (report to Sentry)
 │   ├── not-found.tsx                 # 404 page
 │   ├── sitemap.ts                    # Static sitemap (force-static)
-│   ├── robots.ts                     # Robots rules (GPTBot, ChatGPT-User, anthropic-ai disallow)
+│   ├── robots.ts                     # Robots rules (AI bots ALLOWED on marketing pages)
 │   ├── manifest.ts                   # PWA manifest (start_url: /moje-vencanje)
 │   │
 │   ├── admin/                        # Admin panel (JWT-protected via middleware)
@@ -544,7 +544,8 @@ Configured per-route in `next.config.ts`:
 - **Sitemap** (`force-static`): homepage, all main marketing pages, all blog posts, all city pages (~32 indexed routes)
 - **JSON-LD schemas** in root layout: LocalBusiness, Organization, WebSite (SearchAction), Review (from testimonials)
 - **Per-page metadata** via Next.js Metadata API (Open Graph, Twitter cards, canonical URLs, multi-city Serbian keywords)
-- `robots.ts` disallows `/api`, `/admin`, all per-couple management routes, and bot user-agents `GPTBot`, `ChatGPT-User`, `Google-Extended`, `anthropic-ai`
+- `robots.ts` disallows `/api`, `/admin`, and all per-couple management routes. **AI bots are deliberately ALLOWED** on marketing pages (GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-User, Claude-SearchBot, PerplexityBot, Google-Extended, …) — blocking the search-index and live-fetch crawlers would remove us from AI recommendations, which is the opposite of what we want. Do not "restore" blocking.
+- Invitation *designs* are protected by a different mechanism, not by robots.txt: per-couple pages set `robots: { index: false, follow: false }` at the page level, `next.config.ts` sends `X-Robots-Tag: noai, noimageai` on invitation routes, and `<AiCopyrightNotice />` sits in the DOM. That combination is what stops design cloning — see "Invitation Design Copyright Protection" above.
 - Google Search Console verified via the `google-site-verification` meta tag
 
 ## Adding a New Couple (zero-redeploy workflow)
