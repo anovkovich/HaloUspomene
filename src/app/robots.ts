@@ -3,8 +3,12 @@ import { MetadataRoute } from "next";
 // Required for static export
 export const dynamic = "force-static";
 
-// All public marketing & landing surfaces that AI assistants are allowed to crawl.
-// Keep customer-specific routes (pozivnica/[slug], deciji-rodjendan/[slug], etc.) OUT.
+// Marketing surfaces we explicitly point AI assistants at. NOTE: the group also
+// carries `Allow: /`, so this list does not act as a whitelist — anything not in
+// AI_BOT_DISALLOW stays crawlable, which is deliberate: a new landing page is
+// reachable the day it ships instead of waiting for someone to remember this
+// array. Keep customer-specific routes (pozivnica/[slug] etc.) in the disallow
+// list — those are also `noindex` at the page level.
 const AI_BOT_ALLOW = [
   "/",
   "/blog/",
@@ -21,8 +25,12 @@ const AI_BOT_ALLOW = [
   "/pozivnica-za-prvi-rodjendan",
   "/napravi-punoletstvo",
   "/iznajmljivanje-automobila-za-vencanje",
+  "/iznajmljivanje-oldtajmera-za-vencanje",
+  "/iznajmljivanje-opreme-za-vencanje",
+  "/lazni-maticar",
   "/raspored-sedenja",
   "/qr-pano-dobrodoslice",
+  "/qr-galerija-slika-sa-vencanja",
   "/moje-vencanje",
 ];
 
@@ -49,6 +57,12 @@ const AI_BOT_DISALLOW = [
   "/rsvp/",
 ];
 
+// Tri kategorije, sve tri namerno puštamo na marketing sadržaj:
+//  • trening modela  — GPTBot, ClaudeBot, Google-Extended, CCBot, Bytespider...
+//  • indeks za AI pretragu — OAI-SearchBot, Claude-SearchBot, PerplexityBot
+//  • live fetch na zahtev korisnika — ChatGPT-User, Claude-User, Perplexity-User
+// Druge dve kategorije odlučuju hoće li nas asistent uopšte pomenuti kada ga
+// neko pita za preporuku, pa njihovo blokiranje = ispadanje iz AI preporuka.
 const AI_BOTS = [
   "GPTBot",
   "ChatGPT-User",
@@ -56,8 +70,13 @@ const AI_BOTS = [
   "PerplexityBot",
   "Perplexity-User",
   "Google-Extended",
-  "anthropic-ai",
   "ClaudeBot",
+  "Claude-User",
+  "Claude-SearchBot",
+  "DuckAssistBot",
+  "MistralAI-User",
+  // Zastareli Anthropic tokeni — zadržani jer ih stariji klijenti još šalju.
+  "anthropic-ai",
   "Claude-Web",
   "Applebot-Extended",
   "Bytespider",
