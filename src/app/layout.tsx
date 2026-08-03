@@ -18,7 +18,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
-import { testimonials } from "@/data/testimonials";
+import { googleReviews } from "@/data/testimonials";
 import { RecaptchaProvider } from "@/components/forms/RecaptchaProvider";
 
 const geistSans = Geist({
@@ -341,14 +341,10 @@ export default function RootLayout({
       opens: "09:00",
       closes: "23:00",
     },
-    sameAs: ["https://www.instagram.com/halo_uspomene"],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "5",
-      bestRating: "5",
-      worstRating: "5",
-      reviewCount: "3",
-    },
+    sameAs: [
+      "https://www.instagram.com/halo_uspomene",
+      googleReviews.profileUrl,
+    ],
     hasOfferCatalog: [
       {
         "@type": "OfferCatalog",
@@ -540,7 +536,10 @@ export default function RootLayout({
     logo: `${siteUrl}/images/logo.png`,
     description:
       "HALO Uspomene — sveobuhvatna platforma za organizaciju venčanja u Srbiji: web i Premium AI pozivnice, QR Pano raspored sedenja, audio knjiga uspomena, planer venčanja i direktorijum vendora.",
-    sameAs: ["https://www.instagram.com/halo_uspomene"],
+    sameAs: [
+      "https://www.instagram.com/halo_uspomene",
+      googleReviews.profileUrl,
+    ],
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",
@@ -568,20 +567,6 @@ export default function RootLayout({
     inLanguage: "sr",
   };
 
-  const reviewSchemas = testimonials.map((t) => ({
-    "@context": "https://schema.org",
-    "@type": "Review",
-    author: { "@type": "Person", name: t.coupleName },
-    datePublished: `2025-${String(["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Avg", "Sep", "Okt", "Nov", "Dec"].indexOf(t.date.split(" ")[0].slice(0, 3)) + 1).padStart(2, "0")}-01`,
-    reviewBody: t.quote,
-    reviewRating: {
-      "@type": "Rating",
-      ratingValue: t.rating,
-      bestRating: 5,
-    },
-    itemReviewed: { "@id": `${siteUrl}/#business` },
-  }));
-
   return (
     <html lang="sr" data-theme="light">
       <head>
@@ -598,10 +583,6 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchemas) }}
         />
       </head>
       <body

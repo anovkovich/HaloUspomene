@@ -12,17 +12,33 @@ import Concept from "../components/landing/Concept";
 import SectionRodjendani from "../components/landing/SectionRodjendani";
 import SectionPlaner from "../components/landing/SectionPlaner";
 import Testimonials from "../components/landing/Testimonials";
+import FAQ, { homeFaqItems } from "../components/landing/FAQ";
 import CTABar from "../components/landing/CTABar";
 import ContactForm from "../components/landing/ContactForm";
 import Footer from "@/components/layout/footer/Footer";
 import { Header } from "@/components/layout";
 import { formatPrice, getAudioPrice } from "@/data/pricing";
 
+// Izvedeno iz istih pitanja koja se prikazuju, da se tekst i schema ne raziđu.
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: homeFaqItems.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
+
 export default function Home() {
   return (
     <>
       <Header />
       <main>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
         <Hero />
         <PainPointSolution />
         <SectionInvitations />
@@ -36,10 +52,14 @@ export default function Home() {
         <CTABar />
         <HowItWorks />
 
-        {/* Testimonials hidden visually but kept in DOM for SEO/crawlers */}
-        <div className="sr-only" aria-hidden="false">
-          <Testimonials />
-        </div>
+        {/* Ranije je stajala u `sr-only` bloku — vidljiva samo crawler-ima, sa
+            izmišljenim utiscima. Sada vodi na Google profil i prikazuje se
+            svima, kao i svaka druga sekcija. */}
+        <Testimonials />
+
+        {/* Nosi `id="faq"` na koji footer linkuje, i jedini FAQPage schema
+            blok na početnoj — v. komentar u komponenti. */}
+        <FAQ />
 
         {/* Contact — Retro phone reservation */}
         <section
