@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { revalidatePath } from "next/cache";
-import { jwtVerify } from "jose";
 import { upsertCouple, deleteCouple, patchCouple, getWeddingData } from "@/lib/couples";
 import { deleteRSVPResponses } from "@/lib/rsvp";
 import { deleteSeatingLayout } from "@/lib/seating";
@@ -14,18 +14,7 @@ import { deletePremiumBlobs } from "@/lib/premium-blobs";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 import { del } from "@vercel/blob";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
-async function isAdmin(req: NextRequest) {
-  const cookie = req.cookies.get("admin_token");
-  if (!cookie) return false;
-  try {
-    await jwtVerify(cookie.value, secret);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 // Drop ISR cache for both public invitation routes so admin edits show up
 // immediately instead of waiting for the 10s revalidate window + a visitor

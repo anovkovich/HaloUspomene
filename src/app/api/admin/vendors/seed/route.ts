@@ -1,19 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { getExistingIds, insertNewVendors, upsertVendor } from "@/lib/vendors";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
-async function isAdmin(req: NextRequest) {
-  const cookie = req.cookies.get("admin_token");
-  if (!cookie) return false;
-  try {
-    await jwtVerify(cookie.value, secret);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 export async function POST(req: NextRequest) {
   if (!(await isAdmin(req)))

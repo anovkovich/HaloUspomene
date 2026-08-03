@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { put, del } from "@vercel/blob";
 import { getWeddingData, patchCouple, unsetCoupleFields } from "@/lib/couples";
 import { YtDlpError } from "@/lib/ytdlp";
@@ -10,19 +10,8 @@ import { downloadYouTubeAudioBytes } from "@/lib/yt-audio";
 export const maxDuration = 120;
 export const runtime = "nodejs";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 
-async function isAdmin(req: NextRequest) {
-  const cookie = req.cookies.get("admin_token");
-  if (!cookie) return false;
-  try {
-    await jwtVerify(cookie.value, secret);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 function isYouTubeUrl(url: string): boolean {
   return /^https?:\/\/(www\.)?(youtube\.com\/(watch\?|shorts\/|live\/|embed\/)|youtu\.be\/)/.test(

@@ -1,20 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { revalidatePath } from "next/cache";
-import { jwtVerify } from "jose";
 import { getBirthdayData, upsertBirthday, deleteBirthday, patchBirthday } from "@/lib/birthday";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
-async function isAdmin(request: NextRequest): Promise<boolean> {
-  const cookie = request.cookies.get("admin_token");
-  if (!cookie) return false;
-  try {
-    await jwtVerify(cookie.value, secret);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 // Drop ISR cache so admin edits show up immediately instead of waiting for
 // the revalidate window + a visitor to trigger background regeneration.

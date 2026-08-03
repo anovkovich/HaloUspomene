@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { put, del } from "@vercel/blob";
 import sharp from "sharp";
 import { getVendorById, patchVendor } from "@/lib/vendors";
 
 export const runtime = "nodejs";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
 // Resize + WebP: vendor logos are shown at ~28-80px, so 400x400 is plenty.
 // Typical 150KB JPG → 4-8KB WebP with no visible quality loss.
@@ -17,16 +16,6 @@ async function optimize(buffer: ArrayBuffer): Promise<Buffer> {
     .toBuffer();
 }
 
-async function isAdmin(req: NextRequest) {
-  const cookie = req.cookies.get("admin_token");
-  if (!cookie) return false;
-  try {
-    await jwtVerify(cookie.value, secret);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 export async function POST(
   req: NextRequest,

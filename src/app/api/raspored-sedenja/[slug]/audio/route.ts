@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { isAdminRequest } from "@/lib/admin-auth";
 import { put } from "@vercel/blob";
 import { getStandaloneSeating } from "@/lib/standalone-seating";
 import { addAudioMessage, getAudioMessages } from "@/lib/audio";
@@ -10,20 +10,15 @@ import { addAudioMessage, getAudioMessages } from "@/lib/audio";
  * instead of a couple. Same slug-keyed `audio_messages` store + Vercel Blob.
  */
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
 // GET — Admin-only: fetch audio messages for a slug.
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const cookie = req.cookies.get("admin_token");
-  if (!cookie) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  try {
-    await jwtVerify(cookie.value, secret);
-  } catch {
+  // Admin-only: this lists every guest recording for the slug. POST below stays
+  // public — that is the guest recording endpoint.
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

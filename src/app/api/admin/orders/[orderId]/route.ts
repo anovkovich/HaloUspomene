@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { revalidatePath } from "next/cache";
-import { jwtVerify } from "jose";
 import { getOrder, transitionOrder, type PaymentKind } from "@/lib/orders";
 import { KINDS } from "@/lib/payments/kinds";
 import { productUrl } from "@/lib/payments/product-urls";
@@ -9,18 +9,7 @@ import { recordRedemption } from "@/lib/promo-redemptions";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
-async function isAdmin(req: NextRequest) {
-  const cookie = req.cookies.get("admin_token");
-  if (!cookie) return false;
-  try {
-    await jwtVerify(cookie.value, secret);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 // Drop the ISR cache for the unlocked entity so the flip (draft:false, paid_*,
 // active) is visible immediately instead of after the revalidate window.

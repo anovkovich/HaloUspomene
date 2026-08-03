@@ -1,5 +1,7 @@
 "use server";
 
+import { isAdminSession } from "@/lib/admin-auth";
+
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { getWeddingData } from "@/data/pozivnice";
@@ -175,15 +177,10 @@ export async function loadHighlightedVendorsAction(): Promise<string[]> {
 }
 
 export async function setHighlightedVendorsAction(vendorIds: string[]) {
-  // Admin-only: check admin JWT
-  const jar = await cookies();
-  const adminToken = jar.get("admin_token")?.value;
-  if (!adminToken) return { error: "Nemate admin pristup" };
-  try {
-    await jwtVerify(adminToken, secret);
-  } catch {
-    return { error: "Nemate admin pristup" };
-  }
+  // Admin-only. The role claim matters: every token this app issues shares
+  // JWT_SECRET, so a bare signature check accepted any couple session — or the
+  // trust token from the public SMS flow — as admin.
+  if (!(await isAdminSession())) return { error: "Nemate admin pristup" };
   await dbSetHighlighted(vendorIds);
   return { ok: true };
 }

@@ -1,24 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { isAdminRequest } from "@/lib/admin-auth";
 import { patchPhoneRental, deletePhoneRental } from "@/lib/phone-rentals";
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "");
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = req.cookies.get("admin_token")?.value;
-    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    await jwtVerify(token, JWT_SECRET);
+    if (!(await isAdminRequest(req)))
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { id } = await params;
     const body = await req.json();
     const updated = await patchPhoneRental(id, body);
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(updated);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 }
@@ -28,15 +25,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = req.cookies.get("admin_token")?.value;
-    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    await jwtVerify(token, JWT_SECRET);
+    if (!(await isAdminRequest(req)))
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { id } = await params;
     const deleted = await deletePhoneRental(id);
     if (!deleted) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ ok: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 }

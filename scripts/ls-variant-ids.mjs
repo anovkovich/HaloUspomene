@@ -24,7 +24,7 @@ const MAP = [
   [/osnovni/i, "LS_VARIANT_OSNOVNI", 5000],
   [/kompletan/i, "LS_VARIANT_KOMPLETAN", 9900],
   [/premium/i, "LS_VARIANT_PREMIUM", 13900],
-  [/proslav/i, "LS_VARIANT_PROSLAVA", 4000],
+  [/proslav/i, "LS_VARIANT_PROSLAVA", 4500],
   [/raspored/i, "LS_VARIANT_RASPORED", 5000],
   [/galerij/i, "LS_VARIANT_GALERIJA", 3500],
   [/korporativ/i, "LS_VARIANT_DOGADJAJ", 12000],

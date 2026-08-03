@@ -13,13 +13,18 @@
  * Svi zapisi imaju prefiks `qa-` i brisu se `--clean` prelazom. Skripta NIKAD
  * ne dira zapise bez tog prefiksa, pa pravi kupci ne mogu da se ostete.
  *
- * PIN za sve test zapise: 123456
+ * PIN i check-in token se generisu na svakom pokretanju i ispisuju na kraju.
  */
 import { MongoClient } from "mongodb";
+import { randomBytes, randomInt } from "node:crypto";
 
 const PREFIX = /^qa-/;
-const PIN = "123456";
-const CHECKIN_TOKEN = "aaaabbbbccccddddeeeeffff00001111";
+
+// Fresh per run, and printed at the end. Fixed values used to live here, which
+// meant every seeded fixture carried credentials anyone could read out of the
+// repo — and these fixtures run against the production database.
+const PIN = String(randomInt(100000, 1000000));
+const CHECKIN_TOKEN = randomBytes(16).toString("hex");
 
 const client = new MongoClient(process.env.MONGODB_URI);
 await client.connect();

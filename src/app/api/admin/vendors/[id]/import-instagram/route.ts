@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { put, del } from "@vercel/blob";
 import sharp from "sharp";
 import { getVendorById, patchVendor } from "@/lib/vendors";
 
 export const runtime = "nodejs";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
 // Instagram anonymously serves a login wall, but Googlebot gets the full
 // profile HTML including og:image. The og:image URL is a signed CDN URL that
@@ -14,16 +13,6 @@ const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 const GOOGLEBOT_UA =
   "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
 
-async function isAdmin(req: NextRequest) {
-  const cookie = req.cookies.get("admin_token");
-  if (!cookie) return false;
-  try {
-    await jwtVerify(cookie.value, secret);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 function normalizeHandle(raw: string): string {
   return raw

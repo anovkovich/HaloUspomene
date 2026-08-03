@@ -1,22 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { addHall } from "@/lib/hall-venues";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
-async function isAdmin(req: NextRequest) {
-  const cookie = req.cookies.get("admin_token");
-  if (!cookie) return false;
-  try {
-    // Role claim required, not just a valid signature: every token we issue
-    // (couple sessions, phone-verification trust tokens) is signed with the
-    // same key and must not reach admin data.
-    const { payload } = await jwtVerify(cookie.value, secret);
-    return payload.role === "admin";
-  } catch {
-    return false;
-  }
-}
 
 export async function POST(
   req: NextRequest,

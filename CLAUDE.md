@@ -369,6 +369,20 @@ Ready-made table layouts per venue, so a client loads their hall instead of draw
 - All JWTs use `jose` and `JWT_SECRET`
 - `src/middleware.ts` enforces admin/couple/birthday route protection
 - Login routes: `/api/admin/auth`, `/api/auth/[slug]`, `/api/moje-vencanje/auth/[slug]`, `/api/deciji-rodjendan/auth/[slug]`
+
+**Every token this app issues is signed with the same `JWT_SECRET`** — couple
+sessions, portal/seating/birthday sessions, bypass links, and the phone-verification
+trust token that the public SMS flow hands to any anonymous visitor. So verifying a
+signature proves nothing about *who* the caller is. Always check the claims:
+
+- Admin routes and admin server actions: `isAdminRequest(req)` / `isAdminSession()`
+  from `src/lib/admin-auth.ts` — requires `role: "admin"`, minted only by
+  `/api/admin/auth`. **Never call `jwtVerify` directly in `src/app/api/admin/**`**;
+  `rg -l jwtVerify src/app/api/admin/` must stay empty.
+- Per-event server actions: `hasEventSession(cookieName, slug)` from
+  `src/lib/seating/action-auth.ts` — requires `payload.slug === slug`. Middleware
+  page gates are NOT enough: a server action can be POSTed to any URL that resolves
+  to a route carrying it, and `/raspored-sedenja/prijava/` is such an unguarded URL.
 - Slug `halo.admin` in the moje-vencanje login flow routes to the admin login endpoint
 - Delete-couple in admin requires re-entering the admin password and typing the slug
 
