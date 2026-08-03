@@ -68,12 +68,13 @@ export default async function PremiumOGImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  try {
+
   const data = await getWeddingData(slug);
 
   // Guard: fallback card if slug isn't a premium couple
   if (!data?.premium) return fallbackCard();
-
-  try {
 
   const scriptFontKey = (data.scriptFont ?? "great-vibes") as ScriptFontType;
   const scriptFontFile =
@@ -631,8 +632,9 @@ export default async function PremiumOGImage({
     { ...size, fonts: fontsConfig },
   );
   } catch (err) {
-    // Last-resort safety net: any Satori/font quirk falls back to the plain
-    // card so the OG endpoint never 500s on social-media crawlers.
+    // Last-resort safety net: any Satori/font quirk — or a transient Mongo
+    // blip while `next build` prerenders these — falls back to the plain card,
+    // so the OG endpoint never 500s on crawlers and never kills a build.
     console.error("[premium-og] render failed for slug", slug, err);
     return fallbackCard();
   }

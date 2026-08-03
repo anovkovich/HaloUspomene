@@ -4,9 +4,22 @@ const uri = process.env.MONGODB_URI!;
 
 let clientPromise: Promise<MongoClient>;
 
+// `next build` fans static generation out to one worker process per core, and
+// those workers rasterize OG images (satori/resvg) — CPU-bound work that stalls
+// a worker's event loop for hundreds of ms at a time. Connection timeouts are
+// wall-clock, so they are measured against a stalled loop: a connect that takes
+// 0.8s idle measures ~5.7s under loop contention alone, and with every core
+// saturated it sails past a 10s budget and fails with `secureConnect timed
+// out`. The network is not the problem — 15 parallel connects from a single
+// idle process all complete in under a second.
+//
+// So: a generous budget while building, a tight one at runtime, where a real
+// Atlas outage should surface to the user quickly instead of hanging a request.
+const isBuild = process.env.NEXT_PHASE === "phase-production-build";
+
 const options = {
-  serverSelectionTimeoutMS: 10000,
-  connectTimeoutMS: 10000,
+  serverSelectionTimeoutMS: isBuild ? 60000 : 10000,
+  connectTimeoutMS: isBuild ? 60000 : 10000,
   // Cap connections per client. The driver defaults to 100; during `next build`
   // ~15 static-generation workers each open their own client, so the default
   // bursts up to ~1500 simultaneous connections and exhausts the shared Atlas

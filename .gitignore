@@ -95,3 +95,7 @@ coverage.xml
 
 # Rucni backup-i env fajlova — nikad u git (.env*.local ih ne hvata)
 .env*.bak*
+
+# Scratch: saved web pages / scrape dumps (npr. ch.html iz vendor scrapinga)
+*.scrape.html
+ch.html
