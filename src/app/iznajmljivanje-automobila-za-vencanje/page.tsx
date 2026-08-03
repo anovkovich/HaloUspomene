@@ -19,7 +19,7 @@ import {
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
-import VehicleRentalLeadForm from "@/components/forms/VehicleRentalLeadForm";
+import ServiceLeadForm from "@/components/forms/ServiceLeadForm";
 
 const VEHICLE_OPTIONS = [
   "Mercedes E Class",
@@ -665,12 +665,19 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
                 ponudom prilagođenom vašoj satnici. Bez obaveze.
               </p>
             </div>
-            <VehicleRentalLeadForm
-              vehicleOptions={VEHICLE_OPTIONS}
-              serviceOptions={SERVICE_OPTIONS}
+            <ServiceLeadForm
+              primaryOptions={VEHICLE_OPTIONS}
+              primaryLabel="Vozilo"
+              primaryIcon={<Car size={14} className="text-[#AE343F]" />}
+              primaryEmailKey="vozilo"
+              secondaryOptions={SERVICE_OPTIONS}
+              secondaryLabel="Tip najma"
+              secondaryIcon={<Clock size={14} className="text-[#AE343F]" />}
+              secondaryEmailKey="tip_najma"
               subjectLabel="Najam vozila za venčanje"
               paket="Iznajmljivanje automobila za venčanje"
               introHighlight="najam luksuznog vozila"
+              submitLabel="Pošalji upit za vozilo"
             />
           </div>
         </section>

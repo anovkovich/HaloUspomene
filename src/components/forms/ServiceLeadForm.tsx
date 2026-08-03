@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * Forma za upit za najam vozila za venčanje.
+ * Forma za upit za uslugu koju posredujemo.
  *
- * Deljena između landing stranica za moderna luksuzna vozila
- * (/iznajmljivanje-automobila-za-vencanje) i za oldtajmere
- * (/iznajmljivanje-oldtajmera-za-vencanje) — razlikuju se samo padajuće liste
- * i tekst koji ide u mejl, pa sve to stiže kroz props.
+ * Deljena između landing stranica (luksuzna vozila, oldtajmeri, lažni matičar)
+ * — razlikuju se samo dve padajuće liste i tekst koji ide u mejl, pa sve to
+ * stiže kroz props. Polja su namerno generička (`primary` / `secondary`) da bi
+ * forma radila i za usluge koje nisu najam vozila.
  */
 
 import React, { useState, useRef, useEffect } from "react";
@@ -15,8 +15,6 @@ import {
   Phone,
   Calendar,
   MapPin,
-  Car,
-  Clock,
   Send,
   CheckCircle2,
   Loader2,
@@ -32,11 +30,22 @@ import {
   RecaptchaDisclosure,
 } from "@/components/forms/RecaptchaProvider";
 
-export interface VehicleRentalLeadFormProps {
-  /** Opcije u padajućoj listi "Vozilo". */
-  vehicleOptions: string[];
-  /** Opcije u padajućoj listi "Tip najma". */
-  serviceOptions: string[];
+export interface ServiceLeadFormProps {
+  /** Opcije u prvoj padajućoj listi. */
+  primaryOptions: string[];
+  /** Naziv prve padajuće liste. */
+  primaryLabel: string;
+  /** Ikonica prve liste — prosleđuje je stranica, da forma ne zna za domen. */
+  primaryIcon: React.ReactNode;
+  /** Kljuc pod kojim izbor iz prve liste ide u mejl. */
+  primaryEmailKey: string;
+  /** Opcije u drugoj padajućoj listi. */
+  secondaryOptions: string[];
+  /** Naziv druge padajuće liste. */
+  secondaryLabel: string;
+  secondaryIcon: React.ReactNode;
+  /** Kljuc pod kojim izbor iz druge liste ide u mejl. */
+  secondaryEmailKey: string;
   /** Ide u naslov mejla: "{subjectLabel} - Ime - datum". */
   subjectLabel: string;
   /** Vrednost polja `paket` u mejlu — po njemu se u inboxu razdvajaju upiti. */
@@ -131,13 +140,19 @@ const Dropdown: React.FC<DropdownProps> = ({
   );
 };
 
-const VehicleRentalLeadForm: React.FC<VehicleRentalLeadFormProps> = ({
-  vehicleOptions,
-  serviceOptions,
+const ServiceLeadForm: React.FC<ServiceLeadFormProps> = ({
+  primaryOptions,
+  primaryLabel,
+  primaryIcon,
+  primaryEmailKey,
+  secondaryOptions,
+  secondaryLabel,
+  secondaryIcon,
+  secondaryEmailKey,
   subjectLabel,
   paket,
   introHighlight,
-  submitLabel = "Pošalji upit za vozilo",
+  submitLabel = "Pošalji upit",
   routingProduct,
 }) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -150,8 +165,8 @@ const VehicleRentalLeadForm: React.FC<VehicleRentalLeadFormProps> = ({
     phone: "",
     date: "",
     location: "",
-    vehicle: "",
-    service: "",
+    primary: "",
+    secondary: "",
     acceptedTerms: false,
   });
   const [phoneTrustToken, setPhoneTrustToken] = useState("");
@@ -190,7 +205,7 @@ const VehicleRentalLeadForm: React.FC<VehicleRentalLeadFormProps> = ({
           phoneTrustToken,
           recaptchaToken,
           routingProduct,
-          vehicle: formData.vehicle,
+          selection: formData.primary,
         }),
       });
 
@@ -227,8 +242,8 @@ const VehicleRentalLeadForm: React.FC<VehicleRentalLeadFormProps> = ({
           telefon: `+381${formData.phone}`,
           datum_dogadjaja: formattedDate,
           lokacija: formData.location,
-          vozilo: formData.vehicle || "Nije navedeno",
-          tip_najma: formData.service || "Nije navedeno",
+          [primaryEmailKey]: formData.primary || "Nije navedeno",
+          [secondaryEmailKey]: formData.secondary || "Nije navedeno",
           paket,
           ...(verifyData.routing
             ? { interno_prosledi_partneru: verifyData.routing }
@@ -267,8 +282,8 @@ const VehicleRentalLeadForm: React.FC<VehicleRentalLeadFormProps> = ({
       phone: "",
       date: "",
       location: "",
-      vehicle: "",
-      service: "",
+      primary: "",
+      secondary: "",
       acceptedTerms: false,
     });
     setPhoneTrustToken("");
@@ -391,13 +406,13 @@ const VehicleRentalLeadForm: React.FC<VehicleRentalLeadFormProps> = ({
         {/* Vozilo */}
         <div className="space-y-3">
           <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
-            <Car size={14} className="text-[#AE343F]" /> Vozilo
+            {primaryIcon} {primaryLabel}
           </label>
           <Dropdown
-            value={formData.vehicle}
-            onChange={(value) => setFormData({ ...formData, vehicle: value })}
-            options={vehicleOptions}
-            placeholder="Izaberite vozilo"
+            value={formData.primary}
+            onChange={(value) => setFormData({ ...formData, primary: value })}
+            options={primaryOptions}
+            placeholder={`Izaberite: ${primaryLabel.toLowerCase()}`}
             disabled={isLoading}
           />
         </div>
@@ -405,13 +420,13 @@ const VehicleRentalLeadForm: React.FC<VehicleRentalLeadFormProps> = ({
         {/* Tip najma */}
         <div className="space-y-3">
           <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
-            <Clock size={14} className="text-[#AE343F]" /> Tip najma
+            {secondaryIcon} {secondaryLabel}
           </label>
           <Dropdown
-            value={formData.service}
-            onChange={(value) => setFormData({ ...formData, service: value })}
-            options={serviceOptions}
-            placeholder="Izaberite tip najma"
+            value={formData.secondary}
+            onChange={(value) => setFormData({ ...formData, secondary: value })}
+            options={secondaryOptions}
+            placeholder={`Izaberite: ${secondaryLabel.toLowerCase()}`}
             disabled={isLoading}
           />
         </div>
@@ -434,7 +449,7 @@ const VehicleRentalLeadForm: React.FC<VehicleRentalLeadFormProps> = ({
           htmlFor="acceptedTerms"
           className="text-[#F5F4DC]/90 text-sm cursor-pointer leading-relaxed"
         >
-          Saglasan/na sam da me kontaktirate povodom ovog upita za najam vozila.
+          Saglasan/na sam da me kontaktirate povodom ovog upita.
         </label>
       </div>
 
@@ -468,4 +483,4 @@ const VehicleRentalLeadForm: React.FC<VehicleRentalLeadFormProps> = ({
   );
 };
 
-export default VehicleRentalLeadForm;
+export default ServiceLeadForm;

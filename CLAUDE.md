@@ -59,9 +59,9 @@ Both rental products (`/iznajmljivanje-oldtajmera-za-vencanje`, `/iznajmljivanje
 
 Then extend **both** files, keeping them in sync:
 - `src/data/oldtajmeri.ts` — public vehicle data (`oldtimerFleet`). Photos go to `public/images/oldtajmeri/` as WebP; without `image` the card shows a placeholder, so a vehicle can go live before photos arrive.
-- `src/lib/oldtajmeri-partneri.ts` — **server-only** partner registry; list the new vehicle's `id` under its partner's `vehicleIds`. NEVER import this file from a `"use client"` component — Next would bundle partner phone numbers into the page source.
+- `src/lib/partneri.ts` — **server-only** registry of every partner we broker for; list the new vehicle's `id` under its partner's `itemIds`. NEVER import this file from a `"use client"` component — Next would bundle partner phone numbers into the page source.
 
-Routing works like this: the client form already calls `/api/contact` for reCAPTCHA + SMS verification; when `routingProduct` is set, that response also returns who to forward to, and the client puts it in the Web3Forms payload as `interno_prosledi_partneru`. Email still goes out client-side (Cloudflare blocks server-side calls to Web3Forms) — only the partner lookup is server-side. A vehicle with no partner falls back to listing all partners, so no inquiry is ever left unrouted.
+The same white-label + routing rules apply to **every brokered service**, not just the fleets — `/lazni-maticar` uses them too. Routing works like this: the client form already calls `/api/contact` for reCAPTCHA + SMS verification; when `routingProduct` is set, that response also returns who to forward to, and the client puts it in the Web3Forms payload as `interno_prosledi_partneru`. Email still goes out client-side (Cloudflare blocks server-side calls to Web3Forms) — only the partner lookup is server-side. A vehicle with no partner falls back to listing all partners, so no inquiry is ever left unrouted.
 
 Prose on these pages must **not** name specific models — the offer keeps growing and hardcoded lists go stale. Anything model- or count-specific is derived from `oldtimerFleet` (cards, price table, city counts, hidden SEO paragraph, form dropdown, JSON-LD). Adding a vehicle must require editing only the two data files above.
 

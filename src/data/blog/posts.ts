@@ -17,6 +17,31 @@ function loadContent(slug: string): string {
 // All posts including scheduled/unpublished ones
 const allBlogPosts: BlogPost[] = [
   {
+    slug: "lazni-maticar-kako-izgleda",
+    title: "Kobajagi Matičar, Prave Suze: Kako Izgleda Kad Vas Venča Glumac",
+    description:
+      "Šta je lažni matičar i kako izgleda simbolična ceremonija koju vodi glumac: zašto se angažuje, kako teče, koliko košta i zašto papiri idu u opštinu.",
+    category: "Saveti",
+    tags: [
+      "lažni matičar",
+      "lazni maticar",
+      "šaljivi matičar",
+      "simbolična ceremonija venčanja",
+      "lažni matičar cena",
+      "lažni matičar iskustva",
+      "iznenađenje za mladence",
+      "obnova zaveta",
+      "venčanje u prirodi",
+      "matičar izlazak na teren",
+      "kobajagi matičar",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-08-03",
+    readTime: 11,
+    featured: true,
+    content: loadContent("lazni-maticar-kako-izgleda"),
+  },
+  {
     slug: "oldtajmer-za-vencanje-zasto-retro",
     title:
       "Oldtajmer za Venčanje: Zašto Mladenci Sve Češće Biraju Retro Umesto Modernih Limuzina",

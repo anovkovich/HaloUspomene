@@ -191,7 +191,7 @@ export function vehicleCountLabel(n: number): string {
  * Labela vozila u padajućoj listi forme.
  *
  * Po ovoj labeli server naknadno mapira izbor nazad na vozilo (v.
- * `src/lib/oldtajmeri-partneri.ts`), zato je izvor jedan — da se izmena
+ * `src/lib/partneri.ts`), zato je izvor jedan — da se izmena
  * formata ne odrazi samo na jednoj strani i tiho pokvari rutiranje upita.
  */
 export function vehicleOptionLabel(v: OldtimerVehicle): string {

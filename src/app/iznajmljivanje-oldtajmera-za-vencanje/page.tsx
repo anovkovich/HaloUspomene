@@ -20,7 +20,7 @@ import {
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
-import VehicleRentalLeadForm from "@/components/forms/VehicleRentalLeadForm";
+import ServiceLeadForm from "@/components/forms/ServiceLeadForm";
 import {
   oldtimerFleet,
   fleetCities,
@@ -1054,13 +1054,19 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
                 upit, javljamo se sa potvrdom i tačnom cenom. Bez obaveze.
               </p>
             </div>
-            <VehicleRentalLeadForm
-              vehicleOptions={getVehicleOptions()}
-              serviceOptions={[
+            <ServiceLeadForm
+              primaryOptions={getVehicleOptions()}
+              primaryLabel="Vozilo"
+              primaryIcon={<Car size={14} className="text-[#AE343F]" />}
+              primaryEmailKey="vozilo"
+              secondaryOptions={[
                 "Ceo svadbeni termin",
                 "Samo fotografisanje",
                 "Više vozila za kolonu",
               ]}
+              secondaryLabel="Tip najma"
+              secondaryIcon={<Clock size={14} className="text-[#AE343F]" />}
+              secondaryEmailKey="tip_najma"
               subjectLabel="Najam oldtajmera za venčanje"
               paket="Iznajmljivanje oldtajmera za venčanje"
               introHighlight="najam oldtajmera"

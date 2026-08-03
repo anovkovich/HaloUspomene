@@ -47,6 +47,11 @@ const navLinks: NavLink[] = [
         href: "/iznajmljivanje-automobila-za-vencanje",
         desc: "Mercedes flota sa profesionalnim šoferom",
       },
+      {
+        name: "Lažni matičar",
+        href: "/lazni-maticar",
+        desc: "Simbolična ceremonija koju vodi glumac",
+      },
     ],
   },
   { name: "Blog", href: "/blog" },
