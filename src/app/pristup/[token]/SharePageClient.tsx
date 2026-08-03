@@ -28,6 +28,10 @@ export interface SharePayload {
   loginUrl: string;
   portalUrl: string | null;
   portalLabel: string | null;
+  /** Seating only: the public event invitation, once that add-on is unlocked.
+   *  `invitationUrl` for a seating points at the organizer's tool, not at
+   *  anything a guest should receive. */
+  guestInvitationUrl?: string | null;
   ogImageUrl: string | null;
 }
 
@@ -57,8 +61,9 @@ function buildGuestMessage(p: SharePayload): string {
     }
     return `Pozivamo te na naše rođendansko slavlje!\n\nDetalji i potvrda dolaska:\n${p.invitationUrl}\n\n— ${p.displayName}`;
   }
-  // seating — section not shown but keep type-safe
-  return p.invitationUrl;
+  // seating — only shareable once the invitation add-on is unlocked; the
+  // seating's own `invitationUrl` is the organizer's tool, not a guest link.
+  return `Pozivamo Vas na naš događaj.\n\nDetalji i potvrda dolaska:\n${p.guestInvitationUrl}\n\n— ${p.displayName}`;
 }
 
 function HeaderIcon({ kind }: { kind: SharePayload["kind"] }) {
@@ -299,8 +304,9 @@ export default function SharePageClient({ token, payload }: Props) {
         </section>
       )}
 
-      {/* Section 4: Share with guests (skip for seating) */}
-      {payload.kind !== "seating" && (
+      {/* Section 4: Share with guests. A seating qualifies only when it has a
+          public invitation to send. */}
+      {(payload.kind !== "seating" || payload.guestInvitationUrl) && (
         <section className="bg-white rounded-2xl border border-[#232323]/10 shadow-sm p-5 sm:p-6 mb-4">
           <div className="flex items-center gap-2 mb-3">
             <MessageCircle size={16} className="text-[#AE343F]" />

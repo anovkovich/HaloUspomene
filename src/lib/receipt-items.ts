@@ -19,6 +19,8 @@ import {
   getPremiumAudioPrice,
   getAudioPrice,
   getStandaloneSeatingPrice,
+  getDogadjajPozivnicaPrice,
+  getDogadjajPaketPrice,
   getRodjendanPozivnicaPrice,
   getRodjendanPozivnicaLabel,
   getRodjendanRasporedPrice,
@@ -50,6 +52,8 @@ export interface ReceiptFlags {
   mu?: number;
   p?: number;
   t18?: number;
+  /** Event invitation add-on on a standalone seating (kind: "raspored"). */
+  dp?: number;
   ci?: Array<{ l: string; p: number }>;
 }
 
@@ -85,6 +89,8 @@ export interface PriceTable {
   rodjendanPunoletstvo: number;
   rodjendanRaspored: number;
   standaloneSeating: number;
+  dogadjajPozivnica: number;
+  dogadjajPaket: number;
 }
 
 const addon = (id: string): number =>
@@ -117,6 +123,8 @@ export function currentPriceTable(): PriceTable {
     rodjendanPunoletstvo: getRodjendanPozivnicaPrice(true),
     rodjendanRaspored: getRodjendanRasporedPrice(),
     standaloneSeating: getStandaloneSeatingPrice(),
+    dogadjajPozivnica: getDogadjajPozivnicaPrice(),
+    dogadjajPaket: getDogadjajPaketPrice(),
   };
 }
 
@@ -183,6 +191,11 @@ export function buildReceiptItems(
 
   if (isRaspored) {
     items.push({ l: "Raspored sedenja za organizatore", p: T.standaloneSeating });
+    if (f.dp)
+      items.push({ l: "Pozivnica za događaj", p: T.dogadjajPozivnica });
+    // The QR gallery ships inside the Korporativni paket, so it has to appear
+    // here too — otherwise the receipt lists less than the client received.
+    if (f.g) items.push({ l: "QR galerija fotografija", p: T.galerija });
   }
 
   // Manual custom line items added by admin.
@@ -196,6 +209,15 @@ export function buildReceiptItems(
   //  Classic + raspored + one    → partial promo (−2.000)
   const allThree = isWedding && !!f.r && !!f.a && !!f.g;
   let bundleDiscount = 0;
+
+  // Korporativni paket: seating + invitation + gallery bought as one. Billed
+  // as a package, so the receipt has to net down to the package price instead
+  // of totalling the three list prices.
+  if (isRaspored && f.dp && f.g) {
+    const listTotal = T.standaloneSeating + T.dogadjajPozivnica + T.galerija;
+    const packagePrice = T.dogadjajPaket;
+    if (listTotal > packagePrice) bundleDiscount = listTotal - packagePrice;
+  }
   if (isWedding) {
     if (f.p && allThree && T.premiumSavings) {
       bundleDiscount = T.premiumSavings;

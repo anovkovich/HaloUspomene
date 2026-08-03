@@ -6,6 +6,7 @@ import {
   type OrderStatus,
   type PaymentKind,
 } from "@/lib/orders";
+import { isPaymentKind } from "@/lib/payments/kinds";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,13 +67,9 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ orders: rows });
 }
 
-const VALID_KINDS: ReadonlySet<string> = new Set([
-  "pozivnica",
-  "rodjendan",
-  "punoletstvo",
-  "raspored",
-  "galerija",
-]);
+// Derived from the kind registry rather than duplicated: a hand-maintained
+// copy is a runtime list TypeScript cannot check, so adding a product would
+// silently leave manual ledger entries rejected.
 
 /** Manual ledger entry: admin records a bank-transfer/cash payment that has no
  *  self-serve order to link with (e.g. a custom receipt). Created directly as
@@ -96,7 +93,7 @@ export async function POST(req: NextRequest) {
   }
 
   const kind = body.kind ?? "pozivnica";
-  if (!VALID_KINDS.has(kind))
+  if (!isPaymentKind(kind))
     return NextResponse.json({ error: "Nepoznat proizvod." }, { status: 400 });
 
   const slug = (body.slug ?? "").trim().toLowerCase();

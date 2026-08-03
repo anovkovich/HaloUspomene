@@ -38,6 +38,7 @@ const VARIANT_ENV = {
   raspored: "LS_VARIANT_RASPORED",
   rodjendan: "LS_VARIANT_PROSLAVA",
   punoletstvo: "LS_VARIANT_PROSLAVA",
+  dogadjaj: "LS_VARIANT_DOGADJAJ",
 };
 const variantId =
   order.kind === "pozivnica"

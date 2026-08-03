@@ -17,6 +17,9 @@ export function productUrl(kind: PaymentKind, slug: string): string {
       return `/punoletstvo/${slug}/`;
     case "raspored":
       return `/raspored-sedenja/${slug}/`;
+    case "dogadjaj":
+      // The package's headline deliverable is the public invitation.
+      return `/dogadjaj/${slug}/`;
   }
 }
 
@@ -26,4 +29,5 @@ export const KIND_LABEL_SR: Record<PaymentKind, string> = {
   punoletstvo: "Pozivnica za punoletstvo",
   raspored: "Raspored sedenja",
   galerija: "QR galerija",
+  dogadjaj: "Korporativni paket",
 };

@@ -1,3 +1,4 @@
+import { randomBytes, timingSafeEqual } from "crypto";
 import { ObjectId } from "mongodb";
 import { del } from "@vercel/blob";
 import clientPromise from "./mongodb";
@@ -6,7 +7,14 @@ import { deleteShareLinksForProduct } from "./share-links";
 import { getAudioMessages, deleteAllAudioMessages } from "./audio";
 import { deleteAllGalleryPhotos } from "./gallery";
 import { deleteByPrefix } from "./r2";
+import { deletePortalData } from "./portal";
+import { deleteRSVPResponses } from "./rsvp";
+import { deleteMoneylessOrders } from "./orders";
 import type { MeniData } from "@/app/pozivnica/[slug]/types";
+import type { StandaloneEventKind } from "./standalone-event-kind";
+
+// Re-exported so server code can keep importing event-kind helpers from here.
+export * from "./standalone-event-kind";
 
 export interface StandaloneGuest {
   id: string;
@@ -14,6 +22,38 @@ export interface StandaloneGuest {
   guestCount: number;
   /** Optional grouping label (e.g. "VIP", "Govornici", "Mladin"). Empty string treated as undefined. */
   category?: string;
+  /** Door check-in: how many of `guestCount` actually showed up. Undefined or 0
+   *  ⇒ not arrived. A hostess tap sets it to `guestCount`; the stepper trims it
+   *  when a group arrives incomplete. */
+  arrived?: number;
+  /** ISO timestamp of the first check-in for this entry. */
+  arrivedAt?: string;
+}
+
+export interface EventInvitationLocation {
+  name: string;
+  address: string;
+  map_url?: string;
+}
+
+export interface EventInvitationAgendaItem {
+  time: string;
+  title: string;
+}
+
+/** Everything the public `/dogadjaj/[slug]` invitation renders. Admin-entered;
+ *  there is no self-serve wizard for this product. */
+export interface EventInvitation {
+  location?: EventInvitationLocation;
+  /** RSVP deadline (ISO date). Absent ⇒ no deadline, the pre-existing behavior
+   *  for every seating that predates the invitation add-on. */
+  submitUntil?: string;
+  /** Theme key — kept a plain string while the visual language is being
+   *  designed, so adding a theme needs no type change. */
+  theme?: string;
+  tagline?: string;
+  agenda?: EventInvitationAgendaItem[];
+  dressCode?: string;
 }
 
 export interface StandaloneSeating {
@@ -24,6 +64,20 @@ export interface StandaloneSeating {
   ownerEmail?: string;
   eventName: string;
   eventDate?: string;
+  /** Time of day, "HH:MM". Deliberately NOT merged into `eventDate`: the audio
+   *  and gallery windows parse that field, and `new Date("2026-08-08")` is UTC
+   *  midnight while `new Date("2026-08-08T20:00")` is local — merging would
+   *  shift those windows by a day for already-sold add-ons. */
+  eventTime?: string;
+  /** @see StandaloneEventKind — read it via `isWeddingSeating()`, never bare. */
+  eventKind?: StandaloneEventKind;
+  /** Paid add-on: unlocks the public invitation at /dogadjaj/[slug]. */
+  paid_for_invitation?: boolean;
+  invitation?: EventInvitation;
+  /** Grants a hostess check-in rights on the gde-sedim page via ?h=<token>.
+   *  Scoped to check-in only, so the hostess never receives the owner PIN;
+   *  regenerating it revokes every link already handed out. */
+  checkin_token?: string;
   password: string;
   guests: StandaloneGuest[];
   active: boolean;
@@ -58,6 +112,11 @@ interface StandaloneSeatingDocument {
   ownerEmail?: string;
   eventName: string;
   eventDate?: string;
+  eventTime?: string;
+  eventKind?: StandaloneEventKind;
+  paid_for_invitation?: boolean;
+  invitation?: EventInvitation;
+  checkin_token?: string;
   password: string;
   guests: StandaloneGuest[];
   active: boolean;
@@ -90,6 +149,11 @@ function toApi(doc: StandaloneSeatingDocument): StandaloneSeating {
     ownerEmail: doc.ownerEmail,
     eventName: doc.eventName,
     eventDate: doc.eventDate,
+    eventTime: doc.eventTime,
+    eventKind: doc.eventKind,
+    paid_for_invitation: doc.paid_for_invitation,
+    invitation: doc.invitation,
+    checkin_token: doc.checkin_token,
     password: doc.password,
     guests: doc.guests ?? [],
     active: doc.active,
@@ -156,6 +220,7 @@ export interface CreateStandaloneSeatingInput {
   ownerEmail?: string;
   eventName: string;
   eventDate?: string;
+  eventKind?: StandaloneEventKind;
 }
 
 /** Creates a new standalone seating with auto-generated slug + 6-digit PIN.
@@ -177,6 +242,7 @@ export async function createStandaloneSeating(
     ownerEmail: input.ownerEmail?.trim().toLowerCase() || undefined,
     eventName: input.eventName.trim(),
     eventDate: input.eventDate?.trim() || undefined,
+    eventKind: input.eventKind ?? "wedding",
     password,
     guests: [],
     active: false,
@@ -264,10 +330,52 @@ export async function updateStandaloneGuest(
     setOps["guests.$.guestCount"] = changes.guestCount;
   if (changes.category !== undefined)
     setOps["guests.$.category"] = changes.category;
+  if (changes.arrived !== undefined)
+    setOps["guests.$.arrived"] = changes.arrived;
+  if (changes.arrivedAt !== undefined)
+    setOps["guests.$.arrivedAt"] = changes.arrivedAt;
 
   await c.updateOne(
     { slug, "guests.id": guestId },
     { $set: setOps },
+  );
+}
+
+/** Door check-in for one guest entry. Uses the positional operator so two
+ *  hostesses working the same door never overwrite each other — unlike
+ *  `setStandaloneGuests`, which replaces the whole array. `arrived: 0` clears
+ *  the check-in (mis-tap undo) and drops the timestamp with it. */
+export async function setStandaloneGuestArrival(
+  slug: string,
+  guestId: string,
+  arrived: number,
+): Promise<void> {
+  const c = await col();
+  const now = new Date();
+  if (arrived <= 0) {
+    await c.updateOne(
+      { slug, "guests.id": guestId },
+      {
+        $unset: { "guests.$.arrived": "", "guests.$.arrivedAt": "" },
+        $set: { updatedAt: now },
+      },
+    );
+    return;
+  }
+  // Stamp arrivedAt only on the first check-in, so a later count correction
+  // keeps the original arrival time. `$elemMatch` is required on the second
+  // update: two conditions written as separate dotted paths can match on
+  // *different* array elements, which would point `$` at the wrong guest.
+  await c.updateOne(
+    { slug, "guests.id": guestId },
+    { $set: { "guests.$.arrived": arrived, updatedAt: now } },
+  );
+  await c.updateOne(
+    {
+      slug,
+      guests: { $elemMatch: { id: guestId, arrivedAt: { $exists: false } } },
+    },
+    { $set: { "guests.$.arrivedAt": now.toISOString() } },
   );
 }
 
@@ -343,7 +451,11 @@ export async function patchStandaloneReceipt(
  *  Mirrors the couple `paid_for_*` toggles; admin flips these after payment. */
 export async function patchStandaloneFeatures(
   slug: string,
-  changes: { paid_for_audio?: boolean; paid_for_gallery?: boolean },
+  changes: {
+    paid_for_audio?: boolean;
+    paid_for_gallery?: boolean;
+    paid_for_invitation?: boolean;
+  },
 ): Promise<void> {
   const c = await col();
   const setOps: Record<string, unknown> = { updatedAt: new Date() };
@@ -351,7 +463,81 @@ export async function patchStandaloneFeatures(
     setOps.paid_for_audio = changes.paid_for_audio;
   if (typeof changes.paid_for_gallery === "boolean")
     setOps.paid_for_gallery = changes.paid_for_gallery;
+  if (typeof changes.paid_for_invitation === "boolean")
+    setOps.paid_for_invitation = changes.paid_for_invitation;
   await c.updateOne({ slug }, { $set: setOps });
+}
+
+/** Time of day for the event, "HH:MM". Empty string clears it. */
+export async function setStandaloneEventTime(
+  slug: string,
+  eventTime: string,
+): Promise<void> {
+  const c = await col();
+  const trimmed = eventTime.trim();
+  await c.updateOne(
+    { slug },
+    trimmed
+      ? { $set: { eventTime: trimmed, updatedAt: new Date() } }
+      : { $unset: { eventTime: "" }, $set: { updatedAt: new Date() } },
+  );
+}
+
+/** Replaces the whole invitation payload (admin form saves it as one object). */
+export async function patchStandaloneInvitation(
+  slug: string,
+  invitation: EventInvitation,
+): Promise<void> {
+  const c = await col();
+  await c.updateOne(
+    { slug },
+    { $set: { invitation, updatedAt: new Date() } },
+  );
+}
+
+/** Issues a fresh hostess check-in token, or revokes the current one with
+ *  `null`. Regenerating invalidates every link already shared. */
+export async function patchStandaloneCheckinToken(
+  slug: string,
+  token: string | null,
+): Promise<void> {
+  const c = await col();
+  await c.updateOne(
+    { slug },
+    token
+      ? { $set: { checkin_token: token, updatedAt: new Date() } }
+      : { $unset: { checkin_token: "" }, $set: { updatedAt: new Date() } },
+  );
+}
+
+/** 32 hex chars from a CSPRNG — this is a bearer credential in a URL, so it
+ *  must not come from Math.random() like the human-facing slug suffix does. */
+export function generateCheckinToken(): string {
+  return randomBytes(16).toString("hex");
+}
+
+/** Constant-time token check. Returns false when no token is issued, so a
+ *  seating without check-in enabled can never be unlocked by guessing. */
+export function checkinTokenMatches(
+  stored: string | undefined,
+  supplied: string | undefined,
+): boolean {
+  if (!stored || !supplied) return false;
+  const a = Buffer.from(stored);
+  const b = Buffer.from(supplied);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
+/** Sets what the seating was bought for. Purely a display switch — flipping it
+ *  hides or shows the wedding planner/budget without touching the stored
+ *  `wedding_portal` data, so it is reversible with nothing lost. */
+export async function patchStandaloneEventKind(
+  slug: string,
+  eventKind: StandaloneEventKind,
+): Promise<void> {
+  const c = await col();
+  await c.updateOne({ slug }, { $set: { eventKind, updatedAt: new Date() } });
 }
 
 /** Sets the free value-add menu (food/drinks) shown in the guest hub. */
@@ -400,8 +586,9 @@ export async function patchStandaloneGalleryLifecycle(
 
 /** Cascade deletes the seating record AND any saved layout in seating_layouts,
  *  share-link entries, audio guest-book recordings (metadata + Vercel Blob),
- *  and QR gallery photos (metadata + R2 objects). Used when the event has
- *  passed and the admin is cleaning up. */
+ *  QR gallery photos (metadata + R2 objects), and the portal document holding
+ *  the checklist/budget. Used when the event has passed and the admin is
+ *  cleaning up. */
 export async function deleteStandaloneSeating(slug: string): Promise<void> {
   const c = await col();
 
@@ -420,6 +607,10 @@ export async function deleteStandaloneSeating(slug: string): Promise<void> {
     deleteAllAudioMessages(slug),
     deleteAllGalleryPhotos(slug),
     deleteByPrefix(`gallery/${slug}/`),
+    deletePortalData(slug),
+    deleteRSVPResponses(slug),
+    // Pending/expired orders only — paid ones stay as the money audit trail.
+    deleteMoneylessOrders(["raspored", "dogadjaj"], slug),
     audioBlobUrls.length > 0
       ? del(audioBlobUrls).catch(() => {})
       : Promise.resolve(),

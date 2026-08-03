@@ -16,7 +16,8 @@ export type PaymentKind =
   | "rodjendan"
   | "punoletstvo"
   | "raspored"
-  | "galerija";
+  | "galerija"
+  | "dogadjaj";
 
 export type OrderRail = "card" | "ips";
 

@@ -77,8 +77,14 @@ async function resolvePayload(token: string): Promise<SharePayload | null> {
     password: s.password,
     invitationUrl: `${SITE_URL}/raspored-sedenja/${link.slug}/`,
     loginUrl: `${SITE_URL}/raspored-sedenja/${link.slug}/prijava/`,
-    portalUrl: null,
-    portalLabel: null,
+    portalUrl: `${SITE_URL}/raspored-sedenja/${link.slug}/portal/`,
+    portalLabel: "Portal organizatora",
+    // Only present once the invitation add-on is unlocked — this is the link
+    // the organizer forwards to guests.
+    guestInvitationUrl:
+      s.paid_for_invitation
+        ? `${SITE_URL}/dogadjaj/${link.slug}/`
+        : null,
     ogImageUrl: null, // no per-product OG; layout falls back to site default
   };
 }

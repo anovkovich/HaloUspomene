@@ -58,7 +58,9 @@ export default async function HvalaPage({
   // Prikaz je gated na validan unlocked order (orderId je nepogodljiv capability token).
   let pin: string | null = null;
   if (unlocked && order && order.slug === slug && order.kind === kind) {
-    if (kind === "raspored") {
+    if (kind === "raspored" || kind === "dogadjaj") {
+      // Both live on the same standalone seating record, so the same PIN opens
+      // the organizer's tool and portal.
       pin = (await getStandaloneSeating(slug))?.password ?? null;
     } else if (kind === "pozivnica" || kind === "galerija") {
       pin = coupleData?.potvrde_password ?? null;
@@ -101,7 +103,10 @@ export default async function HvalaPage({
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1.5">
                   Sačuvajte ga — trebaće vam za prijavu
-                  {kind === "raspored" ? " na raspored sedenja" : ""}.
+                  {kind === "raspored" || kind === "dogadjaj"
+                    ? " na raspored sedenja"
+                    : ""}
+                  .
                 </p>
               </div>
             )}

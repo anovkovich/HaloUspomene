@@ -90,6 +90,27 @@ export function getStandaloneSeatingRegularPrice(): number {
   return (pricing as any).standalone_seating?.price ?? 0;
 }
 
+/** Event invitation as an add-on for a client who already has the seating
+ *  tool. Sold manually (IPS / bank transfer); the card rail sells the package
+ *  below instead. */
+export function getDogadjajPozivnicaPrice(): number {
+  return pricing.dogadjaj.pozivnica.price;
+}
+
+export function getDogadjajPozivnicaPriceEur(): number {
+  return pricing.dogadjaj.pozivnica.priceEur;
+}
+
+/** Korporativni paket — seating + invitation + QR gallery in one purchase, so
+ *  a company pays once with a company card. */
+export function getDogadjajPaketPrice(): number {
+  return pricing.dogadjaj.paket.price;
+}
+
+export function getDogadjajPaketPriceEur(): number {
+  return pricing.dogadjaj.paket.priceEur;
+}
+
 /** A /cene bundle tier (osnovno | kompletno | premium). */
 export function getTier(id: "osnovno" | "kompletno" | "premium"): {
   label: string;

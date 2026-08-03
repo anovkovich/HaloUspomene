@@ -17,6 +17,12 @@ import {
   Receipt,
 } from "lucide-react";
 import type { StandaloneSeating } from "@/lib/standalone-seating";
+import {
+  isWeddingSeating,
+  EVENT_KIND_LABELS,
+  STANDALONE_EVENT_KINDS,
+  type StandaloneEventKind,
+} from "@/lib/standalone-event-kind";
 import { encodeToBase64 } from "@/lib/encoding";
 import {
   buildReceiptItems,
@@ -25,6 +31,7 @@ import {
 } from "@/lib/receipt-items";
 import DatePicker from "@/components/ui/DatePicker";
 import ShareLinkButton from "./ShareLinkButton";
+import SeatingInvitationModal from "./SeatingInvitationModal";
 import HallSchemesSection from "./HallSchemesSection";
 
 interface Props {
@@ -51,6 +58,7 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
     null,
   );
   const [dateEditSlug, setDateEditSlug] = useState<string | null>(null);
+  const [invitationSlug, setInvitationSlug] = useState<string | null>(null);
   const [shareStats, setShareStats] = useState<
     Record<string, { visit_count: number; last_visited_at?: string }>
   >({});
@@ -60,6 +68,8 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
   const [createOwnerPhone, setCreateOwnerPhone] = useState("");
   const [createName, setCreateName] = useState("");
   const [createDate, setCreateDate] = useState("");
+  const [createEventKind, setCreateEventKind] =
+    useState<StandaloneEventKind>("wedding");
   const [createError, setCreateError] = useState("");
   const [creating, setCreating] = useState(false);
 
@@ -104,6 +114,7 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
         ownerPhone: createOwnerPhone.trim(),
         eventName: createName.trim(),
         eventDate: createDate.trim() || undefined,
+        eventKind: createEventKind,
       }),
     });
     setCreating(false);
@@ -116,6 +127,7 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
     setCreateOwnerPhone("");
     setCreateName("");
     setCreateDate("");
+    setCreateEventKind("wedding");
     setShowCreate(false);
     await load();
   }
@@ -140,7 +152,7 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
 
   async function handleToggleFeature(
     slug: string,
-    field: "paid_for_audio" | "paid_for_gallery",
+    field: "paid_for_audio" | "paid_for_gallery" | "paid_for_invitation",
     current: boolean,
   ) {
     const next = !current;
@@ -158,7 +170,8 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
         prev.map((s) => (s.slug === slug ? { ...s, [field]: current } : s)),
       );
       if (res.status === 400) {
-        alert("Postavite datum događaja pre uključivanja audio/galerije.");
+        const err = await res.json().catch(() => ({}));
+        alert(err.error ?? "Nedostaju podaci za uključivanje dodatka.");
       }
     }
   }
@@ -224,6 +237,11 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
       s: s.slug,
       par: s.eventName,
       datum: s.eventDate,
+      // Bill the invitation add-on when it's on, so the receipt matches what
+      // the client actually bought.
+      dp: s.paid_for_invitation ? 1 : undefined,
+      g: s.paid_for_gallery ? 1 : undefined,
+      a: s.paid_for_audio ? 1 : undefined,
       d: s.custom_discount ?? 0,
       ba: bankAccountIdx,
       t: Date.now(),
@@ -241,6 +259,17 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
+  }
+
+  /** Reversible display switch — nothing stored in `wedding_portal` is lost,
+   *  so flipping back to "Venčanje" restores the checklist/budget untouched. */
+  async function handleSetEventKind(slug: string, kind: StandaloneEventKind) {
+    const prevList = seatings;
+    setSeatings((prev) =>
+      prev.map((s) => (s.slug === slug ? { ...s, eventKind: kind } : s)),
+    );
+    const res = await patchSeating(slug, { eventKind: kind });
+    if (!res.ok) setSeatings(prevList);
   }
 
   async function handleGenerateReceipt(slug: string) {
@@ -317,7 +346,8 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
           <Armchair size={28} className="mx-auto text-white/30 mb-3" />
           <p className="text-sm text-white/60 mb-1">Još nema kreiranih pristupa</p>
           <p className="text-xs text-white/40">
-            Klikni „Novi pristup" da generišeš link i 6-cifarni PIN za klijenta.
+            Klikni &bdquo;Novi pristup&ldquo; da generišeš link i 6-cifarni PIN
+            za klijenta.
           </p>
         </div>
       )}
@@ -359,6 +389,11 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                   {isPast && s.active && (
                     <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/10 text-white/50 shrink-0">
                       Prošao
+                    </span>
+                  )}
+                  {!isWeddingSeating(s) && (
+                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-[#2563eb]/20 text-[#93c5fd] shrink-0">
+                      {EVENT_KIND_LABELS[s.eventKind ?? "wedding"]}
                     </span>
                   )}
                 </div>
@@ -432,6 +467,23 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                 <span className="flex items-center gap-1.5">
                   <Users size={11} /> {s.guests.length} gostiju
                 </span>
+                <select
+                  value={s.eventKind ?? "wedding"}
+                  onChange={(e) =>
+                    handleSetEventKind(
+                      s.slug,
+                      e.target.value as StandaloneEventKind,
+                    )
+                  }
+                  className="bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-xs text-white/60 hover:text-white/90 cursor-pointer focus:outline-none focus:border-[#2563eb]/50"
+                  title="Namena — nesvadbeni događaji ne vide checklistu i budžet venčanja"
+                >
+                  {STANDALONE_EVENT_KINDS.map((k) => (
+                    <option key={k} value={k} className="bg-[#1a1a1a]">
+                      {EVENT_KIND_LABELS[k]}
+                    </option>
+                  ))}
+                </select>
                 {s.seatingStats && (
                   <span className="flex items-center gap-1.5">
                     <Armchair size={11} />
@@ -517,7 +569,7 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                     className="text-[10px] text-amber-400/70"
                     title="Postavite datum događaja da biste uključili ove opcije"
                   >
-                    Datum događaja potreban za audio/galeriju
+                    Datum događaja potreban za dodatke
                   </span>
                 )}
                 <div
@@ -578,6 +630,51 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                     />
                   </button>
                 </div>
+                <div
+                  className="flex items-center gap-2"
+                  title={
+                    s.eventDate
+                      ? "Javna pozivnica na /dogadjaj/[slug]"
+                      : "Postavite datum događaja"
+                  }
+                >
+                  <span className="text-xs text-white/40">Pozivnica</span>
+                  <button
+                    disabled={!s.eventDate}
+                    onClick={() =>
+                      handleToggleFeature(
+                        s.slug,
+                        "paid_for_invitation",
+                        !!s.paid_for_invitation,
+                      )
+                    }
+                    className={`relative w-9 h-5 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${
+                      s.paid_for_invitation ? "bg-green-500" : "bg-white/10"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                        s.paid_for_invitation ? "translate-x-4" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+                <button
+                  onClick={() => setInvitationSlug(s.slug)}
+                  className="text-xs text-white/50 hover:text-white/90 underline underline-offset-2 cursor-pointer"
+                >
+                  Uredi pozivnicu →
+                </button>
+                {s.paid_for_invitation && (
+                  <a
+                    href={`${SITE_URL}/dogadjaj/${s.slug}/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-[#93c5fd] hover:text-white cursor-pointer"
+                  >
+                    <ExternalLink size={11} /> Otvori
+                  </a>
+                )}
               </div>
 
               <SeatingReceiptDropdown
@@ -664,6 +761,28 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
               </div>
               <div>
                 <label className="text-[10px] uppercase tracking-wider text-white/40 mb-1 block">
+                  Namena
+                </label>
+                <select
+                  value={createEventKind}
+                  onChange={(e) =>
+                    setCreateEventKind(e.target.value as StandaloneEventKind)
+                  }
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#2563eb] cursor-pointer"
+                >
+                  {STANDALONE_EVENT_KINDS.map((k) => (
+                    <option key={k} value={k} className="bg-[#1a1a1a]">
+                      {EVENT_KIND_LABELS[k]}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[10px] text-white/30">
+                  Nesvadbeni događaji ne vide checklistu i budžet venčanja u
+                  portalu.
+                </p>
+              </div>
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-white/40 mb-1 block">
                   Datum eventa (opciono)
                 </label>
                 <DatePicker
@@ -700,6 +819,30 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
           </form>
         </div>
       )}
+
+      {/* Invitation editor — event time, venue, deadline, agenda, dress code */}
+      {invitationSlug &&
+        (() => {
+          const s = seatings.find((x) => x.slug === invitationSlug);
+          if (!s) return null;
+          return (
+            <SeatingInvitationModal
+              slug={s.slug}
+              eventName={s.eventName}
+              initialEventTime={s.eventTime}
+              initialInvitation={s.invitation}
+              onClose={() => setInvitationSlug(null)}
+              onSaved={(eventTime, invitation) => {
+                setSeatings((prev) =>
+                  prev.map((x) =>
+                    x.slug === s.slug ? { ...x, eventTime, invitation } : x,
+                  ),
+                );
+                setInvitationSlug(null);
+              }}
+            />
+          );
+        })()}
 
       {/* Delete confirmation modal */}
       {deleteSlug && (

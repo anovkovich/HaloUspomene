@@ -27,6 +27,7 @@ const MAP = [
   [/proslav/i, "LS_VARIANT_PROSLAVA", 4000],
   [/raspored/i, "LS_VARIANT_RASPORED", 5000],
   [/galerij/i, "LS_VARIANT_GALERIJA", 3500],
+  [/korporativ/i, "LS_VARIANT_DOGADJAJ", 12000],
 ];
 
 async function ls(path) {

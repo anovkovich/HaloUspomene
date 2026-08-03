@@ -11,12 +11,15 @@ import {
   getRodjendanPozivnicaPrice,
   getStandaloneSeatingPrice,
   isStandaloneSeatingPromoActive,
+  getDogadjajPaketPrice,
+  getDogadjajPaketPriceEur,
 } from "@/data/pricing";
 import { getWeddingData, patchCouple } from "@/lib/couples";
 import { getBirthdayData, patchBirthday } from "@/lib/birthday";
 import {
   getStandaloneSeating,
   setStandaloneActive,
+  patchStandaloneFeatures,
 } from "@/lib/standalone-seating";
 import type {
   PaymentKind,
@@ -488,6 +491,70 @@ const raspored: KindAdapter = {
   },
 };
 
+// ── dogadjaj (Korporativni paket on a standalone seating) ────────────────────
+// One tier, sold as a bundle: seating tool + event invitation + QR gallery.
+// A company pays once with a company card instead of three separate purchases.
+// The invitation-only add-on (6.000) is sold manually over IPS/bank transfer to
+// clients who already own the seating — it is deliberately not a card tier, so
+// this kind maps to exactly one LS variant and cannot mis-price.
+
+const dogadjaj: KindAdapter = {
+  async loadEntity(slug) {
+    const s = await getStandaloneSeating(slug);
+    if (!s) return null;
+    return {
+      slug,
+      displayName: s.eventName || "Događaj",
+      eventDate: s.eventDate,
+      premium: false,
+      // Fully unlocked only when every part of the package is on.
+      unlockedTiers:
+        s.active && s.paid_for_invitation && s.paid_for_gallery
+          ? ["default"]
+          : [],
+    };
+  },
+  tiers(e) {
+    if (e.unlockedTiers.includes("default")) return [];
+    // The gallery's upload/purge windows are computed from the event date, so
+    // selling the package before one is set would hand over a dead add-on.
+    if (!e.eventDate) return [];
+    return [
+      {
+        id: "default",
+        labelSr: "Korporativni paket",
+        rsd: getDogadjajPaketPrice(),
+        eur: getDogadjajPaketPriceEur(),
+        lsVariantEnv: "LS_VARIANT_DOGADJAJ",
+      },
+    ];
+  },
+  computeOrder(e, tierId) {
+    if (tierId !== "default") throw new PaymentError("INVALID_TIER");
+    if (e.unlockedTiers.includes("default"))
+      throw new PaymentError("ALREADY_UNLOCKED");
+    return oneLine(
+      "Korporativni paket (raspored + pozivnica + galerija)",
+      getDogadjajPaketPrice(),
+      getDogadjajPaketPriceEur(),
+    );
+  },
+  async unlock(slug) {
+    await setStandaloneActive(slug, true);
+    await patchStandaloneFeatures(slug, {
+      paid_for_invitation: true,
+      paid_for_gallery: true,
+    });
+  },
+  async revoke(slug) {
+    await setStandaloneActive(slug, false);
+    await patchStandaloneFeatures(slug, {
+      paid_for_invitation: false,
+      paid_for_gallery: false,
+    });
+  },
+};
+
 // ── galerija (standalone QR photo gallery on a couple record) ─────────────────
 // Independent of `draft` — a gallery-only record may never publish an invitation.
 
@@ -542,6 +609,7 @@ export const KINDS: Record<PaymentKind, KindAdapter> = {
   punoletstvo,
   raspored,
   galerija,
+  dogadjaj,
 };
 
 /** Type guard for a raw string coming off the URL. */

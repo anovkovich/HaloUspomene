@@ -105,5 +105,17 @@
     "promoPrice": 4000,
     "promoActive": true,
     "priceEur": 45
+  },
+  "dogadjaj": {
+    "pozivnica": {
+      "label": "Pozivnica za događaj",
+      "price": 6000,
+      "priceEur": 50
+    },
+    "paket": {
+      "label": "Korporativni paket",
+      "price": 12000,
+      "priceEur": 100
+    }
   }
 }

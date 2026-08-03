@@ -3,6 +3,8 @@ import { jwtVerify } from "jose";
 import {
   createStandaloneSeating,
   listStandaloneSeatings,
+  isEventKind,
+  type StandaloneEventKind,
 } from "@/lib/standalone-seating";
 import { loadSeatingLayout } from "@/lib/seating";
 
@@ -49,11 +51,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const { ownerName, ownerPhone, eventName, eventDate } = body as {
+  const { ownerName, ownerPhone, eventName, eventDate, eventKind } = body as {
     ownerName?: string;
     ownerPhone?: string;
     eventName?: string;
     eventDate?: string;
+    eventKind?: StandaloneEventKind;
   };
 
   if (!ownerName || ownerName.trim().length < 2) {
@@ -74,6 +77,7 @@ export async function POST(req: NextRequest) {
     ownerPhone,
     eventName,
     eventDate,
+    eventKind: isEventKind(eventKind) ? eventKind : "wedding",
   });
   return NextResponse.json(seating);
 }
