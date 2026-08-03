@@ -9,10 +9,20 @@ export const contentType = "image/png";
 
 export default async function OGImage() {
   const fontsDir = join(process.cwd(), "src/app/pozivnica/[slug]/fonts");
-  const [serifFontData, sansFontData] = await Promise.all([
+  // Satori ne dekodira WebP, pa OG koristi PNG kopiju vozila, inline kao data
+  // URI. Generisana iz /public/images/oldtajmeri/citroen-traction-avant-11b.webp
+  // (trim + resize na 620px) — regenerisati ako se hero fotografija promeni.
+  const [serifFontData, sansFontData, carImageData] = await Promise.all([
     readFile(join(fontsDir, "CormorantGaramond-Regular.ttf")),
     readFile(join(fontsDir, "JosefinSans-Regular.ttf")),
+    readFile(
+      join(
+        process.cwd(),
+        "src/app/iznajmljivanje-oldtajmera-za-vencanje/og-citroen.png",
+      ),
+    ),
   ]);
+  const carSrc = `data:image/png;base64,${carImageData.toString("base64")}`;
 
   return new ImageResponse(
     (
@@ -73,7 +83,7 @@ export default async function OGImage() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 22,
+              gap: 14,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -103,7 +113,7 @@ export default async function OGImage() {
             <span
               style={{
                 fontFamily: "Cormorant Garamond",
-                fontSize: 62,
+                fontSize: 56,
                 color: "#232323",
                 lineHeight: 1.15,
                 textAlign: "center",
@@ -116,13 +126,22 @@ export default async function OGImage() {
             <span
               style={{
                 fontFamily: "Josefin Sans",
-                fontSize: 22,
+                fontSize: 20,
                 color: "#78716c",
                 textAlign: "center",
               }}
             >
               Klasici šezdesetih · Predratni kabrioleti · Sa vozačem
             </span>
+
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={carSrc}
+              alt=""
+              width={648}
+              height={297}
+              style={{ objectFit: "contain" }}
+            />
 
             <span
               style={{
@@ -133,7 +152,7 @@ export default async function OGImage() {
                 letterSpacing: "0.1em",
               }}
             >
-              Sa vozačem · Beograd i Pančevo · Cela Srbija
+              Beograd i Pančevo · Cela Srbija
             </span>
           </div>
         </div>

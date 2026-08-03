@@ -131,3 +131,14 @@
   flote ima tačno jednog partnera (nema nedodeljenih, nepostojećih ni
   dvostrukih id-jeva).
 - **Status:** code-complete (nije deployano)
+
+## 2026-08-03 — Fotografija vozila na OG slici
+
+- **Šta je urađeno:** OG slika nove stranice dobila fotografiju Citroën
+  Traction Avant-a (isto vozilo kao hero). **Satori ne dekodira WebP**, pa OG
+  koristi PNG kopiju (`og-citroen.png`, trim + 620px) inline kao data URI —
+  isti obrazac kojim se već čitaju fontovi, i radi jer se OG generiše u buildu.
+  Ako se hero fotografija promeni, PNG treba regenerisati.
+- **Verifikacija:** build prolazi, OG ruta vraća 200 i PNG 1200×630; slika
+  vizuelno provereno da sve staje u kadar.
+- **Status:** code-complete
