@@ -34,9 +34,10 @@ linkove regenerisanjem tokena.
 
 **Tok:**
 1. Vlasnik u portalu (`PortalClient.tsx`) generiše/kopira link
-   `/raspored-sedenja/{slug}/gde-sedim/?h={token}`.
-2. `gde-sedim/page.tsx` čita `?h`, poredi ga sa `checkin_token` i, ako se
-   poklapa, umesto `GdeSedimClient` renderuje `HostessCheckinClient`.
+   `/raspored-sedenja/{slug}/prijem/?h={token}`.
+2. `prijem/page.tsx` čita `?h` i poredi ga sa `checkin_token`; na nevalidan
+   token preusmerava na `/gde-sedim/` — hostesa i dalje nađe mesto, a URL jasno
+   kaže da prijem više ne radi.
 3. `HostessCheckinClient` **ne duplira** pretragu — ponovo koristi
    `GdeSedimClient` i ubacuje svoj blok kroz `renderExtra`, pa `GdeSedimClient`
    ništa ne zna o prijemu. Iznad svega stoji stalni brojač `stiglo / očekivano`.
