@@ -20,6 +20,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
 import { googleReviews } from "@/data/testimonials";
 import { RecaptchaProvider } from "@/components/forms/RecaptchaProvider";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -253,9 +255,16 @@ export const metadata: Metadata = {
     // yandex: "your-yandex-verification-code",
   },
 
-  alternates: {
-    canonical: siteUrl,
-  },
+  // NEMA `alternates.canonical` ovde — namerno.
+  //
+  // Next nasleđuje metapodatke, pa bi canonical postavljen u root layout-u
+  // važio za SVAKU stranicu koja ne definiše svoj. To Google-u govori „ova
+  // stranica je duplikat početne, indeksiraj početnu" — tiho, bez greške u
+  // build-u. Tako je `/moje-vencanje` imala canonical na `/`.
+  //
+  // Bez podrazumevane vrednosti, stranica bez sopstvenog canonical-a prosto
+  // nema tag, a Google uzima njen URL — što je ispravno ponašanje.
+  // Početna svoj canonical postavlja u `src/app/page.tsx`.
 
   icons: {
     icon: [
@@ -609,6 +618,13 @@ export default function RootLayout({
         />
         <Analytics />
         <SpeedInsights />
+        {/* Samo GA4. Clarity je namerno IZOSTAVLJEN — uklonjen je 2026-03-19
+            zbog brzine stranice (`bd82d0b`) i ta odluka ostaje; vraćen je samo
+            GA4. Skripta ide `afterInteractive`, van kritične putanje.
+            `AnalyticsProvider` skuplja događaje koje gtag ne pravi sam
+            (cta_click, section_view, scroll_depth, faq_interaction). */}
+        <GoogleAnalytics />
+        <AnalyticsProvider />
       </body>
     </html>
   );
