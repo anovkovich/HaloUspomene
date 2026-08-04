@@ -16,6 +16,174 @@ function loadContent(slug: string): string {
 
 // All posts including scheduled/unpublished ones
 const allBlogPosts: BlogPost[] = [
+  // ── Klaster za autoritet domena, objavljen 2026-08-04 ──────────────────────
+  // Sedam tekstova iz plana u `docs/vodici/pozivnice-i-pr-vodic.pdf`: tri vezana
+  // za naše proizvode (spisak gostiju, satnica, save the date) i četiri široke
+  // svadbene teme koje grade autoritet domena — obrazac po kome konkurencija
+  // pobeđuje. Datumi su namerno raspoređeni unazad kroz praznine u kalendaru
+  // objava; v. „O datumima objave" u
+  // `docs/dev-log/2026-08-04-pocetna-raskrsnica-primitivi/faza-5-plan.md`.
+  {
+    // GLAVNI STUB klastera o pozivnicama. Za upit „digitalne pozivnice za
+    // venčanje" nijedan konkurent ne rangira blog tekstom — svi rangiraju
+    // sopstvenom početnom, jer je njihova početna stranica O POZIVNICAMA.
+    // Naša početna je multi-proizvodni brend, pa `/pozivnice` autoritet dobija
+    // iznutra: ovaj tekst linkuje na nju tri puta plus CTA, a ostali tekstovi
+    // klastera linkuju na njega. Ne brisati te linkove pri uređivanju.
+    slug: "digitalne-pozivnice-za-vencanje",
+    title: "Digitalne Pozivnice za Venčanje: Sve Što Treba da Znate",
+    description:
+      "Šta su digitalne pozivnice za venčanje, kako rade, šta sadrže i koliko koštaju. Potvrde dolaska, slanje preko Vibera, PDF za štampu i saveti za starije goste.",
+    category: "Vodič",
+    tags: [
+      "digitalne pozivnice za venčanje",
+      "digitalna pozivnica",
+      "website pozivnica za venčanje",
+      "online pozivnice za svadbu",
+      "elektronska pozivnica",
+      "pozivnice za venčanje",
+      "potvrde dolaska",
+      "cena digitalne pozivnice",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-03-08",
+    readTime: 13,
+    featured: true,
+    content: loadContent("digitalne-pozivnice-za-vencanje"),
+  },
+  {
+    slug: "spisak-gostiju-za-svadbu",
+    title:
+      "Spisak Gostiju za Svadbu: Kako Ga Sastaviti Bez Drame i Prepisivanja",
+    description:
+      "Kako napraviti spisak gostiju za svadbu: tri liste umesto jedne, koga zvati a koga ne, rokovi, koliko ljudi otkaže i kako se spisak pretvara u raspored sedenja.",
+    category: "Vodič",
+    tags: [
+      "spisak gostiju za svadbu",
+      "lista gostiju za svadbu",
+      "spisak zvanica",
+      "koliko gostiju pozvati na svadbu",
+      "potvrde dolaska",
+      "raspored sedenja",
+      "organizacija venčanja",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-04-14",
+    readTime: 10,
+    content: loadContent("spisak-gostiju-za-svadbu"),
+  },
+  {
+    slug: "satnica-vencanja-redosled-dana",
+    title: "Satnica Venčanja: Redosled Dana od Jutra do Večere",
+    description:
+      "Realna satnica venčanja sat po sat: spremanje mlade, kupovina, ceremonija, fotografisanje, doček i večera. Šta se najčešće kasni i kako se to nadoknađuje.",
+    category: "Vodič",
+    tags: [
+      "satnica venčanja",
+      "redosled venčanja",
+      "kako izgleda dan svadbe",
+      "program dana venčanja",
+      "satnica svadbe",
+      "organizacija venčanja",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-05-17",
+    readTime: 11,
+    content: loadContent("satnica-vencanja-redosled-dana"),
+  },
+  {
+    slug: "save-the-date-vencanje",
+    title: "Save the Date: Šta Je, Kada se Šalje i Kada Vam Zaista Treba",
+    description:
+      "Save the date za venčanje: šta jeste a šta nije, rokovi slanja, šta mora da sadrži, kome se šalje i iskren odgovor na pitanje da li vam uopšte treba.",
+    category: "Vodič",
+    tags: [
+      "save the date",
+      "save the date venčanje",
+      "save the date kada se šalje",
+      "najava venčanja",
+      "pozivnice za venčanje",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-06-07",
+    readTime: 11,
+    content: loadContent("save-the-date-vencanje"),
+  },
+  {
+    slug: "koliko-se-daje-na-svadbi",
+    title: "Koliko se Daje na Svadbi 2026: Koverat, Kum i Ostali Gosti",
+    description:
+      "Koliko se daje na svadbi 2026 u dinarima: po ulozi gosta, razlike Beograd i manja mesta, po osobi ili po paru, šta sa decom i kako se koverat predaje.",
+    category: "Saveti",
+    tags: [
+      "koliko se daje na svadbi",
+      "koliko se daje u koverti",
+      "koverat za svadbu",
+      "koliko daje kum na svadbi",
+      "svadbeni običaji",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-06-18",
+    readTime: 11,
+    content: loadContent("koliko-se-daje-na-svadbi"),
+  },
+  {
+    slug: "koliko-kosta-svadba-u-srbiji",
+    title: "Koliko Košta Svadba u Srbiji 2026: Realan Budžet po Broju Gostiju",
+    description:
+      "Koliko košta svadba u Srbiji 2026: rasponi po kategorijama, tri scenarija za 50, 120 i 250 gostiju, šta najviše diže cenu i koliko se realno vrati kroz koverte.",
+    category: "Vodič",
+    tags: [
+      "koliko košta svadba u srbiji",
+      "budžet za venčanje",
+      "cena svadbe",
+      "troškovi venčanja",
+      "kalkulator budžeta za venčanje",
+      "planiranje venčanja",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-07-02",
+    readTime: 12,
+    content: loadContent("koliko-kosta-svadba-u-srbiji"),
+  },
+  {
+    slug: "obaveze-kuma-na-svadbi",
+    title: "Obaveze Kuma na Svadbi: Šta Kupuje, Šta Plaća i Šta Radi",
+    description:
+      "Obaveze kuma na svadbi: šta tradicionalno kupuje i plaća, koliko daje u koverti, uloga kume, zadaci po satnici dana i šta kum ne mora da radi.",
+    category: "Saveti",
+    tags: [
+      "obaveze kuma na svadbi",
+      "šta kum kupuje",
+      "koliko kum daje",
+      "uloga kume",
+      "zdravica kuma",
+      "svadbeni običaji u srbiji",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-07-13",
+    readTime: 12,
+    content: loadContent("obaveze-kuma-na-svadbi"),
+  },
+  {
+    slug: "cestitke-za-vencanje",
+    title: "Čestitke za Venčanje: 45 Gotovih Poruka za Mladence",
+    description:
+      "45 gotovih čestitki za venčanje: kratke za koverat, klasične, emotivne, duhovite, od kuma i roditelja, na ćirilici i engleskom. Kopirajte i pošaljite.",
+    category: "Vodič",
+    tags: [
+      "čestitke za venčanje",
+      "čestitka za svadbu",
+      "šta napisati mladencima",
+      "poruke za mladence",
+      "čestitke za venčanje kratke",
+      "čestitka na koverti",
+      "HALO Uspomene",
+    ],
+    publishDate: "2026-07-23",
+    readTime: 13,
+    content: loadContent("cestitke-za-vencanje"),
+  },
   {
     slug: "tekst-za-pozivnicu-za-vencanje",
     title:
@@ -195,7 +363,7 @@ const allBlogPosts: BlogPost[] = [
       "potvrda dolaska",
       "HALO Uspomene",
     ],
-    publishDate: "2026-08-12",
+    publishDate: "2026-06-12",
     readTime: 9,
     featured: true,
     content: loadContent("pozivnica-za-punoletstvo-18-rodjendan"),
@@ -216,7 +384,7 @@ const allBlogPosts: BlogPost[] = [
       "potvrda dolaska",
       "HALO Uspomene",
     ],
-    publishDate: "2026-08-21",
+    publishDate: "2026-03-22",
     readTime: 9,
     featured: true,
     content: loadContent("digitalna-vs-papirna-pozivnica"),
@@ -238,7 +406,7 @@ const allBlogPosts: BlogPost[] = [
       "digitalne pozivnice",
       "HALO Uspomene",
     ],
-    publishDate: "2026-08-30",
+    publishDate: "2026-04-06",
     readTime: 9,
     featured: true,
     content: loadContent("kako-napraviti-pozivnicu-za-vencanje-online"),
@@ -259,7 +427,7 @@ const allBlogPosts: BlogPost[] = [
       "raspored sedenja",
       "HALO Uspomene",
     ],
-    publishDate: "2026-09-08",
+    publishDate: "2026-05-03",
     readTime: 8,
     featured: true,
     content: loadContent("potvrda-dolaska-rsvp-na-vencanju"),
@@ -280,7 +448,7 @@ const allBlogPosts: BlogPost[] = [
       "digitalne pozivnice",
       "HALO Uspomene",
     ],
-    publishDate: "2026-09-17",
+    publishDate: "2026-04-19",
     readTime: 9,
     featured: true,
     content: loadContent("cena-pozivnica-za-vencanje-srbija"),
@@ -301,7 +469,7 @@ const allBlogPosts: BlogPost[] = [
       "QR kod venčanje",
       "HALO Uspomene",
     ],
-    publishDate: "2026-09-26",
+    publishDate: "2026-06-24",
     readTime: 9,
     featured: true,
     content: loadContent("trendovi-pozivnica-za-vencanje-2027"),
@@ -322,7 +490,7 @@ const allBlogPosts: BlogPost[] = [
       "potvrda dolaska",
       "HALO Uspomene",
     ],
-    publishDate: "2026-10-05",
+    publishDate: "2026-05-24",
     readTime: 8,
     featured: true,
     content: loadContent("kako-poslati-pozivnicu-whatsapp-viber"),

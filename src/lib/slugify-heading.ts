@@ -83,5 +83,22 @@ export function extractTableOfContents(mdxSource: string): TocItem[] {
     });
   }
 
+  // Dva naslova sa istim tekstom daju isti `id`. Posledica je tiha i vidi se
+  // tek u pregledaču: u sadržaju se hajlajtuju DVE stavke odjednom, a skok na
+  // drugu vodi na prvu. Pošto se `id` isto računa i pri renderovanju naslova
+  // (`mdx-components.tsx`) i ovde, jedini pouzdan lek je da naslovi u jednom
+  // tekstu budu jedinstveni — zato upozorenje, a ne tiho preimenovanje.
+  if (process.env.NODE_ENV !== "production") {
+    const seen = new Set<string>();
+    for (const item of items) {
+      if (seen.has(item.id)) {
+        console.warn(
+          `[blog] Duplikat anchor id "${item.id}" (naslov: "${item.text}") — preimenuj jedan od naslova.`,
+        );
+      }
+      seen.add(item.id);
+    }
+  }
+
   return items;
 }
