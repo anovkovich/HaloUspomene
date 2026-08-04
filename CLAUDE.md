@@ -69,35 +69,60 @@ Prose on these pages must **not** name specific models — the offer keeps growi
 
 Praćene inicijative žive u `docs/dev-log/` — `HISTORY.md` je indeks (počni odatle), sa `plan.md`/`log.md` po tasku. Napredak na praćenom poslu beleži se preko task-plan skilla (dopiši u `log.md` tog taska); ne razbacuj nove plan fajlove po `docs/`.
 
-## ⏰ Zakazano — SEO/sadržaj, od 2026-08-10
+## ⏰ Zakazano — SEO/sadržaj posle deploy-a od 2026-08-04
 
-> **Ako je današnji datum 2026-08-10 ili kasnije a ovaj odeljak još stoji, podseti
+Pun i revidiran plan:
+`docs/dev-log/2026-08-04-pocetna-raskrsnica-primitivi/faza-5-plan.md`.
+Tamo su brojke, obrazloženja po stavci i lista `sr-only` blokova sa odlukom.
+
+### 2026-08-10 — SAMO provera regresije
+
+> **Ako je datum 2026-08-10 ili kasnije a ovaj pododeljak još stoji, podseti
 > korisnika na njega pre nego što započneš drugi posao.**
 
-Pun plan: `docs/dev-log/2026-08-04-pocetna-raskrsnica-primitivi/faza-5-plan.md`.
-Odloženo namerno — čeka se 5–6 dana posle deploy-a nove početne, da Google
-ponovo obiđe sajt i da merenje „posle" ima smisla.
-
-**Prvi korak je uvek ponovo merenje**, jer plan počiva na brojkama koje se menjaju:
+Šest dana pokazuje samo **da li je nešto puklo**. Pozicije se sležu 2–4 nedelje
+(rizik R2: pozicija i CTR mogu PASTI dok se preračunava — ne reagovati panično).
+**Tog dana se ne donose sadržajne odluke.**
 
 ```
 node scripts/analytics-baseline.mjs --days 30 --md docs/dev-log/2026-08-04-pocetna-raskrsnica-primitivi/gsc-posle.md
 ```
 
-Redosled (detalji i brojke u planu):
-1. `/napravi-punoletstvo/` — **200 reči**, poz 8,7 za upit sa 444 prikaza. Najveći
-   pojedinačni dobitak na sajtu.
-2. `/napravi-deciju-pozivnicu/` — **165 reči**, 952 prikaza, 22 klika.
-3. `/cene/` — od 339 reči **332 su u `sr-only` bloku**; promovisati u vidljivo.
-4. `sr-only` blokovi na 12 stranica (1.759 reči) — obrisati gde duplira vidljivo,
-   promovisati gde nosi jedinstven podatak ili jedini link. **Jedna stranica po deployu.**
-5. Duge stranice (`/oldtajmeri` 2.255 reči, `/lazni-maticar` 1.926) — skratiti
-   *opaženu* dužinu sidrima i akordeonima, tekst OSTAJE.
-6. Blog klaster — **plan od 14 tekstova već postoji** u
-   `docs/vodici/pozivnice-i-pr-vodic.pdf`; ne praviti nov, izvršavati taj.
-   Prvih 7 tekstova je objavljeno 2026-08-04 sa **datumima unazad** (april–jul) —
-   odluka vlasnika, doneta uz napomenu da backdate ne pomaže rangiranju (Google
-   pamti kada je URL prvi put otkrio) i da `datePublished` time postaje netačan.
+„Puklo je" = brend upiti više nisu poz ~1 · prikazi pali preko 40% · GSC javlja
+noindex/canonical/soft-404 na ključnim stranicama · GA4 ne prima događaje ·
+nov tip greške u Sentry-ju. **Izuzetak: `/moje-vencanje` NAMERNO izlazi iz
+indeksa** — to je uspeh, ne kvar.
+
+Pad ne-brend pozicija, `/pozivnice` još na ~36, novi postovi bez prikaza i
+presipanje prikaza sa početne na proizvodne stranice **nisu** kvar.
+
+### Ne čeka podatke — može odmah
+
+1. `/napravi-pozivnicu` — **320 reči**, 456 prikaza, poz 7,6, nula klikova.
+   Isti obrazac kao dve rođendanske forme (već rešene), ali za venčanje.
+2. Odeljak sa cenom na `/pozivnice` — drži „cena digitalne pozivnice" na poz
+   10,6 bez ijedne cene u vidljivom tekstu.
+3. `/vendori/` (445 reči) i `/pozivnica-za-prvi-rodjendan/` (530 reči).
+4. Preostalih 6 tekstova iz plana od 14 (`docs/vodici/pozivnice-i-pr-vodic.pdf`).
+5. `sr-only` čišćenje — **jedna stranica po deployu**. NE dirati oldtajmere i
+   automobile: taj blok koristi `{modelNames.join(", ")}`, dakle generisan je iz
+   `oldtimerFleet`. NE dirati ni `/planiranje-vencanja` — nosi jedine linkove ka
+   `/lokacije` i oldtajmerima, a stranica je pod merenjem.
+
+### Početak septembra — prave odluke, sa 4 nedelje podataka
+
+Odluka R2/R7 · brisanje starih landing komponenti (uslov je „odustali smo od
+povlačenja", ne „ništa nije puklo") · da li `/pozivnice` razdvajati · da li
+dopunjavati `napravi-*` stranice · FAQ početne 8 naspram 6 pitanja.
+
+**Ograničenje koje treba znati:** bihevioralno „pre" ne postoji — GA4 je bio
+mrtav od 2026-03-19, a custom dimenzije su registrovane 2026-08-04 i pune se
+samo unapred. Poređenje pre/posle je **isključivo GSC**.
+
+**Datumi objave blogova:** prvih 7 + 7 zakazanih objavljeno je 2026-08-04 sa
+datumima unazad (mart–jul) — odluka vlasnika, uz napomenu da backdate ne pomaže
+rangiranju (Google pamti kada je URL prvi put otkrio) i da `datePublished` time
+postaje netačan.
 
 ## Project Overview
 

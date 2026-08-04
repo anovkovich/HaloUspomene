@@ -1,149 +1,172 @@
-# Faza 5 + tanke stranice — plan izvršenja
+# Preostali SEO/sadržajni posao — revidirano 2026-08-04 posle deploy-a
 
-**Zakazano za 2026-08-10** (5–6 dana posle deploy-a Faza 1–3, da GSC stigne da
-ponovo obiđe sajt i da imamo prve podatke o efektu).
+> **Revizija.** Prva verzija ovog plana pisana je pre deploy-a i pretpostavljala
+> je da danas ide samo nova početna (Faze 1–3). Otišlo je mnogo više — osam
+> commit-ova, `c4e5352..9c90eaf` — pa je pola plana već izvršeno, a raspored
+> više nije tačan. Ovo je revidirana verzija.
 
-Merenja u ovom dokumentu su sa produkcije 2026-08-04.
-
----
-
-## Deo 1 — Tanke stranice (NOVO, veći prioritet od originalne Faze 5)
-
-Merenje dubine sadržaja naspram pozicije objašnjava skoro sve slabe rezultate:
-
-| Stranica | Reči | Od toga `sr-only` | Prikaza 180d | Klikova | CTR |
-|---|---|---|---|---|---|
-| `/napravi-deciju-pozivnicu/` | **165** | 0 | 952 | 22 | 2,31% |
-| `/napravi-punoletstvo/` | **200** | 0 | 901 | 14 | 1,55% |
-| `/cene/` | 339 | **332** | — | — | — |
-| `/vendori/` | 445 | 0 | — | — | — |
-| `/pozivnica-za-prvi-rodjendan/` | 530 | 70 | 32 | 0 | 0% |
-
-Za poređenje, stranice koje rangiraju dobro imaju 1.200–2.250 reči.
-
-### 1a. `/napravi-punoletstvo/` — najveći pojedinačni dobitak na sajtu
-
-Stoji na **poz 8,7 za „pozivnice za 18 rodjendan" sa 444 prikaza**, i na 12,1 za
-„pozivnica za 18 rođendan" (53 prikaza), 17,1 za „elektronske pozivnice za 18
-rodjendan" (20). Ukupno 901 prikaz, 14 klikova.
-
-Sa 200 reči to je forma bez sadržaja. Dodati (cilj ~1.100 reči):
-- „Šta sadrži pozivnica za punoletstvo" — potvrde dolaska, odbrojavanje, mapa, PDF
-- „Kada slati pozivnice za 18. rođendan"
-- „Tekst za pozivnicu za punoletstvo" — 6–8 gotovih primera (format „primeri" je
-  dokazano najjači po analizi konkurencije)
-- FAQ sa `FAQPage` schemom (stranica je trenutno nema)
-- Link ka `/blog/pozivnica-za-punoletstvo-18-rodjendan` i nazad
-
-### 1b. `/napravi-deciju-pozivnicu/` — isti obrazac
-
-Poz 6,8 za „napravi mi pozivnicu za rodjendan" (182 prikaza), 8,7 za „pozivnice
-za rodjendan napravi sam" (148), 11,3 za „pozivnice za deciji rodjendan" (81),
-10,4 za „pozivnica za deciji rodjendan" (64). Ukupno 952 prikaza, 22 klika.
-
-Isti recept, prilagođen: šta sadrži, kada slati, primeri teksta, teme po
-uzrastu, FAQ + schema.
-
-### 1c. `/cene/` — 332 od 339 reči je skriveno
-
-Cenovnik je tabela, pa vidljivog teksta praktično nema. `sr-only` blok nosi ceo
-tekst — što je tačno ono što Faza 5 nalaže da se **promoviše u vidljivo**.
-Rangira za „cena digitalne pozivnice" (poz 10,6) i „cena pozivnica" upite.
-
-Dodati vidljivo, ispod tabele: šta ulazi u koju cenu, zašto je fiksna, šta se
-plaća jednom a šta nikad, i kratak FAQ o plaćanju. Obrisati `sr-only` blok kad
-njegov sadržaj postane vidljiv.
-
-### 1d. `/vendori/` — 445 reči, samo 8 internih linkova
-
-Najslabije linkovana stranica. Dodati opis kako biramo saradnike i po čemu se
-kategorije razlikuju; povezati iz `/planiranje-vencanja` i iz blogova.
+Merenja su sa produkcije 2026-08-04, pre deploy-a. Sirovi podaci:
+`baseline.json`, nalazi: `seo-nalazi.md`, tok rada: `log.md` (deset unosa).
 
 ---
 
-## Deo 2 — `sr-only` blokovi (originalna Faza 5)
+## Šta je od prvobitnog plana IZVRŠENO
 
-Ukupno **1.759 reči** skrivenog teksta na 12 stranica:
+| Stavka | Ishod |
+|---|---|
+| `/napravi-punoletstvo/` sadržaj | 200 → **777 reči**, H2 2→7, FAQ 0→7 sa schemom |
+| `/napravi-deciju-pozivnicu/` sadržaj | 165 → **801 reč**, ista struktura |
+| `/cene/` — promovisati `sr-only` u vidljivo | Urađeno, i dublje: stranica se **uopšte nije server-renderovala**. 339 → **1.047 vidljivih reči**, H1 0 → 1 |
+| Blog klaster, „5 brzih pobeda" | **8 od 14 tekstova**, uključujući #6 GLAVNI STUB (2.405 reči). Blog 26 → **41 post** |
+| `/planiranje-vencanja` sadržaj | 779 → **1.226 reči**, FAQ 8 → 10 |
 
-| Stranica | `sr-only` reči | Šta uraditi |
+Obe rođendanske stranice su **ispod prvobitnog cilja od ~1.100 reči** (777 i
+801). Namerno se ne dopunjuju sada — v. septembar, tačka 4.
+
+---
+
+## Zašto se 10.08. NE donose odluke
+
+Šest dana pokazuje **samo da li je nešto puklo**. Pozicije se sležu 2–4 nedelje,
+i to je bio izričit rizik R2 originalnog plana: *pozicija i CTR mogu pasti 2–4
+nedelje dok se preračunava — ne reagovati panično.* Pogotovo sada, kada je
+početna namerno prestala da otima upite proizvodnim stranicama: deo saobraćaja
+se **seli**, i to prvih nedelja izgleda kao pad.
+
+Zato je posao podeljen na tri grupe.
+
+---
+
+## ODMAH — ne čeka podatke
+
+Nijedno merenje ne može da opovrgne ove poteze.
+
+1. **`/napravi-pozivnicu` — 320 reči, 456 prikaza, pozicija 7,6.**
+   Isti slučaj kao dve rođendanske forme, samo što je ovo forma za **venčanje**.
+   Rangira za „online pozivnica" (poz 8), „pozivnice za vencanje online"
+   (poz 7,4) — svuda **nula klikova**, jer je na dnu prve strane bez sadržaja.
+   Primeniti isti obrazac: formular ostaje u prvom ekranu, sadržaj ispod, FAQ
+   sa `FAQPage` schemom. *(Ovo je nedostajalo i u prvoj verziji plana.)*
+2. **Odeljak sa cenom na `/pozivnice`.** Stranica drži „cena digitalne
+   pozivnice" na poz 10,6 **bez ijedne cene u vidljivom tekstu**. Jedini potez
+   na toj stranici koji ne zamućuje R2 eksperiment.
+3. **`/vendori/` (445 reči, 8 internih linkova)** i
+   **`/pozivnica-za-prvi-rodjendan/` (530 reči).** Nijedna nije dirana danas,
+   obe su ispod svakog praga, i ne učestvuju ni u jednom merenju koje čekamo.
+4. **Preostalih 6 blog tekstova** iz plana od 14 (#4, #5, #10, #12, #13, #14),
+   tempom 2–3 nedeljno. Obim je dokazana poluga — konkurent sa 58 tekstova ne
+   pobeđuje kvalitetom pojedinačnog teksta nego pokrivenošću tema.
+5. **GSC: ponovo poslati sitemap + „Request indexing"** za početnu, `/cene/`,
+   stub i obe `napravi-*`. Danas je promenjeno ili dodato ~20 URL-ova; ovo
+   ubrzava sve što merimo, a ne košta ništa.
+6. **`sr-only` čišćenje — samo gde je čist duplikat vidljivog teksta.**
+   Jedna stranica po deployu.
+
+### `sr-only` — stanje i odluka po stranici
+
+| Stranica | Reči | Odluka |
 |---|---|---|
-| `/cene/` | 332 | **Promovisati u vidljivo** (v. 1c) — nosi ceo tekst stranice |
-| `/telefon-uspomena/` | 195 | Proveriti duplikat; verovatno obrisati |
-| `/lazni-maticar/` | 163 | Obrisati — stranica ima 1.926 vidljivih reči |
-| `/pozivnice/` | 156 | Obrisati |
-| `/iznajmljivanje-opreme-za-vencanje/` | 156 | Promovisati spisak opreme ako je jedinstven |
-| `/qr-galerija-slika-sa-vencanja/` | 143 | Obrisati |
-| `/iznajmljivanje-oldtajmera-za-vencanje/` | 128 | **Ne dirati bez provere** — može nositi spisak modela |
-| `/qr-pano-dobrodoslice/` | 125 | Obrisati |
-| `/iznajmljivanje-automobila-za-vencanje/` | 109 | Proveriti |
-| `/planiranje-vencanja/` | 93 | Sad ga duplira nova vidljiva sekcija, ALI nosi jedine linkove ka `/lokacije` i oldtajmerima — prvo preseliti linkove |
-| `/izrada-pozivnica-online/` | 89 | Obrisati |
-| `/pozivnica-za-prvi-rodjendan/` | 70 | Obrisati |
+| `/telefon-uspomena` | ~162 | proveriti duplikat, verovatno obrisati |
+| `/lazni-maticar` | ~121 | obrisati — stranica ima 1.926 vidljivih reči |
+| `/pozivnice` | ~119 | obrisati |
+| `/qr-galerija-slika-sa-vencanja` | ~113 | obrisati |
+| `/qr-pano-dobrodoslice` | ~99 | obrisati |
+| `/izrada-pozivnica-online` | ~67 | obrisati |
+| `/pozivnica-za-prvi-rodjendan` | ~55 | obrisati uz dopunu sadržaja (tačka 3) |
+| `/iznajmljivanje-opreme-za-vencanje` | ~118 | promovisati spisak opreme ako je jedinstven |
+| **`/iznajmljivanje-oldtajmera-za-vencanje`** | ~85 | **NE DIRATI** |
+| **`/iznajmljivanje-automobila-za-vencanje`** | ~80 | **NE DIRATI** |
+| **`/planiranje-vencanja`** | ~73 | **NE sada** |
 
-**Pravilo:** obrisati gde je duplikat vidljivog teksta; promovisati u vidljivu
-sekciju gde nosi jedinstven podatak (imena sala, kapaciteti, spisak modela
-vozila) ili jedini link ka nekoj stranici. **Jedna stranica po deployu.**
+**Zašto se oldtajmeri i automobili ne diraju:** taj `sr-only` nije zaostavština
+nego arhitektura — koristi `{modelNames.join(", ")}`, dakle **generisan je iz
+`oldtimerFleet`**, tačno kako `CLAUDE.md` propisuje da sve što je vezano za
+modele mora da se izvodi iz podataka. Ručno brisanje bi pokvarilo pravilo da
+dodavanje vozila zahteva izmenu samo dva data fajla.
 
----
-
-## Deo 3 — Duge stranice: skratiti opaženu dužinu, ne tekst
-
-- `/iznajmljivanje-oldtajmera-za-vencanje/` — **2.255 reči**
-- `/lazni-maticar/` — **1.926 reči**
-
-Medijana ostalih je ~1.100. Tekst OSTAJE (rangira), smanjuje se skrol:
-- sadržaj sa sidrima na vrhu (mehanizam već postoji na blogu)
-- akordeoni za sekundarne sekcije
-- flota u karusel umesto vertikalne liste
+**Zašto `/planiranje-vencanja` ne sada:** njegov `sr-only` nosi **jedine linkove**
+ka `/lokacije` i `/iznajmljivanje-automobila-za-vencanje`, a sama stranica je
+pod merenjem (poz 18,4 za „planer za vencanje"). Prvo preseliti linkove u
+vidljivo, i to tek u septembru da se ne zamuti merenje.
 
 ---
 
-## Deo 4 — Sadržajni klaster (iz postojeće analize)
+## 10.08. — SAMO provera regresije
 
-`docs/vodici/pozivnice-i-pr-vodic.pdf` već nosi plan od **14 tekstova** sa
-redosledom: 5 brzih pobeda → glavni stub → dugoročni saobraćaj. **Ne praviti nov
-plan — izvršavati taj.** Prvih pet:
-
-1. Spisak gostiju za svadbu (već rangiramo poz 11,1 sa 43 prikaza — potvrđeno tražen)
-2. Save the date
-3. Satnica venčanja
-4. 7 grešaka sa pozivnicama
-5. Kako izabrati temu i dizajn pozivnice
-
-Ključni nalaz te analize koji vredi ponoviti: konkurent `pozivamote.rs` ne
-pobeđuje tekstovima o pozivnicama nego **širokim svadbenim temama** (koliko se
-daje na svadbi, obaveze kuma, satnica), koje grade autoritet domena — pa tek
-onda njihova početna rangira za komercijalne upite.
-
-### O datumima objave — odluka vlasnika 2026-08-04
-
-Prvih 7 tekstova dobija **datume u prošlosti** (april–jul 2026), raspoređene
-kroz vreme umesto svih na isti dan. **To je odluka vlasnika, doneta uz izričitu
-napomenu o sledećem:**
-
-- Backdate **ne donosi prednost u rangiranju** — Google beleži kada je URL prvi
-  put otkrio, ne šta piše u tekstu. Dobitak dolazi od obima i kvaliteta.
-- `datePublished` u strukturiranim podacima postaje netačan, i čitalac vidi
-  datum koji nije stvaran.
-
-Konkurent koji postoji mesec dana a ima 55 tekstova nije dobio prednost
-datumima nego obimom — pa dalje objavljivati normalno, po 2–3 teksta nedeljno.
-
----
-
-## Redosled izvršenja 2026-08-10
-
-1. `/napravi-punoletstvo/` sadržaj (najveći dobitak)
-2. `/napravi-deciju-pozivnicu/` sadržaj
-3. `/cene/` — promovisati `sr-only` u vidljivo
-4. `sr-only` čišćenje, jedna stranica po deployu
-5. Duge stranice — sidra i akordeoni
-6. Blog klaster — 5 brzih pobeda
-
-Pre početka **obavezno ponovo izmeriti**, jer se stanje menja posle deploy-a:
+Ništa se ne piše i ništa se ne vraća, osim ako donja lista kaže „puklo".
 
 ```
 node scripts/analytics-baseline.mjs --days 30 --md docs/dev-log/2026-08-04-pocetna-raskrsnica-primitivi/gsc-posle.md
 ```
 
-Poređenje sa `gsc-izvestaj.md` (180 dana, pre) i `baseline.json`.
+### Signali da je NEŠTO PUKLO — reaguje se
+
+1. **Brend upiti** (`halo uspomene`, `halouspomene`) više nisu poz ~1 za
+   početnu. Brend ne zavisi od sadržaja — pad znači tehnički problem.
+2. **Ukupni prikazi padnu preko 40–50%** u odnosu na nedelju pre deploy-a. To
+   nije preračunavanje nego deindeksacija.
+3. **GSC URL inspection** za `/`, `/cene/`, `/pozivnice/`, obe `napravi-*` i
+   stub: bilo koje „nije indeksirano — noindex / canonical na drugu stranicu /
+   soft 404". Posebno proveriti da `/cene/` u renderovanom HTML-u **sada ima
+   cene i pakete** (to je bila cela poenta popravke) i da nijedna stranica nije
+   nasledila fantomski canonical na `/`.
+4. **Coverage**: nagli skok „Excluded" ili 404 na URL-ovima koji su juče bili
+   indeksirani. **Izuzetak: `/moje-vencanje` NAMERNO izlazi iz indeksa** — to
+   je uspeh, ne kvar.
+5. **GA4 realtime**: stižu li `page_view`, `cta_click`, `section_view`,
+   `form_submit`. Ako ne stižu, deploy analitike je pukao.
+6. **Sentry**: nov tip greške na `/`, `/cene` ili formama posle deploy-a.
+7. **Ručno na telefonu**: `/#paketi` sa `/cene` i gradskih stranica stvarno
+   skroluje na `PriceStrip`; sve tri forme daju validan rok za potvrde.
+
+### Signali koji NISU „puklo" — ne dirati
+
+- Pad pozicije bilo kog **ne-brend** upita, uključujući „pozivnice" sa 10,2.
+  To je R2, dokumentovan unapred.
+- `/pozivnice` i dalje na ~36 za upit „pozivnice" — stub je star šest dana,
+  signal se nije ni preneo.
+- Novi blog postovi bez prikaza — normalno za URL star nedelju dana.
+- Fluktuacije CTR-a — šest dana je premalo uzorka, a ~1.700 prikaza šuma
+  (engleski upiti, „halo") i dalje obara prosek.
+- Prikazi se presipaju sa početne na proizvodne stranice — **to je željeni
+  ishod refaktora**, ne gubitak.
+
+---
+
+## POČETAK SEPTEMBRA (~01–07.09.) — prave odluke
+
+Četiri nedelje podataka. Porediti u **istim prozorima** (30 dana naspram istog
+raspona iz `baseline.json`), ne naspram 180 dana.
+
+1. **Odluka R2/R7.** Da li „pozivnice", „planer za vencanje", brend i
+   retro-telefon upiti stoje na polazištu ili iznad?
+2. **Brisanje starih landing komponenti** (`Concept`, `PainPointSolution`,
+   `HowItWorks`, `CTABar`, `Packages`, `Section*` — potvrđeno 0 uvoza).
+   Uslov nije „ništa nije puklo 10.08." nego **„odustali smo od povlačenja"**.
+   Povlačenje ima smisla i kod pada pozicija u septembru — to je jedini
+   scenario u kom bi se stara početna vraćala. Zato: brisati **istog dana kada
+   padne odluka pod tačkom 1**, ne pre.
+3. **`/pozivnice`**: ako je i dalje ~36 za glavni upit → razdvajanje po upitima
+   (stranica pokušava da rangira za pet različitih). Ako se penje → ne dirati.
+4. **Dopuna `napravi-*` stranica** do ~1.100 reči — **samo ako pozicije nisu
+   krenule.** Ako `pozivnice za 18 rodjendan` sa 8,7 uđe u top 5, dopuna je
+   nepotreban rizik.
+5. **`/planiranje-vencanja` `sr-only`** — preseliti linkove ka `/lokacije` i
+   oldtajmerima u vidljivo, pa obrisati blok.
+6. **FAQ početne, 8 naspram 6 pitanja** — odluka 6 iz originalnog plana, koja
+   je izričito zakazana za „posle 4 nedelje GSC podataka".
+7. **Duge stranice** (`/oldtajmeri` 2.255 reči, `/lazni-maticar` 1.926):
+   sidra i akordeoni da se smanji *opažena* dužina, tekst ostaje. Najmanji SEO
+   ulog — tek posle svega gore.
+
+---
+
+## Merenje „posle" — jedno ograničenje koje treba znati
+
+**Bihevioralno „pre" ne postoji.** GA4 je bio mrtav od 2026-03-19 do danas, a
+custom dimenzije (`section_view`, `scroll_depth`, `cta_click` po `cta_location`)
+registrovane su tek 2026-08-04 i pune se **samo unapred**.
+
+Posledica: svako poređenje pre/posle refaktora je **isključivo GSC**. GA4 podaci
+postaju **baseline nove početne** i biće upotrebljivi od septembra, za pitanja
+tipa „koja kartica u mreži proizvoda se ne klikće".

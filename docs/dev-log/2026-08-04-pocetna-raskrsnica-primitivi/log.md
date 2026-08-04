@@ -507,3 +507,44 @@
 
 - **Ostaje (dogovoreno da nije hitno):** 31 stranica sa naslovom preko 70
   znakova i 18 opisa preko 160 — sečeno u rezultatima, ali nije prioritet.
+
+---
+
+## 2026-08-04 (jedanaesti unos) — Deploy i revizija plana
+
+- **Deploy:** `c4e5352..9c90eaf` na granu `deploy`, osam commit-ova, 60 fajlova,
+  +12.265/−498. Potvrđeno na produkciji: gtag radi, `id="paketi"` postoji
+  (link koji je bio pokvaren), `/cene` prvi put ima H1, stub vraća 200,
+  nova navigacija gore.
+
+- **Plan revidiran** (`faza-5-plan.md` prepisan). Bio je pisan pod pretpostavkom
+  da danas ide samo nova početna, a otišlo je mnogo više — pa je pola plana bilo
+  već izvršeno, a raspored netačan. Sada ima tri grupe: *odmah* (ne čeka
+  podatke), *10.08.* (samo regresija), *početak septembra* (prave odluke).
+
+- **Nov nalaz koji plan nije imao:** `/napravi-pozivnicu` ima **320 reči, 456
+  prikaza, poziciju 7,6 i nula klikova** na upitima „online pozivnica" i
+  „pozivnice za vencanje online". Isti obrazac kao dve rođendanske forme koje su
+  danas rešene, samo što je ovo forma za venčanje — najvrednija. Dodato u grupu
+  „odmah".
+
+- **Ispravka ranijeg izlaganja:** govorio sam da je `/pozivnice` na poziciji
+  36,3. To važi za jedan upit („pozivnice"). **Ukupno je na 8,2 sa 3.084 prikaza
+  i 94 klika** — to je najjača stranica o pozivnicama, ne slaba.
+
+- **Provereno, a ne prepisano iz tuđeg izveštaja:**
+  - `/cene` više nema nijedan `sr-only` element (raniji grep je hvatao moj
+    komentar koji tu reč pominje);
+  - `sr-only` na oldtajmerima i automobilima **NE brisati** — koristi
+    `{modelNames.join(", ")}`, dakle generisan je iz `oldtimerFleet`, tačno kako
+    `CLAUDE.md` propisuje. Ručno brisanje bi pokvarilo pravilo da dodavanje
+    vozila zahteva izmenu samo dva data fajla;
+  - jedini preostali `useSearchParams` je u `/racun`, koji je `noindex` i van
+    sitemap-a — nema više stranica sa obrascem kao `/cene`.
+
+- **`sr-only` stanje:** 11 stranica, od kojih 7 za brisanje, 1 za promovisanje,
+  3 se ne diraju (dve generisane iz podataka + `/planiranje-vencanja` koji nosi
+  jedine linkove ka `/lokacije` i oldtajmerima).
+
+- **Blokade / sledeći korak:** `CLAUDE.md` „⏰ Zakazano" ažuriran da pokazuje na
+  tačan posao. Grupa „odmah" može da krene bez čekanja.
