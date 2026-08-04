@@ -28,6 +28,7 @@ Indeks svih praćenih inicijativa (najnovije prvo). Izvor istine za status je
 - [done] **Infobip 2FA** (OTP telefona) — SMS primarni; **Viber failover NEURAĐEN** (jedini otvoreni TODO)
 
 ## Data / reference (ne-planovi)
+- **Vodič: ojačati pozivnice + probiti se u medije** (analiza 12 konkurenata i njihovih blog klastera, plan od 14 tekstova, hub-and-spoke linkovanje; PR deo sa četiri korpe medija, javnim cenama, gotovim pitch porukama i planom 30/60/90) → `docs/vodici/pozivnice-i-pr-vodic.pdf` (izvor: `.html`, PDF se regeneriše headless Chrome-om)
 - **Vendor dataset ~260 sala/vendora** (6 gradova × 11 kategorija, source za `vendor-constants.ts`) → `docs/vendor-directory-serbia.md`
 - **Vendor outreach email data** (muzika/torte/cveće/foto/sale — konsolidovano) → `docs/vendor-outreach-data.md`
 - **Outreach salama — serijal „Rasporedi i kapaciteti sala"** (95 sala: 60 runda 2 + 35 dopuna BG/NS/ZR/KG; naslovi, jezgro poruke, A/B varijanta, telefonski otvarač) → `docs/sale-outreach-seme-sala.md`

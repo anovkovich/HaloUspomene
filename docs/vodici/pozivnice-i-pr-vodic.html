@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<title>HALO Uspomene — Interni vodič: pozivnice i PR</title>
+<style>
+  @font-face {
+    font-family: "Cormorant";
+    src: url("../../src/app/pozivnica/[slug]/fonts/CormorantGaramond-Regular.ttf") format("truetype");
+    font-weight: 400;
+  }
+
+  @page { size: A4; margin: 17mm 15mm 15mm 15mm; }
+
+  :root {
+    --crvena: #AE343F;
+    --krem: #F5F4DC;
+    --ugalj: #232323;
+    --zlatna: #d4af37;
+    --siva: #6b6b6b;
+    --linija: #e3e1d4;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 9.7pt;
+    line-height: 1.5;
+    color: var(--ugalj);
+    margin: 0;
+  }
+
+  h1, h2, h3, h4 { font-family: "Cormorant", Georgia, serif; font-weight: 400; }
+
+  h2 {
+    font-size: 21pt;
+    color: var(--crvena);
+    margin: 0 0 3mm 0;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid var(--crvena);
+    break-after: avoid;
+  }
+  h3 {
+    font-size: 14pt;
+    margin: 7mm 0 2mm 0;
+    color: var(--ugalj);
+    break-after: avoid;
+  }
+  h4 {
+    font-size: 11.5pt;
+    margin: 5mm 0 1.5mm 0;
+    color: var(--crvena);
+    break-after: avoid;
+  }
+  p { margin: 0 0 2.5mm 0; }
+  ul, ol { margin: 0 0 3mm 0; padding-left: 5mm; }
+  li { margin-bottom: 1.2mm; }
+  strong { font-weight: 600; }
+  code {
+    font-family: Consolas, monospace;
+    font-size: 8.6pt;
+    background: #f2f1e6;
+    padding: 0.3mm 1mm;
+    border-radius: 1mm;
+  }
+  a { color: var(--crvena); text-decoration: none; }
+
+  .naslovna {
+    height: 258mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    break-after: page;
+  }
+  .naslovna .oznaka {
+    font-size: 8.5pt; letter-spacing: 0.35em; text-transform: uppercase;
+    color: var(--crvena); margin-bottom: 8mm;
+  }
+  .naslovna h1 { font-size: 40pt; line-height: 1.1; margin: 0 0 5mm 0; }
+  .naslovna .podnaslov { font-size: 12pt; color: var(--siva); max-width: 130mm; margin: 0 auto 14mm auto; }
+  .naslovna .meta { font-size: 9pt; color: var(--siva); }
+  .zlatna-linija {
+    width: 40mm; height: 2px; margin: 0 auto 8mm auto;
+    background: linear-gradient(to right, var(--crvena), var(--zlatna));
+  }
+
+  .deo { break-before: page; }
+
+  table { width: 100%; border-collapse: collapse; margin: 3mm 0 4mm 0; font-size: 8.7pt; }
+  th {
+    background: var(--ugalj); color: var(--krem); text-align: left;
+    padding: 2mm; font-weight: 600; font-size: 8.4pt;
+  }
+  td { padding: 1.8mm 2mm; border-bottom: 1px solid var(--linija); vertical-align: top; }
+  tr { break-inside: avoid; }
+  tbody tr:nth-child(even) { background: #faf9f2; }
+  .desno { text-align: right; }
+  .centar { text-align: center; }
+
+  .okvir {
+    background: #faf9f2; border-left: 3px solid var(--crvena);
+    padding: 3mm 4mm; margin: 3mm 0 4mm 0; break-inside: avoid;
+  }
+  .okvir.zlatni { border-left-color: var(--zlatna); }
+  .okvir p:last-child { margin-bottom: 0; }
+  .okvir .oznaka {
+    font-size: 7.8pt; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--crvena); font-weight: 700; display: block; margin-bottom: 1.5mm;
+  }
+  .okvir.zlatni .oznaka { color: #96762a; }
+
+  .mejl {
+    background: #fff; border: 1px solid var(--linija); border-radius: 2mm;
+    padding: 3.5mm 4mm; margin: 3mm 0; font-size: 9pt; break-inside: avoid;
+  }
+  .mejl .subject {
+    font-weight: 600; padding-bottom: 2mm; margin-bottom: 2.5mm;
+    border-bottom: 1px solid var(--linija);
+  }
+
+  .toc { font-size: 10pt; }
+  .toc div { padding: 1.6mm 0; border-bottom: 1px dotted var(--linija); }
+  .toc .a { font-weight: 600; color: var(--crvena); padding-top: 4mm; }
+
+  .prio { font-weight: 700; color: var(--crvena); }
+  .oznaka-brza {
+    background: #e8f3e8; color: #2c6b2c; padding: 0.4mm 1.4mm;
+    border-radius: 1mm; font-size: 7.8pt; font-weight: 600; white-space: nowrap;
+  }
+  .oznaka-dugo {
+    background: #f0eef8; color: #4a3f7a; padding: 0.4mm 1.4mm;
+    border-radius: 1mm; font-size: 7.8pt; font-weight: 600; white-space: nowrap;
+  }
+  .da { color: #2c6b2c; font-weight: 700; }
+  .ne { color: #b02020; font-weight: 700; }
+  .mala { font-size: 8.3pt; color: var(--siva); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ NASLOVNA ═══════════════════ -->
+<div class="naslovna">
+  <div class="oznaka">Interni dokument · HALO Uspomene</div>
+  <div class="zlatna-linija"></div>
+  <h1>Kako ojačati<br>stranicu pozivnica<br>i probiti se u medije</h1>
+  <div class="podnaslov">
+    Analiza konkurencije, plan sadržaja i strategija za medijske pomene —
+    sa gotovim porukama, cenama i pregovaračkom taktikom.
+  </div>
+  <div class="meta">
+    Avgust 2026. · Priprema: analiza SERP-a i javnih cenovnika<br>
+    Namenjeno internom timu — ne za javnu distribuciju
+  </div>
+</div>
+
+<!-- ═══════════════════ SADRŽAJ ═══════════════════ -->
+<h2>Sadržaj</h2>
+<div class="toc">
+  <div>Zašto ovaj dokument postoji</div>
+  <div class="a">DEO A — Stranica pozivnica</div>
+  <div>A1 · Kako konkurencija zapravo pobeđuje</div>
+  <div>A2 · Ko šta pokriva — tabela tema</div>
+  <div>A3 · Naše rupe</div>
+  <div>A4 · Plan: 14 novih tekstova</div>
+  <div>A5 · Interno linkovanje — hub i pritoke</div>
+  <div>A6 · Šta osim tekstova jača stranicu</div>
+  <div class="a">DEO B — Medijski pomeni</div>
+  <div>B1 · Koliko tržište naplaćuje</div>
+  <div>B2 · Četiri korpe medija</div>
+  <div>B3 · Šta prolazi kao besplatna priča</div>
+  <div>B4 · Pregovaračka taktika i gotove poruke</div>
+  <div>B5 · Zamke plaćenih objava</div>
+  <div>B6 · Plan za 30, 60 i 90 dana</div>
+  <div>B7 · Kako meriti da li je vredelo</div>
+  <div>Dodatak · Kontakti i pouzdanost podataka</div>
+</div>
+
+<h3>Zašto ovaj dokument postoji</h3>
+<p>
+  Tokom avgusta 2026. tehnička strana sajta je dovedena u red: uklonjene su izmišljene
+  recenzije i njihovi strukturirani podaci, popravljen je duplirani naslov na svih 33 bloga,
+  početna je dobila sekciju čestih pitanja, AI pretraživači su propušteni na marketing
+  sadržaj, a naslovi i opisi skraćeni na 22 stranice. Dodate su i tri nove stranice
+  i tri nova teksta.
+</p>
+<p>
+  <strong>Tehnika više nije ono što nas koči.</strong> Ostala su dva uska grla, i oba su
+  van koda: sadržajni klaster oko pozivnica je preplitak da bi stranica
+  <code>/pozivnice</code> rangirala za glavni upit, i ne postoji nijedan spoljni izvor koji
+  nas pominje. Ovaj dokument rešava oba — deo A prvo, deo B drugo.
+</p>
+
+<div class="okvir">
+  <span class="oznaka">Jedna ispravka pre nego što krenemo</span>
+  <p>
+    U analizi se pojavila tvrdnja da nam u rezultatima pretrage stoji „gotova za 24h".
+    Provereno: u kodu toga nema, naš opis već kaže „gotova odmah". Google i dalje
+    prikazuje stari snippet — što samo potvrđuje da još nije ponovo obišao stranicu posle
+    poslednjih izmena.
+  </p>
+</div>
+
+<!-- ═══════════════════ DEO A ═══════════════════ -->
+<div class="deo">
+<h2>Deo A — Stranica pozivnica</h2>
+
+<h3>A1 · Kako konkurencija zapravo pobeđuje</h3>
+<p>
+  Najvažniji nalaz cele analize nije spisak tema nego mehanizam. Za upit
+  <strong>„digitalne pozivnice za venčanje" niko ne rangira blog tekstom — svi rangiraju
+  početnom stranicom.</strong> To važi za webpozivnice.rs, digitalnasvadba.rs, cikcak.rs,
+  pozivamote.rs, sajtzavencanje.rs i svetpozivnica.rs.
+</p>
+<p>
+  Naš problem je strukturni: njihova početna stranica <em>je</em> stranica o pozivnicama,
+  dok je naša multi-proizvodni brend, pa <code>/pozivnice</code> mora autoritet da dobije
+  iznutra — kroz interno linkovanje i tematski klaster oko sebe.
+</p>
+
+<div class="okvir zlatni">
+  <span class="oznaka">Ključni uvid</span>
+  <p>
+    <strong>pozivamote.rs ima oko 55 tekstova i ne pobeđuje tekstovima o pozivnicama.</strong>
+    Pobeđuje širokim svadbenim temama — <em>koliko se daje na svadbi</em>,
+    <em>koliko košta svadba</em>, <em>obaveze kuma</em>, <em>govor kuma</em>,
+    <em>šta obući na svadbu</em>, <em>čestitke</em>, <em>satnica dana</em>. Te teme donose
+    ogroman saobraćaj na vrhu levka, grade autoritet celog domena, i tek onda njihova
+    početna rangira za komercijalne upite.
+  </p>
+  <p>
+    Njihova formula je vidljiva: za svaku priliku ponavljaju isti set upita — <em>tekst za
+    pozivnicu / koliko se daje / čestitke / poklon / kako napraviti na telefonu</em> — i to
+    za venčanje, rođendan, punoletstvo, krštenje i prvi rođendan.
+  </p>
+</div>
+
+<h4>Ostali konkurenti su znatno slabiji</h4>
+<table>
+  <thead><tr><th style="width:32%">Sajt</th><th>Stanje sadržaja</th></tr></thead>
+  <tbody>
+    <tr><td><strong>pozivamote.rs</strong></td><td>~55 tekstova, 1.200–2.800 reči, svaki sa pitanjima i pozivom na akciju. Jedini pravi pogon na tržištu.</td></tr>
+    <tr><td>smartpozivnice.com</td><td>18 tekstova, širok ali plitak izbor, generički naslovi.</td></tr>
+    <tr><td>webpozivnice.rs</td><td>Samo 3 teksta, ali 14 stranica pojedinačnih dizajna koje hvataju duge upite tipa „burgundy rose pozivnica".</td></tr>
+    <tr><td>sajtzavencanje.rs</td><td>9 tekstova, uglavnom stari (2023–2024).</td></tr>
+    <tr><td>svetpozivnica.rs</td><td>Bar 2 teksta; sajt blokira automatski pristup pa pun broj nije potvrđen.</td></tr>
+    <tr><td>nasapozivnica.rs</td><td>3 teksta stara oko tri godine.</td></tr>
+    <tr><td>digitalnepozivnice.rs, cikcak.rs, mojepozivnice.rs, invited.rs, pozivnice.rs</td><td><strong>Nemaju blog uopšte.</strong></td></tr>
+  </tbody>
+</table>
+<p class="mala">
+  Napomena: za upite tipa „tekst za pozivnicu" pozicije često drže i sajtovi koji nam nisu
+  direktna konkurencija — klikdovencanja.com, pozivnicemadame.rs, ludikamen.rs, pozivnice.net.
+  Njih ne treba gledati kao konkurente u prodaji, ali jesu prepreka u pretrazi.
+</p>
+
+<h3>A2 · Ko šta pokriva</h3>
+<p>Tema koju pokriva više konkurenata je dokazano isplativa. Tema koju pokriva samo jedan je ili rupa ili ćorak.</p>
+<table>
+  <thead>
+    <tr>
+      <th style="width:30%">Tema</th>
+      <th class="centar">pozivamote</th>
+      <th class="centar">smart</th>
+      <th class="centar">web</th>
+      <th class="centar">sajtzav.</th>
+      <th class="centar">svet</th>
+      <th class="centar">MI</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Tekst za pozivnicu (primeri)</td><td class="centar">40 primera</td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar">da</td><td class="centar da">da</td></tr>
+    <tr><td>Kada slati pozivnice</td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar da">da</td></tr>
+    <tr><td>Cena pozivnica</td><td class="centar">2 teksta</td><td class="centar">—</td><td class="centar">stranica</td><td class="centar">—</td><td class="centar">—</td><td class="centar da">da</td></tr>
+    <tr><td>Digitalna vs štampana</td><td class="centar">delom</td><td class="centar">da</td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar da">da</td></tr>
+    <tr><td>Šta su digitalne pozivnice</td><td class="centar">2 teksta</td><td class="centar">da</td><td class="centar">—</td><td class="centar">2 teksta</td><td class="centar">—</td><td class="centar">delom</td></tr>
+    <tr><td>Kako napraviti (online / na telefonu)</td><td class="centar">4 teksta</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">samo „online"</td></tr>
+    <tr><td>Potvrde dolaska</td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">da</td><td class="centar da">da</td></tr>
+    <tr><td><strong>Kako izabrati dizajn pozivnice</strong></td><td class="centar">da</td><td class="centar">da</td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+    <tr><td><strong>Greške pri slanju pozivnica</strong></td><td class="centar">—</td><td class="centar">—</td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+    <tr><td><strong>Save the date</strong></td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar">delom</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+    <tr><td><strong>Spisak gostiju za svadbu</strong></td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+    <tr><td><strong>Koliko košta svadba</strong></td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+    <tr><td><strong>Koliko se daje na svadbi</strong></td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+    <tr><td><strong>Čestitke za venčanje</strong></td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+    <tr><td><strong>Obaveze i govor kuma</strong></td><td class="centar">2 teksta</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+    <tr><td><strong>Satnica dana venčanja</strong></td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+    <tr><td><strong>Crkveno i građansko venčanje</strong></td><td class="centar">da</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+    <tr><td><strong>Besplatni alati / aplikacije</strong></td><td class="centar">2 teksta</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar">—</td><td class="centar ne">NE</td></tr>
+  </tbody>
+</table>
+
+<h3>A3 · Naše rupe</h3>
+<p>
+  Dubina nije problem — naši tekstovi imaju 1.400 do 3.000 reči, prosečno oko 1.900, što je
+  uporedivo sa najjačim konkurentom. Problem je <strong>pokrivenost i arhitektura</strong>.
+</p>
+<ol>
+  <li><strong>Ceo široki svadbeni klaster nam nedostaje.</strong> To je izvor iz kog pozivamote crpi domenski autoritet.</li>
+  <li><strong>Spisak gostiju za svadbu.</strong> Najapsurdnija rupa: mi imamo Listu zvanica kao proizvod, a temu drži konkurent koji taj proizvod nema.</li>
+  <li><strong>Save the date.</strong> Rezultate pretrage drže hrvatski sajtovi i jedan blogspot iz 2025 — najlakša pobeda na spisku.</li>
+  <li><strong>Kako izabrati dizajn pozivnice.</strong> Tri konkurenta imaju generičke tekstove; mi imamo pet tema, premium linije i žive demo pozivnice.</li>
+  <li><strong>Nemamo tekst koji gađa sam termin „digitalne pozivnice".</strong> Naš vodič se zove „website pozivnica" — a to tržište slabo pretražuje.</li>
+</ol>
+
+<h3>A4 · Plan: 14 novih tekstova</h3>
+<p>Redosled izvođenja: prvo pet brzih pobeda, zatim glavni stub, pa teški saobraćajni udarci.</p>
+<table>
+  <thead>
+    <tr><th style="width:4%">#</th><th style="width:34%">Tekst</th><th style="width:20%">Cilja upit</th><th style="width:28%">Zašto</th><th style="width:14%">Tip</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="prio">1</td><td><strong>Spisak gostiju za svadbu: kako ga napraviti bez haosa</strong></td><td>spisak gostiju za svadbu</td><td>Jedini imamo proizvod za to, a temu drži konkurent koji ga nema</td><td><span class="oznaka-brza">brza pobeda</span></td></tr>
+    <tr><td class="prio">2</td><td><strong>Save the date: šta je, kada se šalje i kako izgleda kod nas</strong></td><td>save the date venčanje</td><td>Rezultate drže strani sajtovi — osvojivo za mesec-dva</td><td><span class="oznaka-brza">brza pobeda</span></td></tr>
+    <tr><td class="prio">3</td><td><strong>Satnica venčanja: redosled dana sat po sat</strong></td><td>satnica venčanja</td><td>Naš proizvod ima Program dana — prirodna veza</td><td><span class="oznaka-brza">brza pobeda</span></td></tr>
+    <tr><td class="prio">4</td><td><strong>7 grešaka koje parovi prave sa pozivnicama</strong></td><td>greške pozivnice venčanje</td><td>Vezivni tekst koji linkuje sve naše pozivničke tekstove</td><td><span class="oznaka-brza">brza pobeda</span></td></tr>
+    <tr><td class="prio">5</td><td><strong>Kako izabrati temu i dizajn pozivnice</strong></td><td>dizajn pozivnice za venčanje</td><td>Imamo 5 tema, premium i demo pozivnice za prikaz uživo</td><td><span class="oznaka-brza">brza pobeda</span></td></tr>
+    <tr><td>6</td><td><strong>Digitalne pozivnice za venčanje: sve što treba da znate</strong></td><td>digitalne pozivnice za venčanje</td><td>Glavni stub klastera; nijedan naš tekst ne gađa taj termin</td><td><span class="oznaka-dugo">stub</span></td></tr>
+    <tr><td>7</td><td>Koliko se daje na svadbi 2026</td><td>koliko se daje na svadbi</td><td>Najveći volumen u niši; gradi autoritet domena</td><td><span class="oznaka-dugo">dugoročno</span></td></tr>
+    <tr><td>8</td><td>Koliko košta svadba u Srbiji (sa kalkulatorom)</td><td>koliko košta svadba u srbiji</td><td>Imamo pravi budžet planer — možemo bolje od konkurenta</td><td><span class="oznaka-dugo">dugoročno</span></td></tr>
+    <tr><td>9</td><td>Obaveze kuma na svadbi</td><td>obaveze kuma na svadbi</td><td>Kum je i osoba koja poklanja audio knjigu</td><td><span class="oznaka-dugo">dugoročno</span></td></tr>
+    <tr><td>10</td><td>Besplatne pozivnice: šta zaista dobijate</td><td>besplatne pozivnice za venčanje</td><td>Presrećemo korisnika pre nego što ode na Canvu</td><td><span class="oznaka-dugo">dugoročno</span></td></tr>
+    <tr><td>11</td><td>Čestitke za venčanje: 100+ primera</td><td>čestitke za venčanje</td><td>Format „primeri" nam je dokazano najjači</td><td><span class="oznaka-dugo">dugoročno</span></td></tr>
+    <tr><td>12</td><td>Crkveno i građansko venčanje: procedura i papiri</td><td>crkveno venčanje procedura</td><td>Veže se na satnicu i program dana</td><td><span class="oznaka-dugo">dugoročno</span></td></tr>
+    <tr><td>13</td><td>Tekst za pozivnicu za 30, 40. i 50. rođendan</td><td>pozivnica za 40 rođendan tekst</td><td>Priprema terena za planirani proizvod</td><td><span class="oznaka-brza">brza pobeda</span></td></tr>
+    <tr><td>14</td><td>Šta obući na svadbu kao gost</td><td>šta obući na svadbu</td><td>Najslabija veza sa proizvodom — raditi poslednje</td><td><span class="oznaka-dugo">nizak prioritet</span></td></tr>
+  </tbody>
+</table>
+
+<h3>A5 · Interno linkovanje — hub i pritoke</h3>
+<p>
+  Trenutno devet naših tekstova linkuje <code>/pozivnice</code>, ukupno petnaest puta.
+  Osnova postoji, ali bez sistema i sa šarolikim tekstom linkova.
+</p>
+<table>
+  <thead><tr><th style="width:26%">Pravilo</th><th>Kako</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Jedan hub</strong></td><td><code>/pozivnice</code> je hub za „digitalne pozivnice za venčanje". <code>/izrada-pozivnica-online</code> ostaje sekundarni hub za „kako napraviti" upite i linkuje hub u prvom pasusu.</td></tr>
+    <tr><td><strong>Ujednačen tekst linka</strong></td><td>Rotirati tri varijante: „digitalne pozivnice za venčanje", „online pozivnica za venčanje", „website pozivnica". Nikada goli „ovde" ili „pogledajte".</td></tr>
+    <tr><td><strong>Hub uzvraća</strong></td><td>Dodati na <code>/pozivnice</code> sekciju „Vodiči pred slanje pozivnica" sa 4–6 najjačih tekstova. Time hub prestaje da bude slepa ulica.</td></tr>
+    <tr><td><strong>Stub povezuje sve</strong></td><td>Tekst broj 6 je jedina stranica koja sme više od 6–8 internih linkova u telu — on je sadržajno ogledalo huba.</td></tr>
+    <tr><td><strong>Široke teme idu preko suseda</strong></td><td>Tekstovi 7–9, 11 i 14 linkuju najbliži pozivnički tekst, ne hub direktno — autoritet putuje kroz klaster.</td></tr>
+    <tr><td><strong>Svaki novi tekst</strong></td><td>Dobija link iz bar dva postojeća teksta istog dana kad se objavi.</td></tr>
+  </tbody>
+</table>
+
+<h3>A6 · Šta osim tekstova jača stranicu</h3>
+<table>
+  <thead><tr><th style="width:44%">Mera</th><th style="width:14%">Posao</th><th style="width:16%">Efekat</th><th>Napomena</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Link sa početne iznad prevoja</strong>, sa tekstom „digitalne pozivnice za venčanje"</td><td>1 h</td><td class="prio">visok</td><td>Najveći pojedinačni efekat na spisku — početna nam je najjača stranica, a autoritet sada prosleđuje samo kroz meni</td></tr>
+    <tr><td>Sekcija „Vodiči" na hubu</td><td>2 h</td><td class="prio">visok</td><td>Zaokružuje klaster iz A5</td></tr>
+    <tr><td>Product i Offer strukturirani podaci sa cenom</td><td>2–3 h</td><td class="prio">visok</td><td>Niko od konkurenata nema — cena u rezultatima pretrage</td></tr>
+    <tr><td>Prave recenzije sa imenima parova</td><td>2–3 h</td><td>srednji</td><td>Tek kada se vrati Google profil i recenzije budu javno proverljive</td></tr>
+    <tr><td>Uporedna tabela na stranici (mi / štampana / besplatni alati)</td><td>3–4 h</td><td>srednji</td><td>Hvata istaknuti odgovor za poredbene upite</td></tr>
+    <tr><td>Provera brzine učitavanja na mobilnom</td><td>2–4 h</td><td>nizak</td><td>Stranica ima preko 1.000 linija i galeriju — proveriti da se galerija učitava odloženo</td></tr>
+    <tr><td>Osvežiti <code>llms.txt</code> pri svakoj promeni ponude</td><td>30 min</td><td>nizak</td><td>Obavezno po pravilima projekta</td></tr>
+  </tbody>
+</table>
+
+<div class="okvir">
+  <span class="oznaka">Redosled za ovu nedelju</span>
+  <p>
+    Link sa početne, sekcija „Vodiči" na hubu, i prva dva teksta (spisak gostiju, save the
+    date). Ukupno oko četiri sata rada plus dva teksta — a to je kombinacija sa najboljim
+    odnosom efekta i uloženog vremena na celom spisku.
+  </p>
+</div>
+</div>
+
+<!-- ═══════════════════ DEO B ═══════════════════ -->
+<div class="deo">
+<h2>Deo B — Medijski pomeni</h2>
+<p>
+  Cilj nije „biti u medijima" nego dobiti <strong>spoljne izvore koji nas pominju</strong> —
+  jer i Google i AI asistenti veruju onome što potvrdi neko drugi, a ne nama samima.
+  Ceo plan je napravljen tako da najveći deo bude besplatan.
+</p>
+
+<h3>B1 · Koliko tržište naplaćuje</h3>
+<p>Ovo je merilo pre svakog pregovora — da znate kada vas neko preskupo naplaćuje.</p>
+<table>
+  <thead><tr><th style="width:48%">Kategorija</th><th>Cena po objavi</th></tr></thead>
+  <tbody>
+    <tr><td>Mali portali</td><td>80–120 EUR</td></tr>
+    <tr><td>Srednji portali</td><td>120–365 EUR</td></tr>
+    <tr><td>Veliki mediji</td><td>500+ EUR</td></tr>
+    <tr><td>Agencije i platforme-preprodavci</td><td>150–300 EUR po članku</td></tr>
+  </tbody>
+</table>
+
+<div class="okvir zlatni">
+  <span class="oznaka">Najvažniji broj u ovom dokumentu</span>
+  <p>
+    Gradski portal <strong>Sombor.info</strong> javno naplaćuje PR tekst
+    <strong>1.500 dinara — oko 13 evra</strong> — sa <strong>do tri linka koja prenose
+    SEO vrednost</strong> i garancijom da tekst ostaje trajno u arhivi.
+  </p>
+  <p>
+    Razlika između 13 evra direktno i 80–120 evra preko agencije je čista marža posrednika.
+    <strong>Nikada ne kupovati objave preko agencija i „PR paketa na 10 portala".</strong>
+  </p>
+</div>
+
+<h3>B2 · Četiri korpe medija</h3>
+
+<h4>Korpa A — potpuno besplatno</h4>
+<p>Ovde je najveći povraćaj. Cilj: 8 do 12 pomena iz ove korpe.</p>
+<table>
+  <thead><tr><th style="width:30%">Meta</th><th>Zašto baš oni</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Journal.rs</strong></td><td>Već su objavili tekst o audio guest book trendu — <strong>bez ijednog domaćeg ponuđača u priči</strong>. Nedostaje im domaća noga, a to smo mi. Najtopliji trag koji postoji.</td></tr>
+    <tr><td>Nova.rs, Telegraf, City Magazine</td><td>Sva tri su redakcijski pisala o lažnim matičarima — dokazano objavljuju svadbene trendove besplatno. Mi tu uslugu posredujemo, pa možemo biti sagovornik.</td></tr>
+    <tr><td>RTV „Dobro jutro, Vojvodino"</td><td>Javni servis, gostovanja se ne naplaćuju. Lokalna priča o novosadskoj firmi.</td></tr>
+    <tr><td>Netokracija, Startit</td><td>Pišu o malim domaćim startapima bez naplate kada je priča dobra.</td></tr>
+    <tr><td>Podkasti Pojačalo i Biznis Priče</td><td>Gostovanje je besplatno i daje nam prisustvo na YouTube-u, kog trenutno uopšte nemamo.</td></tr>
+    <tr><td>Besplatni direktorijumi</td><td>Žute strane, imenik.rs, klikdofirme.com, re.rs, poslovni katalog — plus <strong>Google Business Profile</strong>. Linkovi su slabi, ali grade sliku firme kao stvarnog entiteta. Sve se završi za jedno popodne.</td></tr>
+    <tr><td>vencanja.com</td><td>Imaju izričitu opciju besplatnog oglašavanja — iskoristiti odmah.</td></tr>
+  </tbody>
+</table>
+
+<h4>Korpa B — besplatno uz uslugu ili razmenu</h4>
+<table>
+  <thead><tr><th style="width:30%">Meta</th><th>Šta ponuditi</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Jedan Frajer i Bidermajer</strong></td><td>Najpoznatiji svadbeni blog, ima rubriku za goste iz industrije. Ponuda: ekskluzivna priča plus besplatan retro telefon za jednu svadbu koju blog prati.</td></tr>
+    <tr><td><strong>Vendori iz našeg direktorijuma</strong></td><td>Najjeftiniji linkovi koji postoje — mi njih već listamo besplatno. Tražiti recipročnu sekciju „preporučeni partneri". Deset do dvadeset fotografa i salaša znači isto toliko relevantnih linkova za nula dinara.</td></tr>
+    <tr><td>Sale iz postojećeg outreach-a za QR pano</td><td>Svaka sala koja uzme pano ili šemu sale dobija partnerski bedž i razmenu linkova.</td></tr>
+    <tr><td>Luftika, NS Uživo</td><td>Nagradna igra za čitaoce — poklon pozivnica i retro telefon u zamenu za članak. Luftika ima celu sekciju o venčanjima.</td></tr>
+    <tr><td>Facebook grupe za mladence</td><td>Ne reklamirati se — banovaće. Odgovarati na pitanja, pa sa administratorima dogovoriti nagradnu igru uz zakačenu objavu.</td></tr>
+    <tr><td>Sajmovi venčanja</td><td>I bez štanda: ponuditi organizatoru besplatan audio kutak u zamenu za pomen u materijalima sajma, koje prenose RTV i radio stanice.</td></tr>
+  </tbody>
+</table>
+
+<h4>Korpa C — jeftino, do oko 150 evra</h4>
+<ul>
+  <li><strong>Gradski portali po modelu Sombor.info</strong> — analogni portali u Novom Sadu, Nišu, Kragujevcu, Čačku i Subotici. Poklapaju se sa našim gradskim stranicama, pa svaki link ide na odgovarajuću. Procena 10–50 evra po objavi.</li>
+  <li><strong>021.rs</strong> — najjači novosadski medij i domaći teren. Cena nije javna; procena 50–150 evra.</li>
+  <li><strong>Plaćeni listinzi na svadbenim portalima</strong> — prihvatiti samo ako je do 50 evra godišnje i ako link prenosi SEO vrednost.</li>
+</ul>
+
+<h4>Korpa D — skupo, izbegavati</h4>
+<table>
+  <thead><tr><th style="width:34%">Ponuda</th><th style="width:16%">Cena</th><th>Zaključak</th></tr></thead>
+  <tbody>
+    <tr><td>Krstarica, sponzorisani tekst</td><td>~690 EUR</td><td class="ne">Ne. Tekst pada sa naslovne istog dana. Za te pare dobijamo deset objava iz korpe C.</td></tr>
+    <tr><td>Blic Žena, štampa</td><td>1.970–2.560 EUR</td><td class="ne">Ne. Štampa ne daje link, a ceo budžet ode na jednu stranu.</td></tr>
+    <tr><td>Plaćena native objava na jakom portalu</td><td>~150–400 EUR</td><td>Jedini uslovni izuzetak — tek ako posle 90 dana nijedna redakcija ne objavi besplatno, i samo uz ispregovarane uslove iz B5.</td></tr>
+  </tbody>
+</table>
+
+<h3>B3 · Šta prolazi kao besplatna priča</h3>
+<div class="okvir">
+  <span class="oznaka">Pravilo izvedeno iz objavljenih tekstova</span>
+  <p>
+    Redakcija objavljuje bez naplate kada tekst <strong>opisuje trend a ne firmu</strong>,
+    ima <strong>broj ili „prvi u Srbiji"</strong>, daje čitaocu <strong>praktičnu vrednost ili
+    emociju</strong>, a firma je u priči <strong>izvor ili primer, ne subjekt</strong>.
+  </p>
+</div>
+<p>Osam uglova koji zadovoljavaju to pravilo, poređanih po snazi:</p>
+<ol>
+  <li><strong>Podaci sa naših potvrda dolaska</strong> — koliko zvanica zaista dođe na srpsku svadbu. Ekskluzivna domaća statistika koju niko drugi nema. Najjači adut u celom dokumentu: mediji obožavaju domaće brojke.</li>
+  <li><strong>Svetski trend stigao u Srbiju</strong> — retro telefon na svadbi, uz ekskluzivu da smo jedini sa USB suvenirima.</li>
+  <li><strong>Svadba 2026</strong> — lažni matičar, QR galerija i audio knjiga kao pregled moderne srpske svadbe, gde smo sagovornik.</li>
+  <li><strong>Koliko zaista košta svadba u Srbiji</strong>, sa podacima iz našeg planera budžeta.</li>
+  <li><strong>Novosadska firma u niši u kojoj niko ne gradi softver</strong> — za tehnološke i poslovne medije.</li>
+  <li><strong>Najlepše poruke sa retro telefona</strong> — emotivna priča, uz dozvolu parova.</li>
+  <li><strong>Odlaze li papirne pozivnice u istoriju</strong> — blago izazovan ugao koji poziva na komentare.</li>
+  <li><strong>Sezonski tajming</strong> — isti pitch, poslat u januaru (počinje planiranje), pred sajmove i početkom maja.</li>
+</ol>
+
+<h3>B4 · Pregovaračka taktika i gotove poruke</h3>
+<div class="okvir">
+  <span class="oznaka">Pravilo broj jedan</span>
+  <p>
+    <strong>Pisati redakciji — konkretnom novinaru koji je potpisao sličan tekst — nikada
+    marketingu.</strong> Onog trenutka kada vas preuzme prodaja, besplatna priča je mrtva.
+    Poruka mora da liči na dojavu vesti, ne na ponudu.
+  </p>
+</div>
+
+<div class="mejl">
+  <div class="subject">Naslov: Trend o kom ste pisali stigao je u Srbiju — imamo brojke</div>
+  <p>Poštovana/i [ime novinara],</p>
+  <p>
+    Prošle godine ste pisali o audio guest book trendu na venčanjima. Mi smo u međuvremenu
+    postali prvi domaći servis koji to radi — retro telefon koji iznajmljujemo parovima po
+    Srbiji, a poruke gostiju im predajemo i na USB-u, u obliku kasete ili bočice.
+  </p>
+  <p>
+    Ako radite nastavak teme, rado delimo: koliko svadbi smo pokrili ove sezone, koje tri
+    poruke su nas najviše nasmejale (uz dozvolu parova), i fotografije i snimke u punoj
+    rezoluciji koje slobodno možete koristiti.
+  </p>
+  <p>
+    Nismo PR agencija i ne tražimo plaćenu objavu — nudimo domaći primer za temu koja se čita.
+  </p>
+  <p>[Ime] · HALO Uspomene, Novi Sad · [telefon]</p>
+</div>
+
+<h4>Šta nuditi umesto novca</h4>
+<ul>
+  <li><strong>Ekskluzivu</strong> — „prvi objavljujete naše brojke, nikom drugom ih ne dajemo dve nedelje"</li>
+  <li><strong>Podatke</strong> — statistika potvrda dolaska, prosečan budžet iz planera, anonimizovano</li>
+  <li><strong>Gotov materijal</strong> — profesionalne fotografije i snimci; redakciji to štedi sate</li>
+  <li><strong>Nagradnu igru za čitaoce</strong> — paket pozivnica ili vikend sa retro telefonom</li>
+  <li><strong>Promo kod za publiku</strong> — medij dobija poklon za čitaoce, mi dobijamo merenje</li>
+  <li><strong>Gostujući stručni tekst</strong> — mi pišemo, oni objavljuju</li>
+</ul>
+
+<h4>Kako tražiti link koji prenosi vrednost</h4>
+<p>
+  Ne pominjati reč „dofollow" na početku — to odaje SEO nameru i diže cenu. Formulacija za
+  redakcijski tekst:
+</p>
+<div class="mejl">
+  <p>„Jedina molba nam je da u tekstu stoji link ka halouspomene.rs, kao izvor — da čitaoci mogu da nađu o čemu se radi."</p>
+</div>
+<p>Tek ako je objava plaćena, tražiti izričito i <strong>pre uplate</strong>:</p>
+<div class="mejl">
+  <p>
+    „Pošto je objava komercijalna, molim da potvrdite pre uplate: link ka našem sajtu je
+    standardan (bez oznaka <code>nofollow</code> i <code>sponsored</code>), tekst ostaje trajno
+    u arhivi na istom URL-u i dostupan je pretraživačima (bez oznake <code>noindex</code>).
+    To su nam uslovi objave."
+  </p>
+</div>
+<p class="mala">
+  Zašto neki mediji odbijaju: Google traži oznaku <code>sponsored</code> na plaćenim linkovima,
+  pa se veliki sistemi štite politikom da je sve komercijalno označeno. Zato je redakcijski
+  tekst jedini pouzdan put do punog linka na velikom mediju — još jedan razlog da korpa A bude
+  prioritet. Mali portali daju pun link bez pogovora.
+</p>
+
+<h4>Kada odmah pošalju cenovnik</h4>
+<div class="mejl">
+  <div class="subject">Prvi odgovor — vratiti razgovor na redakcijski kolosek</div>
+  <p>
+    „Hvala na cenovniku. Mi zapravo nismo tražili zakup — javili smo se jer imamo temu i
+    podatke koje vaša publika čita. Ako procenite da je redakcijski zanimljivo, materijal je
+    ekskluzivno vaš. Ako ne, nema problema."
+  </p>
+</div>
+<div class="mejl">
+  <div class="subject">Ako insistiraju — kontra-ponuda razmenom</div>
+  <p>
+    „Budžet za zakup trenutno nemamo, ali možemo da ponudimo nagradnu igru za vaše čitaoce —
+    poklanjamo [paket / vikend sa retro telefonom, vrednost X] — plus gotov foto materijal.
+    Da li vam takav format odgovara?"
+  </p>
+</div>
+<div class="mejl">
+  <div class="subject">Ako je cena mala a medij relevantan</div>
+  <p>
+    „Možemo [50–60% ponuđene cene] za objavu koja ostaje trajno, sa standardnim linkom i bez
+    oznake koja tekst skriva od pretraživača. Ako se pokaže dobro, u sezoni se vraćamo za još."
+  </p>
+</div>
+
+<h3>B5 · Zamke plaćenih objava</h3>
+<p>Pre uplate tražiti <strong>pismenu potvrdu</strong> na tri stavke:</p>
+<table>
+  <thead><tr><th style="width:22%">Stavka</th><th>Šta tražiti</th><th style="width:26%">Kako proveriti posle</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Link</strong></td><td>Bez oznaka <code>nofollow</code> i <code>sponsored</code></td><td>Otvoriti izvorni kod stranice i naći link ka nama</td></tr>
+    <tr><td><strong>Trajnost</strong></td><td>„Objava nema rok trajanja i URL neće biti uklonjen ni preusmeren"</td><td>Mesečna provera + odmah snimiti stranicu na web.archive.org</td></tr>
+    <tr><td><strong>Vidljivost</strong></td><td>Bez <code>noindex</code>, bez naplate pristupa</td><td>Za sedam dana pretražiti <code>site:portal.rs halouspomene</code></td></tr>
+  </tbody>
+</table>
+<div class="okvir">
+  <span class="oznaka">Iz same industrije</span>
+  <p>
+    Domaći marketinški izvori otvoreno pišu da je „svaki tekst koji se vodi pod plaćenom PR
+    objavom zapravo oglas sa puno teksta" i da takvi oglasi obično ne daju rezultate, dok
+    prilagođen i zanimljiv tekst ima šansu za besplatnu objavu. To je tačno strategija ovog
+    plana.
+  </p>
+</div>
+
+<h3>B6 · Plan za 30, 60 i 90 dana</h3>
+<table>
+  <thead><tr><th style="width:16%">Period</th><th style="width:12%">Trošak</th><th>Šta se radi</th><th style="width:14%">Očekivano</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Dan 1–30</strong><br><span class="mala">besplatni temelj</span></td>
+      <td class="da">0 EUR</td>
+      <td>Svi besplatni direktorijumi, Google profil, besplatni listing na vencanja.com (jedan dan posla). Ući u 5–10 grupa za mladence i prve dve nedelje samo odgovarati na pitanja. Poslati tri pitcha: Journal, Netokracija, RTV. Pokrenuti razmenu linkova sa deset vendora iz našeg direktorijuma. Napraviti press stranicu sa fotografijama i brojkama.</td>
+      <td>8–15 pomena<br><span class="mala">većina slabih, 1–2 prava</span></td>
+    </tr>
+    <tr>
+      <td><strong>Dan 31–60</strong><br><span class="mala">mediji i razmena</span></td>
+      <td>0–150 EUR</td>
+      <td>Jedan podsetnik na pitcheve posle 7–10 dana. Proširiti na City Magazine, Nova.rs, zena.blic i Startit — sa uglom o podacima sa potvrda dolaska. Ponude za razmenu: Jedan Frajer i Bidermajer, Luftika, dve Facebook grupe. Prijaviti se za podkaste. Ako 021.rs ne prihvati redakcijski, uzeti plaćenu objavu.</td>
+      <td>+4–7 pomena<br><span class="mala">2–3 sa pravih medija</span></td>
+    </tr>
+    <tr>
+      <td><strong>Dan 61–90</strong><br><span class="mala">lokalna mreža</span></td>
+      <td>100–300 EUR</td>
+      <td>Gradski portali za pet gradova iz naših lokacijskih stranica, po modelu od 10–50 evra. Plaćeni listing na jednom do dva svadbena portala ako je do 50 evra. Kontakt sa organizatorima sajmova za sezonu. Tek ako lifestyle redakcije ćute — jedna plaćena native objava.</td>
+      <td>+5–8 pomena</td>
+    </tr>
+  </tbody>
+</table>
+<div class="okvir zlatni">
+  <span class="oznaka">Zbir za 90 dana</span>
+  <p>
+    <strong>17 do 30 pomena, uz trošak od 100 do 450 evra</strong> — a u najgorem slučaju oko
+    750 evra ako uđe i plaćena native objava. Većina je potpuno besplatna.
+  </p>
+</div>
+
+<h3>B7 · Kako meriti da li je vredelo</h3>
+<table>
+  <thead><tr><th style="width:26%">Šta</th><th>Kako</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Novi izvori</strong></td><td>Search Console → Links → Top linking sites. Novi domeni se pojavljuju sa dve do četiri nedelje zakašnjenja.</td></tr>
+    <tr><td><strong>Da li pomen radi</strong></td><td>Rast <strong>brendiranih pretraga</strong> („halouspomene", „retro telefon svadba") u Search Console — to je glavni signal.</td></tr>
+    <tr><td><strong>Da li link prenosi vrednost</strong></td><td>Izvorni kod stranice: ako oznaka linka sadrži <code>nofollow</code>, <code>sponsored</code> ili <code>ugc</code> — ne prenosi. Besplatno i preko Ahrefs Webmaster Tools za sopstveni sajt.</td></tr>
+    <tr><td><strong>Da tekst nije obrisan</strong></td><td>Tabela svih objava (URL, datum, tip linka, dogovor o trajnosti) i mesečna provera. Svaku objavu odmah snimiti na web.archive.org — i dokaz i osiguranje.</td></tr>
+    <tr><td><strong>Da li dovodi ljude</strong></td><td>Poseban promo kod po mediju i UTM oznake gde ih medij dozvoli.</td></tr>
+    <tr><td><strong>AI vidljivost</strong></td><td>Jednom mesečno pitati ChatGPT, Gemini i Claude „ko u Srbiji iznajmljuje audio guest book" — pomeni na indeksiranim portalima su tačno ono čime se ti sistemi hrane.</td></tr>
+  </tbody>
+</table>
+
+<div class="okvir">
+  <span class="oznaka">Tri stvari za ovu nedelju</span>
+  <p>
+    <strong>1.</strong> Poruka Journalu — gotov tekst je u odeljku B4, i to je najtopliji trag koji postoji.<br>
+    <strong>2.</strong> Direktorijumi, Google profil i besplatni listing na vencanja.com — jedno popodne, trajna vrednost.<br>
+    <strong>3.</strong> Press stranica sa fotografijama i brojkama — svaki sledeći pitch je duplo jači kada novinar dobije gotov materijal.
+  </p>
+</div>
+</div>
+
+<!-- ═══════════════════ DODATAK ═══════════════════ -->
+<div class="deo">
+<h2>Dodatak — kontakti i pouzdanost</h2>
+
+<h3>Kontakti koji su javno dostupni</h3>
+<table>
+  <thead><tr><th style="width:26%">Medij</th><th style="width:38%">Kontakt</th><th>Napomena</th></tr></thead>
+  <tbody>
+    <tr><td>Journal.rs</td><td>preko kontakt stranice; marketing: jovana@journal.rs, ivana.stajdohar@journal.rs</td><td>Za priču pisati <strong>redakciji</strong>, ne marketingu</td></tr>
+    <tr><td>Netokracija</td><td>crnjanski@netokracija.com (urednik)</td><td>Prodaja je tadic@ — ne pisati njima</td></tr>
+    <tr><td>Startit</td><td>preko forme na startit.rs</td><td>—</td></tr>
+    <tr><td>021.rs</td><td>marketing@021.rs · 021/473-92-40</td><td>Cenovnik trenutno nedostupan — tražiti ponudu</td></tr>
+    <tr><td>NS Uživo</td><td>preko forme na nsuzivo.rs/marketing</td><td>—</td></tr>
+    <tr><td>Luftika</td><td>office@luftika.rs</td><td>Ima celu sekciju o venčanjima</td></tr>
+    <tr><td>Dnevnik</td><td>021/24-440 (marketing)</td><td>—</td></tr>
+    <tr><td>RTV</td><td>vesti@rtv.rs · pr@rtv.rs · 021 210 1424</td><td>Javni servis — gostovanja se ne naplaćuju</td></tr>
+    <tr><td>Ringier (Blic Žena, zena.blic, Noizz)</td><td>oglasi@ringier.rs</td><td>Online cene nisu javne</td></tr>
+    <tr><td>svadbasvadba.rs</td><td>info@svadbasvadba.rs · +381 63 379 408</td><td>—</td></tr>
+    <tr><td>Sombor.info</td><td>preko sajta</td><td>Model jeftine objave — koristiti kao merilo za druge gradske portale</td></tr>
+  </tbody>
+</table>
+
+<h3>Na šta paziti</h3>
+<ul>
+  <li><strong>balkanwedding.com više ne radi</strong> — preusmerava na nepovezan britanski sajt, domen je verovatno istekao. Njihov Instagram je i dalje aktivan, ali <strong>ne plaćati ništa unapred</strong>.</li>
+  <li><strong>mojtrenutak.rs, vencaj.me i digitalnasvadba.rs nisu mediji nego direktni konkurenti</strong> — ne slati im ništa i ne listati se kod njih.</li>
+  <li>Konkretne Facebook grupe treba naći ručno — spisak iz pretrage nije pouzdan.</li>
+</ul>
+
+<h3>Pouzdanost podataka u ovom dokumentu</h3>
+<p>
+  Cene označene kao potvrđene potiču sa javnih stranica i cenovnika, provereno početkom
+  avgusta 2026. Procene reda veličine izvedene su iz javnog vodiča kroz cene i cenovnika
+  Sombor.info, i <strong>moraju se potvrditi upitom pre nego što se uđe u budžet</strong>.
+</p>
+<p>
+  Kod analize konkurencije: svi navedeni tekstovi potiču iz živih mapa sajta ili direktnih
+  poseta. svetpozivnica.rs blokira automatski pristup, pa pun broj njihovih tekstova nije
+  potvrđen. Procene težine ključnih reči su kvalitativne, izvedene iz sastava rezultata
+  pretrage — bez podataka iz plaćenih alata.
+</p>
+<p class="mala">
+  Dokument je nastao kombinovanjem dve nezavisne analize (sadržajne i medijske), uz proveru
+  tvrdnji nad izvornim kodom sajta. Sve što nije bilo moguće potvrditi izričito je označeno.
+</p>
+</div>
+
+</body>
+</html>
