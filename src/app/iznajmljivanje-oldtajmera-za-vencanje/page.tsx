@@ -28,6 +28,7 @@ import {
   getFleetPriceRange,
   getVehicleOptions,
   vehicleCountLabel,
+  cityGenitive,
 } from "@/data/oldtajmeri";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
@@ -524,12 +525,16 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
             {fleetByCity.map((group) => (
               <div key={group.city} className="mb-14 last:mb-0">
                 {/* Grupisanje po gradu polaska — mladencima je to logistička
-                    informacija, jer se transport van tog grada doplaćuje. */}
+                    informacija, jer se transport van tog grada doplaćuje.
+                    Naslov je `h2` i nosi uslugu uz naziv grada: „Beograd" sam
+                    po sebi ne cilja nijedan upit, a „Oldtajmeri za venčanje iz
+                    Beograda" pogađa obrazac grad+usluga, koji u srpskoj
+                    pretrazi ima potražnju. */}
                 <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 mb-6 pb-4 border-b border-[#232323]/10">
-                  <h3 className="font-serif text-2xl text-[#232323] flex items-center gap-2">
+                  <h2 className="font-serif text-2xl text-[#232323] flex items-center gap-2">
                     <MapPin size={18} className="text-[#AE343F]" />
-                    {group.city}
-                  </h3>
+                    Oldtajmeri za venčanje iz {cityGenitive(group.city)}
+                  </h2>
                   <span className="text-sm text-[#232323]/45">
                     {vehicleCountLabel(group.vehicles.length)}
                   </span>

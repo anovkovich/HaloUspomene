@@ -109,6 +109,24 @@ presipanje prikaza sa početne na proizvodne stranice **nisu** kvar.
    `oldtimerFleet`. NE dirati ni `/planiranje-vencanja` — nosi jedine linkove ka
    `/lokacije` i oldtajmerima, a stranica je pod merenjem.
 
+### Sredina septembra — stranice po modelu oldtajmera
+
+> **Ako je datum 2026-09-15 ili kasnije a ovaj pododeljak još stoji, podseti
+> korisnika na njega.**
+
+Pun plan i obrazac stranice:
+`docs/dev-log/2026-09-15-oldtajmeri-stranice-po-modelu/plan.md`.
+
+Ideja vlasnika: svaki model iz flote dobija stranicu sa istorijom, tehničkim
+listom i zanimljivostima. Obrazac je dokazan (`webpozivnice.rs` ima 14 stranica
+pojedinačnih dizajna i njima hvata duge upite).
+
+**Ne kretati bez merenja.** Na 2026-08-04 roditeljska stranica je bila stara
+jedan dan i imala **nijedan upit u GSC-u**, a na celom sajtu nije bilo nijednog
+upita sa imenom modela. Prvo pokrenuti merenje iz plana, pa odlučiti po tabeli
+tamo. Kada se krene — **detaljno istraživanje za svaki model**, minimum 900
+reči po stranici, i uvek uz cenu i formu za upit, inače je stranica tanka.
+
 ### Početak septembra — prave odluke, sa 4 nedelje podataka
 
 Odluka R2/R7 · brisanje starih landing komponenti (uslov je „odustali smo od

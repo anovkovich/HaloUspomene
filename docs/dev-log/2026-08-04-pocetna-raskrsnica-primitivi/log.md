@@ -595,3 +595,40 @@
 
 - **Blokade / sledeći korak:** preostalih 6 tekstova iz plana od 14; slanje na
   reindeksiranje (spisak u odgovoru vlasniku).
+
+---
+
+## 2026-08-04 (trinaesti unos) — Gradovi kao H2 na oldtajmerima; plan za model-stranice
+
+- **Gradovi na `/iznajmljivanje-oldtajmera-za-vencanje` podignuti u `h2`** i,
+  važnije, dobili tekst koji cilja upit: umesto golog „Beograd" sada stoji
+  **„Oldtajmeri za venčanje iz Beograda"**. Nivo taga sam po sebi ne vredi
+  mnogo — „Beograd" ne cilja nijedan upit, a grad+usluga je obrazac koji u
+  srpskoj pretrazi ima potražnju (`bend za svadbe beograd` 19 prikaza,
+  `vencanice novi sad` 19). H2 na stranici: 11 → 13.
+  Dodat `cityGenitive()` u `src/data/oldtajmeri.ts` sa ručnom mapom, jer se
+  srpski genitiv ne može izvesti pravilom (Beograd → Beograda, ali Novi Sad →
+  Novog Sada, Jagodina → Jagodine). **Novi grad u floti znači i dopunu te mape.**
+
+- **Plan za stranice po modelu sačuvan i zakazan** za sredinu septembra:
+  `docs/dev-log/2026-09-15-oldtajmeri-stranice-po-modelu/plan.md`, sa
+  podsetnikom u `CLAUDE.md` i unosom u `HISTORY.md`.
+
+  Zašto nije sada, iako je ideja dobra: roditeljska stranica je napravljena
+  **2026-08-03**, dan pre merenja, i ima **nijedan upit u GSC-u** uz 2.255 reči
+  (najduža na sajtu). Na celom sajtu za 180 dana nema **nijednog** upita sa
+  rečju oldtajmer ili imenom modela. Uporediva `/iznajmljivanje-automobila-za-vencanje`
+  je posle pet nedelja na poziciji 16,2 sa 74 prikaza. Praviti 4 dete-stranice
+  oko roditelja koji još nije otkriven znači 4 tanke stranice.
+
+  Plan zato počinje **uslovom**: prvo merenje, pa odluka po tabeli (kreni /
+  ne kreći / kreni sa dva modela kao proba). Obrazac stranice traži minimum
+  900 reči i **obavezno cenu i formu za upit** — bez toga su zanimljivosti
+  tanka stranica. Za blueprint je predviđena sopstvena ilustracija, jer prava
+  na tehničke crteže nisu proverena.
+
+- **Odluka vlasnika:** gradske stranice se NE prave — gradovi ostaju na
+  postojećoj stranici (gore). Model-stranice imaju prednost.
+
+- **Blokade / sledeći korak:** preostalih 6 blog tekstova; slanje na
+  reindeksiranje.

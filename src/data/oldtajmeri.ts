@@ -165,6 +165,34 @@ export function getFleetPriceRange(): { low: number; high: number } {
  * `priceNote` se popunjava samo ako je napomena identična za sva vozila u
  * gradu — tada se ispisuje jednom iznad grupe umesto na svakoj kartici.
  */
+/**
+ * Genitiv naziva grada, za naslove oblika „Oldtajmeri za venčanje iz Beograda".
+ *
+ * Ne postoji pouzdan način da se srpski genitiv izvede pravilom (Beograd →
+ * Beograda, ali Novi Sad → Novog Sada, a Jagodina → Jagodine), pa se gradovi
+ * upisuju ručno. Nepoznat grad se vraća u nominativu — naslov tada glasi
+ * „…iz Kikinda" umesto „…iz Kikinde", što je ružno ali ne lomi stranicu.
+ * **Kada dodaješ vozilo iz novog grada, dopiši grad i ovde.**
+ */
+const CITY_GENITIVE: Record<string, string> = {
+  Beograd: "Beograda",
+  Pančevo: "Pančeva",
+  "Novi Sad": "Novog Sada",
+  Niš: "Niša",
+  Kragujevac: "Kragujevca",
+  Subotica: "Subotice",
+  Čačak: "Čačka",
+  Paraćin: "Paraćina",
+  Jagodina: "Jagodine",
+  Ćuprija: "Ćuprije",
+  Zrenjanin: "Zrenjanina",
+  Kraljevo: "Kraljeva",
+};
+
+export function cityGenitive(city: string): string {
+  return CITY_GENITIVE[city] ?? city;
+}
+
 export function getFleetByCity(): {
   city: string;
   vehicles: OldtimerVehicle[];
