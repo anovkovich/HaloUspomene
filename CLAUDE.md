@@ -69,6 +69,36 @@ Prose on these pages must **not** name specific models — the offer keeps growi
 
 Praćene inicijative žive u `docs/dev-log/` — `HISTORY.md` je indeks (počni odatle), sa `plan.md`/`log.md` po tasku. Napredak na praćenom poslu beleži se preko task-plan skilla (dopiši u `log.md` tog taska); ne razbacuj nove plan fajlove po `docs/`.
 
+## ⏰ Zakazano — SEO/sadržaj, od 2026-08-10
+
+> **Ako je današnji datum 2026-08-10 ili kasnije a ovaj odeljak još stoji, podseti
+> korisnika na njega pre nego što započneš drugi posao.**
+
+Pun plan: `docs/dev-log/2026-08-04-pocetna-raskrsnica-primitivi/faza-5-plan.md`.
+Odloženo namerno — čeka se 5–6 dana posle deploy-a nove početne, da Google
+ponovo obiđe sajt i da merenje „posle" ima smisla.
+
+**Prvi korak je uvek ponovo merenje**, jer plan počiva na brojkama koje se menjaju:
+
+```
+node scripts/analytics-baseline.mjs --days 30 --md docs/dev-log/2026-08-04-pocetna-raskrsnica-primitivi/gsc-posle.md
+```
+
+Redosled (detalji i brojke u planu):
+1. `/napravi-punoletstvo/` — **200 reči**, poz 8,7 za upit sa 444 prikaza. Najveći
+   pojedinačni dobitak na sajtu.
+2. `/napravi-deciju-pozivnicu/` — **165 reči**, 952 prikaza, 22 klika.
+3. `/cene/` — od 339 reči **332 su u `sr-only` bloku**; promovisati u vidljivo.
+4. `sr-only` blokovi na 12 stranica (1.759 reči) — obrisati gde duplira vidljivo,
+   promovisati gde nosi jedinstven podatak ili jedini link. **Jedna stranica po deployu.**
+5. Duge stranice (`/oldtajmeri` 2.255 reči, `/lazni-maticar` 1.926) — skratiti
+   *opaženu* dužinu sidrima i akordeonima, tekst OSTAJE.
+6. Blog klaster — **plan od 14 tekstova već postoji** u
+   `docs/vodici/pozivnice-i-pr-vodic.pdf`; ne praviti nov, izvršavati taj.
+   Prvih 7 tekstova je objavljeno 2026-08-04 sa **datumima unazad** (april–jul) —
+   odluka vlasnika, doneta uz napomenu da backdate ne pomaže rangiranju (Google
+   pamti kada je URL prvi put otkrio) i da `datePublished` time postaje netačan.
+
 ## Project Overview
 
 **HaloUspomene** (`halouspomene.rs`) is a Serbian wedding & celebration SaaS platform. It started as a wedding-invitation builder and has grown into a multi-product suite:
@@ -106,7 +136,7 @@ Praćene inicijative žive u `docs/dev-log/` — `HISTORY.md` je indeks (počni 
 | File Storage     | Vercel Blob (`@vercel/blob`) — audio messages, premium images, custom uploads |
 | Error Tracking   | Sentry (`@sentry/nextjs`, free tier, replay on errors)                        |
 | Forms (lead-gen) | Web3Forms                                                                     |
-| Analytics        | GA4 + Microsoft Clarity + Vercel Analytics + Vercel Speed Insights            |
+| Analytics        | GA4 + Microsoft Clarity + Vercel Analytics + Vercel Speed Insights (v. "Analytics" ispod) |
 | Auth             | `jose` JWT library                                                            |
 | PDF              | jsPDF (invitations, seating charts, audio flyers)                             |
 | QR               | qrcode                                                                        |
@@ -130,7 +160,7 @@ Praćene inicijative žive u `docs/dev-log/` — `HISTORY.md` je indeks (počni 
 src/
 ├── app/
 │   ├── layout.tsx                    # Root: fonts, GA4, Clarity, Vercel Analytics, JSON-LD, Sonner
-│   ├── page.tsx                      # Homepage (Hero, Concept, Packages, etc.)
+│   ├── page.tsx                      # Homepage — raskrsnica, 8 sekcija (v. "Homepage" ispod)
 │   ├── error.tsx / global-error.tsx  # Error boundaries (report to Sentry)
 │   ├── not-found.tsx                 # 404 page
 │   ├── sitemap.ts                    # Static sitemap (force-static)
@@ -227,10 +257,10 @@ src/
 │       └── (sub-routes for RSVP, etc.)
 │
 ├── components/
-│   ├── landing/                      # Hero, Concept, HeroInfoBadge, HowItWorks, Packages, Testimonials, FAQ, ContactForm
+│   ├── landing/                      # Hero, ProductGrid, WhyUs, Process, PriceStrip, Testimonials, FAQ, SectionKontakt, ContactForm
 │   ├── layout/                       # Navbar, MobileMenu, Footer
 │   ├── blog/                         # mdx-components.tsx (InfoBox, CtaBlock, tables)
-│   ├── analytics/                    # AnalyticsProvider (GA4 events)
+│   ├── analytics/                    # GoogleAnalytics, Clarity, AnalyticsProvider (custom GA4 events)
 │   └── ui/                           # Breadcrumbs, DatePicker, ScrollReveal
 │
 ├── data/
@@ -547,6 +577,61 @@ Configured per-route in `next.config.ts`:
 - `robots.ts` disallows `/api`, `/admin`, and all per-couple management routes. **AI bots are deliberately ALLOWED** on marketing pages (GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-User, Claude-SearchBot, PerplexityBot, Google-Extended, …) — blocking the search-index and live-fetch crawlers would remove us from AI recommendations, which is the opposite of what we want. Do not "restore" blocking.
 - Invitation *designs* are protected by a different mechanism, not by robots.txt: per-couple pages set `robots: { index: false, follow: false }` at the page level, `next.config.ts` sends `X-Robots-Tag: noai, noimageai` on invitation routes, and `<AiCopyrightNotice />` sits in the DOM. That combination is what stops design cloning — see "Invitation Design Copyright Protection" above.
 - Google Search Console verified via the `google-site-verification` meta tag
+
+## Analytics
+
+**History that explains the current shape.** GA4 and Clarity were removed on
+2026-03-19 in `bd82d0b` ("Improve page speed", ~100KB of third-party JS) and
+restored on 2026-08-04. Between those dates the property collected **nothing** —
+if you query GA4 for that window and get zeros, that is why, not a broken tag.
+The restored implementation is the same one that was removed: `next/script`
+with `strategy="afterInteractive"`, so it stays off the critical render path.
+
+Three pieces, all mounted at the end of `<body>` in `src/app/layout.tsx`:
+
+| Component | What it does |
+|---|---|
+| `analytics/GoogleAnalytics.tsx` | gtag.js. Renders nothing when `NEXT_PUBLIC_GA_ID` is unset |
+| `analytics/Clarity.tsx` | Microsoft Clarity session replay |
+| `analytics/AnalyticsProvider.tsx` | Custom events gtag can't produce: `cta_click`, `section_view`, `scroll_depth`, `faq_interaction` |
+
+**Do not track page views manually.** Enhanced measurement → *page changes
+(History API)* is enabled on the stream, so gtag emits `page_view` on client-side
+navigation by itself; adding a manual call double-counts every SPA route change.
+
+**Three invariants `AnalyticsProvider` depends on** — each fails silently, with
+no build error and nothing visible in the browser:
+
+1. `Section` must render `<section>`, never `<div>` — the observer selects
+   `section[id]`. `src/components/ui/Section.tsx` guarantees this.
+2. `CtaButton` must emit `data-track` **plus** `data-track-cta-name` /
+   `data-track-cta-location` — clicks are caught by delegation on `[data-track]`.
+3. FAQ must stay `<details>`/`<summary>`. The `toggle` event does not bubble, so
+   it is listened for in the **capture phase**; a DaisyUI `.collapse` rewrite
+   would kill `faq_interaction` again (it already happened once).
+
+Section visibility uses `threshold: [0, 0.1, 0.3]` and counts a section as seen
+at 30% of its own height **or** half the viewport. The second clause is load-
+bearing: with a bare `threshold: 0.3`, any section taller than ~3.3 viewports
+can never reach it, so on phones the tallest sections would simply never report.
+
+**GA4 property `524092885`** (stream `G-XXTC0TP1H0`). Event parameters are
+invisible to reports and to the Data API until registered as custom dimensions,
+and **registration is not retroactive** — register before you need the data.
+
+- `node scripts/ga4-setup.mjs [--apply]` — registers the 12 custom dimensions
+  matching what `src/utils/analytics.ts` sends, marks `form_submit` a key event,
+  sets retention to 14 months. Idempotent; dry-run without `--apply`. **Adding a
+  new event parameter means adding it here too**, or it is silently unreportable.
+  Note GA4 rejects `displayName` containing anything but letters, digits,
+  underscore and space — no dashes, no `š/ž/ć/đ/č`.
+- `node scripts/analytics-baseline.mjs --days 180 [--json f] [--md f]` — GA4 +
+  GSC report: totals vs previous period, queries, pages, devices, plus derived
+  "striking distance" (position 11–20) and "good position, poor CTR" lists.
+
+Both scripts authenticate with a **service account** (no OAuth, no gcloud) via
+`GOOGLE_APPLICATION_CREDENTIALS`, defaulting to `~/.secrets/halo-analytics.json`.
+The same account is wired into the `ga4` and `gsc` MCP servers.
 
 ## Adding a New Couple (zero-redeploy workflow)
 

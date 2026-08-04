@@ -1,0 +1,5851 @@
+{
+  "period": {
+    "from": "2026-02-02",
+    "to": "2026-08-01",
+    "days": 180
+  },
+  "previous": {
+    "from": "2025-08-05",
+    "to": "2026-02-01"
+  },
+  "ga4_events": [
+    {
+      "event": "scroll_depth",
+      "count": 1264,
+      "users": 233
+    },
+    {
+      "event": "page_view",
+      "count": 1201,
+      "users": 399
+    },
+    {
+      "event": "session_start",
+      "count": 597,
+      "users": 398
+    },
+    {
+      "event": "scroll",
+      "count": 567,
+      "users": 252
+    },
+    {
+      "event": "section_view",
+      "count": 517,
+      "users": 95
+    },
+    {
+      "event": "first_visit",
+      "count": 399,
+      "users": 398
+    },
+    {
+      "event": "user_engagement",
+      "count": 295,
+      "users": 112
+    },
+    {
+      "event": "faq_interaction",
+      "count": 109,
+      "users": 24
+    },
+    {
+      "event": "form_start",
+      "count": 65,
+      "users": 39
+    },
+    {
+      "event": "cta_click",
+      "count": 54,
+      "users": 33
+    },
+    {
+      "event": "package_click",
+      "count": 18,
+      "users": 15
+    },
+    {
+      "event": "file_download",
+      "count": 4,
+      "users": 4
+    },
+    {
+      "event": "form_submit",
+      "count": 4,
+      "users": 3
+    },
+    {
+      "event": "click",
+      "count": 3,
+      "users": 3
+    },
+    {
+      "event": "social_click",
+      "count": 3,
+      "users": 3
+    }
+  ],
+  "ga4_top_pages": [
+    {
+      "path": "/",
+      "views": 293,
+      "users": 158
+    },
+    {
+      "path": "/pozivnica/ana-dejan/",
+      "views": 161,
+      "users": 136
+    },
+    {
+      "path": "/pozivnica/sara-nikola",
+      "views": 67,
+      "users": 26
+    },
+    {
+      "path": "/pozivnica/ana-stefan/potvrde/",
+      "views": 39,
+      "users": 9
+    },
+    {
+      "path": "/napravi-pozivnicu",
+      "views": 36,
+      "users": 20
+    },
+    {
+      "path": "/pozivnica/marina-aleksandar",
+      "views": 36,
+      "users": 18
+    },
+    {
+      "path": "/pozivnica/sara-nikola/",
+      "views": 36,
+      "users": 18
+    },
+    {
+      "path": "/blog/audio-guest-book-cena",
+      "views": 30,
+      "users": 22
+    },
+    {
+      "path": "/pozivnica/anastasija-jovan",
+      "views": 29,
+      "users": 11
+    },
+    {
+      "path": "/pozivnica/jelena-marko",
+      "views": 28,
+      "users": 15
+    },
+    {
+      "path": "/blog/website-pozivnica-kompletan-vodic/",
+      "views": 27,
+      "users": 14
+    },
+    {
+      "path": "/pozivnica/ana-stefan",
+      "views": 27,
+      "users": 11
+    },
+    {
+      "path": "/napravi-pozivnicu/",
+      "views": 23,
+      "users": 14
+    },
+    {
+      "path": "/pozivnica/sara-nikola/raspored-sedenja/",
+      "views": 23,
+      "users": 4
+    },
+    {
+      "path": "/blog/audio-guest-book-cena/",
+      "views": 21,
+      "users": 6
+    },
+    {
+      "path": "/pozivnica/sara-nikola/potvrde/",
+      "views": 20,
+      "users": 4
+    },
+    {
+      "path": "/blog",
+      "views": 18,
+      "users": 9
+    },
+    {
+      "path": "/pozivnica/sara-nikola/audio-knjiga/",
+      "views": 18,
+      "users": 1
+    },
+    {
+      "path": "/pozivnica/ana-dejan/prijava/",
+      "views": 17,
+      "users": 4
+    },
+    {
+      "path": "/pozivnica/emilija-aleksa",
+      "views": 17,
+      "users": 6
+    }
+  ],
+  "gsc_totals": {
+    "clicks": 1410,
+    "impressions": 25249,
+    "ctr": 5.58,
+    "position": 7.7,
+    "prev_clicks": 0,
+    "prev_impressions": 0,
+    "prev_position": 0
+  },
+  "gsc_queries": [
+    {
+      "query": "halo uspomene",
+      "clicks": 107,
+      "impressions": 129,
+      "ctr": 82.95,
+      "position": 1
+    },
+    {
+      "query": "audio guest book cena",
+      "clicks": 28,
+      "impressions": 69,
+      "ctr": 40.58,
+      "position": 2.3
+    },
+    {
+      "query": "telefon uspomena",
+      "clicks": 17,
+      "impressions": 115,
+      "ctr": 14.78,
+      "position": 4.3
+    },
+    {
+      "query": "planer za vencanje",
+      "clicks": 14,
+      "impressions": 276,
+      "ctr": 5.07,
+      "position": 11.2
+    },
+    {
+      "query": "raspored sedenja na svadbi",
+      "clicks": 12,
+      "impressions": 173,
+      "ctr": 6.94,
+      "position": 6.2
+    },
+    {
+      "query": "planer vencanja",
+      "clicks": 11,
+      "impressions": 161,
+      "ctr": 6.83,
+      "position": 10.7
+    },
+    {
+      "query": "ko sedi za mladenacki sto",
+      "clicks": 6,
+      "impressions": 84,
+      "ctr": 7.14,
+      "position": 5.1
+    },
+    {
+      "query": "pozivnice za 18 rodjendan",
+      "clicks": 6,
+      "impressions": 444,
+      "ctr": 1.35,
+      "position": 8.7
+    },
+    {
+      "query": "izrada pozivnica online",
+      "clicks": 5,
+      "impressions": 46,
+      "ctr": 10.87,
+      "position": 7.8
+    },
+    {
+      "query": "napravi mi pozivnicu za rodjendan",
+      "clicks": 5,
+      "impressions": 205,
+      "ctr": 2.44,
+      "position": 7
+    },
+    {
+      "query": "napravi pozivnicu",
+      "clicks": 5,
+      "impressions": 112,
+      "ctr": 4.46,
+      "position": 6.3
+    },
+    {
+      "query": "napravi pozivnicu za rodjendan",
+      "clicks": 5,
+      "impressions": 140,
+      "ctr": 3.57,
+      "position": 8.1
+    },
+    {
+      "query": "kako napraviti pozivnicu za rodjendan",
+      "clicks": 4,
+      "impressions": 99,
+      "ctr": 4.04,
+      "position": 9.3
+    },
+    {
+      "query": "pozivnice za vencanje novi sad",
+      "clicks": 4,
+      "impressions": 39,
+      "ctr": 10.26,
+      "position": 1.4
+    },
+    {
+      "query": "raspored sedenja",
+      "clicks": 4,
+      "impressions": 245,
+      "ctr": 1.63,
+      "position": 6.4
+    },
+    {
+      "query": "raspored stolova za svadbu",
+      "clicks": 4,
+      "impressions": 105,
+      "ctr": 3.81,
+      "position": 6.8
+    },
+    {
+      "query": "raspored stolova za vjenčanje online",
+      "clicks": 4,
+      "impressions": 10,
+      "ctr": 40,
+      "position": 3.8
+    },
+    {
+      "query": "telefon za svadbe",
+      "clicks": 4,
+      "impressions": 39,
+      "ctr": 10.26,
+      "position": 4.9
+    },
+    {
+      "query": "da",
+      "clicks": 3,
+      "impressions": 6,
+      "ctr": 50,
+      "position": 3.8
+    },
+    {
+      "query": "halouspomene",
+      "clicks": 3,
+      "impressions": 5,
+      "ctr": 60,
+      "position": 1
+    },
+    {
+      "query": "pozivnica za deciji rodjendan",
+      "clicks": 3,
+      "impressions": 101,
+      "ctr": 2.97,
+      "position": 9.5
+    },
+    {
+      "query": "pozivnice za vencanje online",
+      "clicks": 3,
+      "impressions": 42,
+      "ctr": 7.14,
+      "position": 8.9
+    },
+    {
+      "query": "digitalna pozivnica",
+      "clicks": 2,
+      "impressions": 110,
+      "ctr": 1.82,
+      "position": 7.4
+    },
+    {
+      "query": "digitalna pozivnica za rođendan",
+      "clicks": 2,
+      "impressions": 6,
+      "ctr": 33.33,
+      "position": 11.7
+    },
+    {
+      "query": "digitalne pozivnice za vencanje",
+      "clicks": 2,
+      "impressions": 17,
+      "ctr": 11.76,
+      "position": 49.9
+    },
+    {
+      "query": "napravi sam pozivnicu za rodjendan",
+      "clicks": 2,
+      "impressions": 29,
+      "ctr": 6.9,
+      "position": 8.6
+    },
+    {
+      "query": "planer za svadbu",
+      "clicks": 2,
+      "impressions": 28,
+      "ctr": 7.14,
+      "position": 9.1
+    },
+    {
+      "query": "planeri za vencanje",
+      "clicks": 2,
+      "impressions": 17,
+      "ctr": 11.76,
+      "position": 8.1
+    },
+    {
+      "query": "pozivnice za deciji rodjendan",
+      "clicks": 2,
+      "impressions": 96,
+      "ctr": 2.08,
+      "position": 10.9
+    },
+    {
+      "query": "pozivnice za punoletstvo",
+      "clicks": 2,
+      "impressions": 128,
+      "ctr": 1.56,
+      "position": 7.5
+    },
+    {
+      "query": "pozivnice za rodjendan napravi sam",
+      "clicks": 2,
+      "impressions": 148,
+      "ctr": 1.35,
+      "position": 8.7
+    },
+    {
+      "query": "spisak gostiju po stolovima",
+      "clicks": 2,
+      "impressions": 45,
+      "ctr": 4.44,
+      "position": 7.8
+    },
+    {
+      "query": "spisak gostiju za svadbu",
+      "clicks": 2,
+      "impressions": 54,
+      "ctr": 3.7,
+      "position": 9.2
+    },
+    {
+      "query": "zlatara gama cacak",
+      "clicks": 2,
+      "impressions": 86,
+      "ctr": 2.33,
+      "position": 8.2
+    },
+    {
+      "query": "audio guest book",
+      "clicks": 1,
+      "impressions": 27,
+      "ctr": 3.7,
+      "position": 4
+    },
+    {
+      "query": "auto za mladence",
+      "clicks": 1,
+      "impressions": 6,
+      "ctr": 16.67,
+      "position": 11.2
+    },
+    {
+      "query": "besplatne online pozivnice za rođendan pdf",
+      "clicks": 1,
+      "impressions": 170,
+      "ctr": 0.59,
+      "position": 8.5
+    },
+    {
+      "query": "c payant ?",
+      "clicks": 1,
+      "impressions": 1,
+      "ctr": 100,
+      "position": 1
+    },
+    {
+      "query": "cene",
+      "clicks": 1,
+      "impressions": 1,
+      "ctr": 100,
+      "position": 2
+    },
+    {
+      "query": "gde ima u srbiji",
+      "clicks": 1,
+      "impressions": 1,
+      "ctr": 100,
+      "position": 4
+    },
+    {
+      "query": "hladni vatromet",
+      "clicks": 1,
+      "impressions": 12,
+      "ctr": 8.33,
+      "position": 10.2
+    },
+    {
+      "query": "iznajmljivanje telefona",
+      "clicks": 1,
+      "impressions": 26,
+      "ctr": 3.85,
+      "position": 3.4
+    },
+    {
+      "query": "kako napraviti pozivnice za 18 rodjendan",
+      "clicks": 1,
+      "impressions": 12,
+      "ctr": 8.33,
+      "position": 8.9
+    },
+    {
+      "query": "kreiraj pozivnicu za rodjendan",
+      "clicks": 1,
+      "impressions": 10,
+      "ctr": 10,
+      "position": 8.7
+    },
+    {
+      "query": "mladenacki sto ko sedi",
+      "clicks": 1,
+      "impressions": 27,
+      "ctr": 3.7,
+      "position": 4.4
+    },
+    {
+      "query": "najjeftinije burme novi sad",
+      "clicks": 1,
+      "impressions": 1,
+      "ctr": 100,
+      "position": 38
+    },
+    {
+      "query": "napravi pozivnicu online",
+      "clicks": 1,
+      "impressions": 72,
+      "ctr": 1.39,
+      "position": 7.8
+    },
+    {
+      "query": "napravi pozivnicu za rodjendan online",
+      "clicks": 1,
+      "impressions": 43,
+      "ctr": 2.33,
+      "position": 8.7
+    },
+    {
+      "query": "napraviti pozivnicu za rodjendan",
+      "clicks": 1,
+      "impressions": 33,
+      "ctr": 3.03,
+      "position": 9.5
+    },
+    {
+      "query": "organizacija vencanja planer",
+      "clicks": 1,
+      "impressions": 6,
+      "ctr": 16.67,
+      "position": 10.2
+    },
+    {
+      "query": "party telefon",
+      "clicks": 1,
+      "impressions": 2,
+      "ctr": 50,
+      "position": 3
+    },
+    {
+      "query": "planiranje vencanja",
+      "clicks": 1,
+      "impressions": 16,
+      "ctr": 6.25,
+      "position": 7.9
+    },
+    {
+      "query": "pokloni za goste",
+      "clicks": 1,
+      "impressions": 23,
+      "ctr": 4.35,
+      "position": 15.9
+    },
+    {
+      "query": "pozivnica za prvi rođendan",
+      "clicks": 1,
+      "impressions": 4,
+      "ctr": 25,
+      "position": 10.5
+    },
+    {
+      "query": "pozivnice novi sad",
+      "clicks": 1,
+      "impressions": 3,
+      "ctr": 33.33,
+      "position": 2
+    },
+    {
+      "query": "pozivnice za 18 rodjendan cena",
+      "clicks": 1,
+      "impressions": 8,
+      "ctr": 12.5,
+      "position": 9.8
+    },
+    {
+      "query": "pozivnice za 18 rodjendan online",
+      "clicks": 1,
+      "impressions": 31,
+      "ctr": 3.23,
+      "position": 5.8
+    },
+    {
+      "query": "pozivnice za 18 rodjendan pdf",
+      "clicks": 1,
+      "impressions": 1,
+      "ctr": 100,
+      "position": 6
+    },
+    {
+      "query": "pozivnice za 18 rođendan",
+      "clicks": 1,
+      "impressions": 37,
+      "ctr": 2.7,
+      "position": 9.1
+    },
+    {
+      "query": "pozivnice za rođendan uradi sam",
+      "clicks": 1,
+      "impressions": 6,
+      "ctr": 16.67,
+      "position": 8.8
+    },
+    {
+      "query": "pozivnice za svadbu online",
+      "clicks": 1,
+      "impressions": 14,
+      "ctr": 7.14,
+      "position": 8.1
+    },
+    {
+      "query": "raspored gostiju",
+      "clicks": 1,
+      "impressions": 20,
+      "ctr": 5,
+      "position": 7.7
+    },
+    {
+      "query": "raspored gostiju na svadbi",
+      "clicks": 1,
+      "impressions": 11,
+      "ctr": 9.09,
+      "position": 4.5
+    },
+    {
+      "query": "raspored sedenja na svadbi aplikacija",
+      "clicks": 1,
+      "impressions": 10,
+      "ctr": 10,
+      "position": 9.9
+    },
+    {
+      "query": "raspored sedenja svadba",
+      "clicks": 1,
+      "impressions": 67,
+      "ctr": 1.49,
+      "position": 5.2
+    },
+    {
+      "query": "raspored sjedenja na svadbi",
+      "clicks": 1,
+      "impressions": 6,
+      "ctr": 16.67,
+      "position": 5.8
+    },
+    {
+      "query": "raspored stolova",
+      "clicks": 1,
+      "impressions": 35,
+      "ctr": 2.86,
+      "position": 7.1
+    },
+    {
+      "query": "stolovi za svadbu raspored",
+      "clicks": 1,
+      "impressions": 2,
+      "ctr": 50,
+      "position": 4.5
+    },
+    {
+      "query": "tekst pozivnice za 18 rodjendan",
+      "clicks": 1,
+      "impressions": 2,
+      "ctr": 50,
+      "position": 24.5
+    },
+    {
+      "query": "vencanice novi sad",
+      "clicks": 1,
+      "impressions": 19,
+      "ctr": 5.26,
+      "position": 30.5
+    },
+    {
+      "query": "vencanje",
+      "clicks": 1,
+      "impressions": 3,
+      "ctr": 33.33,
+      "position": 3.7
+    },
+    {
+      "query": "zahvalnice sa qr kodom",
+      "clicks": 1,
+      "impressions": 2,
+      "ctr": 50,
+      "position": 11
+    },
+    {
+      "query": "\"centar babić\" čačak restoran",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 8.2
+    },
+    {
+      "query": "\"ultimate guestbook, version\"",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "&",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 11.3
+    },
+    {
+      "query": "18 rodjendan pozivnice",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 8.8
+    },
+    {
+      "query": "2026",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "alternativa bend",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 7.3
+    },
+    {
+      "query": "alternativa bend kragujevac",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 11.5
+    },
+    {
+      "query": "an event organiser",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 14
+    },
+    {
+      "query": "audio",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "audio guest",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "audio knjige",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 24
+    },
+    {
+      "query": "audio telefon",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 6.9
+    },
+    {
+      "query": "auto za svadbe",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "auto za svadbu",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 8.3
+    },
+    {
+      "query": "bend za svadbe",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 36
+    },
+    {
+      "query": "bend za svadbe beograd",
+      "clicks": 0,
+      "impressions": 19,
+      "ctr": 0,
+      "position": 36.8
+    },
+    {
+      "query": "bend za svadbe novi sad",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 45.2
+    },
+    {
+      "query": "bend za svadbu",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 25.5
+    },
+    {
+      "query": "bendovi beograd",
+      "clicks": 0,
+      "impressions": 13,
+      "ctr": 0,
+      "position": 9.2
+    },
+    {
+      "query": "bendovi novi sad",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 16
+    },
+    {
+      "query": "bendovi u srbiji",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 20
+    },
+    {
+      "query": "bendovi za svadbe",
+      "clicks": 0,
+      "impressions": 21,
+      "ctr": 0,
+      "position": 37
+    },
+    {
+      "query": "bendovi za svadbe beograd",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 18.8
+    },
+    {
+      "query": "bendovi za svadbe srbija",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 34
+    },
+    {
+      "query": "bendovi za svadbu",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 37
+    },
+    {
+      "query": "beolido",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 48
+    },
+    {
+      "query": "besplatne online pozivnice",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 11.5
+    },
+    {
+      "query": "besplatne pozivnice",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "blanche vencanice",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 33
+    },
+    {
+      "query": "bojana medic",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "book of gold classic besplatno",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 13
+    },
+    {
+      "query": "buket cveca za vencanje",
+      "clicks": 0,
+      "impressions": 15,
+      "ctr": 0,
+      "position": 7.3
+    },
+    {
+      "query": "buket za vencanje",
+      "clicks": 0,
+      "impressions": 45,
+      "ctr": 0,
+      "position": 7.6
+    },
+    {
+      "query": "buketi cveca za vencanje",
+      "clicks": 0,
+      "impressions": 14,
+      "ctr": 0,
+      "position": 7.3
+    },
+    {
+      "query": "buketi za mlade",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "buketi za vencanje",
+      "clicks": 0,
+      "impressions": 26,
+      "ctr": 0,
+      "position": 7.5
+    },
+    {
+      "query": "burme nis",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 22
+    },
+    {
+      "query": "burme novi sad",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 25.6
+    },
+    {
+      "query": "burme za vencanje",
+      "clicks": 0,
+      "impressions": 32,
+      "ctr": 0,
+      "position": 28.6
+    },
+    {
+      "query": "celje burme",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "cena",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 2.7
+    },
+    {
+      "query": "cena digitalne pozivnice",
+      "clicks": 0,
+      "impressions": 66,
+      "ctr": 0,
+      "position": 13.8
+    },
+    {
+      "query": "cena tel",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "cena?",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "cvecara fiore kragujevac",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 15
+    },
+    {
+      "query": "cvecara smokva",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 24
+    },
+    {
+      "query": "cvecara viktorija",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "cvece za svadbu",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 9.1
+    },
+    {
+      "query": "cvece za svadbu poklon",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 48.5
+    },
+    {
+      "query": "cvece za vencanje",
+      "clicks": 0,
+      "impressions": 38,
+      "ctr": 0,
+      "position": 8.3
+    },
+    {
+      "query": "cvetni aranžmani za venčanja",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 22.3
+    },
+    {
+      "query": "cvećare subotica",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "cveće za venčanje",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 4.5
+    },
+    {
+      "query": "da kupim",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "dadine poslastice",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 17
+    },
+    {
+      "query": "daj mi sajtove",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "decija pozivnica za rodjendan",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 10.8
+    },
+    {
+      "query": "decije pozivnice za rodjendan",
+      "clicks": 0,
+      "impressions": 13,
+      "ctr": 0,
+      "position": 24.7
+    },
+    {
+      "query": "decor design",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "digitalna pozivnica dizajn cena srbija",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 7.5
+    },
+    {
+      "query": "digitalna pozivnica za deciji rodjendan",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 9.6
+    },
+    {
+      "query": "digitalna pozivnica za vencanje",
+      "clicks": 0,
+      "impressions": 33,
+      "ctr": 0,
+      "position": 6.8
+    },
+    {
+      "query": "digitalne i štampane pozivnice",
+      "clicks": 0,
+      "impressions": 16,
+      "ctr": 0,
+      "position": 16.3
+    },
+    {
+      "query": "digitalne platforme",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "digitalne pozivnice",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 44.7
+    },
+    {
+      "query": "digitalne pozivnice free",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9.5
+    },
+    {
+      "query": "digitalne pozivnice srbija",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 18
+    },
+    {
+      "query": "digitalne pozivnice za 18 rodjendan",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 7.9
+    },
+    {
+      "query": "digitalne pozivnice za deciji rodjendan",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "digitalnu",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "dj beograd",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 20.7
+    },
+    {
+      "query": "dj bera",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "dj booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "dj kragujevac",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 7.5
+    },
+    {
+      "query": "dj na svadbi",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "dj novi sad",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 25
+    },
+    {
+      "query": "dj svadbe",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 10.7
+    },
+    {
+      "query": "dj u beogradu",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "dj za svadbe",
+      "clicks": 0,
+      "impressions": 69,
+      "ctr": 0,
+      "position": 28.8
+    },
+    {
+      "query": "dj za svadbu",
+      "clicks": 0,
+      "impressions": 12,
+      "ctr": 0,
+      "position": 13.9
+    },
+    {
+      "query": "e pozivnica",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 34.8
+    },
+    {
+      "query": "e pozivnice",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 25.6
+    },
+    {
+      "query": "e pozivnice elektronske pozivnice digitalne pozivnice online pozivnice",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 36
+    },
+    {
+      "query": "elegantne pozivnice za 18 rodjendan",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 6.7
+    },
+    {
+      "query": "elektronska pozivnica",
+      "clicks": 0,
+      "impressions": 25,
+      "ctr": 0,
+      "position": 10.8
+    },
+    {
+      "query": "elektronska pozivnica za rodjendan",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "elektronske pozivnice",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 33
+    },
+    {
+      "query": "elektronske pozivnice za 18 rodjendan",
+      "clicks": 0,
+      "impressions": 20,
+      "ctr": 0,
+      "position": 17.1
+    },
+    {
+      "query": "elektronske pozivnice za vencanje",
+      "clicks": 0,
+      "impressions": 13,
+      "ctr": 0,
+      "position": 42.5
+    },
+    {
+      "query": "event coordinator",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 12
+    },
+    {
+      "query": "event decor",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "event hosting services",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "event planing",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "event planning",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "favor matrimonii",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "fiera zlatara",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 39
+    },
+    {
+      "query": "floristi",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "fors event",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "foto boot",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "foto booth",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "foto kabina",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 5.5
+    },
+    {
+      "query": "foto royal cacak",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 10.7
+    },
+    {
+      "query": "foto spomenar",
+      "clicks": 0,
+      "impressions": 85,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "foto y",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "fotografi",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "fotospomenar",
+      "clicks": 0,
+      "impressions": 16,
+      "ctr": 0,
+      "position": 7.7
+    },
+    {
+      "query": "fotospomenar beograd",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "frizura i sminka",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "gadgete",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "gadgeti",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 6.2
+    },
+    {
+      "query": "gde da kupim",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "gde kupiti u srbiji",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "gde moze da se kupi",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "gde moze da se kupi?",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "gde može da se kupi",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "glasovne knjige",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 9.7
+    },
+    {
+      "query": "guest book",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 3.7
+    },
+    {
+      "query": "hallo torte",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9.5
+    },
+    {
+      "query": "halo",
+      "clicks": 0,
+      "impressions": 500,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "halo -",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "halo govornice lokacije",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 24
+    },
+    {
+      "query": "halo halo",
+      "clicks": 0,
+      "impressions": 112,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "halo rs",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 8.8
+    },
+    {
+      "query": "halo telefon",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "halo torta",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 13.5
+    },
+    {
+      "query": "halo torta beograd",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 17
+    },
+    {
+      "query": "halo torte",
+      "clicks": 0,
+      "impressions": 17,
+      "ctr": 0,
+      "position": 6.5
+    },
+    {
+      "query": "halo!!",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "halo-halo",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 7.8
+    },
+    {
+      "query": "iznajmljivanje auta za svadbe",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 22.7
+    },
+    {
+      "query": "iznajmljivanje automobila za svadbe",
+      "clicks": 0,
+      "impressions": 12,
+      "ctr": 0,
+      "position": 30.1
+    },
+    {
+      "query": "iznajmljivanje automobila za svadbe beograd",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 37
+    },
+    {
+      "query": "iznajmljivanje automobila za svadbu",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 27.5
+    },
+    {
+      "query": "iznajmljivanje vencanica novi sad",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 38
+    },
+    {
+      "query": "izrada pozivnica",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 13
+    },
+    {
+      "query": "izrada pozivnica za rođendan",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 19
+    },
+    {
+      "query": "izrada pozivnica za svadbu",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 20.5
+    },
+    {
+      "query": "izrada zahvalnica online",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 9.5
+    },
+    {
+      "query": "jos",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "kako napraviti digitalnu pozivnicu za rodjendan",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 14
+    },
+    {
+      "query": "kako napraviti elektronsku pozivnicu za rodjendan",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "kako napraviti pozivnicu za rodjendan na telefonu",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 19
+    },
+    {
+      "query": "kako napraviti pozivnicu za rođendan",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 5.5
+    },
+    {
+      "query": "kako se kreću cene",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "knjiga utisaka",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 8.5
+    },
+    {
+      "query": "knjiga utisaka cena",
+      "clicks": 0,
+      "impressions": 31,
+      "ctr": 0,
+      "position": 10.3
+    },
+    {
+      "query": "knjiga utisaka i pohvale gostiju",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 7.4
+    },
+    {
+      "query": "kola za mladence",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 13.7
+    },
+    {
+      "query": "koliko kostaju burme za vencanje",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "kreiranje pozivnica za rodjendan",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 7.4
+    },
+    {
+      "query": "kreiranje pozivnice za rodjendan",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 9.7
+    },
+    {
+      "query": "lazaro vencanice",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "leo pozivnice",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 16.5
+    },
+    {
+      "query": "lila bend cena",
+      "clicks": 0,
+      "impressions": 14,
+      "ctr": 0,
+      "position": 6.6
+    },
+    {
+      "query": "lola vencanice",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 30
+    },
+    {
+      "query": "love house event hall",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 60
+    },
+    {
+      "query": "loznica",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "madam studio nis",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 16
+    },
+    {
+      "query": "moze",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "moze par slika",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 49
+    },
+    {
+      "query": "muzika za svadbe",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 36.7
+    },
+    {
+      "query": "muzika za svadbu",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 18.6
+    },
+    {
+      "query": "muzika za vencanje",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "najam vozila za svadbe",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 33.8
+    },
+    {
+      "query": "najam vozila za svadbu",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 20.9
+    },
+    {
+      "query": "najbolja muzika za svadbe repertoar najbolja muzika za svadbu beograd najbolji bend za svadbe do 1000 evra bomba band cena",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 41
+    },
+    {
+      "query": "napravi mi pozivnicu",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 7.2
+    },
+    {
+      "query": "napravi mi pozivnicu za rođendan",
+      "clicks": 0,
+      "impressions": 30,
+      "ctr": 0,
+      "position": 8.6
+    },
+    {
+      "query": "napravi pozivnicu za rođendan",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 7.6
+    },
+    {
+      "query": "novosadski bendovi za svadbe",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "occasions",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "online",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "online izrada pozivnica",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "online pozivnica",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 11.4
+    },
+    {
+      "query": "online pozivnica za rođendan",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 31
+    },
+    {
+      "query": "online pozivnice",
+      "clicks": 0,
+      "impressions": 12,
+      "ctr": 0,
+      "position": 23.5
+    },
+    {
+      "query": "online pozivnice za dječji rođendan",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "online pozivnice za svadbu",
+      "clicks": 0,
+      "impressions": 30,
+      "ctr": 0,
+      "position": 10.2
+    },
+    {
+      "query": "online pozivnice za vencanje",
+      "clicks": 0,
+      "impressions": 28,
+      "ctr": 0,
+      "position": 9.3
+    },
+    {
+      "query": "organizacija stolova za svadbu",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 6.9
+    },
+    {
+      "query": "organizacija vencanja",
+      "clicks": 0,
+      "impressions": 22,
+      "ctr": 0,
+      "position": 25.1
+    },
+    {
+      "query": "organizacija venčanja",
+      "clicks": 0,
+      "impressions": 8,
+      "ctr": 0,
+      "position": 25.5
+    },
+    {
+      "query": "organizacija vjenčanja",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 63
+    },
+    {
+      "query": "organizator vencanja",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 34
+    },
+    {
+      "query": "originalne",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "orkestar za svadbe",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 33
+    },
+    {
+      "query": "ovo me zanima",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "panoom",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 16.3
+    },
+    {
+      "query": "pare",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "personalizovani pokloni za goste",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "photo boot",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 7.7
+    },
+    {
+      "query": "photo bootg",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "photo booth",
+      "clicks": 0,
+      "impressions": 116,
+      "ctr": 0,
+      "position": 6.9
+    },
+    {
+      "query": "photo booth near me",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "photo booth novi sad",
+      "clicks": 0,
+      "impressions": 26,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "photo booth weding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "photo both",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 7.5
+    },
+    {
+      "query": "photo wedding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 20
+    },
+    {
+      "query": "photoboot",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 6.3
+    },
+    {
+      "query": "photobooth",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 6.1
+    },
+    {
+      "query": "photoborh",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "phoyo booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "pjotobooth",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "planer vencanja pdf",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 14
+    },
+    {
+      "query": "planer za vjenčanje",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "planiranje svadbe",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 6.3
+    },
+    {
+      "query": "planiranje vjenčanja",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 25.5
+    },
+    {
+      "query": "plann",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "planning",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 15
+    },
+    {
+      "query": "planning wedding",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 10.3
+    },
+    {
+      "query": "planning.wedding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "podni dim nis",
+      "clicks": 0,
+      "impressions": 38,
+      "ctr": 0,
+      "position": 5.8
+    },
+    {
+      "query": "poklon torta za svadbu",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 44.7
+    },
+    {
+      "query": "poklon torte za svadbu",
+      "clicks": 0,
+      "impressions": 17,
+      "ctr": 0,
+      "position": 47.1
+    },
+    {
+      "query": "poklon za goste",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 9.5
+    },
+    {
+      "query": "poklon za goste na svadbi",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 45
+    },
+    {
+      "query": "pokloncici za goste",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 37
+    },
+    {
+      "query": "pokloni za goste na svadbi",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 78
+    },
+    {
+      "query": "popis gostiju za svadbu",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 5.4
+    },
+    {
+      "query": "popis gostiju za vjenčanje",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 39.2
+    },
+    {
+      "query": "positive band",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "poyivnice",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 23.5
+    },
+    {
+      "query": "pozadine za pozivnice",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 16
+    },
+    {
+      "query": "pozimnica",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9.5
+    },
+    {
+      "query": "pozivnica",
+      "clicks": 0,
+      "impressions": 27,
+      "ctr": 0,
+      "position": 13.7
+    },
+    {
+      "query": "pozivnica online",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 8.4
+    },
+    {
+      "query": "pozivnica za 18",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 6.5
+    },
+    {
+      "query": "pozivnica za 18 rodjendan",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "pozivnica za 18 rođendan",
+      "clicks": 0,
+      "impressions": 53,
+      "ctr": 0,
+      "position": 12.1
+    },
+    {
+      "query": "pozivnica za 4 rodjendan",
+      "clicks": 0,
+      "impressions": 12,
+      "ctr": 0,
+      "position": 9.5
+    },
+    {
+      "query": "pozivnica za djeciji rodjendan",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "pozivnica za prvi rodjendan",
+      "clicks": 0,
+      "impressions": 22,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "pozivnica za punoletstvo",
+      "clicks": 0,
+      "impressions": 72,
+      "ctr": 0,
+      "position": 6.7
+    },
+    {
+      "query": "pozivnica za rodjendan online besplatno",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "pozivnica za rodjendan za decake",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 8.5
+    },
+    {
+      "query": "pozivnica za rodjenje deteta",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "pozivnica za rođendan",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 39
+    },
+    {
+      "query": "pozivnica za rođendan 18",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 8.5
+    },
+    {
+      "query": "pozivnica za rođendan online",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 10.7
+    },
+    {
+      "query": "pozivnica za rođendan pdf",
+      "clicks": 0,
+      "impressions": 48,
+      "ctr": 0,
+      "position": 8.1
+    },
+    {
+      "query": "pozivnica za rođendan pdf free download",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "pozivnica za svadbu",
+      "clicks": 0,
+      "impressions": 8,
+      "ctr": 0,
+      "position": 14.8
+    },
+    {
+      "query": "pozivnica za vencanje",
+      "clicks": 0,
+      "impressions": 31,
+      "ctr": 0,
+      "position": 14.5
+    },
+    {
+      "query": "pozivnica za venčanje",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 12.7
+    },
+    {
+      "query": "pozivnice",
+      "clicks": 0,
+      "impressions": 131,
+      "ctr": 0,
+      "position": 13.2
+    },
+    {
+      "query": "pozivnice leo",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 20
+    },
+    {
+      "query": "pozivnice online",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 20.3
+    },
+    {
+      "query": "pozivnice online free",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 9.4
+    },
+    {
+      "query": "pozivnice za 1 rodjendan",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 17
+    },
+    {
+      "query": "pozivnice za 18",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 9.7
+    },
+    {
+      "query": "pozivnice za 18 rodjendan muske",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 16
+    },
+    {
+      "query": "pozivnice za 18 rodjendan online free",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 33
+    },
+    {
+      "query": "pozivnice za 18 rodjendan tekst",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 27
+    },
+    {
+      "query": "pozivnice za 18 rodjendan zenske",
+      "clicks": 0,
+      "impressions": 40,
+      "ctr": 0,
+      "position": 8.7
+    },
+    {
+      "query": "pozivnice za 18. rodjendan",
+      "clicks": 0,
+      "impressions": 19,
+      "ctr": 0,
+      "position": 8.4
+    },
+    {
+      "query": "pozivnice za decije rodjendane",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "pozivnice za deciji rodjendan online",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "pozivnice za decu",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "pozivnice za dečiji rođendan",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 14
+    },
+    {
+      "query": "pozivnice za djeciji rodjendan",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "pozivnice za krstenje",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 11.2
+    },
+    {
+      "query": "pozivnice za krštenje",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 12
+    },
+    {
+      "query": "pozivnice za prvi rodjendan",
+      "clicks": 0,
+      "impressions": 32,
+      "ctr": 0,
+      "position": 16.4
+    },
+    {
+      "query": "pozivnice za prvi rodjendan online",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 8.8
+    },
+    {
+      "query": "pozivnice za prvi rodjendan za devojcice",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "pozivnice za rodjendan",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 11.9
+    },
+    {
+      "query": "pozivnice za rodjendan 18",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "pozivnice za rodjendan za decake",
+      "clicks": 0,
+      "impressions": 8,
+      "ctr": 0,
+      "position": 11.8
+    },
+    {
+      "query": "pozivnice za rodjendane",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 20
+    },
+    {
+      "query": "pozivnice za rođendan",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 12
+    },
+    {
+      "query": "pozivnice za rođendan 18",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "pozivnice za rođendan pdf",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 8.4
+    },
+    {
+      "query": "pozivnice za svadbe",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 11.3
+    },
+    {
+      "query": "pozivnice za svadbu",
+      "clicks": 0,
+      "impressions": 20,
+      "ctr": 0,
+      "position": 10.7
+    },
+    {
+      "query": "pozivnice za svadbu kako treba da izgleda",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 15
+    },
+    {
+      "query": "pozivnice za svadbu novi sad",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "pozivnice za svadbu uradi sam",
+      "clicks": 0,
+      "impressions": 18,
+      "ctr": 0,
+      "position": 9.3
+    },
+    {
+      "query": "pozivnice za vencanja",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "pozivnice za vencanje",
+      "clicks": 0,
+      "impressions": 68,
+      "ctr": 0,
+      "position": 18
+    },
+    {
+      "query": "pozivnice za venčanje",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 12
+    },
+    {
+      "query": "pozivnice za veridbu",
+      "clicks": 0,
+      "impressions": 18,
+      "ctr": 0,
+      "position": 7.3
+    },
+    {
+      "query": "pozivnice za vjencanja",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "pozivnice za vjenčanja",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "pozivnicu",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 8.3
+    },
+    {
+      "query": "prazne pozivnice",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "preporuka",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "presvlaka",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "punoletstvo pozivnice za 18 rođendan",
+      "clicks": 0,
+      "impressions": 8,
+      "ctr": 0,
+      "position": 9.4
+    },
+    {
+      "query": "qr kod za svadbu",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 37
+    },
+    {
+      "query": "qr pano",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 4.3
+    },
+    {
+      "query": "raspored gostiju po stolovima",
+      "clicks": 0,
+      "impressions": 49,
+      "ctr": 0,
+      "position": 7.3
+    },
+    {
+      "query": "raspored sjedenja",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "raspored sjedenja za vjenčanje",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 53
+    },
+    {
+      "query": "raspored stolova za vjenčanje",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 6.7
+    },
+    {
+      "query": "rent a photo booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "retro telefon",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 17
+    },
+    {
+      "query": "retrotelefon",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "rodjendanska pozivnica",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 43
+    },
+    {
+      "query": "rodjendanske pozivnice",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 11.1
+    },
+    {
+      "query": "rodjendanske pozivnice za decake",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "roma torte kragujevac cenovnik",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 10.7
+    },
+    {
+      "query": "sa slikom",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "sale za vencanja",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 44.8
+    },
+    {
+      "query": "salon vencanica novi sad",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 33.8
+    },
+    {
+      "query": "salon venčanica novi sad",
+      "clicks": 0,
+      "impressions": 8,
+      "ctr": 0,
+      "position": 37.1
+    },
+    {
+      "query": "saloni vencanica novi sad",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 29
+    },
+    {
+      "query": "samodigital",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 34.3
+    },
+    {
+      "query": "samostalna izrada pozivnica",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 7.3
+    },
+    {
+      "query": "sarsvp (online or full or torrent or siterip)",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 106.5
+    },
+    {
+      "query": "selfie booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "servis tim",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "sećofon",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "sid",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "slike pozivnice za 18 rodjendan",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 14
+    },
+    {
+      "query": "slobodni bendovi za svadbe",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 52.5
+    },
+    {
+      "query": "sminka i frizura",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 9.5
+    },
+    {
+      "query": "sminka i frizura beograd",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 7.4
+    },
+    {
+      "query": "sminka i frizura na jednom mestu",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 11.8
+    },
+    {
+      "query": "sminka i frizura novi sad",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "sminka kragujevac",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 58
+    },
+    {
+      "query": "sminka za mlade",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 6.6
+    },
+    {
+      "query": "sminka za vencanje",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "snezana i 7 patuljaka",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 13
+    },
+    {
+      "query": "specijalni efekti",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 39
+    },
+    {
+      "query": "spisak gostiju",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 22.3
+    },
+    {
+      "query": "spisak gostiju rs",
+      "clicks": 0,
+      "impressions": 15,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "spisak gostiju za svadbu pdf",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 8.5
+    },
+    {
+      "query": "spisak stolova za svadbu",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 8.6
+    },
+    {
+      "query": "sta je pano",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 7.3
+    },
+    {
+      "query": "sta je rsvp",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "sta kupiti uciteljici za kraj 4 razreda",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "sta sve treba za svadbu",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "sta znaci rsvp",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 10.7
+    },
+    {
+      "query": "stampanje pozivnica",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 58
+    },
+    {
+      "query": "stampanje pozivnica za svadbu",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "sunday decor",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "svadba 2026 online",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "svadba dj",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 8.5
+    },
+    {
+      "query": "svadba gosti",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 5.3
+    },
+    {
+      "query": "svadba online",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "svadbe",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 4.5
+    },
+    {
+      "query": "svadbena kolona",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "svadbene torte beograd",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 19
+    },
+    {
+      "query": "svadbene torte cene novi sad",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 27
+    },
+    {
+      "query": "svadbene torte na jedan sprat",
+      "clicks": 0,
+      "impressions": 13,
+      "ctr": 0,
+      "position": 65.1
+    },
+    {
+      "query": "svadbene torte novi sad",
+      "clicks": 0,
+      "impressions": 26,
+      "ctr": 0,
+      "position": 32.7
+    },
+    {
+      "query": "svadbene torte novi sad cene",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 43
+    },
+    {
+      "query": "svecane torte na sprat",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 61
+    },
+    {
+      "query": "svecane torte poklon torte za svadbu",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 26
+    },
+    {
+      "query": "telefon",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 6.6
+    },
+    {
+      "query": "telefonska govornica za svadbe",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 7.4
+    },
+    {
+      "query": "the invite online",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "torte za svadbu novi sad",
+      "clicks": 0,
+      "impressions": 20,
+      "ctr": 0,
+      "position": 41.9
+    },
+    {
+      "query": "torte za vencanja",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 57
+    },
+    {
+      "query": "torte za vencanje",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 45
+    },
+    {
+      "query": "torte za vencanje beograd",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 22.2
+    },
+    {
+      "query": "track service near me",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "u novom sadu",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "u srbiji",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "u sremskoj mitrovici",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "u čačku",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "udaja",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "vatromet novi sad",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "vatromet subotica",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 16
+    },
+    {
+      "query": "vencanice kragujevac cene",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "vencanice pancevo",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 35.7
+    },
+    {
+      "query": "vencanice srbija",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "vencanice subotica",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "vencanja",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 35
+    },
+    {
+      "query": "vendori",
+      "clicks": 0,
+      "impressions": 22,
+      "ctr": 0,
+      "position": 7.5
+    },
+    {
+      "query": "venčanice novi sad",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 31.7
+    },
+    {
+      "query": "venčanje",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 2.5
+    },
+    {
+      "query": "viber pozivnice za rodjendan",
+      "clicks": 0,
+      "impressions": 86,
+      "ctr": 0,
+      "position": 8.2
+    },
+    {
+      "query": "wedding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "wedding agency",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "wedding booth rentals",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 12
+    },
+    {
+      "query": "wedding decor designer",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "wedding design decor",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "wedding invitations",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 9.2
+    },
+    {
+      "query": "wedding invites",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "wedding organization",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "wedding photo booth",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "wedding photo corner",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "wedding photography",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 21
+    },
+    {
+      "query": "wedding planner cena",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "wedding planner srbija",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 10.5
+    },
+    {
+      "query": "wedding planning",
+      "clicks": 0,
+      "impressions": 993,
+      "ctr": 0,
+      "position": 9.1
+    },
+    {
+      "query": "wedding.planning",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "weddings decoration",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "za rođendan",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "za svadbe",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "za svadbu",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "zanima me kupovina",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "zelim",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "zlatara",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "zlatara cacak",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 30
+    },
+    {
+      "query": "zlatara gama",
+      "clicks": 0,
+      "impressions": 25,
+      "ctr": 0,
+      "position": 7.2
+    },
+    {
+      "query": "zlatara lorenc",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "zlatara moric",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "zlatara sfinga",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 12.9
+    },
+    {
+      "query": "zlatara sfinga čačak",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 10.8
+    },
+    {
+      "query": "zlatara subotica cene",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "ćirilični fontovi",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "šabloni za pozivnice za punoletstvo",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "šminka i frizura",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9.5
+    },
+    {
+      "query": "šminka i frizura novi sad",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "šminka za deveruše",
+      "clicks": 0,
+      "impressions": 46,
+      "ctr": 0,
+      "position": 4.3
+    },
+    {
+      "query": "šminka za svadbu cena",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 18
+    },
+    {
+      "query": "šminkanje slike",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 18
+    },
+    {
+      "query": "šminkeri",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 7.8
+    },
+    {
+      "query": "вендори",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "планер венћања онлине",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 3.5
+    },
+    {
+      "query": "ретро телефон",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    }
+  ],
+  "gsc_pages": [
+    {
+      "page": "/",
+      "clicks": 377,
+      "impressions": 4732,
+      "ctr": 7.97,
+      "position": 6.3
+    },
+    {
+      "page": "/telefon-uspomena/",
+      "clicks": 175,
+      "impressions": 1435,
+      "ctr": 12.2,
+      "position": 4.6
+    },
+    {
+      "page": "/blog/raspored-sedenja-za-svadbu-vodic/",
+      "clicks": 118,
+      "impressions": 2385,
+      "ctr": 4.95,
+      "position": 5.8
+    },
+    {
+      "page": "/raspored-sedenja/",
+      "clicks": 98,
+      "impressions": 989,
+      "ctr": 9.91,
+      "position": 6.8
+    },
+    {
+      "page": "/napravi-deciju-pozivnicu/",
+      "clicks": 94,
+      "impressions": 2457,
+      "ctr": 3.83,
+      "position": 7.2
+    },
+    {
+      "page": "/pozivnice/",
+      "clicks": 94,
+      "impressions": 3084,
+      "ctr": 3.05,
+      "position": 8.2
+    },
+    {
+      "page": "/blog/moje-vencanje-planer/",
+      "clicks": 53,
+      "impressions": 639,
+      "ctr": 8.29,
+      "position": 6.8
+    },
+    {
+      "page": "/planiranje-vencanja/",
+      "clicks": 44,
+      "impressions": 560,
+      "ctr": 7.86,
+      "position": 8.8
+    },
+    {
+      "page": "/napravi-punoletstvo/",
+      "clicks": 38,
+      "impressions": 1671,
+      "ctr": 2.27,
+      "position": 8
+    },
+    {
+      "page": "/blog/audio-guest-book-cena/",
+      "clicks": 32,
+      "impressions": 248,
+      "ctr": 12.9,
+      "position": 5.5
+    },
+    {
+      "page": "/blog/planiranje-vencanja-checklista/",
+      "clicks": 32,
+      "impressions": 488,
+      "ctr": 6.56,
+      "position": 9.5
+    },
+    {
+      "page": "/blog/ideje-za-vencanje-srbija/",
+      "clicks": 18,
+      "impressions": 177,
+      "ctr": 10.17,
+      "position": 6.8
+    },
+    {
+      "page": "/vendori/pokloni/",
+      "clicks": 18,
+      "impressions": 441,
+      "ctr": 4.08,
+      "position": 7.8
+    },
+    {
+      "page": "/cene/",
+      "clicks": 17,
+      "impressions": 495,
+      "ctr": 3.43,
+      "position": 6.6
+    },
+    {
+      "page": "/blog/audio-guest-book-cena",
+      "clicks": 15,
+      "impressions": 81,
+      "ctr": 18.52,
+      "position": 5.6
+    },
+    {
+      "page": "/vendori/muzika/",
+      "clicks": 14,
+      "impressions": 829,
+      "ctr": 1.69,
+      "position": 13.4
+    },
+    {
+      "page": "/qr-pano-dobrodoslice/",
+      "clicks": 13,
+      "impressions": 253,
+      "ctr": 5.14,
+      "position": 6.2
+    },
+    {
+      "page": "/izrada-pozivnica-online/",
+      "clicks": 12,
+      "impressions": 310,
+      "ctr": 3.87,
+      "position": 14.2
+    },
+    {
+      "page": "/lokacije/kragujevac/",
+      "clicks": 12,
+      "impressions": 105,
+      "ctr": 11.43,
+      "position": 5.5
+    },
+    {
+      "page": "/napravi-deciju-pozivnicu",
+      "clicks": 11,
+      "impressions": 204,
+      "ctr": 5.39,
+      "position": 7.6
+    },
+    {
+      "page": "/vendori/vatromet/",
+      "clicks": 10,
+      "impressions": 380,
+      "ctr": 2.63,
+      "position": 7.1
+    },
+    {
+      "page": "/vendori/burme/",
+      "clicks": 9,
+      "impressions": 603,
+      "ctr": 1.49,
+      "position": 9.6
+    },
+    {
+      "page": "/blog/originalne-ideje-za-vencanja/",
+      "clicks": 8,
+      "impressions": 138,
+      "ctr": 5.8,
+      "position": 6.7
+    },
+    {
+      "page": "/lokacije/nis/",
+      "clicks": 8,
+      "impressions": 209,
+      "ctr": 3.83,
+      "position": 4.2
+    },
+    {
+      "page": "/lokacije/novi-sad/",
+      "clicks": 7,
+      "impressions": 94,
+      "ctr": 7.45,
+      "position": 6
+    },
+    {
+      "page": "/napravi-pozivnicu/",
+      "clicks": 7,
+      "impressions": 456,
+      "ctr": 1.54,
+      "position": 7.6
+    },
+    {
+      "page": "/vendori/cvece/",
+      "clicks": 7,
+      "impressions": 503,
+      "ctr": 1.39,
+      "position": 8.1
+    },
+    {
+      "page": "/vendori/vencanice/",
+      "clicks": 7,
+      "impressions": 520,
+      "ctr": 1.35,
+      "position": 11.2
+    },
+    {
+      "page": "/blog/website-pozivnica-kompletan-vodic/",
+      "clicks": 6,
+      "impressions": 240,
+      "ctr": 2.5,
+      "position": 7.3
+    },
+    {
+      "page": "/iznajmljivanje-automobila-za-vencanje/",
+      "clicks": 6,
+      "impressions": 74,
+      "ctr": 8.11,
+      "position": 16.2
+    },
+    {
+      "page": "/vendori/foto-video/",
+      "clicks": 6,
+      "impressions": 349,
+      "ctr": 1.72,
+      "position": 8.5
+    },
+    {
+      "page": "/blog/sta-je-audio-guest-book/",
+      "clicks": 5,
+      "impressions": 126,
+      "ctr": 3.97,
+      "position": 6.4
+    },
+    {
+      "page": "/lokacije/beograd/",
+      "clicks": 5,
+      "impressions": 148,
+      "ctr": 3.38,
+      "position": 4.7
+    },
+    {
+      "page": "/lokacije/subotica/",
+      "clicks": 5,
+      "impressions": 50,
+      "ctr": 10,
+      "position": 6.3
+    },
+    {
+      "page": "/napravi-punoletstvo",
+      "clicks": 5,
+      "impressions": 99,
+      "ctr": 5.05,
+      "position": 6.6
+    },
+    {
+      "page": "/pozivnica-za-prvi-rodjendan/",
+      "clicks": 5,
+      "impressions": 158,
+      "ctr": 3.16,
+      "position": 9.1
+    },
+    {
+      "page": "/vendori/sminka/",
+      "clicks": 5,
+      "impressions": 395,
+      "ctr": 1.27,
+      "position": 8.5
+    },
+    {
+      "page": "/blog/originalne-ideje-za-vencanja",
+      "clicks": 4,
+      "impressions": 25,
+      "ctr": 16,
+      "position": 4.9
+    },
+    {
+      "page": "/vendori/torte/",
+      "clicks": 4,
+      "impressions": 362,
+      "ctr": 1.1,
+      "position": 21
+    },
+    {
+      "page": "/blog/pozivnice-za-deciji-rodjendan-online/",
+      "clicks": 3,
+      "impressions": 126,
+      "ctr": 2.38,
+      "position": 8.2
+    },
+    {
+      "page": "/cene",
+      "clicks": 3,
+      "impressions": 21,
+      "ctr": 14.29,
+      "position": 4.3
+    },
+    {
+      "page": "/lokacije/",
+      "clicks": 3,
+      "impressions": 198,
+      "ctr": 1.52,
+      "position": 3.3
+    },
+    {
+      "page": "/vendori/dekoracija/",
+      "clicks": 3,
+      "impressions": 144,
+      "ctr": 2.08,
+      "position": 7.8
+    },
+    {
+      "page": "http://halouspomene.rs/",
+      "clicks": 2,
+      "impressions": 9,
+      "ctr": 22.22,
+      "position": 3.9
+    },
+    {
+      "page": "/blog/audio-guest-book-vs-knjiga-utisaka",
+      "clicks": 2,
+      "impressions": 16,
+      "ctr": 12.5,
+      "position": 8.1
+    },
+    {
+      "page": "/blog/audio-guest-book-vs-knjiga-utisaka/",
+      "clicks": 2,
+      "impressions": 162,
+      "ctr": 1.23,
+      "position": 7.8
+    },
+    {
+      "page": "/blog/auto-za-vencanje-vodic/",
+      "clicks": 2,
+      "impressions": 28,
+      "ctr": 7.14,
+      "position": 8.4
+    },
+    {
+      "page": "/blog/kako-funkcionise-audio-guest-book",
+      "clicks": 2,
+      "impressions": 38,
+      "ctr": 5.26,
+      "position": 6
+    },
+    {
+      "page": "/blog/najbolji-gadgeti-za-proslave/",
+      "clicks": 2,
+      "impressions": 37,
+      "ctr": 5.41,
+      "position": 5.5
+    },
+    {
+      "page": "/blog/website-pozivnica-kompletan-vodic",
+      "clicks": 2,
+      "impressions": 17,
+      "ctr": 11.76,
+      "position": 5.9
+    },
+    {
+      "page": "/moje-vencanje/",
+      "clicks": 2,
+      "impressions": 50,
+      "ctr": 4,
+      "position": 6.4
+    },
+    {
+      "page": "/raspored-sedenja",
+      "clicks": 2,
+      "impressions": 18,
+      "ctr": 11.11,
+      "position": 5.6
+    },
+    {
+      "page": "/vendori/sale/",
+      "clicks": 2,
+      "impressions": 273,
+      "ctr": 0.73,
+      "position": 8.9
+    },
+    {
+      "page": "/blog/audio-knjiga-utisaka-cena-kako-funkcionise/",
+      "clicks": 1,
+      "impressions": 53,
+      "ctr": 1.89,
+      "position": 7.9
+    },
+    {
+      "page": "/blog/kada-slati-pozivnice-za-vencanje/",
+      "clicks": 1,
+      "impressions": 6,
+      "ctr": 16.67,
+      "position": 3.7
+    },
+    {
+      "page": "/blog/najbolji-gadgeti-za-proslave",
+      "clicks": 1,
+      "impressions": 8,
+      "ctr": 12.5,
+      "position": 6.3
+    },
+    {
+      "page": "/blog/qr-galerija-slika-sa-vencanja-kako-gosti-dele/",
+      "clicks": 1,
+      "impressions": 14,
+      "ctr": 7.14,
+      "position": 9.4
+    },
+    {
+      "page": "/blog/qr-pano-dobrodoslice-trend/",
+      "clicks": 1,
+      "impressions": 45,
+      "ctr": 2.22,
+      "position": 6.6
+    },
+    {
+      "page": "/blog/srpske-svadbene-tradicije-moderni-trendovi/",
+      "clicks": 1,
+      "impressions": 4,
+      "ctr": 25,
+      "position": 10.8
+    },
+    {
+      "page": "/lokacije",
+      "clicks": 1,
+      "impressions": 48,
+      "ctr": 2.08,
+      "position": 4.3
+    },
+    {
+      "page": "/lokacije/beograd",
+      "clicks": 1,
+      "impressions": 53,
+      "ctr": 1.89,
+      "position": 4.1
+    },
+    {
+      "page": "/lokacije/cacak/",
+      "clicks": 1,
+      "impressions": 10,
+      "ctr": 10,
+      "position": 5.1
+    },
+    {
+      "page": "/qr-galerija-slika-sa-vencanja/",
+      "clicks": 1,
+      "impressions": 30,
+      "ctr": 3.33,
+      "position": 5.5
+    },
+    {
+      "page": "/vendori/",
+      "clicks": 1,
+      "impressions": 68,
+      "ctr": 1.47,
+      "position": 5.6
+    },
+    {
+      "page": "/OP%C5%A0TI%20USLOVI%20NAJMA%20I%20KORI%C5%A0%C4%86ENJA%20AUDIO%20GUEST%20BOOK%20URE%C4%90AJA.pdf",
+      "clicks": 0,
+      "impressions": 22,
+      "ctr": 0,
+      "position": 20.1
+    },
+    {
+      "page": "/blog",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "page": "/blog/",
+      "clicks": 0,
+      "impressions": 32,
+      "ctr": 0,
+      "position": 5.9
+    },
+    {
+      "page": "/blog/audio-guest-book-iskustva",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "page": "/blog/audio-guest-book-iskustva/",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 6.7
+    },
+    {
+      "page": "/blog/audio-knjiga-utisaka-cena-kako-funkcionise",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 7.2
+    },
+    {
+      "page": "/blog/ideje-za-vencanje-srbija",
+      "clicks": 0,
+      "impressions": 24,
+      "ctr": 0,
+      "position": 8.2
+    },
+    {
+      "page": "/blog/kada-slati-pozivnice-za-vencanje",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 3.3
+    },
+    {
+      "page": "/blog/kako-funkcionise-audio-guest-book/",
+      "clicks": 0,
+      "impressions": 26,
+      "ctr": 0,
+      "position": 4.6
+    },
+    {
+      "page": "/blog/premium-ai-pozivnice/",
+      "clicks": 0,
+      "impressions": 53,
+      "ctr": 0,
+      "position": 6.5
+    },
+    {
+      "page": "/blog/qr-galerija-slika-sa-vencanja-kako-gosti-dele",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "page": "/blog/srpske-svadbene-tradicije-moderni-trendovi",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "page": "/blog/sta-je-audio-guest-book",
+      "clicks": 0,
+      "impressions": 27,
+      "ctr": 0,
+      "position": 6.9
+    },
+    {
+      "page": "/blog/stampane-pozivnice-sa-qr-kodom-za-potvrdu/",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "page": "/iznajmljivanje-automobila-za-vencanje",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 38
+    },
+    {
+      "page": "/izrada-pozivnica-online",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 28.5
+    },
+    {
+      "page": "/lokacije/cacak",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "page": "/lokacije/kragujevac",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "page": "/lokacije/nis",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 9.8
+    },
+    {
+      "page": "/lokacije/novi-sad",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 5.1
+    },
+    {
+      "page": "/lokacije/subotica",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "page": "/qr-galerija-slika-sa-vencanja",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "page": "/vendori/pokloni",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 3.6
+    }
+  ],
+  "gsc_home_queries": [
+    {
+      "query": "halo uspomene",
+      "clicks": 96,
+      "impressions": 129,
+      "ctr": 74.42,
+      "position": 1
+    },
+    {
+      "query": "audio guest book cena",
+      "clicks": 14,
+      "impressions": 65,
+      "ctr": 21.54,
+      "position": 4.3
+    },
+    {
+      "query": "telefon uspomena",
+      "clicks": 6,
+      "impressions": 101,
+      "ctr": 5.94,
+      "position": 7.5
+    },
+    {
+      "query": "da",
+      "clicks": 3,
+      "impressions": 4,
+      "ctr": 75,
+      "position": 3.5
+    },
+    {
+      "query": "halouspomene",
+      "clicks": 3,
+      "impressions": 5,
+      "ctr": 60,
+      "position": 1
+    },
+    {
+      "query": "pozivnice za vencanje novi sad",
+      "clicks": 3,
+      "impressions": 39,
+      "ctr": 7.69,
+      "position": 1.4
+    },
+    {
+      "query": "telefon za svadbe",
+      "clicks": 2,
+      "impressions": 25,
+      "ctr": 8,
+      "position": 7.1
+    },
+    {
+      "query": "audio guest book",
+      "clicks": 1,
+      "impressions": 26,
+      "ctr": 3.85,
+      "position": 2.9
+    },
+    {
+      "query": "&",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 11.3
+    },
+    {
+      "query": "an event organiser",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 14
+    },
+    {
+      "query": "audio",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "audio guest",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "audio telefon",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "cena",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "da kupim",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "decor design",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "digitalne platforme",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "digitalnu",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "dj booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "elektronske pozivnice",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 12
+    },
+    {
+      "query": "event coordinator",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 12
+    },
+    {
+      "query": "event decor",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "event hosting services",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "event planing",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "event planning",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "foto boot",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "foto booth",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "foto kabina",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 5.5
+    },
+    {
+      "query": "gde kupiti u srbiji",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "guest book",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 3.7
+    },
+    {
+      "query": "halo",
+      "clicks": 0,
+      "impressions": 500,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "halo -",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "halo halo",
+      "clicks": 0,
+      "impressions": 112,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "halo rs",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 8.8
+    },
+    {
+      "query": "halo telefon",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "halo!!",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "halo-halo",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 7.8
+    },
+    {
+      "query": "iznajmljivanje telefona",
+      "clicks": 0,
+      "impressions": 13,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "jos",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "loznica",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "occasions",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "online pozivnice",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 10.5
+    },
+    {
+      "query": "photo boot",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 7.7
+    },
+    {
+      "query": "photo bootg",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "photo booth",
+      "clicks": 0,
+      "impressions": 116,
+      "ctr": 0,
+      "position": 6.9
+    },
+    {
+      "query": "photo booth near me",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "photo booth novi sad",
+      "clicks": 0,
+      "impressions": 26,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "photo booth weding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "photo both",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 7.5
+    },
+    {
+      "query": "photo wedding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 20
+    },
+    {
+      "query": "photoboot",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 6.3
+    },
+    {
+      "query": "photobooth",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 6.1
+    },
+    {
+      "query": "photoborh",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "phoyo booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "pjotobooth",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "planiranje vencanja",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "plann",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "planning",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 15
+    },
+    {
+      "query": "planning wedding",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 10.3
+    },
+    {
+      "query": "planning.wedding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "pozivnica za rodjenje deteta",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "pozivnice",
+      "clicks": 0,
+      "impressions": 117,
+      "ctr": 0,
+      "position": 10.2
+    },
+    {
+      "query": "pozivnice novi sad",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "pozivnice za krstenje",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 11.2
+    },
+    {
+      "query": "pozivnice za krštenje",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 12
+    },
+    {
+      "query": "pozivnice za rodjendan",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 11.9
+    },
+    {
+      "query": "pozivnice za rodjendane",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "pozivnice za rođendan",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 12
+    },
+    {
+      "query": "pozivnice za svadbe",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 11.3
+    },
+    {
+      "query": "pozivnice za svadbu",
+      "clicks": 0,
+      "impressions": 16,
+      "ctr": 0,
+      "position": 8.5
+    },
+    {
+      "query": "pozivnice za svadbu novi sad",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "pozivnice za vencanja",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "pozivnice za vencanje",
+      "clicks": 0,
+      "impressions": 19,
+      "ctr": 0,
+      "position": 10.3
+    },
+    {
+      "query": "pozivnice za vencanje online",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "pozivnice za venčanje",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "pozivnice za vjencanja",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "pozivnice za vjenčanja",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 11
+    },
+    {
+      "query": "qr pano",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "rent a photo booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "rodjendanske pozivnice",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 11.1
+    },
+    {
+      "query": "selfie booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "servis tim",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "stampanje pozivnica za svadbu",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "sunday decor",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "telefon",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 6.6
+    },
+    {
+      "query": "telefonska govornica za svadbe",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "track service near me",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "wedding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "wedding agency",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "wedding booth rentals",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 12
+    },
+    {
+      "query": "wedding decor designer",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "wedding design decor",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "wedding invitations",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 9.2
+    },
+    {
+      "query": "wedding invites",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "wedding organization",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "wedding photo booth",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "wedding photo corner",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "wedding photography",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 21
+    },
+    {
+      "query": "wedding planning",
+      "clicks": 0,
+      "impressions": 993,
+      "ctr": 0,
+      "position": 9.1
+    },
+    {
+      "query": "wedding.planning",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "weddings decoration",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "zelim",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    }
+  ],
+  "gsc_home_top10": [
+    {
+      "query": "halo uspomene",
+      "clicks": 96,
+      "impressions": 129,
+      "ctr": 74.42,
+      "position": 1
+    },
+    {
+      "query": "audio guest book cena",
+      "clicks": 14,
+      "impressions": 65,
+      "ctr": 21.54,
+      "position": 4.3
+    },
+    {
+      "query": "telefon uspomena",
+      "clicks": 6,
+      "impressions": 101,
+      "ctr": 5.94,
+      "position": 7.5
+    },
+    {
+      "query": "da",
+      "clicks": 3,
+      "impressions": 4,
+      "ctr": 75,
+      "position": 3.5
+    },
+    {
+      "query": "halouspomene",
+      "clicks": 3,
+      "impressions": 5,
+      "ctr": 60,
+      "position": 1
+    },
+    {
+      "query": "pozivnice za vencanje novi sad",
+      "clicks": 3,
+      "impressions": 39,
+      "ctr": 7.69,
+      "position": 1.4
+    },
+    {
+      "query": "telefon za svadbe",
+      "clicks": 2,
+      "impressions": 25,
+      "ctr": 8,
+      "position": 7.1
+    },
+    {
+      "query": "audio guest book",
+      "clicks": 1,
+      "impressions": 26,
+      "ctr": 3.85,
+      "position": 2.9
+    },
+    {
+      "query": "audio",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "audio guest",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "audio telefon",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "cena",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "da kupim",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "decor design",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "digitalne platforme",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "digitalnu",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "dj booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "event decor",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "event hosting services",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "event planing",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "event planning",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "foto boot",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "foto booth",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "foto kabina",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 5.5
+    },
+    {
+      "query": "gde kupiti u srbiji",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "guest book",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 3.7
+    },
+    {
+      "query": "halo",
+      "clicks": 0,
+      "impressions": 500,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "halo -",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "halo halo",
+      "clicks": 0,
+      "impressions": 112,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "halo rs",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 8.8
+    },
+    {
+      "query": "halo telefon",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "halo!!",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "halo-halo",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 7.8
+    },
+    {
+      "query": "iznajmljivanje telefona",
+      "clicks": 0,
+      "impressions": 13,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "jos",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "loznica",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "occasions",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "photo boot",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 7.7
+    },
+    {
+      "query": "photo bootg",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "photo booth",
+      "clicks": 0,
+      "impressions": 116,
+      "ctr": 0,
+      "position": 6.9
+    },
+    {
+      "query": "photo booth near me",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "photo booth novi sad",
+      "clicks": 0,
+      "impressions": 26,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "photo booth weding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "photo both",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 7.5
+    },
+    {
+      "query": "photoboot",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 6.3
+    },
+    {
+      "query": "photobooth",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 6.1
+    },
+    {
+      "query": "photoborh",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "phoyo booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "pjotobooth",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "planiranje vencanja",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "plann",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "planning.wedding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "pozivnica za rodjenje deteta",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "pozivnice novi sad",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "pozivnice za rodjendane",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "pozivnice za svadbu",
+      "clicks": 0,
+      "impressions": 16,
+      "ctr": 0,
+      "position": 8.5
+    },
+    {
+      "query": "pozivnice za svadbu novi sad",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "pozivnice za vencanja",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "pozivnice za vencanje online",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "qr pano",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 7
+    },
+    {
+      "query": "rent a photo booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
+      "query": "selfie booth",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "servis tim",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "stampanje pozivnica za svadbu",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "sunday decor",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "telefon",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 6.6
+    },
+    {
+      "query": "telefonska govornica za svadbe",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 6
+    },
+    {
+      "query": "track service near me",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "wedding",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "wedding agency",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "wedding decor designer",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "wedding design decor",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "wedding invitations",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 9.2
+    },
+    {
+      "query": "wedding invites",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "wedding organization",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "wedding photo booth",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "wedding photo corner",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
+    },
+    {
+      "query": "wedding planning",
+      "clicks": 0,
+      "impressions": 993,
+      "ctr": 0,
+      "position": 9.1
+    },
+    {
+      "query": "wedding.planning",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "weddings decoration",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "zelim",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2
+    }
+  ],
+  "gsc_devices": [
+    {
+      "device": "MOBILE",
+      "clicks": 1080,
+      "impressions": 18331,
+      "ctr": 5.89,
+      "position": 6.9
+    },
+    {
+      "device": "DESKTOP",
+      "clicks": 326,
+      "impressions": 6856,
+      "ctr": 4.75,
+      "position": 9.7
+    },
+    {
+      "device": "TABLET",
+      "clicks": 4,
+      "impressions": 62,
+      "ctr": 6.45,
+      "position": 6.6
+    }
+  ],
+  "gsc_countries": [
+    {
+      "country": "srb",
+      "clicks": 1157,
+      "impressions": 21101
+    },
+    {
+      "country": "aut",
+      "clicks": 48,
+      "impressions": 398
+    },
+    {
+      "country": "bih",
+      "clicks": 37,
+      "impressions": 703
+    },
+    {
+      "country": "deu",
+      "clicks": 33,
+      "impressions": 418
+    },
+    {
+      "country": "hrv",
+      "clicks": 23,
+      "impressions": 223
+    },
+    {
+      "country": "mne",
+      "clicks": 22,
+      "impressions": 371
+    },
+    {
+      "country": "che",
+      "clicks": 20,
+      "impressions": 222
+    },
+    {
+      "country": "svn",
+      "clicks": 12,
+      "impressions": 72
+    },
+    {
+      "country": "mkd",
+      "clicks": 6,
+      "impressions": 62
+    },
+    {
+      "country": "can",
+      "clicks": 5,
+      "impressions": 36
+    }
+  ],
+  "striking_distance": [
+    {
+      "query": "planer za vencanje",
+      "clicks": 14,
+      "impressions": 276,
+      "ctr": 5.07,
+      "position": 11.2
+    },
+    {
+      "query": "planer vencanja",
+      "clicks": 11,
+      "impressions": 161,
+      "ctr": 6.83,
+      "position": 10.7
+    },
+    {
+      "query": "pozivnice",
+      "clicks": 0,
+      "impressions": 131,
+      "ctr": 0,
+      "position": 13.2
+    },
+    {
+      "query": "pozivnice za deciji rodjendan",
+      "clicks": 2,
+      "impressions": 96,
+      "ctr": 2.08,
+      "position": 10.9
+    },
+    {
+      "query": "pozivnice za vencanje",
+      "clicks": 0,
+      "impressions": 68,
+      "ctr": 0,
+      "position": 18
+    },
+    {
+      "query": "cena digitalne pozivnice",
+      "clicks": 0,
+      "impressions": 66,
+      "ctr": 0,
+      "position": 13.8
+    },
+    {
+      "query": "pozivnica za 18 rođendan",
+      "clicks": 0,
+      "impressions": 53,
+      "ctr": 0,
+      "position": 12.1
+    },
+    {
+      "query": "pozivnice za prvi rodjendan",
+      "clicks": 0,
+      "impressions": 32,
+      "ctr": 0,
+      "position": 16.4
+    },
+    {
+      "query": "knjiga utisaka cena",
+      "clicks": 0,
+      "impressions": 31,
+      "ctr": 0,
+      "position": 10.3
+    },
+    {
+      "query": "pozivnica za vencanje",
+      "clicks": 0,
+      "impressions": 31,
+      "ctr": 0,
+      "position": 14.5
+    },
+    {
+      "query": "online pozivnice za svadbu",
+      "clicks": 0,
+      "impressions": 30,
+      "ctr": 0,
+      "position": 10.2
+    },
+    {
+      "query": "pozivnica",
+      "clicks": 0,
+      "impressions": 27,
+      "ctr": 0,
+      "position": 13.7
+    },
+    {
+      "query": "elektronska pozivnica",
+      "clicks": 0,
+      "impressions": 25,
+      "ctr": 0,
+      "position": 10.8
+    },
+    {
+      "query": "pokloni za goste",
+      "clicks": 1,
+      "impressions": 23,
+      "ctr": 4.35,
+      "position": 15.9
+    },
+    {
+      "query": "elektronske pozivnice za 18 rodjendan",
+      "clicks": 0,
+      "impressions": 20,
+      "ctr": 0,
+      "position": 17.1
+    },
+    {
+      "query": "pozivnice za svadbu",
+      "clicks": 0,
+      "impressions": 20,
+      "ctr": 0,
+      "position": 10.7
+    }
+  ],
+  "low_ctr": [
+    {
+      "query": "wedding planning",
+      "clicks": 0,
+      "impressions": 993,
+      "ctr": 0,
+      "position": 9.1
+    },
+    {
+      "query": "halo",
+      "clicks": 0,
+      "impressions": 500,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "pozivnice za 18 rodjendan",
+      "clicks": 6,
+      "impressions": 444,
+      "ctr": 1.35,
+      "position": 8.7
+    },
+    {
+      "query": "raspored sedenja",
+      "clicks": 4,
+      "impressions": 245,
+      "ctr": 1.63,
+      "position": 6.4
+    },
+    {
+      "query": "besplatne online pozivnice za rođendan pdf",
+      "clicks": 1,
+      "impressions": 170,
+      "ctr": 0.59,
+      "position": 8.5
+    },
+    {
+      "query": "pozivnice za rodjendan napravi sam",
+      "clicks": 2,
+      "impressions": 148,
+      "ctr": 1.35,
+      "position": 8.7
+    },
+    {
+      "query": "pozivnice za punoletstvo",
+      "clicks": 2,
+      "impressions": 128,
+      "ctr": 1.56,
+      "position": 7.5
+    },
+    {
+      "query": "photo booth",
+      "clicks": 0,
+      "impressions": 116,
+      "ctr": 0,
+      "position": 6.9
+    },
+    {
+      "query": "halo halo",
+      "clicks": 0,
+      "impressions": 112,
+      "ctr": 0,
+      "position": 6.4
+    },
+    {
+      "query": "digitalna pozivnica",
+      "clicks": 2,
+      "impressions": 110,
+      "ctr": 1.82,
+      "position": 7.4
+    },
+    {
+      "query": "viber pozivnice za rodjendan",
+      "clicks": 0,
+      "impressions": 86,
+      "ctr": 0,
+      "position": 8.2
+    },
+    {
+      "query": "foto spomenar",
+      "clicks": 0,
+      "impressions": 85,
+      "ctr": 0,
+      "position": 8
+    },
+    {
+      "query": "napravi pozivnicu online",
+      "clicks": 1,
+      "impressions": 72,
+      "ctr": 1.39,
+      "position": 7.8
+    },
+    {
+      "query": "pozivnica za punoletstvo",
+      "clicks": 0,
+      "impressions": 72,
+      "ctr": 0,
+      "position": 6.7
+    },
+    {
+      "query": "raspored sedenja svadba",
+      "clicks": 1,
+      "impressions": 67,
+      "ctr": 1.49,
+      "position": 5.2
+    },
+    {
+      "query": "raspored gostiju po stolovima",
+      "clicks": 0,
+      "impressions": 49,
+      "ctr": 0,
+      "position": 7.3
+    },
+    {
+      "query": "pozivnica za rođendan pdf",
+      "clicks": 0,
+      "impressions": 48,
+      "ctr": 0,
+      "position": 8.1
+    },
+    {
+      "query": "šminka za deveruše",
+      "clicks": 0,
+      "impressions": 46,
+      "ctr": 0,
+      "position": 4.3
+    },
+    {
+      "query": "buket za vencanje",
+      "clicks": 0,
+      "impressions": 45,
+      "ctr": 0,
+      "position": 7.6
+    },
+    {
+      "query": "pozivnice za 18 rodjendan zenske",
+      "clicks": 0,
+      "impressions": 40,
+      "ctr": 0,
+      "position": 8.7
+    },
+    {
+      "query": "cvece za vencanje",
+      "clicks": 0,
+      "impressions": 38,
+      "ctr": 0,
+      "position": 8.3
+    },
+    {
+      "query": "podni dim nis",
+      "clicks": 0,
+      "impressions": 38,
+      "ctr": 0,
+      "position": 5.8
+    },
+    {
+      "query": "digitalna pozivnica za vencanje",
+      "clicks": 0,
+      "impressions": 33,
+      "ctr": 0,
+      "position": 6.8
+    },
+    {
+      "query": "napravi mi pozivnicu za rođendan",
+      "clicks": 0,
+      "impressions": 30,
+      "ctr": 0,
+      "position": 8.6
+    }
+  ]
+}
