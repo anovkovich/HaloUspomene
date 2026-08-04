@@ -548,3 +548,50 @@
 
 - **Blokade / sledeći korak:** `CLAUDE.md` „⏰ Zakazano" ažuriran da pokazuje na
   tačan posao. Grupa „odmah" može da krene bez čekanja.
+
+---
+
+## 2026-08-04 (dvanaesti unos) — Grupa „odmah": dve forme
+
+- **`/napravi-pozivnicu`** — 45 vidljivih reči (uz 275 skrivenih u `sr-only`) →
+  **544 vidljive, nula skrivenih**. Dodato: „Šta dobijate", „Šta zapravo pišete
+  u upitniku" (tagline i zahvalnica su jedina slobodna polja), poređenje
+  digitalna/štampana, FAQ sa 6 pitanja i `FAQPage` schemom.
+  GSC pre: 456 prikaza, 7 klikova, poz 7,6.
+
+  **Sadržaj je morao unutar `<main>`.** `FormPageWrapper` renderuje `<main>` kao
+  svoj koren, pa su sekcije dodate u `page.tsx` posle njega završile IZVAN
+  glavnog sadržaja — što pretraživači tretiraju kao okvir stranice, slično
+  podnožju. Rešeno `children` propom. Prvo merenje je to i otkrilo: `<main>` je
+  ostajao na 320 reči dok je telo imalo 862.
+
+  **Uklonjen `sr-only` blok koji je bio i NETAČAN** — tvrdio je „Kontaktirajte
+  nas za više informacija o cenama i paketima", što protivreči fiksnoj ceni od
+  5.000 din koja stoji svuda drugde; nabrajao je teme boja koje ne odgovaraju
+  formi i imao tipfelere („personalozivanu", „salle").
+
+  **Uklonjeno dugme „Tražite pozivnicu za rođendan?"** (zahtev vlasnika) —
+  odvlačilo je posetioca sa forme. `BirthdayTypeButton` ostaje u upotrebi na
+  `/pozivnice`, rođendani se i dalje nude preko `InvitationClusterLinks`.
+
+- **`/pozivnica-za-prvi-rodjendan`** — 530 → **811 reči**, H2 6 → 7,
+  `sr-only` uklonjen. Dodata **galerija živih primera** (`ThemePreview` sa
+  postojećim `dec-decak` / `dec-devojcica` materijalom, linkovi na demo
+  pozivnice) i prozni deo o tome po čemu se prva godina razlikuje — gosti su
+  odrasli, trajanje i broj osoba su ključni podaci, termin oko dnevnog sna.
+
+- **`ThemePreview` premešten** iz `src/app/pozivnice/` u `src/components/ui/`,
+  jer ga sada koriste dve rute — po konvenciji projekta deljene stvari ne žive
+  u folderu rute.
+
+- **Stavka otpala:** „odeljak sa cenom na `/pozivnice`". Moja dijagnoza je bila
+  netačna — stranica **ima** cene svuda (5.000 din 19 puta, 9.900 šest puta) i
+  H2 „Transparentne cene". Izveo sam je iz GSC pozicije umesto da pogledam
+  stranicu.
+
+- **Odloženo, sa obrazloženjem:** `/vendori` — već je na poziciji **5,6**, ali
+  ima svega **68 prikaza za 180 dana**. Nije problem u rangiranju nego u tome
+  što taj upit skoro niko ne traži; plafon je 2–3 klika.
+
+- **Blokade / sledeći korak:** preostalih 6 tekstova iz plana od 14; slanje na
+  reindeksiranje (spisak u odgovoru vlasniku).

@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
-import ThemePreview from "./ThemePreview";
+import ThemePreview from "@/components/ui/ThemePreview";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 

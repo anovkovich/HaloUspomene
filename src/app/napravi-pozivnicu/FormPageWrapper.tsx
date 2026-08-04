@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import QuestionnaireForm from "./QuestionnaireForm";
-import BirthdayTypeButton from "@/components/landing/BirthdayTypeButton";
 import type { ThemeType, ScriptFontType } from "@/app/pozivnica/[slug]/types";
 
 // Re-exported from the shared lib so existing imports keep working.
@@ -39,6 +38,11 @@ interface Props {
   forcePremium?: boolean;
   initialFormData?: UpgradeInitialFormData;
   bypassInfo?: BypassInfo;
+  /** Sadržaj koji ide ISPOD formulara, ali i dalje UNUTAR `<main>`.
+   *  Ova komponenta renderuje `<main>` kao svoj koren, pa bi sekcije dodate u
+   *  `page.tsx` posle nje završile izvan glavnog sadržaja — a pretraživači to
+   *  tretiraju kao okvir stranice, slično podnožju. */
+  children?: React.ReactNode;
 }
 
 export default function FormPageWrapper({
@@ -46,6 +50,7 @@ export default function FormPageWrapper({
   forcePremium,
   initialFormData,
   bypassInfo,
+  children,
 }: Props) {
   // In upgrade mode the premium choice is locked to the value chosen from the
   // portal — user picked "Premium" or "Klasik" before entering the stepper, and
@@ -57,7 +62,9 @@ export default function FormPageWrapper({
 
   return (
     <main
-      className={`min-h-screen pt-28 pb-20 transition-colors duration-500 ${
+      // `id` nosi anchor `#formular` iz donjeg CTA bloka na stranici.
+      id="formular"
+      className={`min-h-screen pt-28 pb-20 scroll-mt-28 transition-colors duration-500 ${
         isPremium
           ? "bg-[#fffdf5]"
           : "bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6]"
@@ -119,72 +126,20 @@ export default function FormPageWrapper({
 
       </div>
 
-      {/* Hidden SEO content — visible to crawlers, not to users */}
-      <div className="sr-only" aria-hidden="true">
-        <h2>
-          Website pozivnica za venčanje — napravite svoju online pozivnicu
-        </h2>
-        <p>
-          HALO Uspomene izrađuje personalizovane website pozivnice za venčanja u
-          Srbiji. Naša usluga obuhvata kreiranje elegantne online pozivnice sa
-          formom za potvrdu dolaska, odbrojavanjem do venčanja i detaljnim programom dana
-          svadbe.
-        </p>
-        <h3>Kako funkcioniše izrada website pozivnice za venčanje?</h3>
-        <p>
-          Popunite kratki upitnik u 6 koraka: unesite ime i prezime mladenaca,
-          datum i lokaciju venčanja, odaberite temu boja i stil fonta, dodajte
-          program svadbe i kontakt informacije. Mi zatim odmah pravimo vašu
-          personalozivanu digitalnu pozivnicu i šaljemo vam link koji možete
-          podeliti sa gostima putem WhatsApp-a, Vibera, Telegrama ili e-maila.
-        </p>
-        <h3>Šta je uključeno u website pozivnicu za venčanje?</h3>
-        <ul>
-          <li>
-            Personalizovani dizajn u odabranoj temi boja (zlato, ruža, terakota,
-            sage, plava)
-          </li>
-          <li>Elegantni skript fontovi — latinični i ćirilični</li>
-          <li>Forma za potvrdu dolaska gostiju</li>
-          <li>Odbrojavanje do dana venčanja</li>
-          <li>Program venčanja — ceremonija, koktel, večera, ples</li>
-          <li>Lokacija ceremonije i salle na Google Maps</li>
-          <li>Kontakt informacije mladenaca ili kuma</li>
-          <li>Optimizovano za mobilne uređaje i desktop</li>
-        </ul>
-        <h3>Zašto odabrati website pozivnicu za venčanje?</h3>
-        <p>
-          Website pozivnica za venčanje je moderna alternativa štampanim
-          pozivnicama. Nema troškova štampe, slanja ili kašnjenja. Gosti lako
-          pristupaju pozivnici na svom telefonu, potvrđuju dolazak jednim klikom
-          i uvek imaju sve informacije na jednom mestu. Idealno za venčanja u
-          Beogradu, Novom Sadu, Nišu, Kragujevcu i svim gradovima u Srbiji.
-        </p>
-        <h3>Cena website pozivnice za venčanje</h3>
-        <p>
-          Website pozivnica za venčanje u paketu sa HALO Uspomene audio gostom
-          knjigom dostupna je po specijalnoj ceni. Pozivnica se može naručiti i
-          samostalno. Kontaktirajte nas za više informacija o cenama i paketima.
-        </p>
-        <h3>Oblasti koje pokrivamo</h3>
-        <p>
-          Website pozivnica za venčanje Beograd, website pozivnica Novi Sad,
-          online venčana pozivnica Niš, pozivnica za svadbu Kragujevac,
-          Subotica, kao i za sva venčanja u Srbiji i regionu.
-        </p>
-      </div>
+      {/* Ovde je stajao `sr-only` blok od ~330 reci. Uklonjen 2026-08-04 iz dva
+          razloga: sadrzaj je sada VIDLJIV ispod formulara (sekcije „Sta
+          dobijate", „Sta zapravo pisete", FAQ), a stari tekst je bio i
+          NETACAN — tvrdio je „Kontaktirajte nas za vise informacija o cenama",
+          sto protivreci fiksnoj ceni od 5.000 din koja stoji svuda drugde, i
+          nabrajao teme boja koje vise ne odgovaraju formi. */}
 
-      {/* Link to birthday invitation (dečiji rođendan + punoletstvo via modal) */}
-      {!isUpgrade && (
-        <div className="max-w-3xl mx-auto mt-12 px-4 text-center">
-          <BirthdayTypeButton
-            entryLabel="napravi-pozivnicu-footer"
-            className="birthday-link-btn"
-          >
-            Tražite pozivnicu za rođendan? →
-          </BirthdayTypeButton>
-        </div>
-      )}
+
+      {/* Dugme „Tražite pozivnicu za rođendan?" uklonjeno 2026-08-04 — odvlačilo
+          je posetioca sa forme za venčanje. Rođendanske pozivnice se i dalje
+          nude preko `InvitationClusterLinks` na dnu stranice, a `BirthdayTypeButton`
+          ostaje u upotrebi na `/pozivnice`. */}
+
+      {children}
     </main>
   );
 }

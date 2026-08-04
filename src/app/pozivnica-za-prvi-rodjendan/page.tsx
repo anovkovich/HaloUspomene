@@ -14,6 +14,7 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
+import ThemePreview from "@/components/ui/ThemePreview";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
@@ -349,6 +350,155 @@ export default function PozivnicaZaPrviRodjendan() {
           </div>
         </section>
 
+        {/* ═══ Prozni deo — prvi rodjendan se razlikuje od ostalih ═══ */}
+        <section className="bg-white py-16 sm:py-20">
+          <div className="container mx-auto max-w-3xl space-y-5 px-4 leading-relaxed text-[#232323]/70">
+            <h2 className="font-serif text-2xl text-[#232323] sm:text-3xl">
+              Po čemu se pozivnica za prvi rođendan razlikuje
+            </h2>
+            <p>
+              Prvi rođendan je jedina dečija proslava na kojoj su gosti uglavnom{" "}
+              <strong className="text-[#232323]">odrasli</strong> — babe i dede,
+              kumovi, tetke, prijatelji roditelja. Slavljenik neće pročitati
+              pozivnicu, pa ona zapravo govori porodici: kada, gde, koliko dugo,
+              i da li se dolazi sa decom.
+            </p>
+            <p>
+              Zato su dva podatka važnija nego kod starije dece.{" "}
+              <strong className="text-[#232323]">Trajanje proslave</strong> —
+              prva godina se slavi kratko, obično dva do tri sata, i termin se
+              bira oko dnevnog sna, pa gost treba unapred da zna do kada je
+              zvan. I <strong className="text-[#232323]">koliko osoba
+              dolazi</strong>, jer se kod prve godine često potvrđuje za celu
+              porodicu odjednom — a to menja i broj mesta i količinu hrane.
+            </p>
+            <p>
+              Digitalna pozivnica oba pitanja rešava sama: gost jednim klikom
+              potvrdi dolazak i unese broj osoba, a vi vidite spisak koji se sam
+              ažurira. Bez prozivanja po Viber grupama nedelju dana pre.
+            </p>
+
+            <h3 className="pt-3 font-serif text-xl text-[#232323]">
+              Kada slati pozivnicu za prvu godinu
+            </h3>
+            <p>
+              Dve do tri nedelje unapred je sasvim dovoljno, uz rok za potvrdu
+              nedelju dana pre proslave. Ako računate na rodbinu iz drugog grada
+              ili inostranstva, pomerite na mesec dana — njima treba vreme za
+              put, i to je jedini razlog da se žuri.
+            </p>
+
+            <h3 className="pt-3 font-serif text-xl text-[#232323]">
+              Šta napisati
+            </h3>
+            <p>
+              Ime deteta, datum, vreme i lokaciju ne kucate — to su zasebna
+              polja u upitniku i pozivnica ih sama prikazuje, zajedno sa mapom.
+              Slobodno pišete samo kratku poruku na vrhu. Nekoliko primera:
+            </p>
+            <ul className="space-y-2.5">
+              {[
+                "Naša Sofija puni prvu godinu! Dođite da to proslavimo sa nama.",
+                "Prva sveća, prva torta, prvi rođendan — i vi ste deo priče.",
+                "Godinu dana sreće. Slavimo u krugu najdražih, računamo na vas.",
+                "Luka puni 1! Kratko, veselo i uz mnogo fotografija.",
+              ].map((t) => (
+                <li
+                  key={t}
+                  className="rounded-xl border border-stone-200 bg-[#faf9f6] px-5 py-3 italic"
+                >
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <p>
+              Ako slavite i starijem detetu, isti upitnik radi i za{" "}
+              <Link
+                href="/napravi-deciju-pozivnicu"
+                className="font-medium text-[#AE343F] hover:underline"
+              >
+                dečiji rođendan
+              </Link>
+              , a sve o samom formatu ima u vodiču{" "}
+              <Link
+                href="/blog/digitalne-pozivnice-za-vencanje"
+                className="font-medium text-[#AE343F] hover:underline"
+              >
+                digitalne pozivnice
+              </Link>
+              .
+            </p>
+          </div>
+        </section>
+
+        {/* ═══ Galerija zivih primera ═══
+            Poster je obican next/image i stoji u HTML-u; video je cisto
+            unapredjenje i krece na prelaz misem, kao i na /pozivnice. */}
+        <section className="bg-[#faf9f6] py-16 sm:py-20">
+          <div className="container mx-auto max-w-3xl px-4">
+            <h2 className="font-serif text-2xl text-[#232323] sm:text-3xl">
+              Pogledajte pozivnicu uživo
+            </h2>
+            <p className="mt-2 mb-8 text-[#232323]/60">
+              Dve gotove pozivnice, otvorene za pregled. Isto ovako izgleda i
+              vaša — samo sa imenom vašeg deteta, datumom i lokacijom.
+            </p>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {[
+                {
+                  ime: "Tema za dečake",
+                  opis: "Vesele boje i ilustracije",
+                  poster: "/videos/dec-decak-poster.webp",
+                  video: "/videos/dec-decak.webm",
+                  href: "/deciji-rodjendan/primer-decak",
+                },
+                {
+                  ime: "Tema za devojčice",
+                  opis: "Nežniji tonovi, isti sadržaj",
+                  poster: "/videos/dec-devojcica-poster.webp",
+                  video: "/videos/dec-devojcica.webm",
+                  href: "/deciji-rodjendan/primer-devojcica",
+                },
+              ].map((t) => (
+                <div
+                  key={t.href}
+                  className="rounded-3xl border border-stone-200 bg-white p-5"
+                >
+                  <div className="mx-auto max-w-[220px]">
+                    <ThemePreview
+                      poster={t.poster}
+                      video={t.video}
+                      alt={`Digitalna pozivnica za prvi rođendan — ${t.ime.toLowerCase()}`}
+                    />
+                  </div>
+                  <p className="mt-4 font-serif text-lg text-[#232323]">
+                    {t.ime}
+                  </p>
+                  <p className="mt-1 text-sm text-[#232323]/55">{t.opis}</p>
+                  <Link
+                    href={t.href}
+                    className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[#AE343F] hover:underline"
+                  >
+                    Otvorite primer
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              ))}
+            </div>
+            <p className="mt-6 text-sm text-[#232323]/55">
+              Pozivnica se pravi kroz isti upitnik kao za{" "}
+              <Link
+                href="/napravi-deciju-pozivnicu"
+                className="font-medium text-[#AE343F] hover:underline"
+              >
+                dečiji rođendan
+              </Link>{" "}
+              — birate temu i boje koje odgovaraju prvoj godini. Nema posebne
+              cene ni posebnog proizvoda za prvi rođendan.
+            </p>
+          </div>
+        </section>
+
         {/* CLUSTER LINKS */}
         <section className="py-16 sm:py-20 bg-white">
           <InvitationClusterLinks
@@ -357,26 +507,9 @@ export default function PozivnicaZaPrviRodjendan() {
           />
         </section>
 
-        {/* SEO HIDDEN CONTENT */}
-        <section className="sr-only">
-          <h2>Pozivnica za prvi rođendan online u Srbiji</h2>
-          <p>
-            HALO Uspomene izrađuje digitalne pozivnice za prvi rođendan u
-            Srbiji. Napravite šarenu online pozivnicu za prvu godinu vašeg
-            deteta — sa temom za dečaka, devojčicu ili neutralnom, formom za
-            potvrdu dolaska, odbrojavanjem do proslave i lokacijom na Google
-            mapi. Pozivnicu izrađujemo odmah i delite je jednim linkom
-            preko WhatsApp-a, Vibera ili e-maila. Pogledajte i{" "}
-            <Link href="/napravi-deciju-pozivnicu">
-              pozivnice za dečiji rođendan
-            </Link>{" "}
-            ili{" "}
-            <Link href="/izrada-pozivnica-online">
-              sve vrste pozivnica online
-            </Link>
-            .
-          </p>
-        </section>
+        {/* Ranije je ovde stajao `sr-only` blok. Njegov sadrzaj je prelivan u
+            vidljivu galeriju iznad i u tekst — skriven tekst Google gotovo ne
+            vrednuje, a stranica je imala svega 530 vidljivih reci. */}
       </main>
       <Footer />
     </>
