@@ -143,14 +143,23 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Column 3: Blog */}
+          {/* Column 3: Saveti i ideje (blog).
+              Blog je izašao iz zaglavlja u podnožje — adresa `/blog` se ne menja. */}
           <div>
             <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#F5F4DC]/80 mb-6">
-              Blog
+              Saveti i ideje
             </h4>
             <ul className="space-y-3">
               {[
                 { name: "Svi članci", href: "/blog" },
+                {
+                  // Glavni stub klastera o pozivnicama. Link iz podnožja stoji
+                  // na svakoj stranici sajta i namerno je tu — `/pozivnice`
+                  // autoritet dobija iznutra, preko ovog teksta. Ne uklanjati
+                  // bez čitanja komentara uz unos u `src/data/blog/posts.ts`.
+                  name: "Digitalne pozivnice za venčanje",
+                  href: "/blog/digitalne-pozivnice-za-vencanje",
+                },
                 {
                   name: "Kompletan vodič za pozivnice",
                   href: "/blog/website-pozivnica-kompletan-vodic",

@@ -4,6 +4,12 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X, ChevronDown } from "lucide-react";
+import {
+  NAV_RENTAL_IDS,
+  NAV_SEATING_IDS,
+  productsByIds,
+  type Product,
+} from "@/data/products";
 
 interface NavChild {
   name: string;
@@ -19,42 +25,31 @@ interface NavLink {
 
 // Padajuća lista se uvek renderuje u DOM (skriva se samo CSS-om), pa su svi
 // linkovi vidljivi pretraživačima bez obzira na to da li je meni otvoren.
+//
+// Stavke padajućih lista se izvode iz `src/data/products.ts` — isti spisak je
+// ranije bio ručno prepisan i ovde i u podnožju i na početnoj, pa se novi
+// proizvod dodavao tri puta.
+//
+// Blog je namerno izvan zaglavlja — živi u podnožju kao „Saveti i ideje".
+const toNavChild = (p: Product): NavChild => ({
+  name: p.name,
+  href: p.href,
+  desc: p.blurb,
+});
+
 const navLinks: NavLink[] = [
   { name: "Cene", href: "/cene" },
   { name: "Pozivnice", href: "/pozivnice" },
-  { name: "QR-Galerija", href: "/qr-galerija-slika-sa-vencanja" },
-  { name: "QR-Pano", href: "/qr-pano-dobrodoslice" },
+  {
+    // `/raspored-sedenja` rangira prvo i ima 1.185 linija, a do sada nije
+    // imala nijedan link iz zaglavlja.
+    name: "Raspored i QR",
+    children: productsByIds(NAV_SEATING_IDS).map(toNavChild),
+  },
   {
     name: "Iznajmljivanje",
-    children: [
-      {
-        name: "Retro telefon",
-        href: "/telefon-uspomena",
-        desc: "Audio knjiga uspomena — poruke gostiju",
-      },
-      {
-        name: "Paviljoni i oprema",
-        href: "/iznajmljivanje-opreme-za-vencanje",
-        desc: "Paviljoni i barski stolovi za doček",
-      },
-      {
-        name: "Retro automobili",
-        href: "/iznajmljivanje-oldtajmera-za-vencanje",
-        desc: "Oldtajmeri sa vozačem za mladence",
-      },
-      {
-        name: "Luksuzni automobili",
-        href: "/iznajmljivanje-automobila-za-vencanje",
-        desc: "Mercedes flota sa profesionalnim šoferom",
-      },
-      {
-        name: "Lažni matičar",
-        href: "/lazni-maticar",
-        desc: "Simbolična ceremonija koju vodi glumac",
-      },
-    ],
+    children: productsByIds(NAV_RENTAL_IDS).map(toNavChild),
   },
-  { name: "Blog", href: "/blog" },
 ];
 
 const Navbar: React.FC = () => {
