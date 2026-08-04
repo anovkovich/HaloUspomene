@@ -52,7 +52,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "venue",
     slug: "sale",
     h1: "Sale za venčanje u Srbiji",
-    metaTitle: "Sale za venčanje u Srbiji | HALO Uspomene",
+    metaTitle: "Sale za venčanje u Srbiji",
     metaDescription:
       "Svadbene sale u Srbiji — Beograd, Novi Sad, Subotica, Čačak, Kragujevac, Niš. Kapacitet i kontakt u besplatnom Moje Venčanje planeru.",
     intro:
@@ -109,7 +109,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "music",
     slug: "muzika",
     h1: "Bendovi i DJ-evi za venčanje u Srbiji",
-    metaTitle: "Bendovi i DJ za venčanje — muzika za svadbu | HALO Uspomene",
+    metaTitle: "Bendovi i DJ za venčanje — muzika za svadbu",
     metaDescription:
       "Svadbeni bendovi i DJ-evi širom Srbije. Live muzika, DJ setovi i kombinacije za venčanja u Beogradu, Novom Sadu, Subotici, Čačku, Kragujevcu, Nišu.",
     intro:
@@ -166,7 +166,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "photo-video",
     slug: "foto-video",
     h1: "Fotografi i video produkcija za venčanje u Srbiji",
-    metaTitle: "Fotografi i snimatelji za venčanje | HALO Uspomene",
+    metaTitle: "Fotografi i snimatelji za venčanje",
     metaDescription:
       "Fotografi i video produkcija za venčanja u Srbiji. Foto, video i kombinovane usluge za svadbe u Beogradu, Novom Sadu, Subotici, Čačku, Kragujevcu, Nišu.",
     intro:
@@ -223,7 +223,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "cake",
     slug: "torte",
     h1: "Svadbene torte u Srbiji",
-    metaTitle: "Svadbene torte — poslastičari za venčanje | HALO Uspomene",
+    metaTitle: "Svadbene torte — poslastičari za venčanje",
     metaDescription:
       "Svadbene torte i poslastičari u Srbiji. Mladenačke torte, candy bar i deserti za venčanja u Beogradu, Novom Sadu, Subotici, Čačku, Kragujevcu, Nišu.",
     intro:
@@ -280,7 +280,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "decoration",
     slug: "dekoracija",
     h1: "Dekoracija za venčanje u Srbiji",
-    metaTitle: "Dekoracija sale i venčanja — dekorateri | HALO Uspomene",
+    metaTitle: "Dekoracija sale i venčanja — dekorateri",
     metaDescription:
       "Dekorateri venčanja i sala u Srbiji. Stoni aranžmani, lukovi, dekoracija za svadbu u Beogradu, Novom Sadu, Subotici, Čačku, Kragujevcu, Nišu.",
     intro:
@@ -337,7 +337,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "flowers",
     slug: "cvece",
     h1: "Cveće za venčanje u Srbiji",
-    metaTitle: "Cveće za venčanje — buketi i aranžmani | HALO Uspomene",
+    metaTitle: "Cveće za venčanje — buketi i aranžmani",
     metaDescription:
       "Cvećare i floristi za venčanja u Srbiji. Mladenački buket, butonijere, stoni aranžmani u Beogradu, Novom Sadu, Subotici, Čačku, Kragujevcu, Nišu.",
     intro:
@@ -394,7 +394,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "fireworks",
     slug: "vatromet",
     h1: "Vatromet i specijalni efekti za venčanje u Srbiji",
-    metaTitle: "Vatromet i efekti za venčanje — pirotehnika | HALO Uspomene",
+    metaTitle: "Vatromet i efekti za venčanje — pirotehnika",
     metaDescription:
       "Vatromet, hladni pirotehnički efekti i CO2 topovi za venčanja u Srbiji. Profesionalni izvođači u Beogradu, Novom Sadu, Subotici, Čačku, Kragujevcu, Nišu.",
     intro:
@@ -451,7 +451,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "dress",
     slug: "vencanice",
     h1: "Venčanice i salon venčanica u Srbiji",
-    metaTitle: "Venčanice — salon venčanica i dizajneri | HALO Uspomene",
+    metaTitle: "Venčanice — salon venčanica i dizajneri",
     metaDescription:
       "Saloni venčanica i dizajneri u Srbiji. Venčanice za iznajmljivanje i kupovinu u Beogradu, Novom Sadu, Subotici, Čačku, Kragujevcu, Nišu.",
     intro:
@@ -508,7 +508,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "makeup",
     slug: "sminka",
     h1: "Šminkeri i frizeri za venčanje u Srbiji",
-    metaTitle: "Šminka i frizura za venčanje | HALO Uspomene",
+    metaTitle: "Šminka i frizura za venčanje",
     metaDescription:
       "Šminkeri i frizeri za venčanje u Srbiji. Make-up i hair styling za mladu i pratnju u Beogradu, Novom Sadu, Subotici, Čačku, Kragujevcu, Nišu.",
     intro:
@@ -565,7 +565,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "rings",
     slug: "burme",
     h1: "Burme i venčano prstenje u Srbiji",
-    metaTitle: "Burme za venčanje — zlatari i juvelirnice | HALO Uspomene",
+    metaTitle: "Burme za venčanje — zlatari i juvelirnice",
     metaDescription:
       "Burme za venčanje u Srbiji. Zlatari i juvelirnice u Beogradu, Novom Sadu, Subotici, Čačku, Kragujevcu, Nišu — klasične i savremene burme.",
     intro:
@@ -622,7 +622,7 @@ export const CATEGORY_CONTENT: CategoryContent[] = [
     category: "gifts",
     slug: "pokloni",
     h1: "Pokloni za goste na venčanju u Srbiji",
-    metaTitle: "Pokloni za goste venčanja | HALO Uspomene",
+    metaTitle: "Pokloni za goste venčanja",
     metaDescription:
       "Pokloni za goste, favor-i, zahvalnice i kutijice za venčanje u Srbiji. Personalizovani pokloni za svadbe u Beogradu, Novom Sadu i drugim gradovima.",
     intro:

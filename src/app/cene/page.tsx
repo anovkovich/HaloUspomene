@@ -1,5 +1,6 @@
-import { Suspense } from "react";
+
 import type { Metadata } from "next";
+import Link from "next/link";
 import PricingClient from "./PricingClient";
 
 export const metadata: Metadata = {
@@ -220,76 +221,73 @@ function FAQStructuredData() {
   );
 }
 
-export default function CenePage() {
+export default async function CenePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ premium?: string }>;
+}) {
+  // Čita se na serveru da bi `PricingClient` mogao da se server-renderuje —
+  // v. komentar uz `PricingClient`.
+  const initialMode =
+    (await searchParams).premium === "1" ? "premium" : "classic";
+
   return (
     <>
       <PricingStructuredData />
       <FAQStructuredData />
-      <Suspense fallback={null}>
-        <PricingClient />
-      </Suspense>
+      {/* Bez `<Suspense>`: komponenta više ne koristi `useSearchParams()`, pa
+          se ceo cenovnik server-renderuje i stoji u HTML-u. Ne vraćati Suspense
+          bez čitanja komentara u `PricingClient.tsx`. */}
+      <PricingClient initialMode={initialMode} />
 
-      {/* Hidden SEO content — server-rendered, visible to crawlers */}
-      <div className="sr-only" aria-hidden="true">
-        <h2>
-          Cene website pozivnice za venčanje — besplatna PDF pozivnica za štampu
+      {/* Ranije je ovde stajao `sr-only` blok od 332 reči. Sadržaj je bio
+          duplikat: cene i spisak usluga sada stoje vidljivo u konfiguratoru
+          iznad (stranica je do jutros imala 339 reči jer se uopšte nije
+          server-renderovala), a spisak od 15 gradova je bio golo nabrajanje
+          ključnih reči — gradske stranice ionako žive na `/lokacije`.
+          Zadržana su jedino dva objašnjenja koja nose stvaran podatak, i to
+          VIDLJIVO, jer skriven tekst Google gotovo ne vrednuje. */}
+      <section className="mx-auto max-w-3xl px-4 pb-24">
+        <h2 className="mb-6 font-serif text-2xl text-[#232323] sm:text-3xl">
+          Dva pitanja koja se najčešće ponavljaju
         </h2>
-        <p>
-          HALO Uspomene nudi digitalne website pozivnice za venčanja u Srbiji po
-          ceni od 5.000 dinara. Svaka pozivnica uključuje besplatnu PDF verziju
-          za štampu sa QR kodom za potvrdu dolaska gostiju — bez telefonskih
-          poziva, bez komplikacija.
+
+        <h3 className="font-serif text-lg text-[#232323]">
+          Šta tačno dobijate uz PDF pozivnicu za štampu
+        </h3>
+        <p className="mt-2 leading-relaxed text-[#232323]/70">
+          PDF pozivnica je u A5 formatu i sadrži imena mladenaca, datum i mesto
+          venčanja, program dana i QR kod. Gost koji skenira taj kod stiže na
+          vašu web pozivnicu i tu potvrđuje dolazak — dakle papir za ruke, a
+          potvrde i dalje stižu same. Odštampate je u štampariji ili kod kuće,
+          a uz nju ide i poseban popust na ručno rađene štampane pozivnice i
+          zahvalnice sa QR kodovima.
         </p>
-        <h3>Šta je uključeno u website pozivnicu za venčanje?</h3>
-        <ul>
-          <li>
-            Personalizovana web stranica sa animacijama i odbrojavanjem do
-            venčanja
-          </li>
-          <li>Forma za online potvrdu dolaska gostiju</li>
-          <li>Besplatna PDF pozivnica za štampu u A5 formatu sa QR kodom</li>
-          <li>Program dana venčanja sa lokacijom na mapi</li>
-          <li>Podrška za latinicu i ćirilicu</li>
-          <li>Optimizovano za mobilne uređaje</li>
-        </ul>
-        <h3>Dodatne usluge i cene</h3>
-        <p>
-          Raspored sedenja za venčanje: 2.500 dinara — editor za stolove, gosti
-          pronalaze svoje mesto putem linka. Digitalna audio knjiga utisaka:
-          3.000 dinara — gosti skeniraju QR kod i snimaju audio poruke za
-          mladence direktno sa telefona. Kompletno Venčanje (pozivnica +
-          raspored sedenja + audio knjiga utisaka + QR galerija fotografija):
-          9.900 dinara umesto 14.000 dinara. Premium paket — sve iz Kompletnog
-          paketa uz luksuznu animiranu premium pozivnicu u 3 stila: 13.900 dinara
-          umesto 19.000 dinara. Raspored sedenja za organizatore (samostalno, bez
-          pozivnice): 5.000 dinara. QR galerija fotografija (samostalno, uz
-          zahvalnice sa QR kodom): 3.500 dinara.
+
+        <h3 className="mt-6 font-serif text-lg text-[#232323]">
+          Kako radi digitalna audio knjiga utisaka
+        </h3>
+        <p className="mt-2 leading-relaxed text-[#232323]/70">
+          Gosti skeniraju QR kod na stolu i snimaju glasovnu poruku pravo sa
+          svog telefona — bez aplikacije i bez registracije. Sve snimke
+          preuzimate iz portala. Ako želite autentičniji doživljaj, isto radi i
+          vintage retro telefon sa brojčanikom, a snimljene poruke mogu da se
+          dobiju i kao fizički suvenir: retro kaseta sa USB-om ili uspomene u
+          bočici.
         </p>
-        <h3>Pozivnice za venčanje — gradovi u Srbiji</h3>
-        <p>
-          Pozivnica za venčanje Beograd, pozivnica za venčanje Novi Sad,
-          pozivnica za svadbu Niš, pozivnica za venčanje Kragujevac, Subotica,
-          Zrenjanin, Pančevo, Čačak, Kraljevo, Leskovac, Vranje, Valjevo, Šabac,
-          Sombor, Kikinda. Pozivnice za sva venčanja u Srbiji.
+
+        <p className="mt-8 text-sm text-[#232323]/55">
+          Radimo u celoj Srbiji — digitalni proizvodi svuda, a retro telefon i
+          QR pano šaljemo kurirskom službom. Pregled po gradovima je na stranici{" "}
+          <Link
+            href="/lokacije"
+            className="font-medium text-[#AE343F] hover:underline"
+          >
+            dostupni gradovi
+          </Link>
+          .
         </p>
-        <h3>Besplatna pozivnica za venčanje za štampu</h3>
-        <p>
-          Uz svaku digitalnu pozivnicu dobijate besplatnu elegantnu pozivnicu u
-          PDF formatu koju možete odštampati. PDF pozivnica sadrži imena
-          mladenaca, datum i mesto venčanja, program dana i QR kod koji gosti
-          mogu skenirati da potvrde dolazak online. Nikad lakše — bez poziva,
-          bez papirnih formulara.
-        </p>
-        <h3>Digitalna audio knjiga utisaka za venčanje</h3>
-        <p>
-          Audio knjiga utisaka je moderna alternativa tradicionalnoj knjizi
-          utisaka. Gosti skeniraju QR kod na venčanju i snimaju audio poruke
-          direktno sa svog telefona — bez aplikacije, bez registracije. Dostupna
-          je i opcija sa fizičkim retro telefonom za potpuno autentično
-          iskustvo. USB retro kaseta (2.500 din) i USB u bočici (2.000 din) su
-          dostupni kao fizički suveniri sa svim snimljenim porukama.
-        </p>
-      </div>
+      </section>
     </>
   );
 }

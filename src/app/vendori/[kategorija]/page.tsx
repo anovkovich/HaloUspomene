@@ -33,12 +33,20 @@ export async function generateMetadata({
   const content = getCategoryBySlug(kategorija);
   if (!content) return {};
 
+  // `metaTitle` je BEZ brenda — root layout ga dodaje kroz `template:
+  // "%s | HALO Uspomene"`. Ranije je sufiks stajao i u podacima, pa je svih 11
+  // kategorija imalo naslov "... | HALO Uspomene | HALO Uspomene" (do 78
+  // znakova, sečen u rezultatima pretrage).
+  //
+  // OG i Twitter naslovi NE prolaze kroz taj šablon, pa brend ovde dodajemo ručno.
+  const socialTitle = `${content.metaTitle} | HALO Uspomene`;
+
   return {
     title: content.metaTitle,
     description: content.metaDescription,
     keywords: content.keywords,
     openGraph: {
-      title: content.metaTitle,
+      title: socialTitle,
       description: content.metaDescription,
       type: "website",
       url: `${siteUrl}/vendori/${kategorija}`,
@@ -46,7 +54,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: content.metaTitle,
+      title: socialTitle,
       description: content.metaDescription,
     },
     alternates: {

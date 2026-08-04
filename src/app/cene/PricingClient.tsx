@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import {
   Check,
   Globe,
@@ -141,10 +140,22 @@ const BUNDLE_PRICE = pricing.pozivnica.bundlePrice;
 // Premium partial bundle discount (premium + raspored + galerija OR audio).
 const PREMIUM_PARTIAL_DISCOUNT = 2500;
 
-export default function PricingClient() {
-  const searchParams = useSearchParams();
-  const initialMode: "classic" | "premium" =
-    searchParams?.get("premium") === "1" ? "premium" : "classic";
+/**
+ * NAMERNO ne koristi `useSearchParams()`, nego prima početni prikaz kao prop.
+ *
+ * `useSearchParams()` primorava Next da odustane od serverskog renderovanja
+ * cele ove komponente, pa je stranica morala da stoji u
+ * `<Suspense fallback={null}>` — a to je značilo da u HTML-u koji Google dobije
+ * NEMA ni naslova, ni paketa, ni cena. Merenje je pokazalo 339 reči na `/cene`,
+ * od kojih je 332 dolazilo iz skrivenog `sr-only` bloka.
+ *
+ * `?premium=1` se sada čita u `page.tsx` (server) i stiže ovamo kao `initialMode`.
+ */
+export default function PricingClient({
+  initialMode = "classic",
+}: {
+  initialMode?: "classic" | "premium";
+}) {
   const [mode, setMode] = useState<"classic" | "premium">(initialMode);
   const [selected, setSelected] = useState<Record<string, boolean>>({
     website: true,

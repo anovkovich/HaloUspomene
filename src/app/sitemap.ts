@@ -116,12 +116,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
-    {
-      url: `${siteUrl}/moje-vencanje`,
-      lastModified,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
+    // `/moje-vencanje` je NAMERNO izostavljena — to je ulaz u aplikaciju
+    // (prijava), postavljena je na `noindex`, a sitemap bi Google-u slao
+    // suprotan signal. Javna, indeksabilna stranica o planeru je
+    // `/planiranje-vencanja`. V. komentar u `src/app/moje-vencanje/page.tsx`.
     {
       url: `${siteUrl}/blog`,
       lastModified,
