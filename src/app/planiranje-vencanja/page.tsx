@@ -7,13 +7,11 @@ import {
   Wallet,
   Store,
   ArrowRight,
-  Calendar,
   ListChecks,
   PiggyBank,
   Search,
   Sparkles,
   Clock,
-  Shield,
   Smartphone,
 } from "lucide-react";
 import { Header } from "@/components/layout";
@@ -127,8 +125,16 @@ const howItWorks = [
 
 const faqItems = [
   {
-    q: "Da li je planer uključen u cenu?",
-    a: "Da. Checklista, budžet kalkulator i direktorijum vendora su uključeni za sve parove koji koriste naše usluge — bez dodatnih troškova. Planer je dostupan odmah nakon registracije.",
+    q: "Da li je planer za venčanje besplatan?",
+    a: "Da, u punom obimu. Checklista, kalkulator budžeta i direktorijum saradnika dostupni su odmah posle registracije koja traje desetak sekundi — ne morate kupiti pozivnicu ni bilo koju drugu uslugu da biste ih koristili. Nema probnog perioda koji ističe, ni pro verzije sa doplatom.",
+  },
+  {
+    q: "Mogu li da koristim planer ako još nemam datum venčanja?",
+    a: "Možete. Checklista radi i bez datuma — zadaci su grupisani po periodima pre venčanja, pa ih prosto prekrižite redom. Kada odredite datum, unesete ga i planer sam preračunava rokove. Većina parova krene odmah po veridbi, jer prve odluke (sala i broj zvanica) diktiraju sve ostalo.",
+  },
+  {
+    q: "Po čemu je planer bolji od Excel tabele?",
+    a: "Excel tabela ne zna ko je potvrdio dolazak, ne podseća vas šta sledi i po pravilu postoji u tri verzije kod tri osobe. Planer drži zadatke, budžet i listu gostiju na jednom mestu, dostupan je i vama i partneru sa bilo kog uređaja, a potvrde dolaska sa naše pozivnice upadaju u listu same — bez prepisivanja.",
   },
   {
     q: "Da li je planer povezan sa pozivnicom?",
@@ -508,6 +514,105 @@ export default function PlaniranjeVencanjaPage() {
                   od 50 € / sat <ArrowRight size={12} />
                 </span>
               </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ ŠTA JE PLANER ZA VENČANJE ═══
+            Odgovara na informativni upit („planer za venčanje", „planer
+            venčanja"), za koji je do sada rangirao naš blog post na poz ~7, dok
+            je ova stranica bila na ~18. Merenje je pokazalo zašto: blog ima
+            1.407 reči, a ova stranica ih je imala 779 — na stranici koja
+            prodaje alat nije pisalo šta je taj alat. */}
+        <section className="py-16 sm:py-20 bg-white">
+          <div className="container mx-auto px-4 max-w-3xl">
+            <h2 className="text-3xl sm:text-4xl font-serif text-[#232323] mb-6">
+              Šta je planer za venčanje?
+            </h2>
+            <div className="space-y-5 text-[#232323]/70 leading-relaxed">
+              <p>
+                <strong className="text-[#232323]">Planer za venčanje</strong> je
+                alat koji na jednom mestu drži tri stvari koje se tokom
+                organizacije najlakše izgube: <strong>šta još treba uraditi</strong>,{" "}
+                <strong>koliko je para potrošeno</strong> i{" "}
+                <strong>ko je potvrdio dolazak</strong>. Bez njega te tri stvari
+                obično žive u tri odvojena mesta — beležnici na telefonu, Excel
+                tabeli i WhatsApp prepisci — pa se nijedno ne gleda dovoljno često.
+              </p>
+              <p>
+                Naš planer, <strong className="text-[#232323]">Moje Venčanje</strong>,
+                pravljen je za srpska venčanja: kategorije budžeta su one koje
+                se ovde stvarno plaćaju (sala, muzika, dekoracija, kum i kuma),
+                cene se vode u dinarima i evrima, a checklista prati redosled
+                kojim se stvari kod nas zaista rade. Strane aplikacije to ne
+                pogađaju, jer su pisane za drugačiji tok venčanja.
+              </p>
+
+              <h3 className="text-xl sm:text-2xl font-serif text-[#232323] pt-3">
+                Šta planer sadrži
+              </h3>
+              <ul className="space-y-3 list-none pl-0">
+                {[
+                  [
+                    "Checklista sa preko 40 zadataka",
+                    "grupisanih po periodima — 12 meseci pre, 9, 6, 3, mesec dana, nedelju dana i sam dan venčanja. Možete dodati svoje zadatke i menjati redosled.",
+                  ],
+                  [
+                    "Kalkulator budžeta",
+                    "sa 12 kategorija: za svaku unosite planirani i stvarni trošak, a preostali iznos se računa sam. Prebacivanje između dinara i evra je jednim klikom.",
+                  ],
+                  [
+                    "Lista gostiju i potvrde dolaska",
+                    "sa podelom na mladine, mladoženjine i zajedničke goste. Ako imate našu pozivnicu, potvrde ulaze same — ne prepisujete nikoga ručno.",
+                  ],
+                  [
+                    "Direktorijum saradnika",
+                    "sa preko 90 proverenih fotografa, bendova, sala i drugih usluga po gradovima, sa favoritima umesto sačuvanih Instagram objava.",
+                  ],
+                ].map(([title, desc]) => (
+                  <li key={title} className="flex gap-3">
+                    <CheckSquare
+                      size={18}
+                      className="text-[#AE343F] shrink-0 mt-1"
+                    />
+                    <span>
+                      <strong className="text-[#232323]">{title}</strong> — {desc}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <h3 className="text-xl sm:text-2xl font-serif text-[#232323] pt-3">
+                Kada krenuti sa planerom
+              </h3>
+              <p>
+                Najbolje odmah po veridbi, čak i ako datum još nije određen —
+                prvih nekoliko meseci nose odluke koje kasnije diktiraju sve
+                ostalo (sala, broj zvanica, gruba visina budžeta). Ako ste već
+                usred organizacije, i dalje ima smisla: checklistu možete
+                prekrižiti do tačke na kojoj ste, a budžet uneti unazad da biste
+                videli gde stvarno stojite.
+              </p>
+              <p>
+                Planer je <strong className="text-[#232323]">besplatan</strong> —
+                dovoljna je registracija od desetak sekundi i ne morate ništa da
+                kupite da biste ga koristili. Ako kasnije uzmete i{" "}
+                <Link
+                  href="/izrada-pozivnica-online"
+                  className="text-[#AE343F] font-medium hover:underline"
+                >
+                  digitalnu pozivnicu
+                </Link>
+                , potvrde dolaska se same slivaju u listu gostiju. Detaljan
+                prikaz svake funkcije ima i naš{" "}
+                <Link
+                  href="/blog/moje-vencanje-planer"
+                  className="text-[#AE343F] font-medium hover:underline"
+                >
+                  vodič kroz Moje Venčanje
+                </Link>
+                .
+              </p>
             </div>
           </div>
         </section>
