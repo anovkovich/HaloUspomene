@@ -1680,6 +1680,16 @@ function Step2({
       "event_date",
       dateOnly ? `${dateOnly}T${formData.event_time}` : "",
     );
+    // Ako je rok za potvrde već izabran a venčanje pomereno unazad, stari rok
+    // može da ostane IZA venčanja — `maxDate` to sprečava samo pri novom
+    // biranju, ne i za već upisanu vrednost.
+    if (
+      dateOnly &&
+      formData.submit_until_date &&
+      formData.submit_until_date > dateOnly
+    ) {
+      handleDeadlineDateChange(dateOnly);
+    }
   };
 
   const handleTimeChange = (time: string) => {
@@ -1725,6 +1735,8 @@ function Step2({
           <DatePicker
             value={formData.submit_until_date}
             onChange={handleDeadlineDateChange}
+            // Rok za potvrde ne sme da padne posle samog venčanja.
+            maxDate={formData.event_date_only || undefined}
             placeholder="Izaberite krajnji datum"
             variant="light"
             accentColor={formData.premium ? "#d4af37" : undefined}

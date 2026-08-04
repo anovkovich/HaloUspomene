@@ -433,7 +433,16 @@ function Step2({
           <p className={labelCls}>Datum proslave</p>
           <DatePicker
             value={formData.event_date_only}
-            onChange={(v) => updateField("event_date_only", v)}
+            onChange={(v) => {
+              updateField("event_date_only", v);
+              // Ako je rok već izabran a proslava pomerena unapred pa nazad,
+              // stari rok može da ostane IZA proslave — `maxDate` to sprečava
+              // samo pri novom biranju, ne i za već upisanu vrednost.
+              if (formData.submit_until_date && formData.submit_until_date > v) {
+                updateField("submit_until_date", v);
+                updateField("submit_until", toSerbianDeadline(v));
+              }
+            }}
             placeholder="Izaberite datum"
             variant="light"
             showQuickActions={false}
@@ -456,6 +465,9 @@ function Step2({
               updateField("submit_until_date", v);
               updateField("submit_until", toSerbianDeadline(v));
             }}
+            // Rok za potvrde ne sme da padne posle same proslave — potvrda
+            // posle tog dana nema smisla.
+            maxDate={formData.event_date_only || undefined}
             placeholder="Izaberite krajnji datum"
             variant="light"
             showQuickActions={false}

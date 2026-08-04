@@ -8,6 +8,9 @@ interface DatePickerProps {
   value: string;
   onChange: (date: string) => void;
   minDate?: string;
+  /** Poslednji dozvoljen datum (uključujući njega). Koristi se npr. da rok za
+   *  potvrdu dolaska ne može da padne posle dana proslave. */
+  maxDate?: string;
   placeholder?: string;
   variant?: "dark" | "light";
   showQuickActions?: boolean;
@@ -25,6 +28,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   value,
   onChange,
   minDate,
+  maxDate,
   placeholder = "Izaberite datum",
   variant = "dark",
   showQuickActions = true,
@@ -45,6 +49,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
   const minDateObj = minDate ? new Date(minDate) : today;
   minDateObj.setHours(0, 0, 0, 0);
+
+  const maxDateObj = maxDate ? new Date(maxDate) : null;
+  maxDateObj?.setHours(0, 0, 0, 0);
+
+  const isOutOfRange = (d: Date) =>
+    d < minDateObj || (maxDateObj !== null && d > maxDateObj);
 
   // Colors based on variant
   const ac = accentColor || "#AE343F";
@@ -97,7 +107,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
   const handleDateClick = (day: number) => {
     const newDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
-    if (newDate >= minDateObj) {
+    if (!isOutOfRange(newDate)) {
       const dateStr = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
       onChange(dateStr);
       setIsOpen(false);
@@ -156,7 +166,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(year, month, day);
       currentDate.setHours(0, 0, 0, 0);
-      const isDisabled = currentDate < minDateObj;
+      const isDisabled = isOutOfRange(currentDate);
       const isSelected = selectedDate &&
         selectedDate.getDate() === day &&
         selectedDate.getMonth() === month &&
@@ -208,6 +218,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const canGoPrev = () => {
     const prevMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 0);
     return prevMonth >= minDateObj;
+  };
+
+  const canGoNext = () => {
+    if (!maxDateObj) return true;
+    // Prvi dan sledećeg meseca — ako je i on iza granice, tamo nema šta da se bira.
+    const nextMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+    return nextMonth <= maxDateObj;
   };
 
   return (
@@ -280,8 +297,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
               <button
                 type="button"
                 onClick={handleNextMonth}
+                disabled={!canGoNext()}
                 className="p-2 rounded-full transition-colors"
-                style={{ color: colors.text }}
+                style={{
+                  color: canGoNext() ? colors.text : colors.textPlaceholder,
+                  cursor: canGoNext() ? "pointer" : "not-allowed",
+                }}
               >
                 <ChevronRight size={20} />
               </button>
@@ -331,27 +352,35 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 >
                   Danas
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextWeek = new Date(today);
-                    nextWeek.setDate(nextWeek.getDate() + 7);
-                    onChange(`${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, '0')}-${String(nextWeek.getDate()).padStart(2, '0')}`);
-                    setIsOpen(false);
-                  }}
-                  className="flex-1 py-2 text-sm font-medium rounded-lg transition-colors"
-                  style={{ color: colors.textMuted }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = colors.text;
-                    e.currentTarget.style.backgroundColor = isLight ? "#f5f5f4" : "rgba(255,255,255,0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = colors.textMuted;
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
-                  Za nedelju dana
-                </button>
+                {/* Skriva se kada bi preskočila `maxDate` — npr. kada je
+                    proslava za tri dana, „za nedelju dana" bi postavio rok za
+                    potvrde POSLE proslave. */}
+                {(() => {
+                  const nextWeek = new Date(today);
+                  nextWeek.setDate(nextWeek.getDate() + 7);
+                  if (isOutOfRange(nextWeek)) return null;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(`${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, '0')}-${String(nextWeek.getDate()).padStart(2, '0')}`);
+                        setIsOpen(false);
+                      }}
+                      className="flex-1 py-2 text-sm font-medium rounded-lg transition-colors"
+                      style={{ color: colors.textMuted }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = colors.text;
+                        e.currentTarget.style.backgroundColor = isLight ? "#f5f5f4" : "rgba(255,255,255,0.05)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = colors.textMuted;
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
+                      Za nedelju dana
+                    </button>
+                  );
+                })()}
               </div>
             )}
           </div>
