@@ -221,8 +221,10 @@ export default async function NapraviPozivnicuPage({
         bypassInfo={bypassInfo}
       >
 
-      {/* ═══ Sta dobijate ═══ */}
-      <section className="bg-white py-16 sm:py-20">
+      {/* ═══ Sta dobijate ═══
+          `mt-16` je namerno: bez njega bela pozadina ove sekcije počinje
+          odmah ispod kartice formulara, pa se dve površine slepe. */}
+      <section className="mt-16 bg-white py-16 sm:mt-20 sm:py-20">
         <div className="container mx-auto max-w-3xl px-4">
           <h2 className="mb-6 font-serif text-2xl text-[#232323] sm:text-3xl">
             Šta dobijate uz pozivnicu
