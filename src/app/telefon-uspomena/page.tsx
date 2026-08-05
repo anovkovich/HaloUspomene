@@ -309,12 +309,18 @@ export default function TelefonUspomenaPage() {
                   <Link
                     href="#kontakt"
                     className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#AE343F] text-white text-sm uppercase tracking-widest font-medium hover:bg-[#8B2833] transition-all rounded-full"
+                    data-track="cta_click"
+                    data-track-cta-name="rezervacija_telefon"
+                    data-track-cta-location="hero"
                   >
                     Rezervišite termin
                   </Link>
                   <Link
                     href="#paketi"
                     className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-[#232323]/10 text-[#232323]/70 text-sm uppercase tracking-widest font-medium hover:border-[#AE343F] hover:text-[#AE343F] transition-all rounded-full"
+                    data-track="cta_click"
+                    data-track-cta-name="paketi_telefon"
+                    data-track-cta-location="hero"
                   >
                     Pogledajte pakete
                     <ArrowRight size={16} />
@@ -585,6 +591,9 @@ export default function TelefonUspomenaPage() {
                 <Link
                   href="#kontakt"
                   className="block w-full text-center py-3 rounded-xl text-sm font-bold transition-colors bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC]"
+                  data-track="cta_click"
+                  data-track-cta-name="rezervacija_telefon"
+                  data-track-cta-location="paketi"
                 >
                   Rezervišite termin
                 </Link>

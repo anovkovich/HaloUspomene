@@ -71,3 +71,24 @@
 - **Verifikacija:** `tsc` + `eslint` čisti, build prolazi, provereno u HTML-u da
   su stare formulacije nestale a nove prisutne.
 - **Status:** code-complete
+
+## 2026-08-05 — CTA raspored (konsultovan Fable 5) + tracking
+
+- **Problem:** stranica je imala JEDAN CTA (hero) i formu na samom dnu, iza 16
+  FAQ pitanja. Ko se predomisli u sredini stranice nema kuda.
+- **Odluka (Fable 5):** ne pomerati formu i ne menjati redosled sekcija — padajuci
+  izbor tona u formi pretpostavlja da je covek procitao stranicu, a pravna sekcija
+  mora da se procita pre upita. Umesto toga tri nova izlaza:
+  - `cena` — dugme UNUTAR crne kartice, odmah ispod recenice „Javite datum i
+    lokaciju i dobijate tacnu ponudu". Ta recenica je poziv na akciju bez akcije;
+    ispod dve krem kartice bi izgubila vezu sa cifrom.
+  - `scenariji` — posle mrezice scenarija, gde se posetilac tek prepoznao.
+  - `gradovi` — posle mrezice gradova, poslednji izlaz pre FAQ zida.
+- **Tracking:** sekundarno hero dugme (`#kako-izgleda`) nije imalo `data-track`;
+  dodato. `/lazni-maticar` sada ima 5 pracenih CTA-ova.
+- **Usput:** `/telefon-uspomena` nije imala NIJEDAN `data-track` — 3 CTA-a
+  (hero rezervacija, hero paketi, dugme u kartici paketa) sada su pracena.
+- **Verifikacija:** `tsc` cist, `next build` prolazi, u serverskom HTML-u
+  `/lazni-maticar` = 5 i `/telefon-uspomena` = 3 `data-track="cta_click"`;
+  kartica sa cenom snimljena na 1440 i 420 px.
+- **Status:** code-complete

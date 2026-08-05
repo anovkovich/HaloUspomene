@@ -391,6 +391,9 @@ export default function LazniMaticar() {
                 </a>
                 <a
                   href="#kako-izgleda"
+                  data-track="cta_click"
+                  data-track-cta-name="kako_izgleda_lazni_maticar"
+                  data-track-cta-location="hero"
                   className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] btn-lg rounded-full px-10"
                 >
                   Kako izgleda
@@ -608,9 +611,26 @@ export default function LazniMaticar() {
                 </div>
               ))}
             </div>
+
+            {/* Izlaz posle scenarija: posetilac se upravo prepoznao u jednom od
+                njih, a do forme ima jos cetiri ekrana. */}
+            <div className="mt-14 sm:mt-16 text-center">
+              <p className="mb-4 text-sm text-[#232323]/50">
+                Prepoznajete neku od ovih situacija?
+              </p>
+              <a
+                href="#kontakt"
+                className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] btn-lg rounded-full px-10 border-none shadow-xl shadow-[#AE343F]/30"
+                data-track="cta_click"
+                data-track-cta-name="upit_lazni_maticar"
+                data-track-cta-location="scenariji"
+              >
+                Proverite termin za svoj datum
+                <ArrowRight size={18} />
+              </a>
+            </div>
           </div>
         </section>
-
         {/* ─────────────────────────── CENA ─────────────────────────── */}
         <section id="cena" className="py-16 sm:py-20 md:py-24 bg-white">
           <div className="container mx-auto px-4 max-w-5xl">
@@ -650,6 +670,20 @@ export default function LazniMaticar() {
                 tačna. Javite datum i lokaciju i dobijate tačnu ponudu, bez
                 obaveze.
               </p>
+
+              {/* Dugme stoji UNUTAR kartice, uz samu cifru. Recenica iznad
+                  poziva na akciju, pa akcija mora da bude tu — ispod dve krem
+                  kartice bi izgubila vezu sa cenom. */}
+              <a
+                href="#kontakt"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#AE343F] px-9 py-3.5 text-sm font-semibold uppercase tracking-wider text-[#F5F4DC] transition-colors hover:bg-[#8A2A32]"
+                data-track="cta_click"
+                data-track-cta-name="upit_lazni_maticar"
+                data-track-cta-location="cena"
+              >
+                Zatražite tačnu ponudu
+                <ArrowRight size={16} />
+              </a>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -777,9 +811,26 @@ export default function LazniMaticar() {
                 </div>
               ))}
             </div>
+
+            {/* Poslednji izlaz pre FAQ-a: ko nema pitanja, ne treba da skroluje
+                kroz 16 njih da bi stigao do forme. */}
+            <div className="mt-14 sm:mt-16 text-center">
+              <p className="mb-4 text-sm text-[#232323]/50">
+                Vaša lokacija nije na spisku? Verovatno ipak izlazimo — pošaljite je i proverite.
+              </p>
+              <a
+                href="#kontakt"
+                className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] btn-lg rounded-full px-10 border-none shadow-xl shadow-[#AE343F]/30"
+                data-track="cta_click"
+                data-track-cta-name="upit_lazni_maticar"
+                data-track-cta-location="gradovi"
+              >
+                Proverite termin za svoju lokaciju
+                <ArrowRight size={18} />
+              </a>
+            </div>
           </div>
         </section>
-
         {/* ─────────────────────────── FAQ ─────────────────────────── */}
         <section className="py-16 sm:py-20 md:py-24">
           <div className="container mx-auto px-4 max-w-3xl">
