@@ -24,8 +24,7 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import ServiceLeadForm from "@/components/forms/ServiceLeadForm";
 import {
   priceFrom,
-  pricingApproximate,
-  packages,
+  priceBaseCity,
   includedAlways,
   extras,
   toneOptions,
@@ -189,7 +188,7 @@ const faqItems = [
   },
   {
     q: `Koliko košta lažni matičar?`,
-    a: `Kod nas cena počinje od ${priceFrom} € za ceremoniju.${pricingApproximate ? " Cifra je orijentaciona jer zavisi od lokacije, trajanja i toga koliko je scenario složen — tačnu ponudu šaljemo na upit, bez obaveze." : ""} Dolazak van Beograda se dogovara posebno, prema udaljenosti. Poređenja radi, izlazak pravog matičara na teren u Beogradu naplaćuje se i do 18.212 dinara, a i tada samo na odobrenu lokaciju.`,
+    a: `Standardna ceremonija u ${priceBaseCity}u košta ${priceFrom} € — fiksno, sa svime uključenim i bez putnih troškova. Za lokacije van ${priceBaseCity}a, ceremoniju na engleskom ili ruskom i složenije scenarije cenu šaljemo na upit, jer zavisi od udaljenosti, termina i scenarija. Poređenja radi, izlazak pravog matičara na teren u ${priceBaseCity}u naplaćuje se i do 18.212 dinara — dakle otprilike isto, samo što matičar dolazi isključivo na lokaciju koju matična služba odobri i čita propisani obrazac, a ovde i lokaciju i tekst birate vi.`,
   },
   {
     q: "Da li dobijamo neki dokument ili pečat?",
@@ -197,7 +196,7 @@ const faqItems = [
   },
   {
     q: "Može li ceremonija da bude na engleskom ili ruskom?",
-    a: "Može. Ceremoniju vodimo na srpskom, engleskom ili ruskom jeziku, što je čest zahtev kada je deo gostiju iz inostranstva ili je jedan od mladenaca stranac. Jezik dogovaramo unapred, zajedno sa tekstom.",
+    a: "Može. Osim na srpskom, ceremoniju vodimo i na engleskom ili ruskom — čest je zahtev kada je deo gostiju iz inostranstva ili je jedan od mladenaca stranac. Ceremonija na stranom jeziku traži poseban rad na tekstu, pa se dogovara posebno i ne ulazi u osnovnu cenu. Jezik javite pri upitu, da vam odmah pošaljemo tačnu ponudu.",
   },
   {
     q: "Koliko ceremonija traje?",
@@ -259,10 +258,14 @@ const serviceSchema = {
   },
   areaServed: { "@type": "Country", name: "Srbija" },
   url: pageUrl,
+  // Cena se odnosi na standardnu ceremoniju u Beogradu; ostale lokacije i
+  // strani jezik idu na upit, pa se navodi kao donja granica, ne kao fiksna
+  // cena cele usluge — da strukturirani podaci ne obecavaju vise nego stranica.
   offers: {
     "@type": "Offer",
     priceCurrency: "EUR",
     price: priceFrom,
+    description: `Standardna ceremonija u ${priceBaseCity}u. Ostale lokacije i ceremonija na stranom jeziku — cena na upit.`,
     priceSpecification: {
       "@type": "PriceSpecification",
       minPrice: priceFrom,
@@ -363,7 +366,7 @@ export default function LazniMaticar() {
               <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mb-9 text-[#232323]/50 text-sm">
                 <span className="flex items-center gap-2">
                   <Sparkles size={16} className="text-[#AE343F]" />
-                  od {priceFrom} € po ceremoniji
+                  {priceFrom} € u {priceBaseCity}u
                 </span>
                 <span className="flex items-center gap-2">
                   <Clock size={16} className="text-[#AE343F]" />
@@ -476,9 +479,9 @@ export default function LazniMaticar() {
                   standardnim tekstom
                 </strong>{" "}
                 — upravo zato što tako deluje stvarno i autentično. Šala i
-                personalizacija su opcija, ne obaveza. Ceremonija se, ako
-                treba, vodi i na engleskom ili ruskom jeziku, za goste iz
-                inostranstva.
+                personalizacija su opcija, ne obaveza. Ceremonija može da se
+                vodi i na engleskom ili ruskom jeziku, za goste iz inostranstva
+                — to se dogovara posebno i ne ulazi u osnovnu cenu.
               </p>
               <p>
                 Jedna stvar koju vredi znati unapred:{" "}
@@ -627,52 +630,27 @@ export default function LazniMaticar() {
 
             <div className="max-w-2xl mx-auto mb-10 p-8 sm:p-10 rounded-3xl bg-[#232323] text-center">
               <p className="text-xs uppercase tracking-[0.25em] text-[#d4af37] mb-3">
-                Ceremonija sa glumcem
+                Standardna ceremonija · {priceBaseCity}
               </p>
               <p className="font-serif text-5xl sm:text-6xl text-[#F5F4DC] mb-3">
-                od {priceFrom} €
+                {priceFrom} €
               </p>
               <p className="text-[#F5F4DC]/50 text-sm leading-relaxed">
-                {pricingApproximate
-                  ? "Cena je orijentaciona — zavisi od lokacije, trajanja i složenosti scenarija. Tačnu ponudu šaljemo na upit, bez obaveze."
-                  : "Tačna cena zavisi od izabranog paketa i lokacije."}
+                Fiksna cena za ceremoniju u {priceBaseCity}u, sa svime što je
+                navedeno ispod. Bez putnih troškova i bez naknadnih stavki.
+              </p>
+
+              {/* Stavke koje idu na upit NISU ovde nabrojane — stoje u kartici
+                  „Dogovara se posebno" odmah ispod. Ranije su bile na oba
+                  mesta, pa se isti spisak video dvaput na jednom ekranu. */}
+              <p className="mt-6 pt-5 border-t border-[#F5F4DC]/10 text-sm text-[#F5F4DC]/45 leading-relaxed">
+                Za lokacije van {priceBaseCity}a, ceremoniju na stranom jeziku i
+                složenije scenarije cenu šaljemo na upit — te stavke zavise od
+                udaljenosti, termina i scenarija, pa jedna cifra ne bi bila
+                tačna. Javite datum i lokaciju i dobijate tačnu ponudu, bez
+                obaveze.
               </p>
             </div>
-
-            {packages.length > 0 && (
-              <div className="overflow-x-auto rounded-3xl border border-[#232323]/8 bg-[#f5f4dc]/40 mb-10">
-                <table className="w-full text-left text-sm min-w-[520px]">
-                  <thead>
-                    <tr className="bg-[#232323] text-[#F5F4DC]">
-                      <th className="py-4 px-5 font-semibold">Paket</th>
-                      <th className="py-4 px-5 font-semibold text-right">
-                        Cena
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {packages.map((pkg) => (
-                      <tr
-                        key={pkg.id}
-                        className="border-t border-[#232323]/8"
-                      >
-                        <td className="py-4 px-5">
-                          <span className="font-medium text-[#232323]">
-                            {pkg.name}
-                          </span>
-                          <span className="block text-xs text-[#232323]/45">
-                            {pkg.includes.join(" · ")}
-                          </span>
-                        </td>
-                        <td className="py-4 px-5 font-serif text-lg text-[#AE343F] text-right whitespace-nowrap">
-                          {pkg.price} €
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="p-7 rounded-3xl bg-[#f5f4dc]/50 border border-[#232323]/8">
@@ -699,8 +677,9 @@ export default function LazniMaticar() {
 
             <p className="text-center text-sm text-[#232323]/50 mt-8 max-w-2xl mx-auto leading-relaxed">
               Za poređenje: izlazak pravog matičara na teren u Beogradu
-              naplaćuje se i do 18.212 dinara, a i tada samo na lokaciju koju
-              matična služba odobri.
+              naplaćuje se i do 18.212 dinara — dakle otprilike isto. Razlika je
+              u tome što matičar dolazi samo na lokaciju koju matična služba
+              odobri i čita propisani obrazac, a ovde i lokaciju i tekst birate vi.
             </p>
           </div>
         </section>
@@ -902,7 +881,7 @@ export default function LazniMaticar() {
             par venčan u inostranstvu, obnova bračnih zaveta i godišnjice braka,
             kao i šaljivi program i iznenađenje za mladence. Dolazimo u Beograd,
             Novi Sad, Niš, Kragujevac i ostale gradove, kao i na lokacije u
-            prirodi. Cena počinje od {priceFrom} evra po ceremoniji. Za
+            prirodi. Standardna ceremonija u {priceBaseCity}u košta {priceFrom} evra, a za ostale lokacije i ceremoniju na stranom jeziku cenu šaljemo na upit. Za
             simbolično venčanje nije potrebna nikakva papirologija — brak se u
             Srbiji zaključuje isključivo pred ovlašćenim matičarem.
           </p>
