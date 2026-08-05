@@ -100,7 +100,7 @@ const trustPoints = [
   {
     icon: <Sparkles size={24} />,
     title: "Izgleda kao pravo",
-    desc: "Odelo, lenta, knjiga, pečat i mikrofon. Dok ne kaže drugačije, gosti veruju da gledaju zvaničnu ceremoniju.",
+    desc: "Odelo, lenta, mikrofon i knjiga venčanih koju mladenci potpisuju. Dok ne kaže drugačije, gosti veruju da gledaju zvaničnu ceremoniju.",
   },
   {
     icon: <MapPin size={24} />,
@@ -190,6 +190,14 @@ const faqItems = [
   {
     q: `Koliko košta lažni matičar?`,
     a: `Kod nas cena počinje od ${priceFrom} € za ceremoniju.${pricingApproximate ? " Cifra je orijentaciona jer zavisi od lokacije, trajanja i toga koliko je scenario složen — tačnu ponudu šaljemo na upit, bez obaveze." : ""} Dolazak van Beograda se dogovara posebno, prema udaljenosti. Poređenja radi, izlazak pravog matičara na teren u Beogradu naplaćuje se i do 18.212 dinara, a i tada samo na odobrenu lokaciju.`,
+  },
+  {
+    q: "Da li dobijamo neki dokument ili pečat?",
+    a: "Pečata nema — pečat ima samo zvanični čin u opštini, i mi to nikada ne glumimo. Ono što postoji jeste knjiga venčanih koju mladenci potpišu tokom ceremonije. Nema pravno dejstvo, ali su fotografije tog trenutka među najlepšima sa celog venčanja i parovi ih redovno izdvajaju.",
+  },
+  {
+    q: "Može li ceremonija da bude na engleskom ili ruskom?",
+    a: "Može. Ceremoniju vodimo na srpskom, engleskom ili ruskom jeziku, što je čest zahtev kada je deo gostiju iz inostranstva ili je jedan od mladenaca stranac. Jezik dogovaramo unapred, zajedno sa tekstom.",
   },
   {
     q: "Koliko ceremonija traje?",
@@ -420,23 +428,25 @@ export default function LazniMaticar() {
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
                 Ukratko
               </p>
+              {/* „Ko" a ne „šta" — ceremoniju vodi čovek, glumac; „šta"
+                  zvuči kao da je reč o usluzi ili rekvizitu. Predlog partnera. */}
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323]">
-                Šta je{" "}
+                Ko je{" "}
                 <span className="italic text-[#AE343F]">lažni matičar</span>?
               </h2>
             </div>
             <div className="space-y-5 text-[#232323]/65 leading-relaxed text-[17px] text-justify hyphens-auto">
               <p>
                 Lažni matičar je glumac koji vodi ceremoniju venčanja koja
-                izgleda i zvuči kao prava — odelo, lenta, knjiga, pečat i
-                mikrofon.{" "}
+                izgleda i zvuči kao prava — odelo, lenta, mikrofon i knjiga
+                venčanih koju mladenci potpisuju.{" "}
                 <strong className="text-[#232323]">
                   Ceremonija je simbolična i nema nijedan zakonski element
                 </strong>
                 : ništa se ne prijavljuje, ništa se pravno ne potpisuje i ništa
                 se ne upisuje ni u kakvu evidenciju. Namenjena je parovima koji
-                su brak već sklopili — u opštini kod nas ili negde u
-                inostranstvu — pa žele i pravu ceremoniju, pred svima koje vole.
+                su brak već sklopili — u opštini ili negde u inostranstvu —
+                pa žele i pravu ceremoniju, pred svima koje vole.
               </p>
               <p>
                 Najveća razlika u odnosu na zvanični čin nije mesto nego
@@ -458,6 +468,26 @@ export default function LazniMaticar() {
                   personalizovan po želji mladenaca
                 </strong>{" "}
                 — od toga kako ste se upoznali do zaveta koje sami napišete.
+              </p>
+              <p>
+                Uz sve to,{" "}
+                <strong className="text-[#232323]">
+                  najveći broj parova i dalje bira klasičnu ceremoniju sa
+                  standardnim tekstom
+                </strong>{" "}
+                — upravo zato što tako deluje stvarno i autentično. Šala i
+                personalizacija su opcija, ne obaveza. Ceremonija se, ako
+                treba, vodi i na engleskom ili ruskom jeziku, za goste iz
+                inostranstva.
+              </p>
+              <p>
+                Jedna stvar koju vredi znati unapred:{" "}
+                <strong className="text-[#232323]">
+                  nema pečata, jer pečat ima samo zvanični čin
+                </strong>
+                . Ono što postoji jeste knjiga venčanih koju mladenci potpišu —
+                a te fotografije parovi redovno izdvajaju kao jedne od
+                najlepših sa celog venčanja.
                 Ideja nije ni nova kod nas: srpske svadbe vekovima imaju
                 odigrane uloge, od lažne mlade do kupovine mlade. Ovo je samo
                 najnovija u nizu.

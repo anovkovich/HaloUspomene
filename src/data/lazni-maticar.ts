@@ -39,10 +39,11 @@ export const packages: CeremonyPackage[] = [];
 /** Šta je uvek uključeno u nastup, bez obzira na paket. */
 export const includedAlways = [
   "Dolazak na vašu lokaciju u dogovoreno vreme",
-  "Ceremonija u odelu, sa lentom i knjigom — kao na pravom venčanju",
+  "Ceremonija u odelu, sa lentom i knjigom venčanih — kao na pravom venčanju",
   "Govor pisan po vašoj priči, usaglašen sa vama unapred",
-  "Dogovor tona: emotivno, šaljivo ili kombinovano",
-  "Razmena zaveta i simbolično potpisivanje",
+  "Dogovor tona: klasično, emotivno, šaljivo ili kombinovano",
+  "Razmena zaveta i potpisivanje knjige venčanih — kadrovi koje parovi najviše vole",
+  "Ceremonija na srpskom, engleskom ili ruskom jeziku",
 ];
 
 /** Dogovara se posebno i ne ulazi u osnovnu cenu. */
@@ -50,11 +51,17 @@ export const extras = [
   "Dolazak van Beograda (putni troškovi prema udaljenosti)",
   "Nastup u kasnim večernjim satima",
   "Poseban scenario sa više likova ili rekvizita",
-  "Ceremonija na stranom jeziku, za goste iz inostranstva",
 ];
 
-/** Opcije u prvoj padajućoj listi forme: kakav ton ceremonije žele. */
+/**
+ * Opcije u prvoj padajućoj listi forme: kakav ton ceremonije žele.
+ *
+ * Redosled nije slučajan: partner javlja da najveći broj parova i dalje bira
+ * klasičnu ceremoniju sa standardnim tekstom, jer tako deluje stvarno.
+ * Zato klasična stoji prva.
+ */
 export const toneOptions = [
+  "Klasična ceremonija sa standardnim tekstom",
   "Emotivna ceremonija",
   "Šaljiva ceremonija",
   "Kombinovano — počne ozbiljno, pređe u šalu",
