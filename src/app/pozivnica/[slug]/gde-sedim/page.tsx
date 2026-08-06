@@ -10,7 +10,7 @@ import {
 import { loadSeatingLayout } from "@/lib/seating";
 import { buildGuestLookup } from "@/lib/seating/lookup";
 import { getRSVPResponses } from "@/lib/rsvp";
-import { getGalleryPhotos } from "@/lib/gallery";
+import { getGalleryUploaderStacks } from "@/lib/gallery";
 import { getAudioMessages } from "@/lib/audio";
 import { galleryPhase } from "@/lib/gallery-lifecycle";
 import { getThemeCSSVariables } from "../constants";
@@ -123,12 +123,12 @@ export default async function GdeSedimPage({ params }: PageProps) {
     weddingData.event_date,
     weddingData.gallery_extra_days ?? 0,
   );
-  let galleryPhotos: Awaited<ReturnType<typeof getGalleryPhotos>> = [];
+  let galleryStacks: Awaited<ReturnType<typeof getGalleryUploaderStacks>> = [];
   if (hasGallery && phase !== "expired" && phase !== "before") {
     try {
-      galleryPhotos = await getGalleryPhotos(slug, { limit: 2000 });
+      galleryStacks = await getGalleryUploaderStacks(slug);
     } catch {
-      galleryPhotos = [];
+      galleryStacks = [];
     }
   }
 
@@ -174,7 +174,7 @@ export default async function GdeSedimPage({ params }: PageProps) {
         tables={tables}
         hasGallery={hasGallery}
         galleryPhase={phase}
-        galleryPhotos={galleryPhotos}
+        galleryStacks={galleryStacks}
         hasMeni={hasMeni}
         meni={meni ?? null}
         hasAudio={hasAudio}

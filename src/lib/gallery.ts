@@ -74,6 +74,60 @@ export async function getGalleryPhotos(
   return docs.map(serialize);
 }
 
+/** One pile on the public guest page: who shared, how many, and a cover. */
+export interface GalleryStack {
+  name: string;
+  count: number;
+  coverUrl: string;
+}
+
+/**
+ * Per-uploader piles, grouped in the database.
+ *
+ * The public page only ever draws one cover + a count per guest, so shipping
+ * every photo row to the browser and grouping it there made the payload grow
+ * with the number of PHOTOS (2.000 rows ≈ half a megabyte of JSON) to render
+ * something that grows with the number of GUESTS (~100 rows). This returns the
+ * second shape directly: constant work no matter how big the wedding gets, and
+ * `{slug, approved, createdAt}` covers both the match and the sort.
+ */
+export async function getGalleryUploaderStacks(
+  slug: string
+): Promise<GalleryStack[]> {
+  const c = await col();
+  const rows = await c
+    .aggregate<{ _id: string; count: number; coverUrl: string }>([
+      { $match: { slug, approved: true } },
+      // Newest first, so $first in each group is that guest's latest photo and
+      // the groups themselves come out ordered by recency.
+      { $sort: { createdAt: -1 } },
+      {
+        $group: {
+          _id: {
+            $let: {
+              vars: { n: { $ifNull: ["$guestName", ""] } },
+              in: { $cond: [{ $eq: ["$$n", ""] }, "Gost", "$$n"] },
+            },
+          },
+          count: { $sum: 1 },
+          coverUrl: { $first: "$url" },
+          newest: { $first: "$createdAt" },
+        },
+      },
+      { $sort: { newest: -1 } },
+      // A wedding has guests, not thousands of uploaders; the cap is an abuse
+      // guard, not an expected ceiling.
+      { $limit: 500 },
+    ])
+    .toArray();
+
+  return rows.map((r) => ({
+    name: r._id,
+    count: r.count,
+    coverUrl: r.coverUrl,
+  }));
+}
+
 export async function getGalleryPhotoCount(slug: string): Promise<number> {
   const c = await col();
   return c.countDocuments({ slug });

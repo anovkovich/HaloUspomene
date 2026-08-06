@@ -30,6 +30,11 @@ interface Props {
 
 const PAGE = 12; // small batches so the grid streams in instead of loading 200 at once
 
+/** Max payload per ZIP part. Zipping holds the source blobs AND the archive in
+ *  memory at once, so this is roughly double that in peak RAM — 200 MB parts
+ *  keep a phone browser comfortably alive on a 2 GB wedding gallery. */
+const ZIP_PART_BYTES = 200 * 1024 * 1024;
+
 function safeName(s: string): string {
   return s.replace(/[^a-zA-Z0-9Ѐ-ӿ-]+/g, "-").replace(/-+/g, "-");
 }
@@ -137,27 +142,68 @@ export default function GalleryCard({
     setZipping(true);
     try {
       const JSZip = (await import("jszip")).default;
-      const zip = new JSZip();
       const chosen = photos.filter((p) => selected.has(p._id));
-      let i = 0;
+
+      // Everything is held in browser memory (source blobs + the assembled
+      // archive), so one ZIP over a whole wedding would be a tab crash on a
+      // phone. Photos are flushed into a part as soon as the part reaches the
+      // budget, and each part downloads on its own.
+      let zip = new JSZip();
+      let partBytes = 0;
+      let partIndex = 1;
+      let inPart = 0;
+      let total = 0;
+      const parts: Array<{ blob: Blob; index: number }> = [];
+
+      const flush = async () => {
+        if (inPart === 0) return;
+        parts.push({
+          blob: await zip.generateAsync({ type: "blob" }),
+          index: partIndex,
+        });
+        zip = new JSZip();
+        partBytes = 0;
+        inPart = 0;
+        partIndex++;
+      };
+
       for (const p of chosen) {
         try {
           // same-origin proxy (no CORS); the R2 fetch happens server-side
           const res = await fetch(`${dlBase}?id=${p._id}`);
           if (!res.ok) continue;
           const blob = await res.blob();
-          i++;
-          zip.file(`${safeName(p.guestName || "gost")}-${i}.jpg`, blob);
+          total++;
+          inPart++;
+          partBytes += blob.size;
+          zip.file(`${safeName(p.guestName || "gost")}-${total}.jpg`, blob);
+          if (partBytes >= ZIP_PART_BYTES) await flush();
         } catch {
           /* skip a failed one, keep zipping the rest */
         }
       }
-      if (i === 0) {
+      await flush();
+
+      if (parts.length === 0) {
         toast.error("Greška pri preuzimanju");
         return;
       }
-      const content = await zip.generateAsync({ type: "blob" });
-      triggerDownload(content, `galerija-${slug}.zip`);
+
+      // A single part keeps the old, unsuffixed filename.
+      for (const part of parts) {
+        triggerDownload(
+          part.blob,
+          parts.length === 1
+            ? `galerija-${slug}.zip`
+            : `galerija-${slug}-deo-${part.index}-od-${parts.length}.zip`
+        );
+        // Browsers drop rapid-fire programmatic downloads; a beat apart, and
+        // the "allow multiple downloads" prompt appears once instead of never.
+        if (parts.length > 1) await new Promise((r) => setTimeout(r, 800));
+      }
+      if (parts.length > 1) {
+        toast.success(`Preuzimanje u ${parts.length} dela — potvrdite u pregledaču.`);
+      }
     } finally {
       setZipping(false);
     }

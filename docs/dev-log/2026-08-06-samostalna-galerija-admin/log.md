@@ -1,5 +1,58 @@
 # Log — Samostalna QR galerija: eksplicitni marker + admin tab
 
+## 2026-08-06 — Indeksi, grupisanje u bazi, ZIP u delovima, QR sa ikonicom
+
+- **Šta je urađeno:**
+  - **`scripts/create-gallery-indexes.mjs` + pokrenuto na produkciji.**
+    `gallery_photos` je imala samo `_id_`, a svaki upload confirm radi TRI
+    `countDocuments` (po slugu, po uređaju, po IP-u) pre upisa — svadba sa 500
+    slika je pravila ~1500 punih skanova nad kolekcijom koja raste celo veče.
+    Dodato: `{slug, approved, createdAt}`, `{slug, uploaderId}`, `{slug, ip}`.
+  - **Grupisanje po gostu preseljeno u Mongo** — nova
+    `getGalleryUploaderStacks()` (`$match` → `$sort` → `$group` → `$sort`).
+    Javna stranica je učitavala do 2000 redova da bi nacrtala ~100 gomilica;
+    sada dobija tačno onoliko redova koliko ima gostiju. Prebačena sva tri
+    potrošača: `/pozivnica/[slug]/galerija`, `/pozivnica/[slug]/gde-sedim`,
+    `/raspored-sedenja/[slug]/gde-sedim`. `GalerijaClient` radi nad
+    `initialStacks` (uz `stacksFromPhotos` kao rezervu) i posle slanja sam
+    ažurira svoju gomilicu. `PUBLIC_LOAD_CAP` više nije potreban.
+  - **ZIP se deli na delove od 200 MB** (`GalleryCard.downloadSelected`).
+    Zipovanje drži i izvorne blobove i arhivu u memoriji taba; jedan ZIP preko
+    cele svadbe je rušio pregledač na telefonu. Jedan deo zadržava staro ime
+    fajla; više delova dobija `-deo-N-od-M` i razmak od 800 ms da pregledač ne
+    odbaci uzastopna preuzimanja.
+  - **QR za galeriju dobio ikonicu fotoaparata** — `galleryQrDataUrl()` crta QR
+    na canvas sa `errorCorrectionLevel: "H"` i utisne belu pločicu sa lucide
+    „camera" glifom u brend crvenoj. Pločica pokriva 22% širine ≈ 4,8% površine,
+    daleko unutar 30% koje nivo H podnosi. Primenjeno na **oba** mesta gde se
+    QR za galeriju generiše: `downloadGalleryQR` (admin tab + `/pristup`) i
+    `PortalClient` (PNG + A6 flajer preko novog `qrDataUrl` u `QrFlyerInput`).
+    Audio QR namerno ostaje bez ikonice.
+- **Commit / PR:** —
+- **Na šta utiče dalje:** `GalerijaClient` više ne prima listu slika za javni
+  prikaz; svaki nov potrošač treba da šalje `initialStacks`.
+- **Posledice:**
+  - Javna stranica: payload je sa ~500 KB (2000 redova) pao na ~5 KB (broj
+    gostiju), i ne raste sa brojem slika. Nema više tihog odsecanja na 2000.
+  - Upiti nad `gallery_photos` sada koriste indeks (potvrđeno `explain` →
+    IXSCAN umesto COLLSCAN).
+  - Rollback: indeksi se mogu obrisati bez posledica po kod; grupisanje se vraća
+    prosleđivanjem `initialPhotos` umesto `initialStacks`.
+- **Šta je rešeno:** tri uska grla koja bi se prvi put videla tek na velikoj
+  svadbi — kad je najgore vreme da se vide.
+- **Šta je odblokirano:** galerija bez straha na svadbi sa nekoliko stotina
+  gostiju.
+- **Status:** code-complete (nepromenjen)
+- **Blokade / sledeći korak:** —
+
+### Verifikacija
+
+30 test slika kroz 5 gostiju (uključujući jednog bez imena): agregacija vraća 5
+grupa sa tačnim brojevima, prazno ime → „Gost", cover je najnovija slika svakog
+gosta. Stranica ispisuje „30 fotografija · 5 gostiju", a u HTML-u se pojavljuje
+5 URL-ova umesto 30. `explain` potvrđuje IXSCAN. `tsc`, `eslint` i `build`
+čisti; test zapis obrisan kaskadno.
+
 ## 2026-08-06 — Ključ u linku, QR vezan za dan, istekla galerija kao upsell
 
 - **Šta je urađeno:**

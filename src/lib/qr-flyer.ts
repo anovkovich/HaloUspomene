@@ -50,6 +50,9 @@ export interface QrFlyerInput {
   bottom?: string;
   /** Saved file name (without path). */
   filename: string;
+  /** Pre-rendered QR PNG data URL. Lets a caller supply a decorated code (the
+   *  gallery flyer passes one with a camera badge); omitted → plain QR. */
+  qrDataUrl?: string;
 }
 
 export async function generateQrFlyerPDF(input: QrFlyerInput): Promise<void> {
@@ -148,11 +151,13 @@ export async function generateQrFlyerPDF(input: QrFlyerInput): Promise<void> {
   y += 4;
 
   // QR code (a touch smaller)
-  const qrDataUrl = await QRCode.toDataURL(url, {
-    width: 600,
-    margin: 1,
-    color: { dark: "#232323", light: "#ffffff" },
-  });
+  const qrDataUrl =
+    input.qrDataUrl ??
+    (await QRCode.toDataURL(url, {
+      width: 600,
+      margin: 1,
+      color: { dark: "#232323", light: "#ffffff" },
+    }));
   const qrSize = 38;
   const qrX = cx - qrSize / 2;
   const qrY = y;

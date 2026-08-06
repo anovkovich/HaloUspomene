@@ -3,7 +3,7 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { Camera, X, Upload, Loader2, ImageOff, Images, CalendarClock, QrCode } from "lucide-react";
-import type { GalleryPhoto } from "@/lib/gallery";
+import type { GalleryPhoto, GalleryStack } from "@/lib/gallery";
 import type { GalleryPhase } from "@/lib/gallery-lifecycle";
 import { prepareImageForUpload } from "@/lib/image-utils";
 
@@ -12,6 +12,10 @@ interface Props {
   coupleNames: string;
   useCyrillic: boolean;
   phase: GalleryPhase;
+  /** Per-guest piles, grouped server-side. Preferred — the payload then scales
+   *  with the number of guests, not the number of photos. */
+  initialStacks?: GalleryStack[];
+  /** Raw rows, grouped in the browser. Fallback for callers that still pass them. */
   initialPhotos: GalleryPhoto[];
   /** ISO event date — drives the "opens on …" copy in the before state. */
   eventDate?: string;
@@ -121,6 +125,19 @@ function strings(cyr: boolean) {
       };
 }
 
+/** Browser-side fallback grouping, for callers that still pass raw rows.
+ *  Rows arrive newest-first, so first sighting of a name is its cover. */
+function stacksFromPhotos(photos: GalleryPhoto[]): GalleryStack[] {
+  const map = new Map<string, GalleryStack>();
+  for (const p of photos) {
+    const name = p.guestName || "Gost";
+    const hit = map.get(name);
+    if (hit) hit.count++;
+    else map.set(name, { name, count: 1, coverUrl: p.url });
+  }
+  return Array.from(map.values());
+}
+
 function readStoredName(): string {
   if (typeof window === "undefined") return "";
   try {
@@ -141,6 +158,7 @@ export default function GalerijaClient({
   coupleNames,
   useCyrillic,
   phase,
+  initialStacks,
   initialPhotos,
   eventDate,
   galleryKey,
@@ -163,21 +181,35 @@ export default function GalerijaClient({
     });
   }, [eventDate, useCyrillic]);
 
-  const [photos, setPhotos] = useState<GalleryPhoto[]>(initialPhotos);
+  // The view draws one pile per guest — a cover, a count and a name. That is
+  // what the server sends (grouped in Mongo), so the payload scales with the
+  // number of guests instead of the number of photos. `initialPhotos` is the
+  // fallback for callers that still hand over rows.
+  const [groups, setGroups] = useState<GalleryStack[]>(
+    () => initialStacks ?? stacksFromPhotos(initialPhotos)
+  );
+  const totalPhotos = useMemo(
+    () => groups.reduce((sum, g) => sum + g.count, 0),
+    [groups]
+  );
 
-  // Group by uploader — the public view shows one "stack" per guest, not every
-  // photo flat (privacy + lighter load). photos are newest-first, so the first
-  // time a name appears is its newest photo → groups ordered by recency.
-  const groups = useMemo(() => {
-    const map = new Map<string, GalleryPhoto[]>();
-    for (const p of photos) {
-      const key = p.guestName || "Gost";
-      const arr = map.get(key);
-      if (arr) arr.push(p);
-      else map.set(key, [p]);
-    }
-    return Array.from(map.entries()).map(([name, ps]) => ({ name, photos: ps }));
-  }, [photos]);
+  /** Fold this device's just-uploaded photos into its own pile. */
+  function bumpOwnStack(name: string, addedCount: number, coverUrl: string) {
+    const key = name || "Gost";
+    setGroups((prev) => {
+      const idx = prev.findIndex((g) => g.name === key);
+      if (idx === -1) return [{ name: key, count: addedCount, coverUrl }, ...prev];
+      const next = [...prev];
+      next[idx] = {
+        ...next[idx],
+        count: next[idx].count + addedCount,
+        coverUrl,
+      };
+      // Newest activity floats to the front, matching the server's ordering.
+      const [moved] = next.splice(idx, 1);
+      return [moved, ...next];
+    });
+  }
 
   const [modalOpen, setModalOpen] = useState(false);
   const [guestName, setGuestName] = useState<string>(readStoredName);
@@ -329,7 +361,7 @@ export default function GalerijaClient({
     }
 
     if (added.length > 0) {
-      setPhotos((prev) => [...added.reverse(), ...prev]);
+      bumpOwnStack(guestName.trim(), added.length, added[added.length - 1].url);
 
       // Remember the name; if it changed, rename this device's earlier photos.
       const finalName = guestName.trim();
@@ -349,11 +381,9 @@ export default function GalerijaClient({
             k: galleryKey,
           }),
         }).catch(() => {});
-        // regroup locally right away
-        setPhotos((prev) =>
-          prev.map((p) =>
-            p.guestName === prevName ? { ...p, guestName: finalName } : p
-          )
+        // relabel the pile locally right away
+        setGroups((prev) =>
+          prev.map((g) => (g.name === prevName ? { ...g, name: finalName } : g))
         );
       }
       savedNameRef.current = finalName;
@@ -415,9 +445,9 @@ export default function GalerijaClient({
           >
             {t.gallery}
           </p>
-          {showGrid && photos.length > 0 && (
+          {showGrid && totalPhotos > 0 && (
             <p className="mt-3 font-raleway text-sm" style={{ color: "var(--theme-text-muted)" }}>
-              {t.count(photos.length)} · {groups.length} {groups.length === 1 ? t.guest : t.guests}
+              {t.count(totalPhotos)} · {groups.length} {groups.length === 1 ? t.guest : t.guests}
             </p>
           )}
         </div>
@@ -524,15 +554,14 @@ export default function GalerijaClient({
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 sm:gap-7">
               {groups.map((g) => {
-                const cover = g.photos[0];
-                const many = g.photos.length > 1;
+                const many = g.count > 1;
                 return (
                   // Non-interactive on purpose: the public view only shows that
                   // photos were shared, not the photos themselves (privacy).
                   <div
-                    key={g.name + cover._id}
+                    key={g.name}
                     className="relative aspect-square"
-                    aria-label={`${g.name} — ${g.photos.length}`}
+                    aria-label={`${g.name} — ${g.count}`}
                   >
                     {/* piled cards behind the cover to read clearly as a stack */}
                     {many && (
@@ -551,7 +580,7 @@ export default function GalerijaClient({
                     <span className="absolute inset-0 rounded-xl overflow-hidden shadow-lg ring-1 ring-black/5 bg-black/5 block">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={cover.url}
+                        src={g.coverUrl}
                         alt={g.name}
                         loading="lazy"
                         className="w-full h-full object-cover"
@@ -562,7 +591,7 @@ export default function GalerijaClient({
                       className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-white text-xs font-medium shadow"
                       style={{ backgroundColor: "var(--theme-primary)" }}
                     >
-                      <Images size={11} /> {g.photos.length}
+                      <Images size={11} /> {g.count}
                     </span>
                     {/* uploader name */}
                     <span className="absolute bottom-0 inset-x-0 rounded-b-xl px-2 py-1.5 text-white text-xs font-raleway truncate text-left bg-gradient-to-t from-black/70 to-transparent">

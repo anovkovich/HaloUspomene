@@ -5,7 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import { getStandaloneSeating } from "@/lib/standalone-seating";
 import { loadSeatingLayout, type TableData } from "@/lib/seating";
 import { buildGuestLookup } from "@/lib/seating/lookup";
-import { getGalleryPhotos } from "@/lib/gallery";
+import { getGalleryUploaderStacks } from "@/lib/gallery";
 import { galleryPhase } from "@/lib/gallery-lifecycle";
 import { getAudioMessages } from "@/lib/audio";
 import GdeSedimClient from "@/app/pozivnica/[slug]/gde-sedim/GdeSedimClient";
@@ -92,12 +92,12 @@ export default async function StandaloneGdeSedimPage({ params }: PageProps) {
       ? galleryPhase(data.eventDate, data.gallery_extra_days ?? 0)
       : "unknown";
 
-    let galleryPhotos: Awaited<ReturnType<typeof getGalleryPhotos>> = [];
+    let galleryStacks: Awaited<ReturnType<typeof getGalleryUploaderStacks>> = [];
     if (hasGallery && phase !== "expired" && phase !== "before") {
       try {
-        galleryPhotos = await getGalleryPhotos(slug, { limit: 2000 });
+        galleryStacks = await getGalleryUploaderStacks(slug);
       } catch {
-        galleryPhotos = [];
+        galleryStacks = [];
       }
     }
 
@@ -134,7 +134,7 @@ export default async function StandaloneGdeSedimPage({ params }: PageProps) {
           tables={tables}
           hasGallery={hasGallery}
           galleryPhase={phase}
-          galleryPhotos={galleryPhotos}
+          galleryStacks={galleryStacks}
           hasMeni={hasMeni}
           meni={data.meni ?? null}
           hasAudio={hasAudio}

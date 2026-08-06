@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getWeddingData } from "@/data/pozivnice";
-import { getGalleryPhotos } from "@/lib/gallery";
+import { getGalleryUploaderStacks } from "@/lib/gallery";
 import { guestGate } from "@/lib/gallery-lifecycle";
 import { galleryKeyMatches } from "@/lib/gallery-key";
 import { getThemeCSSVariables } from "../constants";
@@ -15,9 +15,9 @@ interface PageProps {
   searchParams: Promise<{ k?: string }>;
 }
 
-// Public view stacks photos by uploader, so we load all metadata up front and
-// group client-side; only the stack covers actually render images (lazy).
-const PUBLIC_LOAD_CAP = 2000;
+// The public view only draws one pile per guest, so the grouping happens in
+// Mongo (`getGalleryUploaderStacks`) — the payload scales with guests, not with
+// photos, and no per-photo cap is needed any more.
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -50,12 +50,12 @@ export default async function GalerijaPage({ params, searchParams }: PageProps) 
 
   const cssVars = getThemeCSSVariables(weddingData.theme, weddingData.scriptFont);
 
-  let initialPhotos: Awaited<ReturnType<typeof getGalleryPhotos>> = [];
+  let initialStacks: Awaited<ReturnType<typeof getGalleryUploaderStacks>> = [];
   if (gate === "open") {
     try {
-      initialPhotos = await getGalleryPhotos(slug, { limit: PUBLIC_LOAD_CAP });
+      initialStacks = await getGalleryUploaderStacks(slug);
     } catch {
-      initialPhotos = [];
+      initialStacks = [];
     }
   }
 
@@ -68,7 +68,8 @@ export default async function GalerijaPage({ params, searchParams }: PageProps) 
         phase={gate === "open" ? "upload" : "before"}
         eventDate={weddingData.event_date}
         galleryKey={hasKey ? k : undefined}
-        initialPhotos={initialPhotos}
+        initialStacks={initialStacks}
+        initialPhotos={[]}
       />
     </div>
   );

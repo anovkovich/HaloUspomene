@@ -9,7 +9,7 @@ import GalerijaClient from "../galerija/GalerijaClient";
 import AudioKnjigaClient from "../audio-knjiga/AudioKnjigaClient";
 import type { GuestLookupEntry } from "./page";
 import type { TableData } from "@/lib/seating";
-import type { GalleryPhoto } from "@/lib/gallery";
+import type { GalleryStack } from "@/lib/gallery";
 import type { GalleryPhase } from "@/lib/gallery-lifecycle";
 import type { MeniData } from "../types";
 
@@ -48,7 +48,7 @@ interface Props {
   tables: TableData[];
   hasGallery: boolean;
   galleryPhase: GalleryPhase;
-  galleryPhotos: GalleryPhoto[];
+  galleryStacks: GalleryStack[];
   hasMeni: boolean;
   meni: MeniData | null;
   hasAudio: boolean;
@@ -81,7 +81,7 @@ export default function GuestHubClient({
   tables,
   hasGallery,
   galleryPhase,
-  galleryPhotos,
+  galleryStacks,
   hasMeni,
   meni,
   hasAudio,
@@ -246,7 +246,8 @@ export default function GuestHubClient({
             coupleNames={coupleNames}
             useCyrillic={useCyrillic}
             phase={galleryPhase}
-            initialPhotos={galleryPhotos}
+            initialStacks={galleryStacks}
+            initialPhotos={[]}
             apiBase={apiBase}
           />
         )}

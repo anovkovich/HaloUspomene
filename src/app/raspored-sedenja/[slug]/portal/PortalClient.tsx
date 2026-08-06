@@ -23,6 +23,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { generateQrFlyerPDF } from "@/lib/qr-flyer";
+import { galleryQrDataUrl } from "@/lib/gallery-qr";
 import ChecklistCard from "@/app/moje-vencanje/ChecklistCard";
 import BudgetCard from "@/app/moje-vencanje/BudgetCard";
 import AudioCard from "@/app/moje-vencanje/AudioCard";
@@ -190,13 +191,24 @@ export default function PortalClient({
     },
   } as const;
 
-  async function downloadQR(url: string, filename: string) {
-    const QRCode = (await import("qrcode")).default;
-    const dataUrl = await QRCode.toDataURL(url, {
-      width: 1400,
-      margin: 2,
-      color: { dark: "#232323", light: "#ffffff" },
-    });
+  /** `kind` picks the artwork: the gallery code carries a camera badge in the
+   *  middle so a printed sign reads as "photos" at a glance. */
+  async function downloadQR(
+    url: string,
+    filename: string,
+    kind: "gallery" | "audio" = "audio"
+  ) {
+    let dataUrl: string;
+    if (kind === "gallery") {
+      dataUrl = await galleryQrDataUrl(url, 1400);
+    } else {
+      const QRCode = (await import("qrcode")).default;
+      dataUrl = await QRCode.toDataURL(url, {
+        width: 1400,
+        margin: 2,
+        color: { dark: "#232323", light: "#ffffff" },
+      });
+    }
     const a = document.createElement("a");
     a.href = dataUrl;
     a.download = filename;
@@ -232,6 +244,8 @@ export default function PortalClient({
         : "Hvala što ste svojim prisustvom uveličali naš događaj.",
       bottom: m.bottom,
       filename: m.pdfName,
+      qrDataUrl:
+        key === "gallery" ? await galleryQrDataUrl(m.url, 600) : undefined,
     });
   }
 
@@ -876,7 +890,7 @@ export default function PortalClient({
             <div className="space-y-2.5">
               <button
                 onClick={() => {
-                  downloadQR(QR_META[qrModal].url, QR_META[qrModal].pngName);
+                  downloadQR(QR_META[qrModal].url, QR_META[qrModal].pngName, qrModal);
                   setQrModal(null);
                 }}
                 className="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left hover:bg-[#faf9f6] transition-colors cursor-pointer"
