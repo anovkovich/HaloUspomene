@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getShareLinkByToken } from "@/lib/share-links";
-import { getWeddingData } from "@/lib/couples";
+import { getWeddingData, isGalleryOnlyCouple } from "@/lib/couples";
+import { galleryShareUrl } from "@/lib/gallery-qr";
+import { ensureGalleryKey } from "@/lib/gallery-key";
 import { getBirthdayData } from "@/lib/birthday";
 import { getStandaloneSeating } from "@/lib/standalone-seating";
 import SharePageClient, { type SharePayload } from "./SharePageClient";
@@ -23,6 +25,28 @@ async function resolvePayload(token: string): Promise<SharePayload | null> {
   if (link.product_kind === "couple") {
     const couple = await getWeddingData(link.slug);
     if (!couple) return null;
+
+    // A standalone gallery client has no invitation — pointing them at
+    // /pozivnica/<slug>/ would hand them a 404. Their shareable link is the
+    // guest upload page, and their dashboard is the portal's gallery tab.
+    if (isGalleryOnlyCouple(couple)) {
+      // The forwarded link carries the key (works before the event too); the
+      // printed QR deliberately does not. Older couples get a key on first share.
+      const key = await ensureGalleryKey(link.slug);
+      return {
+        kind: "gallery",
+        displayName: couple.couple_names?.full_display || link.slug,
+        slug: link.slug,
+        eventDate: couple.event_date,
+        password: couple.potvrde_password || "",
+        invitationUrl: galleryShareUrl(link.slug, key),
+        loginUrl: `${SITE_URL}/moje-vencanje/`,
+        portalUrl: `${SITE_URL}/moje-vencanje/`,
+        portalLabel: "Moje Venčanje — portal",
+        ogImageUrl: null,
+      };
+    }
+
     const isPremium = !!couple.premium;
     const base = isPremium ? "premium-pozivnica" : "pozivnica";
     return {

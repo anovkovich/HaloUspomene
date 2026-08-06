@@ -6,9 +6,19 @@ import { type ActiveView, LOCKED_FEATURE_INFO } from "./nav-items";
 
 interface LockedFeatureCardProps {
   view: ActiveView;
+  /** Overrides the default "packages" upsell — used by a standalone gallery
+   *  buyer who hasn't paid yet, where the one thing to do is pay for it. */
+  ctaHref?: string;
+  ctaLabel?: string;
+  ctaNote?: string;
 }
 
-export default function LockedFeatureCard({ view }: LockedFeatureCardProps) {
+export default function LockedFeatureCard({
+  view,
+  ctaHref = "/cene",
+  ctaLabel = "Pogledajte pakete",
+  ctaNote,
+}: LockedFeatureCardProps) {
   const info = LOCKED_FEATURE_INFO[view];
 
   return (
@@ -28,20 +38,20 @@ export default function LockedFeatureCard({ view }: LockedFeatureCardProps) {
           <div className="flex items-center justify-center gap-2 mb-3">
             <Sparkles size={16} className="text-[#d4af37]" />
             <span className="text-sm font-medium text-[#232323]">
-              Dostupno uz naše pakete pozivnica
+              {ctaNote ? "Još samo jedan korak" : "Dostupno uz naše pakete pozivnica"}
             </span>
           </div>
 
           <p className="text-xs text-[#232323]/60 mb-4">
-            Ove funkcije dolaze uz digitalnu pozivnicu — potvrde dolaska,
-            planer venčanja, audio knjiga, i još mnogo toga.
+            {ctaNote ??
+              "Ove funkcije dolaze uz digitalnu pozivnicu — potvrde dolaska, planer venčanja, audio knjiga, i još mnogo toga."}
           </p>
 
           <Link
-            href="/cene"
+            href={ctaHref}
             className="inline-flex items-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
           >
-            Pogledajte pakete
+            {ctaLabel}
           </Link>
         </div>
       </div>

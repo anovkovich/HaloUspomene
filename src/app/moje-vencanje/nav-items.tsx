@@ -47,9 +47,11 @@ export function getNavItems(opts: {
   const { paidForGallery, galleryOnly } = opts;
 
   if (galleryOnly) {
+    // Gallery itself stays locked until it's paid for, so the tab shows the
+    // payment CTA instead of an empty album.
     return NAV_ITEMS.map((item) => ({
       ...item,
-      locked: item.view !== "galerija",
+      locked: item.view !== "galerija" || !paidForGallery,
     }));
   }
 

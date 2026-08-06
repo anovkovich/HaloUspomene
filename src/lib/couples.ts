@@ -1,17 +1,42 @@
 import clientPromise from "./mongodb";
 import { WeddingData } from "@/app/pozivnica/[slug]/types";
+import { isGalleryOnlyCouple } from "./gallery-only";
 
 export type CoupleDocument = WeddingData & { slug: string };
 
-/** Standalone gallery user = kupio samo galeriju, bez pozivnice/rasporeda/audio */
-export function isGalleryOnlyCouple(data: WeddingData): boolean {
-  return (
-    (data.paid_for_gallery ?? false) &&
-    (data.draft ?? false) &&
-    !(data.paid_for_raspored ?? false) &&
-    !(data.paid_for_audio ?? false) &&
-    !(data.premium_paid ?? false)
-  );
+// Lives in ./gallery-only so client components can import the predicate without
+// pulling the Mongo driver in. Re-exported here to keep existing imports valid.
+export { isGalleryOnlyCouple };
+
+export interface PortalCoupleInfo {
+  bride: string;
+  groom: string;
+  eventDate: string;
+  scriptFont: string;
+  draft: boolean;
+  hasInvitationData: boolean;
+  premium: boolean;
+  premium_paid: boolean;
+  paid_for_gallery: boolean;
+  galleryOnly: boolean;
+}
+
+/** The couple summary the Moje Venčanje portal boots from. Both entry points —
+ *  POST /api/moje-vencanje/auth/[slug] and the verifyAuth() server action — must
+ *  return the exact same shape, so they share this instead of each building it. */
+export function toPortalCoupleInfo(data: WeddingData): PortalCoupleInfo {
+  return {
+    bride: data.couple_names.bride,
+    groom: data.couple_names.groom,
+    eventDate: data.event_date,
+    scriptFont: data.scriptFont ?? "great-vibes",
+    draft: data.draft ?? false,
+    hasInvitationData: (data.locations ?? []).length > 0,
+    premium: data.premium ?? false,
+    premium_paid: data.premium_paid ?? false,
+    paid_for_gallery: data.paid_for_gallery ?? false,
+    galleryOnly: isGalleryOnlyCouple(data),
+  };
 }
 
 async function col() {

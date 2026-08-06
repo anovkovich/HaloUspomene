@@ -11,13 +11,16 @@ import {
   Heart,
   Cake,
   Armchair,
+  Images,
   MessageCircle,
   ShieldAlert,
   PartyPopper,
+  QrCode,
 } from "lucide-react";
+import { downloadGalleryQR } from "@/lib/gallery-qr";
 
 export interface SharePayload {
-  kind: "couple" | "birthday" | "seating";
+  kind: "couple" | "birthday" | "seating" | "gallery";
   isPremium?: boolean;
   isEighteenth?: boolean;
   displayName: string;
@@ -44,14 +47,26 @@ function formatEventDate(iso?: string): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("sr-RS", {
+  // Explicit Latin subtag: bare "sr-RS" resolves to Cyrillic in ICU, which
+  // printed a Cyrillic month name on an otherwise Latin page.
+  return d.toLocaleDateString("sr-Latn-RS", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 }
 
+/** Products whose portal login asks for slug + password, not password alone. */
+function usesSlugLogin(kind: SharePayload["kind"]): boolean {
+  return kind === "couple" || kind === "gallery";
+}
+
 function buildGuestMessage(p: SharePayload): string {
+  if (p.kind === "gallery") {
+    // No mention of the QR here — this message travels as a link, and the QR is
+    // a separate download for printing.
+    return `Podelite sa nama slike sa vašeg telefona! Otvorite ovaj link i dodajte fotografije:\n${p.invitationUrl}\n\n— ${p.displayName}`;
+  }
   if (p.kind === "couple") {
     return `Dragi prijatelju, sa radošću Vas pozivamo na naše venčanje.\n\nDetalji i potvrda dolaska:\n${p.invitationUrl}\n\n— ${p.displayName}`;
   }
@@ -71,6 +86,8 @@ function HeaderIcon({ kind }: { kind: SharePayload["kind"] }) {
     return <Heart size={28} className="text-[#AE343F]" strokeWidth={1.5} />;
   if (kind === "birthday")
     return <Cake size={28} className="text-[#AE343F]" strokeWidth={1.5} />;
+  if (kind === "gallery")
+    return <Images size={28} className="text-[#AE343F]" strokeWidth={1.5} />;
   return <Armchair size={28} className="text-[#AE343F]" strokeWidth={1.5} />;
 }
 
@@ -135,10 +152,12 @@ export default function SharePageClient({ token, payload }: Props) {
         ? payload.isEighteenth
           ? "Pozivnica za punoletstvo"
           : "Rođendanska pozivnica"
-        : "Raspored sedenja";
+        : payload.kind === "gallery"
+          ? "QR galerija fotografija"
+          : "Raspored sedenja";
 
   const heading =
-    payload.kind === "seating"
+    payload.kind === "seating" || payload.kind === "gallery"
       ? "Vaš pristup je spreman"
       : "Vaša pozivnica je spremna";
 
@@ -168,13 +187,14 @@ export default function SharePageClient({ token, payload }: Props) {
         </p>
       </header>
 
-      {/* Section 1: Link */}
+      {/* Section 1: Link. Skipped for a gallery — its only link is the guest
+          one, and that already sits inside the ready-made message below. */}
+      {payload.kind !== "gallery" && (
       <section className="bg-white rounded-2xl border border-[#232323]/10 shadow-sm p-5 sm:p-6 mb-4">
         <div className="flex items-center gap-2 mb-3">
           <ExternalLink size={16} className="text-[#AE343F]" />
           <h2 className="text-xs uppercase tracking-wider text-[#232323]/50 font-semibold">
-            Link do{" "}
-            {payload.kind === "seating" ? "alata" : "pozivnice"}
+            Link do {payload.kind === "seating" ? "alata" : "pozivnice"}
           </h2>
         </div>
         <div className="bg-[#F5F4DC]/60 rounded-lg px-3 py-2.5 mb-4 break-all">
@@ -198,6 +218,7 @@ export default function SharePageClient({ token, payload }: Props) {
           </Link>
         </div>
       </section>
+      )}
 
       {/* Section 2: Login credentials */}
       {payload.password && (
@@ -209,12 +230,12 @@ export default function SharePageClient({ token, payload }: Props) {
             </h2>
           </div>
           <p className="text-sm text-[#232323]/60 mb-3">
-            {payload.kind === "couple"
+            {usesSlugLogin(payload.kind)
               ? "Koristite SLUG i šifru za prijavu na portal."
               : `Koristite ovu šifru za prijavu na ${payload.portalUrl ? "portal" : "alat"}.`}
           </p>
 
-          {payload.kind === "couple" && (
+          {usesSlugLogin(payload.kind) && (
             <div className="mb-2">
               <div className="text-[10px] uppercase tracking-wider text-[#232323]/40 mb-1.5 font-semibold">
                 Slug
@@ -234,7 +255,7 @@ export default function SharePageClient({ token, payload }: Props) {
           )}
 
           <div>
-            {payload.kind === "couple" && (
+            {usesSlugLogin(payload.kind) && (
               <div className="text-[10px] uppercase tracking-wider text-[#232323]/40 mb-1.5 font-semibold">
                 Šifra
               </div>
@@ -279,7 +300,9 @@ export default function SharePageClient({ token, payload }: Props) {
           <p className="text-sm text-[#232323]/60 mb-4">
             {payload.kind === "couple"
               ? "Dobijate pristup svom kontrolnom portalu gde ćete pratiti sve potvrde gostiju, pristupiti alatu za raspored sedenja, planeru budžeta i čeklisti!"
-              : "Pratite sve potvrde gostiju i upravljajte gostima sa svog kontrolnog portala."}
+              : payload.kind === "gallery"
+                ? "Na portalu pregledate i preuzimate sve slike koje gosti pošalju u vašu galeriju."
+                : "Pratite sve potvrde gostiju i upravljajte gostima sa svog kontrolnog portala."}
           </p>
           <ol className="text-sm text-[#232323]/70 space-y-1.5 mb-4">
             <li className="flex gap-2">
@@ -288,7 +311,7 @@ export default function SharePageClient({ token, payload }: Props) {
             </li>
             <li className="flex gap-2">
               <span className="font-semibold text-[#AE343F]">2.</span>
-              {payload.kind === "couple"
+              {usesSlugLogin(payload.kind)
                 ? "Unesite SLUG & Šifru!"
                 : "Unesite Šifru!"}
             </li>
@@ -324,12 +347,31 @@ export default function SharePageClient({ token, payload }: Props) {
               {guestMessage}
             </pre>
           </div>
-          <CopyButton
-            label="Kopiraj poruku"
-            copiedLabel="Poruka kopirana!"
-            onCopy={() => navigator.clipboard.writeText(guestMessage)}
-            primary
-          />
+          <div className="flex flex-col sm:flex-row gap-2">
+            <CopyButton
+              label="Kopiraj poruku"
+              copiedLabel="Poruka kopirana!"
+              onCopy={() => navigator.clipboard.writeText(guestMessage)}
+              primary
+            />
+            {/* QR points at the key-less URL on purpose: printed on a table it
+                must stay bound to the event day, unlike the forwarded link. */}
+            {payload.kind === "gallery" && (
+              <button
+                type="button"
+                onClick={() => downloadGalleryQR(payload.slug)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-[#232323]/15 hover:bg-[#232323]/5 text-[#232323]/70 hover:text-[#232323] text-sm transition-colors cursor-pointer w-full sm:w-auto"
+              >
+                <QrCode size={16} /> Preuzmi QR (PNG)
+              </button>
+            )}
+          </div>
+          {payload.kind === "gallery" && (
+            <p className="text-xs text-[#232323]/45 mt-3 leading-relaxed">
+              QR kod odštampajte na stolovima ili zahvalnicama — radi na dan
+              slavlja i dan posle. Link iz poruke radi i ranije.
+            </p>
+          )}
         </section>
       )}
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getWeddingData } from "@/lib/couples";
 import { getUploadUrl, galleryKey, publicUrl, isR2Configured } from "@/lib/r2";
 import { canGuestUpload } from "@/lib/gallery-lifecycle";
+import { galleryKeyMatches } from "@/lib/gallery-key";
 
 /**
  * POST /api/pozivnica/[slug]/galerija/upload/sign
@@ -43,18 +44,21 @@ export async function POST(
       { status: 403 }
     );
   }
-  if (!canGuestUpload(weddingData.event_date)) {
-    return NextResponse.json(
-      { error: "Dodavanje fotografija je moguće samo na dan venčanja i dan posle." },
-      { status: 403 }
-    );
-  }
-
-  let body: { fileType?: string };
+  let body: { fileType?: string; k?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+  }
+
+  // The couple's forwarded link carries `k` and may upload before the event;
+  // the printed QR has no key and is bound to the day + the day after.
+  const hasKey = galleryKeyMatches(weddingData.gallery_key, body.k);
+  if (!canGuestUpload(weddingData.event_date, hasKey)) {
+    return NextResponse.json(
+      { error: "Dodavanje fotografija je moguće samo na dan venčanja i dan posle." },
+      { status: 403 }
+    );
   }
 
   const fileType = (body.fileType || "").toLowerCase();

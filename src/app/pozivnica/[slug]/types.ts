@@ -110,6 +110,17 @@ export interface WeddingData {
   gallery_sms_purge_warning_sent?: boolean; // Gallery lifecycle: SMS #2 (deletion warning, d5) sent
   gallery_purged_at?: string; // Gallery lifecycle: ISO timestamp when photos were system-purged (end of d5)
   gallery_extra_days?: number; // Gallery lifecycle: admin-granted extra days of couple access before purge (default 0)
+  /** Record created for the standalone QR gallery product (self-serve signup at
+   *  /qr-galerija-slika-sa-vencanja, or admin create). Immutable origin marker —
+   *  NEVER cleared on later purchases; isGalleryOnlyCouple() derives the portal
+   *  lock from this plus "no other paid product". Absent on couples that came in
+   *  through the planner or an invitation. */
+  standalone_gallery?: boolean;
+  /** Bearer key for the gallery link the couple forwards to guests (`?k=`).
+   *  Its only power is opening the upload window BEFORE the event — the printed
+   *  QR carries no key and works on the event day and the day after. Generated
+   *  lazily by `ensureGalleryKey`, so older couples get one on first share. */
+  gallery_key?: string;
   meni?: MeniData; // Free value-add: food and/or drink menu shown in the guest hub. Either group may be present independently.
   paid_for_music?: boolean; // Unlocks background music add-on (1000 din)
   music_url?: string; // Vercel Blob URL of the audio file (.m4a/.mp3)

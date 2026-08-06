@@ -9,7 +9,7 @@ import { toLatin, NbsQrCode } from "@/lib/nbs-qr";
 
 interface ReceiptPayload {
   s?: string; // slug (optional for standalone)
-  kind?: "rodjendan" | "raspored"; // record type — when set, validate against the matching collection
+  kind?: "rodjendan" | "raspored" | "galerija"; // record type — when set, validate against the matching collection
   custom?: 1; // standalone receipt — validate against custom_receipts collection
   id?: string; // custom receipt DB id
   par: string; // couple/recipient display name

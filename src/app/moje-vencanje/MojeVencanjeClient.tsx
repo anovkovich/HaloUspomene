@@ -14,7 +14,6 @@ import {
   Mic,
   Images,
   UtensilsCrossed,
-  Star,
   Home,
   Menu,
   X,
@@ -634,10 +633,20 @@ export default function MojeVencanjeClient() {
                 )}
               </div>
 
-              {/* Locked feature guard for gallery-only users */}
-              {coupleInfo?.galleryOnly && activeView !== "galerija" && (
-                <LockedFeatureCard view={activeView} />
-              )}
+              {/* Locked feature guard for gallery-only users. Their own gallery
+                  is locked too until it's paid for — that view then points at
+                  the checkout instead of the packages page. */}
+              {coupleInfo?.galleryOnly &&
+                (activeView !== "galerija" ? (
+                  <LockedFeatureCard view={activeView} />
+                ) : !coupleInfo.paidForGallery ? (
+                  <LockedFeatureCard
+                    view="galerija"
+                    ctaHref={`/placanje/galerija/${coupleInfo.slug}/`}
+                    ctaLabel="Otključaj galeriju"
+                    ctaNote="Nakon uplate gosti mogu da skeniraju QR kod i šalju slike direktno vama."
+                  />
+                ) : null)}
 
               {/* Active view content */}
               {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
@@ -734,7 +743,9 @@ export default function MojeVencanjeClient() {
                   />
                 </React.Suspense>
               )}
-              {activeView === "galerija" && coupleInfo && (
+              {activeView === "galerija" &&
+                coupleInfo &&
+                !(coupleInfo.galleryOnly && !coupleInfo.paidForGallery) && (
                 <React.Suspense
                   fallback={
                     <div className="flex justify-center py-12">

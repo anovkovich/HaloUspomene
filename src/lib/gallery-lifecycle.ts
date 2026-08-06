@@ -82,14 +82,40 @@ export function galleryPhase(
   return "expired";
 }
 
-/** Guests may upload only on the wedding day and the day after (d0..d1).
- * Admin-granted extra days extend the couple's download window, NOT guest upload. */
+/** Guests may upload on the wedding day and the day after (d0..d1).
+ * Admin-granted extra days extend the couple's download window, NOT guest upload.
+ *
+ * `hasKey` = the visitor arrived through the couple's forwarded link (`?k=`)
+ * rather than the printed QR, which additionally opens the window BEFORE the
+ * event. Callers that don't deal with the key keep today's behaviour. */
 export function canGuestUpload(
   eventDate: string | undefined,
+  hasKey = false,
   now: Date = new Date()
 ): boolean {
   const d = galleryDayOffset(eventDate, now);
-  return d !== null && d >= 0 && d <= GALLERY_UPLOAD_LAST_DAY;
+  if (d === null) return false;
+  if (d > GALLERY_UPLOAD_LAST_DAY) return false;
+  return d >= 0 || hasKey;
+}
+
+/** What a guest hitting the public gallery URL should see.
+ *  - `open`   — upload is live
+ *  - `before` — event hasn't happened; show the "opens on <date>" page
+ *  - `closed` — window is over (or there is no date); show the upsell page */
+export type GuestGate = "open" | "before" | "closed";
+
+export function guestGate(
+  eventDate: string | undefined,
+  hasKey = false,
+  now: Date = new Date()
+): GuestGate {
+  const d = galleryDayOffset(eventDate, now);
+  if (d === null) return "closed";
+  if (d > GALLERY_UPLOAD_LAST_DAY) return "closed";
+  if (d >= 0) return "open";
+  // Before the event: the forwarded link opens early, the printed QR waits.
+  return hasKey ? "open" : "before";
 }
 
 /** Couple may view/download from activation through d4 (+ any admin-granted extra days). */

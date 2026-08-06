@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getWeddingData } from "@/lib/couples";
 import { renameGalleryUploader } from "@/lib/gallery";
 import { canGuestUpload } from "@/lib/gallery-lifecycle";
+import { galleryKeyMatches } from "@/lib/gallery-key";
 
 /**
  * POST /api/pozivnica/[slug]/galerija/rename
@@ -20,15 +21,16 @@ export async function POST(
   if (!weddingData?.paid_for_gallery) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (!canGuestUpload(weddingData.event_date)) {
-    return NextResponse.json({ error: "Zatvoreno." }, { status: 403 });
-  }
-
-  let body: { uploaderId?: string; name?: string };
+  let body: { uploaderId?: string; name?: string; k?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+  }
+
+  const hasKey = galleryKeyMatches(weddingData.gallery_key, body.k);
+  if (!canGuestUpload(weddingData.event_date, hasKey)) {
+    return NextResponse.json({ error: "Zatvoreno." }, { status: 403 });
   }
 
   const uploaderId = (body.uploaderId || "").trim().slice(0, 64);

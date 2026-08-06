@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getWeddingData } from "@/data/pozivnice";
 import { getGalleryPhotos } from "@/lib/gallery";
-import { galleryPhase } from "@/lib/gallery-lifecycle";
+import { guestGate } from "@/lib/gallery-lifecycle";
+import { galleryKeyMatches } from "@/lib/gallery-key";
 import { getThemeCSSVariables } from "../constants";
 import GalerijaClient from "./GalerijaClient";
 
@@ -11,6 +12,7 @@ export const revalidate = 30;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ k?: string }>;
 }
 
 // Public view stacks photos by uploader, so we load all metadata up front and
@@ -31,19 +33,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function GalerijaPage({ params }: PageProps) {
+export default async function GalerijaPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const { k } = await searchParams;
   const weddingData = await getWeddingData(slug);
 
+  // Every dead end — unknown slug, gallery never bought, window over — renders
+  // ./not-found.tsx: a real 404 status (no soft-404) carrying our own offer,
+  // because a QR printed on a table keeps getting scanned for years.
   if (!weddingData) notFound();
   if (!weddingData.paid_for_gallery) notFound();
 
+  const hasKey = galleryKeyMatches(weddingData.gallery_key, k);
+  const gate = guestGate(weddingData.event_date, hasKey);
+  if (gate === "closed") notFound();
+
   const cssVars = getThemeCSSVariables(weddingData.theme, weddingData.scriptFont);
-  const phase = galleryPhase(weddingData.event_date, weddingData.gallery_extra_days ?? 0);
 
   let initialPhotos: Awaited<ReturnType<typeof getGalleryPhotos>> = [];
-  // Photos are gone once purged; before the event there are none yet.
-  if (phase !== "expired" && phase !== "before") {
+  if (gate === "open") {
     try {
       initialPhotos = await getGalleryPhotos(slug, { limit: PUBLIC_LOAD_CAP });
     } catch {
@@ -57,7 +65,9 @@ export default async function GalerijaPage({ params }: PageProps) {
         slug={slug}
         coupleNames={weddingData.couple_names.full_display}
         useCyrillic={weddingData.useCyrillic ?? false}
-        phase={phase}
+        phase={gate === "open" ? "upload" : "before"}
+        eventDate={weddingData.event_date}
+        galleryKey={hasKey ? k : undefined}
         initialPhotos={initialPhotos}
       />
     </div>

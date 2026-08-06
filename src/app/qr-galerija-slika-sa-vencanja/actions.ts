@@ -2,7 +2,11 @@
 
 import { headers } from "next/headers";
 import { generateUniqueSlug, InvalidSlugInputError } from "@/lib/slug";
-import type { WeddingData } from "@/app/pozivnica/[slug]/types";
+import {
+  buildStandaloneGalleryCoupleData,
+  galleryNameParts,
+  generateGalleryPassword,
+} from "@/lib/standalone-gallery";
 import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
 import {
   resolvePhoneAuthorization,
@@ -67,10 +71,10 @@ export async function createGalleryCouple(input: {
     throw err;
   }
 
-  const [first, ...rest] = name.split(/\s+/);
+  const { first, rest } = galleryNameParts(name);
   let slug: string;
   try {
-    slug = await generateUniqueSlug(first, rest.join(" ") || "galerija");
+    slug = await generateUniqueSlug(first, rest);
   } catch (err) {
     if (err instanceof InvalidSlugInputError) {
       return { ok: false, error: err.message };
@@ -78,29 +82,15 @@ export async function createGalleryCouple(input: {
     throw err;
   }
 
-  const digits = String(Math.floor(1000 + Math.random() * 9000));
-  const autoPassword = `${first}${digits}`;
+  const autoPassword = generateGalleryPassword(first);
 
-  const coupleData: WeddingData = {
-    couple_names: { bride: name, groom: "", full_display: name },
-    potvrde_password: autoPassword,
-    draft: true,
-    theme: "classic_rose",
-    event_date: input.eventDate ? `${input.eventDate}T16:00:00` : "",
-    submit_until: "",
-    locations: [],
-    timeline: [],
-    countdown_enabled: false,
-    map_enabled: false,
-    paid_for_raspored: false,
-    paid_for_audio: false,
-    paid_for_audio_USB: "",
-    paid_for_pdf: false,
-    paid_for_gallery: false,
-    receipt_valid: false,
-    custom_discount: 0,
-    contact_phone: phoneE164,
-  } as WeddingData & { contact_phone: string };
+  const coupleData = buildStandaloneGalleryCoupleData({
+    name,
+    phoneE164,
+    eventDate: input.eventDate,
+    password: autoPassword,
+    paidForGallery: false,
+  });
 
   // Persist + auto-login to the portal (shared QuickRegister mechanism).
   await quickRegisterCouple(slug, coupleData);

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SignJWT } from "jose";
 import { getWeddingData } from "@/data/pozivnice";
-import { isGalleryOnlyCouple } from "@/lib/couples";
+import { toPortalCoupleInfo } from "@/lib/couples";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
 
@@ -37,18 +37,7 @@ export async function POST(
 
   const response = NextResponse.json({
     ok: true,
-    couple: {
-      bride: weddingData.couple_names.bride,
-      groom: weddingData.couple_names.groom,
-      eventDate: weddingData.event_date,
-      scriptFont: weddingData.scriptFont ?? "great-vibes",
-      draft: weddingData.draft ?? false,
-      hasInvitationData: (weddingData.locations ?? []).length > 0,
-      premium: weddingData.premium ?? false,
-      premium_paid: weddingData.premium_paid ?? false,
-      paid_for_gallery: weddingData.paid_for_gallery ?? false,
-      galleryOnly: isGalleryOnlyCouple(weddingData),
-    },
+    couple: toPortalCoupleInfo(weddingData),
   });
 
   response.cookies.set("moje_vencanje_auth", token, {

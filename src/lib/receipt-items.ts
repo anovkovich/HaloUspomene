@@ -37,7 +37,7 @@ export interface ReceiptItem {
 
 /** Pricing-relevant subset of the receipt payload. */
 export interface ReceiptFlags {
-  kind?: "rodjendan" | "raspored";
+  kind?: "rodjendan" | "raspored" | "galerija";
   custom?: 1;
   s?: string;
   r?: number;
@@ -139,11 +139,16 @@ export function buildReceiptItems(
 
   const isRodjendan = f.kind === "rodjendan";
   const isRaspored = f.kind === "raspored";
+  // Standalone QR gallery sold without an invitation. Needs its own branch:
+  // the wedding branch always opens with the 5.000 website line, which a
+  // gallery-only client never bought.
+  const isGalerija = f.kind === "galerija";
   const isPhoneRental = f.s?.startsWith("tel-") ?? false;
-  const isWedding = !isRodjendan && !isRaspored && !isPhoneRental && !f.custom;
+  const isWedding =
+    !isRodjendan && !isRaspored && !isGalerija && !isPhoneRental && !f.custom;
 
   // Retro-phone add-ons (allowed alongside any wedding/phone receipt).
-  if (!isRodjendan && !isRaspored) {
+  if (!isRodjendan && !isRaspored && !isGalerija) {
     if (f.rp) items.push({ l: "Audio Guest Book — telefon", p: T.retroPhoneAudio });
     if (f.pd)
       items.push({
@@ -196,6 +201,12 @@ export function buildReceiptItems(
     // The QR gallery ships inside the Korporativni paket, so it has to appear
     // here too — otherwise the receipt lists less than the client received.
     if (f.g) items.push({ l: "QR galerija fotografija", p: T.galerija });
+  }
+
+  if (isGalerija) {
+    items.push({ l: "QR galerija fotografija", p: T.galerija });
+    // Anything else (zahvalnice, printed QR stands, …) comes in as custom items
+    // below. No bundle discount — there is no package to net down to.
   }
 
   // Manual custom line items added by admin.

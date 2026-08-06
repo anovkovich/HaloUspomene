@@ -5,7 +5,8 @@ import { isAdminSession } from "@/lib/admin-auth";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { getWeddingData } from "@/data/pozivnice";
-import { patchCouple, isGalleryOnlyCouple } from "@/lib/couples";
+import { patchCouple, toPortalCoupleInfo } from "@/lib/couples";
+import type { PortalCoupleInfo } from "@/lib/couples";
 import type { MeniData } from "@/app/pozivnica/[slug]/types";
 import {
   loadPortalData as dbLoadPortal,
@@ -66,40 +67,16 @@ async function getAuthSlug(): Promise<string | null> {
   }
 }
 
-export async function verifyAuth(): Promise<{
-  ok: boolean;
-  slug?: string;
-  bride?: string;
-  groom?: string;
-  eventDate?: string;
-  scriptFont?: string;
-  draft?: boolean;
-  hasInvitationData?: boolean;
-  premium?: boolean;
-  premium_paid?: boolean;
-  paid_for_gallery?: boolean;
-  galleryOnly?: boolean;
-} | null> {
+export async function verifyAuth(): Promise<
+  ({ ok: boolean; slug?: string } & Partial<PortalCoupleInfo>) | null
+> {
   const slug = await getAuthSlug();
   if (!slug) return null;
 
   const data = await getWeddingData(slug);
   if (!data) return null;
 
-  return {
-    ok: true,
-    slug,
-    bride: data.couple_names.bride,
-    groom: data.couple_names.groom,
-    eventDate: data.event_date,
-    scriptFont: data.scriptFont ?? "great-vibes",
-    draft: data.draft ?? false,
-    hasInvitationData: (data.locations ?? []).length > 0,
-    premium: data.premium ?? false,
-    premium_paid: data.premium_paid ?? false,
-    paid_for_gallery: data.paid_for_gallery ?? false,
-    galleryOnly: isGalleryOnlyCouple(data),
-  };
+  return { ok: true, slug, ...toPortalCoupleInfo(data) };
 }
 
 export async function loadPortalDataAction() {

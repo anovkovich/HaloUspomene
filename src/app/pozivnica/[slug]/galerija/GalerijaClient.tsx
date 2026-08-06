@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { toast } from "sonner";
-import { Camera, X, Upload, Loader2, ImageOff, Images } from "lucide-react";
+import { Camera, X, Upload, Loader2, ImageOff, Images, CalendarClock, QrCode } from "lucide-react";
 import type { GalleryPhoto } from "@/lib/gallery";
 import type { GalleryPhase } from "@/lib/gallery-lifecycle";
 import { prepareImageForUpload } from "@/lib/image-utils";
@@ -13,6 +13,11 @@ interface Props {
   useCyrillic: boolean;
   phase: GalleryPhase;
   initialPhotos: GalleryPhoto[];
+  /** ISO event date — drives the "opens on …" copy in the before state. */
+  eventDate?: string;
+  /** Present when the visitor arrived through the couple's forwarded link.
+   *  Passed on to the upload endpoints so they allow the pre-event window. */
+  galleryKey?: string;
   /** When true, render without the full-page chrome (no min-h-screen / gradient
    *  background / couple-names header) so it can be embedded as a hub tab. */
   embedded?: boolean;
@@ -56,6 +61,19 @@ function strings(cyr: boolean) {
         empty: "Још нема фотографија. Будите први!",
         beforeMsg:
           "Галерија још није отворена. Фотографије можете додати на дан венчања.",
+        beforeTitle: "Галерија се отвара на дан венчања",
+        beforeLead:
+          "Тог дана овде шаљете фотографије које сте направили телефоном — све стижу младенцима на једно место.",
+        opensOn: (d: string) => `Отвара се ${d}`,
+        saveLink: "Сачувајте овај линк или задржите QR код — требаће вам тог дана.",
+        howTitle: "Како то иде",
+        step1: "Отворите овај линк или скенирајте QR",
+        step1d: "Без апликације и без регистрације.",
+        step2: "Изаберите слике са телефона",
+        step2d: "Упишете своје име и пошаљете — то је све.",
+        step3: "Младенци их преузимају",
+        step3d: "Након слављa скидају све одједном.",
+        upsell: "И ви можете овако — QR галерија за ваше слављe",
         afterMsg: "Додавање фотографија је затворено. Хвала што сте поделили успомене!",
         expiredMsg: "Галерија више није доступна.",
         count: (n: number) => `${n} ${n === 1 ? "фотографија" : "фотографија"}`,
@@ -79,6 +97,19 @@ function strings(cyr: boolean) {
         empty: "Još nema fotografija. Budite prvi!",
         beforeMsg:
           "Galerija još nije otvorena. Fotografije možete dodati na dan venčanja.",
+        beforeTitle: "Galerija se otvara na dan venčanja",
+        beforeLead:
+          "Tog dana ovde šaljete fotografije koje ste napravili telefonom — sve stižu mladencima na jedno mesto.",
+        opensOn: (d: string) => `Otvara se ${d}`,
+        saveLink: "Sačuvajte ovaj link ili zadržite QR kod — trebaće vam tog dana.",
+        howTitle: "Kako to ide",
+        step1: "Otvorite ovaj link ili skenirajte QR",
+        step1d: "Bez aplikacije i bez registracije.",
+        step2: "Izaberite slike sa telefona",
+        step2d: "Upišete svoje ime i pošaljete — to je sve.",
+        step3: "Mladenci ih preuzimaju",
+        step3d: "Nakon slavlja skidaju sve odjednom.",
+        upsell: "I vi možete ovako — QR galerija za vaše slavlje",
         afterMsg: "Dodavanje fotografija je zatvoreno. Hvala što ste podelili uspomene!",
         expiredMsg: "Galerija više nije dostupna.",
         count: (n: number) => `${n} ${n === 1 ? "fotografija" : "fotografija"}`,
@@ -111,11 +142,26 @@ export default function GalerijaClient({
   useCyrillic,
   phase,
   initialPhotos,
+  eventDate,
+  galleryKey,
   embedded = false,
   apiBase,
 }: Props) {
   const t = useMemo(() => strings(useCyrillic), [useCyrillic]);
   const base = apiBase ?? `/api/pozivnica/${slug}`;
+
+  const openDateLabel = useMemo(() => {
+    if (!eventDate) return null;
+    const d = new Date(eventDate);
+    if (Number.isNaN(d.getTime())) return null;
+    // Explicit script subtag: bare "sr-RS" resolves to Cyrillic in ICU, which
+    // would print a Cyrillic month in the middle of a Latin page.
+    return d.toLocaleDateString(useCyrillic ? "sr-Cyrl-RS" : "sr-Latn-RS", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }, [eventDate, useCyrillic]);
 
   const [photos, setPhotos] = useState<GalleryPhoto[]>(initialPhotos);
 
@@ -210,7 +256,7 @@ export default function GalerijaClient({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fileType: mime }),
+          body: JSON.stringify({ fileType: mime, k: galleryKey }),
         }
       );
       if (!signRes.ok) {
@@ -235,6 +281,7 @@ export default function GalerijaClient({
             fileSize: processed.size,
             mimeType: mime,
             uploaderId: uploaderIdRef.current || undefined,
+            k: galleryKey,
           }),
         }
       );
@@ -256,7 +303,7 @@ export default function GalerijaClient({
         createdAt: new Date().toISOString(),
       };
     },
-    [slug, guestName, caption]
+    [base, galleryKey, slug, guestName, caption]
   );
 
   const handleSubmit = useCallback(async () => {
@@ -299,6 +346,7 @@ export default function GalerijaClient({
           body: JSON.stringify({
             uploaderId: uploaderIdRef.current,
             name: finalName,
+            k: galleryKey,
           }),
         }).catch(() => {});
         // regroup locally right away
@@ -318,7 +366,7 @@ export default function GalerijaClient({
 
     if (added.length > 0) toast.success(t.thanks);
     if (failed > 0) toast.error(`${failed} × ✕`);
-  }, [files, guestName, t, uploadOne, slug]);
+  }, [files, guestName, t, uploadOne, base, galleryKey]);
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const picked = Array.from(e.target.files ?? []);
@@ -389,11 +437,71 @@ export default function GalerijaClient({
           </div>
         )}
 
-        {/* Phase messages */}
+        {/* Before the event: the QR was scanned early (the couple's forwarded
+            link opens the window instead). Explain what this is and what to do
+            on the day, rather than showing a single dead line. */}
         {phase === "before" && (
-          <p className="text-center font-serif text-lg py-16" style={{ color: "var(--theme-text-muted)" }}>
-            {t.beforeMsg}
-          </p>
+          <div className="max-w-md mx-auto py-6">
+            <div className="text-center mb-8">
+              <div
+                className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-5"
+                style={{ backgroundColor: "color-mix(in srgb, var(--theme-primary) 10%, transparent)" }}
+              >
+                <CalendarClock size={26} style={{ color: "var(--theme-primary)" }} strokeWidth={1.5} />
+              </div>
+              <h2 className="font-serif text-2xl mb-3" style={{ color: "var(--theme-primary)" }}>
+                {t.beforeTitle}
+              </h2>
+              {openDateLabel && (
+                <p className="font-raleway text-sm mb-3" style={{ color: "var(--theme-primary)" }}>
+                  {t.opensOn(openDateLabel)}
+                </p>
+              )}
+              <p className="font-serif text-base leading-relaxed" style={{ color: "var(--theme-text-muted)" }}>
+                {t.beforeLead}
+              </p>
+            </div>
+
+            <div
+              className="rounded-2xl px-5 py-6 mb-6"
+              style={{ backgroundColor: "color-mix(in srgb, var(--theme-primary) 5%, transparent)" }}
+            >
+              <p
+                className="font-raleway uppercase tracking-[0.18em] text-[11px] text-center mb-5"
+                style={{ color: "var(--theme-text-muted)" }}
+              >
+                {t.howTitle}
+              </p>
+              <ol className="space-y-4">
+                {[
+                  { n: 1, icon: QrCode, title: t.step1, desc: t.step1d },
+                  { n: 2, icon: Camera, title: t.step2, desc: t.step2d },
+                  { n: 3, icon: Images, title: t.step3, desc: t.step3d },
+                ].map(({ n, icon: Icon, title, desc }) => (
+                  <li key={n} className="flex gap-3">
+                    <div
+                      className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: "color-mix(in srgb, var(--theme-primary) 12%, transparent)" }}
+                    >
+                      <Icon size={16} style={{ color: "var(--theme-primary)" }} strokeWidth={1.6} />
+                    </div>
+                    <div>
+                      <div className="font-raleway text-sm" style={{ color: "var(--theme-text)" }}>
+                        {title}
+                      </div>
+                      <p className="font-raleway text-xs leading-relaxed" style={{ color: "var(--theme-text-muted)" }}>
+                        {desc}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <p className="text-center font-raleway text-xs" style={{ color: "var(--theme-text-muted)" }}>
+              {t.saveLink}
+            </p>
+          </div>
         )}
         {phase === "expired" && (
           <div className="text-center py-16" style={{ color: "var(--theme-text-muted)" }}>
@@ -465,6 +573,21 @@ export default function GalerijaClient({
               })}
             </div>
           ))}
+
+        {/* Subtle upsell — a guest at someone's wedding is a warm lead, but the
+            couple's own page is not the place to shout. One quiet line, and only
+            on the public page (never inside the seating hub tab). */}
+        {!embedded && (
+          <p className="text-center mt-16 pt-8" style={{ borderTop: "1px solid var(--theme-border-light)" }}>
+            <a
+              href="/qr-galerija-slika-sa-vencanja/"
+              className="font-raleway text-xs opacity-60 hover:opacity-100 transition-opacity"
+              style={{ color: "var(--theme-text-muted)" }}
+            >
+              {t.upsell} →
+            </a>
+          </p>
+        )}
       </div>
 
       {/* Upload modal */}

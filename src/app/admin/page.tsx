@@ -3,8 +3,10 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search, QrCode, CalendarPlus, Wallet } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search, QrCode, CalendarPlus, Wallet, Images } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
+import { downloadGalleryQR } from "@/lib/gallery-qr";
+import { isGalleryOnlyCouple } from "@/lib/gallery-only";
 import {
   buildReceiptItems,
   currentPriceTable,
@@ -15,6 +17,7 @@ import DeleteModal from "./DeleteModal";
 import BirthdayAdminList from "./BirthdayAdminList";
 import VendorAdminTab from "./VendorAdminTab";
 import SeatingAdminTab from "./SeatingAdminTab";
+import GalleryAdminTab from "./GalleryAdminTab";
 import PhoneRentalModal from "./PhoneRentalModal";
 import OrdersAdminTab from "./OrdersAdminTab";
 import AdminCalendar from "./AdminCalendar";
@@ -23,7 +26,7 @@ import ShareLinkButton from "./ShareLinkButton";
 import DatePicker from "@/components/ui/DatePicker";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 
-type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja" | "uplate";
+type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja" | "galerija" | "uplate";
 
 const TABS: ReadonlyArray<{
   id: AdminTab;
@@ -35,6 +38,7 @@ const TABS: ReadonlyArray<{
   { id: "rodjendani", label: "Rođendani", icon: Cake, activeBg: "bg-[#FF6B6B]" },
   { id: "vendori", label: "Vendori", icon: Star, activeBg: "bg-[#d4af37]" },
   { id: "raspored-sedenja", label: "Raspored sedenja", icon: Armchair, activeBg: "bg-[#2563eb]" },
+  { id: "galerija", label: "Galerija", icon: Images, activeBg: "bg-[#7c3aed]" },
   { id: "uplate", label: "Uplate", icon: Wallet, activeBg: "bg-[#16a34a]" },
 ];
 
@@ -53,6 +57,9 @@ interface Couple {
   paid_for_audio?: boolean;
   paid_for_gallery?: boolean;
   gallery_extra_days?: number;
+  gallery_purged_at?: string;
+  standalone_gallery?: boolean;
+  potvrde_password?: string;
   paid_for_images?: boolean;
   paid_for_music?: boolean;
   paid_for_audio_USB?: "" | "kaseta" | "bocica";
@@ -78,6 +85,13 @@ interface MarkPaidTarget {
   slug: string;
   name: string;
   premium: boolean;
+  /** Payment kind written onto the recorded order. Defaults to "pozivnica";
+   *  the Galerija tab passes "galerija" so the Uplate ledger names the right
+   *  product (and a later approve can't publish an invitation nobody bought). */
+  kind?: "pozivnica" | "galerija";
+  /** Overrides the tier dropdown default. The galerija adapter has exactly one
+   *  tier ("default"), so its selector is hidden. */
+  defaultTier?: string;
   prefillAmount: number;
   prefillLabel: string;
   slugEditable: boolean;
@@ -97,6 +111,83 @@ function slugifyPar(s: string): string {
       .replace(/^-+|-+$/g, "")
       .slice(0, 80) || "custom"
   );
+}
+
+/** Receipt URL for a couple. Module scope, not a closure over component state:
+ *  it stamps `Date.now()` and is only ever called from event handlers, so the
+ *  render pass must stay free of it. `bankAccountIdx` comes in as an argument. */
+function buildReceiptUrl(
+  c: Couple,
+  bankAccountIdx: number,
+  extras?: { retro_phone?: boolean; dobrodoslica?: boolean; customItems?: Array<{l: string; p: number}> },
+) {
+  const data: Record<string, unknown> = {
+    s: c.slug,
+    par: c.couple_names?.full_display || c.slug,
+    datum: c.event_date,
+    r: c.paid_for_raspored ? 1 : 0,
+    a: c.paid_for_audio ? 1 : 0,
+    uk: c.paid_for_audio_USB === "kaseta" ? 1 : 0,
+    ub: c.paid_for_audio_USB === "bocica" ? 1 : 0,
+    rp: extras?.retro_phone ? 1 : 0,
+    pd: extras?.dobrodoslica ? 1 : 0,
+    cc: c.custom_primary_color || c.custom_background_color ? 1 : 0,
+    ig: c.paid_for_images ? 1 : 0,
+    g: c.paid_for_gallery ? 1 : 0,
+    mu: c.paid_for_music ? 1 : 0,
+    p: c.premium ? 1 : 0,
+    d: c.custom_discount ?? 0,
+    ba: bankAccountIdx,
+    t: Date.now(),
+  };
+  if (extras?.customItems?.length) data.ci = extras.customItems;
+  const { items, bundleDiscount } = buildReceiptItems(
+    data as unknown as ReceiptFlags,
+    currentPriceTable(),
+  );
+  return `https://halouspomene.rs/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
+}
+
+/** Receipt total (base flags, no dropdown extras) — prefill for the manual
+ *  order amount in the mark-paid modal. */
+function receiptTotalFor(c: Couple): number {
+  const data: Record<string, unknown> = {
+    s: c.slug,
+    r: c.paid_for_raspored ? 1 : 0,
+    a: c.paid_for_audio ? 1 : 0,
+    uk: c.paid_for_audio_USB === "kaseta" ? 1 : 0,
+    ub: c.paid_for_audio_USB === "bocica" ? 1 : 0,
+    cc: c.custom_primary_color || c.custom_background_color ? 1 : 0,
+    ig: c.paid_for_images ? 1 : 0,
+    g: c.paid_for_gallery ? 1 : 0,
+    mu: c.paid_for_music ? 1 : 0,
+    p: c.premium ? 1 : 0,
+    d: c.custom_discount ?? 0,
+  };
+  const { items, bundleDiscount } = buildReceiptItems(
+    data as unknown as ReceiptFlags,
+    currentPriceTable(),
+  );
+  const sum =
+    items.reduce((acc, i) => acc + i.p, 0) -
+    (bundleDiscount || 0) -
+    (c.custom_discount ?? 0);
+  return Math.max(0, sum);
+}
+
+/** Closest event to today first; on a tie the future one wins. Module scope so
+ *  the `Date.now()` reference point never runs during render. */
+function sortByEventProximity(couples: Couple[]): Couple[] {
+  const now = Date.now();
+  const diff = (c: Couple) =>
+    c.event_date ? new Date(c.event_date).getTime() - now : Number.POSITIVE_INFINITY;
+  return [...couples].sort((a, b) => {
+    const da = diff(a);
+    const db = diff(b);
+    const absCmp = Math.abs(da) - Math.abs(db);
+    if (absCmp !== 0) return absCmp;
+    return db - da; // tie: future before past
+  });
 }
 
 interface CoupleStats {
@@ -137,19 +228,18 @@ export default function AdminPage() {
     return () => document.removeEventListener("mousedown", onClick);
   }, [sortMenuOpen]);
 
+  // Standalone gallery clients live on the Galerija tab. Filtered by the derived
+  // predicate, not the raw marker, so one who later buys an invitation comes
+  // back into this list on their own.
+  const invitationCouples = useMemo(
+    () => couples.filter((c) => !isGalleryOnlyCouple(c)),
+    [couples]
+  );
+
   const sortedCouples = useMemo(() => {
-    if (sortMode === "newest") return couples; // API already returns created_at desc
-    const now = Date.now();
-    const diff = (c: Couple) =>
-      c.event_date ? new Date(c.event_date).getTime() - now : Number.POSITIVE_INFINITY;
-    return [...couples].sort((a, b) => {
-      const da = diff(a);
-      const db = diff(b);
-      const absCmp = Math.abs(da) - Math.abs(db);
-      if (absCmp !== 0) return absCmp;
-      return db - da; // tie: future before past
-    });
-  }, [couples, sortMode]);
+    if (sortMode === "newest") return invitationCouples; // API already returns created_at desc
+    return sortByEventProximity(invitationCouples);
+  }, [invitationCouples, sortMode]);
 
   // Diacritic-insensitive search over name, slug and theme.
   const filteredCouples = useMemo(() => {
@@ -177,6 +267,10 @@ export default function AdminPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // Hydration guard: the modals below must not render during SSR. This is the
+    // one legitimate "sync from an external system (the browser) on mount" case,
+    // so the compiler's set-state-in-effect warning is a false positive here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -188,7 +282,16 @@ export default function AdminPage() {
     if (!tabInitializedRef.current) {
       tabInitializedRef.current = true;
       const t = new URLSearchParams(window.location.search).get("tab");
-      if (t === "rodjendani" || t === "vendori" || t === "raspored-sedenja" || t === "uplate")
+      if (
+        t === "rodjendani" ||
+        t === "vendori" ||
+        t === "raspored-sedenja" ||
+        t === "galerija" ||
+        t === "uplate"
+      )
+        // Same false positive as `mounted` above: the URL is external state and
+        // it can only be read after mount (no `window` during SSR).
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setActiveTab(t);
       return;
     }
@@ -395,81 +498,12 @@ export default function AdminPage() {
     }
   }
 
-  // QR PNG to the PUBLIC gallery page (production domain — it gets printed on
-  // the thank-you card). Generated client-side via the `qrcode` package.
-  async function downloadGalleryQR(slug: string) {
-    try {
-      const QRCode = (await import("qrcode")).default;
-      const url = `https://halouspomene.rs/pozivnica/${slug}/galerija/`;
-      const dataUrl = await QRCode.toDataURL(url, {
-        width: 1024,
-        margin: 2,
-        color: { dark: "#232323", light: "#ffffff" },
-      });
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `galerija-qr-${slug}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    } catch {
-      alert("Greška pri generisanju QR koda");
-    }
-  }
-
-  function buildReceiptUrl(c: Couple, extras?: { retro_phone?: boolean; dobrodoslica?: boolean; customItems?: Array<{l: string; p: number}> }) {
-    const data: Record<string, unknown> = {
-      s: c.slug,
-      par: c.couple_names?.full_display || c.slug,
-      datum: c.event_date,
-      r: c.paid_for_raspored ? 1 : 0,
-      a: c.paid_for_audio ? 1 : 0,
-      uk: c.paid_for_audio_USB === "kaseta" ? 1 : 0,
-      ub: c.paid_for_audio_USB === "bocica" ? 1 : 0,
-      rp: extras?.retro_phone ? 1 : 0,
-      pd: extras?.dobrodoslica ? 1 : 0,
-      cc: c.custom_primary_color || c.custom_background_color ? 1 : 0,
-      ig: c.paid_for_images ? 1 : 0,
-      g: c.paid_for_gallery ? 1 : 0,
-      mu: c.paid_for_music ? 1 : 0,
-      p: c.premium ? 1 : 0,
-      d: c.custom_discount ?? 0,
-      ba: bankAccountIdx,
-      t: Date.now(),
-    };
-    if (extras?.customItems?.length) data.ci = extras.customItems;
-    const { items, bundleDiscount } = buildReceiptItems(
-      data as unknown as ReceiptFlags,
-      currentPriceTable(),
-    );
-    return `https://halouspomene.rs/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
-  }
-
-  /** Receipt total (base flags, no dropdown extras) — prefill for the manual
-   *  order amount in the mark-paid modal. */
-  function receiptTotalFor(c: Couple): number {
-    const data: Record<string, unknown> = {
-      s: c.slug,
-      r: c.paid_for_raspored ? 1 : 0,
-      a: c.paid_for_audio ? 1 : 0,
-      uk: c.paid_for_audio_USB === "kaseta" ? 1 : 0,
-      ub: c.paid_for_audio_USB === "bocica" ? 1 : 0,
-      cc: c.custom_primary_color || c.custom_background_color ? 1 : 0,
-      ig: c.paid_for_images ? 1 : 0,
-      g: c.paid_for_gallery ? 1 : 0,
-      mu: c.paid_for_music ? 1 : 0,
-      p: c.premium ? 1 : 0,
-      d: c.custom_discount ?? 0,
-    };
-    const { items, bundleDiscount } = buildReceiptItems(
-      data as unknown as ReceiptFlags,
-      currentPriceTable(),
-    );
-    const sum =
-      items.reduce((acc, i) => acc + i.p, 0) -
-      (bundleDiscount || 0) -
-      (c.custom_discount ?? 0);
-    return Math.max(0, sum);
+  /** Refetch after the Galerija tab creates a client, so the new row shows up. */
+  async function reloadCouples() {
+    const res = await fetch("/api/admin/couples");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data)) setCouples(data);
   }
 
   async function handleMarkPaidDone(mode: "linked" | "recorded") {
@@ -730,6 +764,24 @@ export default function AdminPage() {
           onNeedsLogin={() => setNeedsLogin(true)}
           bankAccountIdx={bankAccountIdx}
         />
+      ) : activeTab === "galerija" ? (
+        <GalleryAdminTab
+          couples={couples}
+          shareStats={shareStats}
+          bankAccountIdx={bankAccountIdx}
+          copiedSlug={copiedSlug}
+          onToggleGallery={handleToggleGallery}
+          onExtendGallery={handleExtendGallery}
+          onDelete={setDeleteSlug}
+          onCreated={reloadCouples}
+          onGenerateReceipt={handleGenerateReceipt}
+          onMarkPaid={setMarkPaid}
+          onDiscount={handleSetDiscount}
+          onCopiedSlug={(slug) => {
+            setCopiedSlug(slug);
+            setTimeout(() => setCopiedSlug(null), 2500);
+          }}
+        />
       ) : activeTab === "rodjendani" ? (
         <BirthdayAdminList
           onNeedsLogin={() => setNeedsLogin(true)}
@@ -742,8 +794,8 @@ export default function AdminPage() {
           <h2 className="text-xl sm:text-2xl font-semibold text-white">
             Pozivnice (
             {search.trim()
-              ? `${filteredCouples.length}/${couples.length}`
-              : couples.length}
+              ? `${filteredCouples.length}/${invitationCouples.length}`
+              : invitationCouples.length}
             )
           </h2>
           <div className="relative" ref={sortMenuRef}>
@@ -883,6 +935,14 @@ export default function AdminPage() {
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 shrink-0">
                         {c.theme || "—"}
                       </span>
+                      {c.standalone_gallery && (
+                        <span
+                          className="text-[10px] px-2 py-0.5 rounded-full bg-[#7c3aed]/20 text-violet-300 shrink-0"
+                          title="Kupac samostalne QR galerije — vidi i tab Galerija"
+                        >
+                          QR galerija
+                        </span>
+                      )}
                       {c.premium && c.premium_status === "u_izradi" && (
                         <button
                           onClick={() => handleMarkDelivered(c.slug)}
@@ -1110,13 +1170,13 @@ export default function AdminPage() {
                     });
                   }
 
-                  const url = buildReceiptUrl(c, extras);
+                  const url = buildReceiptUrl(c, bankAccountIdx, extras);
                   await navigator.clipboard.writeText(url);
                   setCopiedSlug(c.slug);
                   setTimeout(() => setCopiedSlug(null), 2500);
                 }}
                 onCopy={async (extras) => {
-                  const url = buildReceiptUrl(c, extras);
+                  const url = buildReceiptUrl(c, bankAccountIdx, extras);
                   await navigator.clipboard.writeText(url);
                   setCopiedSlug(c.slug);
                   setTimeout(() => setCopiedSlug(null), 2500);
@@ -1347,7 +1407,9 @@ function MarkPaidModal({
     target.prefillAmount > 0 ? String(target.prefillAmount) : "",
   );
   const [label, setLabel] = useState(target.prefillLabel);
-  const [tier, setTier] = useState(target.premium ? "premium" : "custom");
+  const [tier, setTier] = useState(
+    target.defaultTier ?? (target.premium ? "premium" : "custom"),
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
@@ -1411,7 +1473,7 @@ function MarkPaidModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          kind: "pozivnica",
+          kind: target.kind ?? "pozivnica",
           slug,
           tier,
           amountRsd: rsd,
@@ -1534,9 +1596,11 @@ function MarkPaidModal({
               placeholder="Iznos u din"
               className="flex-1 text-sm text-white/70 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/25"
             />
+            {/* A gallery has exactly one tier, so there is nothing to pick. */}
             <select
               value={tier}
               onChange={(e) => setTier(e.target.value)}
+              hidden={target.kind === "galerija"}
               className="text-sm text-white/70 bg-white/5 border border-white/10 rounded-lg px-2 py-2 outline-none focus:border-white/25 cursor-pointer"
               style={{ backgroundColor: "#2a2a2a" }}
             >
