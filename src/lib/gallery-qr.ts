@@ -25,28 +25,6 @@ export function galleryShareUrl(slug: string, key?: string | null): string {
 const CAMERA_BODY =
   "M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z";
 
-function roundedRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number
-) {
-  if (typeof ctx.roundRect === "function") {
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, r);
-    return;
-  }
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
-}
-
 /**
  * QR with a small camera badge punched into the middle, so a printed code reads
  * as "photos" at a glance instead of as an anonymous square.
@@ -76,10 +54,11 @@ export async function galleryQrDataUrl(
   const bx = (s - badge) / 2;
   const by = (s - badge) / 2;
 
-  // White plate so the glyph never sits on modules and stays legible.
+  // White plate so the glyph never sits on modules and stays legible. Square
+  // corners on purpose: everything around it is a hard-edged module grid, so a
+  // rounded plate would be the only soft shape in the code.
   ctx.fillStyle = "#ffffff";
-  roundedRect(ctx, bx, by, badge, badge, badge * 0.2);
-  ctx.fill();
+  ctx.fillRect(bx, by, badge, badge);
 
   // Camera from the 24×24 lucide viewBox. Only a hair of padding — the plate is
   // there to clear the modules, not to frame the glyph.
