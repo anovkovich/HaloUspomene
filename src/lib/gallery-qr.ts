@@ -52,8 +52,8 @@ function roundedRect(
  * as "photos" at a glance instead of as an anonymous square.
  *
  * Error correction is forced to level H (~30% of the code recoverable). The
- * badge covers 22% of the width, i.e. under 5% of the area — an order of
- * magnitude inside what H tolerates, so scanning is unaffected.
+ * badge covers 23% of the width, i.e. ~5% of the area — an order of magnitude
+ * inside what H tolerates, so scanning is unaffected.
  */
 export async function galleryQrDataUrl(
   url: string,
@@ -72,7 +72,7 @@ export async function galleryQrDataUrl(
   if (!ctx) return canvas.toDataURL("image/png");
 
   const s = canvas.width;
-  const badge = s * 0.22;
+  const badge = s * 0.23;
   const bx = (s - badge) / 2;
   const by = (s - badge) / 2;
 
@@ -81,15 +81,17 @@ export async function galleryQrDataUrl(
   roundedRect(ctx, bx, by, badge, badge, badge * 0.2);
   ctx.fill();
 
-  // Camera drawn from the 24×24 lucide viewBox, scaled into the plate with padding.
-  const pad = badge * 0.2;
+  // Camera from the 24×24 lucide viewBox. Only a hair of padding — the plate is
+  // there to clear the modules, not to frame the glyph.
+  const pad = badge * 0.1;
   const glyph = badge - pad * 2;
   const scale = glyph / 24;
 
   ctx.save();
   ctx.translate(bx + pad, by + pad);
   ctx.scale(scale, scale);
-  ctx.strokeStyle = "#AE343F";
+  // Same ink as the modules — the badge should read as part of the code.
+  ctx.strokeStyle = "#232323";
   ctx.lineWidth = 2;
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
