@@ -674,3 +674,22 @@
   pokretanja.
 - Pregled sa svim rezovima (Google krug, tab 16 px, Android krug/squircle, iOS):
   artifact „Nova ikonica — kako izgleda svuda".
+
+## 2026-08-06 — Ispravka: nazad na krem znak, i popravljena odsecena spirala
+
+- **Vlasnik je odustao od crvene podloge** — ostaje izvorni znak: krem podloga,
+  crn crtez sa slusalicom i spiralom. Odluka od ranije istog dana se povlaci.
+- **Nadjena greska koju je vlasnik primetio:** skripta je okvir skidala
+  SECENJEM 11% sa svake strane. Ali okvir je tamna traka od oko 15 px uz ivicu,
+  a spirala kabla dopire do x=477 od 512 — dakle rez je odsekao vrh spirale.
+  Tako je bilo i u crvenoj verziji koja je otisla u produkciju.
+- **Kako je resено:** okvir se sada BRISE, ne sece — uklanja se kao povezana
+  tamna oblast koja dodiruje ivicu slike; crtez prezivi ceo jer ga od okvira
+  deli krem praznina.
+- **Skala se vise ne pogadja nego racuna.** Skripta izmeri najveci poluprecnik
+  na kojem ima mastila (`domet`) i iz njega izvede uvecanje, pa se cilj zadaje
+  kao granica koju sistem sece:
+  `META_KRUG = 0.485` (Google sece na 0,5) i `META_MASKA = 0.385` (Android
+  garantuje 0,40). Provereno posle generisanja: 0 piksela van granice u oba
+  fajla, domet 0,487 odnosno 0,386.
+- Pregled sa svim rezovima azuriran (isti artifact URL).
