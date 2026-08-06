@@ -656,3 +656,21 @@
   ekranu svima koji su instalirali aplikaciju.
 - **Ne stupa odmah:** Google osvezava favicon tek kad ponovo obidje pocetnu.
   Traziti reindeksiranje `/` u GSC-u posle deploya.
+
+## 2026-08-06 — PWA ikonice poravnate sa novim faviconom
+
+- Znak je sada isti svuda: tab, Google rezultati, iPhone i Android pocetni ekran.
+- **Dve skale, jer dva sistema seku razlicito** — obe izmerene, ne procenjene:
+  - `SAFE_KRUG = 0.78` — Google sece krugom poluprecnika 0,5 W; crtez dostize
+    0,63 W, pa 0,50/0,63 = 0,79.
+  - `SAFE_MASKA = 0.62` — Android `maskable` garantuje samo krug PRECNIKA 80%
+    (poluprecnik 0,40 W), pa 0,40/0,63 = 0,63. Maskable varijanta zato ima vise
+    praznine oko znaka; to je uslov formata, ne greska.
+- **Popravljena zatecena greska u manifestu:** `icon-192.png` je bio oznacen kao
+  `purpose: "maskable"` a nije imao bezbednu zonu, pa ga je Android secao po
+  ivicama. Sada su `any` i `maskable` dva RAZLICITA crteza.
+- **Izvorni crtez preseljen** u `scripts/assets/znak-512.png` — skripta prepisuje
+  `public/images/icon-*.png`, pa izlaz nikad ne sme da bude ulaz sledeceg
+  pokretanja.
+- Pregled sa svim rezovima (Google krug, tab 16 px, Android krug/squircle, iOS):
+  artifact „Nova ikonica — kako izgleda svuda".
