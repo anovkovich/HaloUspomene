@@ -266,10 +266,20 @@ export const metadata: Metadata = {
   // nema tag, a Google uzima njen URL — što je ispravno ponašanje.
   // Početna svoj canonical postavlja u `src/app/page.tsx`.
 
+  // Tacno DVE ikonice: `src/app/favicon.ico` Next sam ispise (48px, za tabove),
+  // a 192px PNG je ono sto Google uzima za rezultate pretrage. Ranije su ovde
+  // stajale tri deklaracije jedna preko druge, pa je Google birao 48px .ico i
+  // razvlacio ga. Oba fajla pravi `scripts/generate-favicon.mjs`.
+  //
+  // `apple` namerno pokazuje na staru PWA ikonicu — ona je na pocetnom ekranu
+  // kod svih koji su vec instalirali aplikaciju i ne dira se usput.
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/images/icon-192.png", sizes: "192x192", type: "image/png" },
+      {
+        url: "/images/favicon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
     ],
     apple: [{ url: "/images/icon-192.png", sizes: "192x192" }],
   },

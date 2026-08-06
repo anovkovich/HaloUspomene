@@ -632,3 +632,27 @@
 
 - **Blokade / sledeći korak:** preostalih 6 blog tekstova; slanje na
   reindeksiranje.
+
+## 2026-08-06 — Favicon u rezultatima pretrage
+
+- **Prijava:** ikonica u Google rezultatima izgleda umanjeno i odseceno, dok na
+  tabu izgleda ispravno.
+- **Tri izmerena uzroka:**
+  1. Google sece favicon u KRUG. Stara ikonica je zaobljeni kvadrat sa krem
+     podlogom i tamnim okvirom, pa su uglovi i deo okvira otpadali.
+  2. Google prikazuje favicon na ~16-20 px. Spirala kabla i zraci se na toj
+     velicini slivaju u tamnu mrlju (simulirano i pogledano, ne pretpostavljeno).
+  3. Najveci kadar u `favicon.ico` bio je 48x48, a u `<head>` su stajale TRI
+     `rel="icon"` deklaracije, pa je Google birao .ico i razvlacio ga na
+     ekranima sa dvostrukom gustinom.
+- **Odluka vlasnika** (od cetiri ponudjene varijante, uporedjene na 20 px):
+  crvena podloga `#AE343F` + krem znak. Izdvaja se od belih i crnih ikonica u
+  rezultatima i radi u svetloj i u tamnoj temi.
+- **Uradjeno:** `scripts/generate-favicon.mjs` pravi `public/images/favicon-192.png`
+  i `src/app/favicon.ico` (16/32/48) iz istog crteza; znak umanjen na 78% —
+  izmereno je da na 79% i 99,9% mastila staje u upisani krug. `<head>` sveden na
+  dva `rel="icon"` taga.
+- **PWA i apple-touch ikonice namerno NISU dirane** — one stoje na pocetnom
+  ekranu svima koji su instalirali aplikaciju.
+- **Ne stupa odmah:** Google osvezava favicon tek kad ponovo obidje pocetnu.
+  Traziti reindeksiranje `/` u GSC-u posle deploya.
