@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   title:
     "Iznajmljivanje Luksuznih Automobila za Venčanje — Mercedes",
   description:
-    "Luksuzan automobil za mladence, kuma i barjaktara — Mercedes E, S, GLE i G klasa sa profesionalnim šoferom, po satu ili za ceo dan. Cela Srbija.",
+    "Luksuzan automobil za mladence, kuma i barjaktara — Mercedes E, S, GLE i G klasa sa profesionalnim vozačem, po satu ili za ceo dan. Cela Srbija.",
   keywords: [
     "iznajmljivanje automobila za venčanje",
     "auto za venčanje",
@@ -56,12 +56,12 @@ export const metadata: Metadata = {
     "mercedes g klasa za svadbu",
     "limuzina za venčanje",
     "rent a car za venčanje",
-    "rent a car sa šoferom",
+    "rent a car sa vozačem",
     "auto za kuma",
     "auto za barjaktara",
     "svadbena kolona",
     "iznajmljivanje vozila sa vozačem",
-    "luksuzni auto sa šoferom beograd",
+    "luksuzni auto sa vozačem beograd",
     "najam automobila za svadbu",
     "vip prevoz za venčanje",
     "auto za venčanje beograd",
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     title:
       "Iznajmljivanje Luksuznih Automobila za Venčanje | HALO Uspomene",
     description:
-      "Mercedes E, S, GLE i G klasa sa profesionalnim šoferom za mladence, kuma i barjaktara. Po satu ili za ceo dan.",
+      "Mercedes E, S, GLE i G klasa sa profesionalnim vozačem za mladence, kuma i barjaktara. Po satu ili za ceo dan.",
     type: "website",
     url: `${siteUrl}/iznajmljivanje-automobila-za-vencanje`,
     siteName: "Halo Uspomene",
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     title:
       "Iznajmljivanje Luksuznih Automobila za Venčanje | HALO Uspomene",
     description:
-      "Luksuzan Mercedes sa šoferom za mladence, kuma i barjaktara — po satu ili za ceo dan.",
+      "Luksuzan Mercedes sa vozačem za mladence, kuma i barjaktara — po satu ili za ceo dan.",
   },
   alternates: {
     canonical: `${siteUrl}/iznajmljivanje-automobila-za-vencanje`,
@@ -151,7 +151,7 @@ const occasions = [
   {
     icon: <Heart size={26} />,
     title: "Za mladence",
-    desc: "Reprezentativan dolazak mlade i mladoženje ispred crkve, matičara i sale — sa šoferom i dovoljno prostora za venčanicu.",
+    desc: "Reprezentativan dolazak mlade i mladoženje ispred crkve, matičara i sale — sa vozačem i dovoljno prostora za venčanicu.",
   },
   {
     icon: <Flag size={26} />,
@@ -173,7 +173,7 @@ const occasions = [
 const included = [
   {
     icon: <UserCheck size={24} />,
-    title: "Profesionalni šofer",
+    title: "Profesionalni vozač",
     desc: "Iskusan vozač u svečanom odelu, ljubazan i diskretan — vi se opuštate, on vodi računa o svemu.",
   },
   {
@@ -207,7 +207,7 @@ const howItWorks = [
   {
     n: "03",
     title: "Uživajte na dan venčanja",
-    desc: "Šofer stiže na vreme sa pripremljenim vozilom — vama ostaje samo da uđete i uživate.",
+    desc: "Vozač stiže na vreme sa pripremljenim vozilom — vama ostaje samo da uđete i uživate.",
   },
 ];
 
@@ -217,8 +217,8 @@ const faqItems = [
     a: "Cena zavisi od modela i trajanja najma. Najam ide po satu (minimum 2 sata) ili za ceo dan (8 sati): Mercedes E klasa od 50 € po satu odnosno 350 € za ceo dan, GLE SUV 65 € / 450 €, S klasa 80 € / 600 €, a G klasa 100 € / 700 €. Pošaljite upit i dobijate tačnu ponudu za vaš termin.",
   },
   {
-    q: "Da li u cenu ulazi šofer?",
-    a: "Da. Sva vozila se iznajmljuju isključivo sa profesionalnim šoferom u svečanom odelu. Vi ne morate da brinete o vožnji, parkingu ni ruti — sve je organizovano.",
+    q: "Da li u cenu ulazi vozač?",
+    a: "Da. Sva vozila se iznajmljuju isključivo sa profesionalnim vozačem u svečanom odelu. Vi ne morate da brinete o vožnji, parkingu ni ruti — sve je organizovano.",
   },
   {
     q: "Mogu li da iznajmim vozilo za kuma ili barjaktara, a ne samo za mladence?",
@@ -242,9 +242,9 @@ const serviceSchema = {
   "@context": "https://schema.org",
   "@type": "Service",
   serviceType: "Iznajmljivanje luksuznih automobila za venčanje",
-  name: "Iznajmljivanje luksuznih automobila za venčanje sa šoferom",
+  name: "Iznajmljivanje luksuznih automobila za venčanje sa vozačem",
   description:
-    "Najam luksuznih Mercedes vozila (E, S, GLE i G klasa) sa profesionalnim šoferom za mladence, kuma i barjaktara na venčanju. Najam po satu ili za ceo dan.",
+    "Najam luksuznih Mercedes vozila (E, S, GLE i G klasa) sa profesionalnim vozačem za mladence, kuma i barjaktara na venčanju. Najam po satu ili za ceo dan.",
   provider: {
     "@type": "Organization",
     name: "HALO Uspomene",
@@ -262,7 +262,7 @@ const serviceSchema = {
       "@type": "Offer",
       itemOffered: {
         "@type": "Service",
-        name: `${v.name} sa šoferom za venčanje`,
+        name: `${v.name} sa vozačem za venčanje`,
         description: v.blurb,
       },
       priceSpecification: [
@@ -330,10 +330,10 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
               <p className="text-lg sm:text-xl text-[#232323]/60 max-w-2xl mx-auto mb-4 leading-relaxed">
                 Treba vam reprezentativan auto za mladence, kuma ili barjaktara
                 na svadbi? Mercedes E, S, GLE i G klasa sa profesionalnim
-                šoferom.
+                vozačem.
               </p>
               <p className="text-sm text-[#232323]/50 max-w-xl mx-auto mb-8">
-                Besprekorno čisto vozilo, iskusan šofer i dolazak tačno na vreme
+                Besprekorno čisto vozilo, iskusan vozač i dolazak tačno na vreme
                 — za venčanja širom Srbije.
               </p>
               {/* Mercedes-Benz logo (transparentan) — bez okvira, sa mekim toplim sjajem */}
@@ -357,7 +357,7 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
                 <div className="mt-3 flex items-center gap-3 text-[#232323]/45">
                   <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#d4af37]/70" />
                   <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                    Flota sa profesionalnim šoferom
+                    Flota sa profesionalnim vozačem
                   </span>
                   <span className="h-px w-8 bg-gradient-to-l from-transparent to-[#d4af37]/70" />
                 </div>
@@ -421,7 +421,7 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
                 <span className="italic text-[#AE343F]">venčanja</span>
               </h2>
               <p className="text-[#232323]/55 max-w-2xl mx-auto">
-                Sva vozila dolaze sa profesionalnim šoferom. Najam po satu
+                Sva vozila dolaze sa profesionalnim vozačem. Najam po satu
                 (minimum 2 sata) ili za ceo dan (8 sati).
               </p>
             </div>
@@ -437,7 +437,7 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
                     {v.image ? (
                       <Image
                         src={v.image}
-                        alt={`${v.name} sa šoferom za venčanje`}
+                        alt={`${v.name} sa vozačem za venčanje`}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -685,14 +685,14 @@ export default function IznajmljivanjeAutomobilaZaVencanje() {
         {/* SEO HIDDEN CONTENT */}
         <section className="sr-only">
           <h2>
-            Iznajmljivanje automobila za venčanje sa šoferom — Mercedes E, S,
+            Iznajmljivanje automobila za venčanje sa vozačem — Mercedes E, S,
             GLE i G klasa
           </h2>
           <p>
             HALO Uspomene posreduje najam luksuznih automobila za venčanja i
             svadbe širom Srbije. U ponudi su Mercedes E klasa, Mercedes S klasa
             (VIP limuzina), Mercedes GLE SUV i Mercedes G klasa — sva vozila sa
-            profesionalnim šoferom. Iznajmite luksuzan auto za mladence,
+            profesionalnim vozačem. Iznajmite luksuzan auto za mladence,
             reprezentativno vozilo za kuma i barjaktara ili celu usklađenu
             svadbenu kolonu. Najam je moguć po satu (minimum dva sata) ili za
             ceo dan od osam sati. Organizujemo prevoz za venčanja u Beogradu,

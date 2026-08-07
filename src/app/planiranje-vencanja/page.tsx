@@ -508,7 +508,7 @@ export default function PlaniranjeVencanjaPage() {
                   Auto za Venčanje
                 </p>
                 <p className="text-xs text-[#232323]/40 mb-3">
-                  Luksuzni Mercedes sa šoferom za mladence
+                  Luksuzni Mercedes sa vozačem za mladence
                 </p>
                 <span className="text-xs text-[#AE343F] font-medium inline-flex items-center gap-1">
                   od 50 € / sat <ArrowRight size={12} />

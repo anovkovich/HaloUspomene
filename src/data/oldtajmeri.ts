@@ -10,6 +10,7 @@
  *    Bez `image` kartica prikazuje elegantan placeholder ("Fotografija uskoro"),
  *    pa vozilo može da ide live i pre nego što slike stignu.
  * 3. Ako vozilo ima cenu iz novog grada, dodaj i taj grad u `fleetCities` ispod.
+ *    Ako želiš da vozilo bude prvo u hero karuselu, stavi `featured: true`.
  * 4. Ako se doda vozilo van postojećih cenovnih raspona, proveri
  *    `getFleetPriceRange()` — schema.org AggregateOffer se računa iz njega.
  *
@@ -39,6 +40,13 @@ export interface OldtimerVehicle {
   basedIn: string;
   /** Putanja do fotografije u /public. Bez nje se prikazuje placeholder. */
   image?: string;
+  /**
+   * Izdvojeno vozilo — ulazi u hero karusel. Ako je bar jedno vozilo izdvojeno,
+   * karusel vrti SAMO izdvojena; ako nijedno nije, vrti celu flotu. Tako se
+   * hero menja jednom zastavicom, bez diranja stranice. Ne utiče na redosled
+   * u floti ispod.
+   */
+  featured?: boolean;
   /** 1–2 rečenice prodajnog opisa. */
   blurb: string;
   /** Cena najma za venčanje. */
@@ -52,7 +60,79 @@ export interface OldtimerVehicle {
   };
 }
 
+/**
+ * Napomena o cenama za Pomoravlje: ista je za sva četiri vozila, pa se na
+ * stranici ispisuje jednom iznad grupe umesto na svakoj kartici
+ * (v. `getFleetByCity`). Ako se za jedno vozilo promeni, napomena se
+ * automatski vraća na kartice — zato je držati identičnom dok god važi.
+ */
+const POMORAVLJE_NOTE =
+  "Cena važi za venčanja u Paraćinu, Ćupriji i Jagodini, kao i u krugu od oko 50 km. Dalje od toga doplaćuje se prevoz auto-transporterom, po ceni osetno povoljnijoj od uobičajenog evra po kilometru. Za Beograd se cena dogovara posebno.";
+
 export const oldtimerFleet: OldtimerVehicle[] = [
+  {
+    id: "mercedes-170v-1940",
+    name: "Mercedes-Benz 170 V",
+    year: "1940",
+    tagline: "Predratna nemačka klasa",
+    badge: "Predratna limuzina",
+    color: "Crna",
+    bodyType: "Limuzina, 4 vrata",
+    seats: "Do 4 putnika",
+    basedIn: "Paraćin",
+    image: "/images/oldtajmeri/mercedes-benz-170v-1940.webp",
+    featured: true,
+    blurb:
+      "Crna predratna limuzina sa hromiranom maskom i prostranom zadnjom klupom — od svih naših vozila najkomotnija za venčanicu sa punom suknjom. Model kojim je Mercedes posle rata ponovo pokrenuo proizvodnju, a ratna godišta se danas retko viđaju na našim putevima.",
+    price: { from: 300, note: POMORAVLJE_NOTE },
+  },
+  {
+    id: "pontiac-six-1931",
+    name: "Pontiac serija 6 - 401",
+    year: "1931",
+    tagline: "Predratna limuzina",
+    badge: "Američka legenda",
+    color: "Bordo i crna",
+    bodyType: "Limuzina, 4 vrata",
+    seats: "Do 4 putnika",
+    basedIn: "Paraćin",
+    image: "/images/oldtajmeri/pontiac-six-401-1931.webp",
+    featured: true,
+    blurb:
+      "Američka predratna limuzina sa V-maskom, žičanim točkovima i belim zidovima na gumama. Visoka, uspravna karoserija znači i da se u nju ulazi lakše nego u niska moderna vozila — a ovakav automobil se na svadbama kod nas praktično ne viđa.",
+    price: { from: 300, note: POMORAVLJE_NOTE },
+  },
+  {
+    id: "triumph-herald-1200-1964",
+    name: "Triumph Herald 1200",
+    year: "1964",
+    tagline: "Engleski kabriolet",
+    badge: "Otvoreni krov",
+    color: "Tamnozelena",
+    bodyType: "Kabriolet, 2 vrata",
+    seats: "Mladenci napred, do 4 ukupno",
+    basedIn: "Paraćin",
+    image: "/images/oldtajmeri/triumph-herald-1200-kabriolet-1964.webp",
+    featured: true,
+    blurb:
+      "Tamnozeleni engleski kabriolet iz šezdesetih, rad italijanskog dizajnera Đovanija Mikelotija — redak slučaj otvorenog automobila sa četiri prava sedišta. Spušten krov znači da veo i frizura nemaju o šta da se zakače, a fotograf dobija kadar bez ijedne prepreke.",
+    price: { from: 300, note: POMORAVLJE_NOTE },
+  },
+  {
+    id: "moskvic-407-1962",
+    name: "Moskvič 407",
+    year: "1962",
+    tagline: "Crveno-beli klasik",
+    badge: "Retro reli",
+    color: "Crveno-bela",
+    bodyType: "Limuzina, 4 vrata",
+    seats: "Do 4 putnika",
+    basedIn: "Paraćin",
+    image: "/images/oldtajmeri/moskvic-407-1962-crveno-beli.webp",
+    blurb:
+      "Vedar crveno-beli klasik iz šezdesetih, sa relijskim pedigreom s kraja pedesetih — otuda nalepnice i beli zidovi na gumama. Izbor za mladence koji ne žele ni crnu limuzinu ni predratnu ozbiljnost, nego auto koji se na fotografijama smeje.",
+    price: { from: 300, note: POMORAVLJE_NOTE },
+  },
   {
     id: "fiat-1300-crveni",
     name: "Fiat 1300",
@@ -91,7 +171,7 @@ export const oldtimerFleet: OldtimerVehicle[] = [
   },
   {
     id: "pontiac-6-28-phaeton",
-    name: "Pontiac Series 6-28 Phaeton",
+    name: "Pontiac serija 6 - Phaeton",
     year: "1928",
     tagline: "Predratni kabriolet",
     badge: "Kabriolet",
@@ -104,7 +184,6 @@ export const oldtimerFleet: OldtimerVehicle[] = [
       "Otvoreni američki kabriolet star skoro sto godina — najefektnije vozilo u floti. Bez krova nema prepreke između mladenaca i gostiju, pa dolazak ispred sale izgleda kao scena iz dvadesetih.",
     price: {
       from: 350,
-      to: 400,
       note: "Cena za venčanje u Pančevu. Za ostale gradove transport po dogovoru.",
     },
   },
@@ -123,7 +202,6 @@ export const oldtimerFleet: OldtimerVehicle[] = [
       "Crni američki klasik s kraja dvadesetih, sa hromiranim detaljima i visokom, upečatljivom linijom. Vozilo koje se na srpskim svadbama praktično ne viđa — a upravo zato ostaje upamćeno.",
     price: {
       from: 350,
-      to: 400,
       note: "Cena za venčanje u Pančevu. Za ostale gradove transport po dogovoru.",
     },
   },
@@ -141,14 +219,56 @@ export const oldtimerFleet: OldtimerVehicle[] = [
       "Jedan od najprepoznatljivijih automobila evropske filmske klasike — niska silueta, duge stepenice i elegantna crna boja. Savršen izbor za mladence koji žele diskretan, otmeni retro stil bez preterivanja.",
     price: {
       from: 350,
-      to: 400,
       note: "Cena za venčanje u Pančevu. Za ostale gradove transport po dogovoru.",
     },
   },
 ];
 
-/** Gradovi iz kojih flota polazi — koristi se u schema.org areaServed i u copy-ju. */
-export const fleetCities = ["Beograd", "Pančevo"];
+/** Vozilo koje sigurno ima fotografiju — za mesta gde placeholder nema smisla. */
+export type OldtimerWithImage = OldtimerVehicle & { image: string };
+
+/**
+ * Vozila za hero karusel, redosledom iz `oldtimerFleet`.
+ *
+ * Ako je bar jedno vozilo označeno sa `featured`, karusel vrti samo njih —
+ * tako se u hero stavlja izdvojena ponuda (npr. vozila partnera kome dajemo
+ * prioritet). Ako nijedno nije izdvojeno, vrti se cela flota, pa hero nikad
+ * ne ostane prazan.
+ */
+export function getHeroFleet(): OldtimerWithImage[] {
+  const withImage = oldtimerFleet.filter((v): v is OldtimerWithImage =>
+    Boolean(v.image),
+  );
+  const featured = withImage.filter((v) => v.featured);
+  return featured.length ? featured : withImage;
+}
+
+/**
+ * Redosled gradova na stranici — i u rečenicama i u grupisanju flote.
+ *
+ * Namerno se NE izvodi iz flote, jer je stvar isticanja a ne podatak: prvo idu
+ * gradovi kojima dajemo prioritet, Beograd poslednji. Grad koji ovde nije
+ * naveden ide na kraj, redosledom pojavljivanja u floti — tako novo vozilo iz
+ * novog grada radi i pre nego što se ovaj spisak dopuni.
+ */
+const CITY_ORDER = ["Paraćin", "Pančevo", "Beograd"];
+
+function byCityOrder(a: string, b: string): number {
+  const rank = (c: string) => {
+    const i = CITY_ORDER.indexOf(c);
+    return i === -1 ? CITY_ORDER.length : i;
+  };
+  return rank(a) - rank(b);
+}
+
+/**
+ * Gradovi iz kojih flota polazi — koristi se u schema.org areaServed, u tekstu
+ * stranice i za grupisanje flote. Sadržaj se izvodi iz `oldtimerFleet`, a
+ * redosled iz `CITY_ORDER`.
+ */
+export const fleetCities = Array.from(
+  new Set(oldtimerFleet.map((v) => v.basedIn)),
+).sort(byCityOrder);
 
 /** Najniža i najviša cena u floti — za AggregateOffer i za "od X €" u hero sekciji. */
 export function getFleetPriceRange(): { low: number; high: number } {
@@ -157,14 +277,6 @@ export function getFleetPriceRange(): { low: number; high: number } {
   return { low: Math.min(...lows), high: Math.max(...highs) };
 }
 
-/**
- * Flota grupisana po gradu polaska, redosledom kojim se gradovi pojavljuju u
- * nizu. Stranica prikazuje ponudu po gradovima jer je to za mladence korisna
- * logistička informacija (transport se doplaćuje van matičnog grada).
- *
- * `priceNote` se popunjava samo ako je napomena identična za sva vozila u
- * gradu — tada se ispisuje jednom iznad grupe umesto na svakoj kartici.
- */
 /**
  * Genitiv naziva grada, za naslove oblika „Oldtajmeri za venčanje iz Beograda".
  *
@@ -193,13 +305,31 @@ export function cityGenitive(city: string): string {
   return CITY_GENITIVE[city] ?? city;
 }
 
+/**
+ * „Paraćina, Beograda i Pančeva" — za rečenice o tome odakle flota polazi.
+ * Postoji da se spisak gradova ne bi prepisivao rukom po tekstu stranice:
+ * novo vozilo iz novog grada tako sam menja svaku takvu rečenicu.
+ */
+export function fleetCitiesGenitive(): string {
+  const list = fleetCities.map(cityGenitive);
+  if (list.length < 2) return list[0] ?? "";
+  return `${list.slice(0, -1).join(", ")} i ${list[list.length - 1]}`;
+}
+
+/**
+ * Flota grupisana po gradu polaska, redosledom iz `CITY_ORDER`. Stranica
+ * prikazuje ponudu po gradovima jer je to za mladence korisna logistička
+ * informacija (transport se doplaćuje van matičnog grada).
+ *
+ * `priceNote` se popunjava samo ako je napomena identična za sva vozila u
+ * gradu — tada se ispisuje jednom iznad grupe umesto na svakoj kartici.
+ */
 export function getFleetByCity(): {
   city: string;
   vehicles: OldtimerVehicle[];
   priceNote?: string;
 }[] {
-  const cities = Array.from(new Set(oldtimerFleet.map((v) => v.basedIn)));
-  return cities.map((city) => {
+  return fleetCities.map((city) => {
     const vehicles = oldtimerFleet.filter((v) => v.basedIn === city);
     const notes = new Set(vehicles.map((v) => v.price.note));
     return {

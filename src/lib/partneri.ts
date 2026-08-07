@@ -75,6 +75,21 @@ export const partners: Partner[] = [
     ],
   },
   {
+    id: "oldtimer-paracin",
+    name: "Oldtajmeri Paraćin (Pomoravlje)",
+    contactPerson: "Dejan Stević",
+    phone: "063 201-510",
+    // TODO: dopuniti kanale (Viber/WhatsApp ili samo pozivi) i Instagram kada
+    // stignu od partnera — bez toga u mejlu ne pise kako mu je najbrze prici.
+    products: ["oldtajmeri"],
+    itemIds: [
+      "mercedes-170v-1940",
+      "pontiac-six-1931",
+      "triumph-herald-1200-1964",
+      "moskvic-407-1962",
+    ],
+  },
+  {
     id: "lazni-maticar-beograd",
     name: "Lažni matičar Beograd",
     // TODO: dopuniti ime osobe i telefon kada stignu od partnera. Do tada je
@@ -134,7 +149,7 @@ export function resolvePartnerRouting(
     }
     return allPartnersFallback(
       "oldtajmeri",
-      "Nije određeno jedno vozilo — proveriti kod oba partnera",
+      "Nije određeno jedno vozilo — proveriti kod svih partnera",
     );
   }
 

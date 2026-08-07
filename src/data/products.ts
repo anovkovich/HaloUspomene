@@ -145,7 +145,7 @@ export const PARTNER_SERVICES: Product[] = [
   {
     id: "automobili",
     name: "Luksuzni automobili",
-    blurb: "Mercedes flota sa profesionalnim šoferom",
+    blurb: "Mercedes flota sa profesionalnim vozačem",
     href: "/iznajmljivanje-automobila-za-vencanje",
     icon: CarFront,
   },

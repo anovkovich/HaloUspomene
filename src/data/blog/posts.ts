@@ -830,7 +830,7 @@ const allBlogPosts: BlogPost[] = [
     title:
       "Auto za Venčanje — Kako Izabrati Luksuzan Automobil za Mladence, Kuma i Barjaktara",
     description:
-      "Kako izabrati auto za venčanje u Srbiji 2026 — luksuzni Mercedes E, S, GLE i G klasa sa šoferom za mladence, kuma i barjaktara. Cene po satu i za ceo dan, svadbena kolona i saveti kada rezervisati.",
+      "Kako izabrati auto za venčanje u Srbiji 2026 — luksuzni Mercedes E, S, GLE i G klasa sa vozačem za mladence, kuma i barjaktara. Cene po satu i za ceo dan, svadbena kolona i saveti kada rezervisati.",
     category: "Vodič",
     tags: [
       "auto za venčanje",

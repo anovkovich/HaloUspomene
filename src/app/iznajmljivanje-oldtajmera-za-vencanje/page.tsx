@@ -21,14 +21,19 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import ServiceLeadForm from "@/components/forms/ServiceLeadForm";
+import FleetCarousel from "@/components/fleet/FleetCarousel";
+import FleetRow from "@/components/fleet/FleetRow";
 import {
   oldtimerFleet,
   fleetCities,
   getFleetByCity,
   getFleetPriceRange,
+  getHeroFleet,
   getVehicleOptions,
   vehicleCountLabel,
   cityGenitive,
+  fleetCitiesGenitive,
+  type OldtimerVehicle,
 } from "@/data/oldtajmeri";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
@@ -39,9 +44,47 @@ const { low: priceLow, high: priceHigh } = getFleetPriceRange();
 /** Ponuda grupisana po gradu polaska — koristi je i flota i cenovnik. */
 const fleetByCity = getFleetByCity();
 
-/** Koliko vozila polazi iz datog grada — da se brojevi u tekstu ne pišu rukom. */
-const countFrom = (city: string) =>
-  oldtimerFleet.filter((v) => v.basedIn === city).length;
+/* Sve što u tekstu zavisi od flote izvodi se odavde, da se brojevi, cene i
+   nazivi modela ne pišu rukom — ponuda se širi, a rečenice ostaju tačne. */
+
+/** Vozila koja polaze iz datog grada. */
+const cityFleet = (city: string) =>
+  oldtimerFleet.filter((v) => v.basedIn === city);
+
+/** Koliko vozila polazi iz datog grada. */
+const countFrom = (city: string) => cityFleet(city).length;
+
+/** Najniža cena među vozilima iz datog grada. */
+const cityPriceFrom = (city: string) =>
+  Math.min(...cityFleet(city).map((v) => v.price.from));
+
+/**
+ * Isti grupisani spisak, ali poređan po ceni naviše — koristi ga samo
+ * cenovnik, gde je rastuća cena očekivan redosled. Flota iznad ostaje u
+ * redosledu iz `oldtimerFleet`, jer tamo prvi grad nosi izdvojenu ponudu.
+ */
+const fleetByPrice = [...fleetByCity].sort(
+  (a, b) => cityPriceFrom(a.city) - cityPriceFrom(b.city),
+);
+
+/** „Mercedes-Benz 170 V (1940), Pontiac Six…" — modeli iz datog grada. */
+const cityModels = (city: string) =>
+  cityFleet(city)
+    .map((v) => (v.year ? `${v.name} (${v.year})` : v.name))
+    .join(", ");
+
+/** Alt tekst fotografije vozila — isti na kartici flote i u hero karuselu. */
+const vehicleAlt = (v: OldtimerVehicle) =>
+  `${v.name}${v.year ? ` iz ${v.year}` : ""} — oldtajmer za venčanje, ${v.color.toLowerCase()} boja`;
+
+/** Vozila u hero karuselu — izvedena iz flote, izdvojena prva. */
+const heroSlides = getHeroFleet().map((v) => ({
+  id: v.id,
+  name: v.name,
+  caption: [v.tagline, v.year].filter(Boolean).join(" · "),
+  image: v.image,
+  alt: vehicleAlt(v),
+}));
 
 /** Jedinstveni nazivi modela — koristi se u skrivenom SEO pasusu. */
 const modelNames = Array.from(
@@ -51,8 +94,11 @@ const modelNames = Array.from(
 );
 
 export const metadata: Metadata = {
-  title: "Iznajmljivanje Oldtajmera za Venčanje — Cene i Flota",
-  description: `Oldtajmer za venčanje sa vozačem — retro automobili za mladence, svadbenu kolonu i fotografisanje. Cene od ${priceLow} EUR, Beograd, Pančevo i cela Srbija.`,
+  // „Svadba" je u ovoj niši češća reč u pretrazi od „venčanje" (konkurenti je
+  // nose u title-u), a stala je u dužinu koju Google ne seče — vredi više nego
+  // „Flota", koja nije upit.
+  title: "Iznajmljivanje Oldtajmera za Venčanje i Svadbu — Cene",
+  description: `Oldtajmer za venčanje i svadbu sa vozačem — retro automobili za mladence, svadbenu kolonu i fotografisanje. Cene od ${priceLow} EUR, ${fleetCities.join(", ")} i cela Srbija.`,
   keywords: [
     "iznajmljivanje oldtajmera za venčanje",
     "iznajmljivanje oldtajmera",
@@ -79,6 +125,20 @@ export const metadata: Metadata = {
     "oldtajmer za svadbu Beograd",
     "oldtajmer za svadbu Pančevo",
     "oldtajmer za svadbu Novi Sad",
+    // Pomoravlje — otvoren teren: nijedan konkurent nema stranicu za ove
+    // gradove, a upiti završavaju na beogradskim sajtovima koji ih ne pominju.
+    "oldtajmer za svadbu Paraćin",
+    "iznajmljivanje oldtajmera Paraćin",
+    "oldtajmer za venčanje Jagodina",
+    "oldtajmer za svadbu Jagodina",
+    "oldtajmer za venčanje Ćuprija",
+    "oldtajmer za svadbu Ćuprija",
+    "oldtajmer za svadbu Kruševac",
+    "auto za svadbu Paraćin",
+    "stari auto za svadbu",
+    "mercedes 170 V za venčanje",
+    "triumph herald kabriolet za venčanje",
+    "moskvič za svadbu",
     "auto za mladence",
     "svadbena kolona",
   ],
@@ -186,6 +246,10 @@ const weddingDay = [
 
 const cities = [
   {
+    name: "Paraćin, Ćuprija i Jagodina",
+    desc: `Iz Paraćina polazi ${vehicleCountLabel(countFrom("Paraćin"))}, pa za svadbe u Paraćinu, Ćupriji i Jagodini — kao i svuda u krugu od oko 50 km — nema doplate za transport. Pokriveno je celo Pomoravlje, uključujući i vožnju do manastira Ravanica ili Manasija za fotografisanje.`,
+  },
+  {
     name: "Beograd",
     desc: `Iz Beograda polazi ${vehicleCountLabel(countFrom("Beograd"))} iz naše flote, pa za venčanja u gradu nema doplate za transport. Pokrivamo sve opštine, od Zemuna do Voždovca, kao i sale u okolini.`,
   },
@@ -194,12 +258,8 @@ const cities = [
     desc: `Iz Pančeva polazi ${vehicleCountLabel(countFrom("Pančevo"))} — za venčanja u samom Pančevu nema troška transporta. Za ostala mesta u južnom Banatu transport se dogovara prema udaljenosti.`,
   },
   {
-    name: "Novi Sad i Vojvodina",
-    desc: "Sva vozila mogu da izađu u Novi Sad i ostatak Vojvodine. Transport se dogovara posebno i zavisi od udaljenosti sale.",
-  },
-  {
-    name: "Niš, Kragujevac i ostatak Srbije",
-    desc: "Za venčanja van šireg beogradskog i pančevačkog kruga potreban je transport vozila, pa se termin dogovara ranije. Javite nam grad i datum pa računamo tačno.",
+    name: "Kruševac, Niš, Kragujevac i ostatak Srbije",
+    desc: "Za svadbe van matičnih gradova vozilo se prevozi auto-transporterom, a ne vozi na duge relacije. Za vozila iz Pomoravlja imamo saradnika čiji je prevoz osetno povoljniji od uobičajenog evra po kilometru, pa izlazak u Kruševac, Niš, Kragujevac ili Novi Sad često košta manje nego što mladenci očekuju. Javite nam grad i datum pa računamo tačno.",
   },
 ];
 
@@ -220,11 +280,6 @@ const comparison = [
     moderno: "Prostrano, posebno SUV",
   },
   {
-    kriterijum: "Klima uređaj",
-    oldtajmer: "Po pravilu ga nema",
-    moderno: "Standardno",
-  },
-  {
     kriterijum: "Duge relacije",
     oldtajmer: "Kraće vožnje i lokalna maršuta",
     moderno: "Bez ograničenja",
@@ -232,7 +287,7 @@ const comparison = [
   {
     kriterijum: "Cena",
     oldtajmer: `Od ${priceLow} € za venčanje`,
-    moderno: "Od 350 € za ceo dan",
+    moderno: "Od 350 € za 8 sati",
   },
   {
     kriterijum: "Najbolje za",
@@ -276,7 +331,15 @@ const faqItems = [
   },
   {
     q: "Može li oldtajmer da dođe u moj grad?",
-    a: `Može. Vozila polaze iz Beograda i iz Pančeva, a za ostale gradove se dogovara transport. Zbog godina vozila duže relacije se ne prelaze u vožnji nego se vozilo prevozi, pa nam javite grad i datum da izračunamo tačnu doplatu.`,
+    a: `Može. Vozila polaze iz ${fleetCitiesGenitive()}, a za ostale gradove se dogovara transport. Zbog godina vozila duže relacije se ne prelaze u vožnji nego se vozilo prevozi auto-transporterom, pa nam javite grad i datum da izračunamo tačnu doplatu.`,
+  },
+  {
+    q: "Koliko košta oldtajmer za svadbu u Paraćinu, Ćupriji ili Jagodini?",
+    a: `Za venčanja u Paraćinu, Ćupriji i Jagodini cena je ${cityPriceFrom("Paraćin")} € za svadbeni termin, bez doplate za transport — isto važi i za mesta u krugu od oko 50 km, dakle za veći deo Pomoravlja. Iz Paraćina polazi ${vehicleCountLabel(countFrom("Paraćin"))}: ${cityModels("Paraćin")}. Svako dolazi sa vozačem.`,
+  },
+  {
+    q: "Kako se računa doplata za prevoz u druge gradove?",
+    a: "Stara vozila ne prelaze duge relacije u vožnji nego se prevoze auto-transporterom. Uobičajena cena tog prevoza na tržištu je oko jedan evro po pređenom kilometru; za vozila iz Pomoravlja imamo saradnika koji to radi osetno povoljnije, pa izlazak u Kruševac, Niš, Kragujevac ili Novi Sad često ispadne jeftiniji nego što mladenci očekuju. Za Beograd se cena dogovara posebno — javite nam datum pa računamo tačno.",
   },
   {
     q: "Da li se vozilo dekoriše za venčanje?",
@@ -423,26 +486,18 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
                 fotografije koje ne stare.
               </p>
               <p className="text-sm text-[#232323]/50 max-w-xl mx-auto mb-9">
-                Flota polazi iz Beograda i Pančeva, a uz dogovoren transport
-                izlazi na venčanja širom Srbije.
+                Flota polazi iz {fleetCitiesGenitive()}, a uz dogovoren
+                transport izlazi na venčanja i svadbe širom Srbije.
               </p>
 
-              {/* Fotografija je bez pozadine — bez okvira, samo meki topli sjaj ispod */}
-              <div className="relative mx-auto mb-9 max-w-3xl">
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[75%] w-[85%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse,rgba(212,175,55,0.18),transparent_70%)] blur-3xl"
-                />
-                <Image
-                  src="/images/oldtajmeri/citroen-traction-avant-11b.webp"
-                  alt="Citroën Traction Avant 11B — crni oldtajmer za venčanje sa vozačem"
-                  width={1200}
-                  height={800}
-                  priority
-                  sizes="(max-width: 768px) 100vw, 768px"
-                  className="relative z-10 h-auto w-full"
-                />
-              </div>
+              {/* Fotografije su bez pozadine — bez okvira, samo meki topli sjaj
+                  ispod. Karusel se sam vrti kroz flotu i prvo vodi izdvojena
+                  vozila (v. `featured` u src/data/oldtajmeri.ts). */}
+              <FleetCarousel
+                slides={heroSlides}
+                eyebrow="Iz ponude izdvajamo"
+                label="Izdvojena vozila iz naše flote"
+              />
 
               <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mb-9 text-[#232323]/50 text-sm">
                 <span className="flex items-center gap-2">
@@ -526,30 +581,41 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
               <div key={group.city} className="mb-14 last:mb-0">
                 {/* Grupisanje po gradu polaska — mladencima je to logistička
                     informacija, jer se transport van tog grada doplaćuje.
-                    Naslov je `h2` i nosi uslugu uz naziv grada: „Beograd" sam
-                    po sebi ne cilja nijedan upit, a „Oldtajmeri za venčanje iz
-                    Beograda" pogađa obrazac grad+usluga, koji u srpskoj
-                    pretrazi ima potražnju. */}
-                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 mb-6 pb-4 border-b border-[#232323]/10">
-                  <h2 className="font-serif text-2xl text-[#232323] flex items-center gap-2">
-                    <MapPin size={18} className="text-[#AE343F]" />
-                    Oldtajmeri za venčanje iz {cityGenitive(group.city)}
-                  </h2>
-                  <span className="text-sm text-[#232323]/45">
-                    {vehicleCountLabel(group.vehicles.length)}
-                  </span>
-                  {group.priceNote && (
-                    <span className="text-xs text-[#232323]/40 basis-full sm:basis-auto sm:ml-auto sm:text-right sm:max-w-sm leading-snug">
-                      {group.priceNote}
+                    Naslov je `h2` i nosi uslugu uz naziv grada u nominativu,
+                    jer se tako i traži: „oldtajmeri za venčanje Beograd", a ne
+                    „…iz Beograda". Genitiv (odakle vozilo polazi i da izlazi
+                    svuda) ide u red ispod naslova, da ne pojede ključnu reč. */}
+                <div className="mb-6">
+                  <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 pb-4 border-b border-[#232323]/10">
+                    <h2 className="font-serif text-2xl text-[#232323] flex items-center gap-2">
+                      <MapPin size={18} className="text-[#AE343F]" />
+                      Oldtajmeri za venčanje {group.city}
+                    </h2>
+                    <span className="text-sm text-[#232323]/45">
+                      {vehicleCountLabel(group.vehicles.length)}
                     </span>
-                  )}
+                  </div>
+                  {/* Odakle polaze i šta cena pokriva — jedan blok pune širine
+                      ispod linije. Ranije je napomena o ceni stajala uz naslov,
+                      poravnata desno, pa je u dugačkoj varijanti (Pomoravlje)
+                      gurala naslov i delovala kao sitna slova. */}
+                  <p className="text-sm text-[#232323]/50 mt-4 leading-relaxed">
+                    Polaze iz {cityGenitive(group.city)}, a uz dogovoren
+                    transport izlaze na venčanja širom Srbije.
+                    {group.priceNote ? ` ${group.priceNote}` : ""}
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Jedan red sa horizontalnim skrolovanjem: tri kartice na
+                    velikim ekranima, dve na manjim. Sirina kartice se racuna
+                    tako da poslednja vidljiva zavrsi tacno na ivici — sledeca
+                    se dohvata strelicom, koja se pojavljuje samo ako ima sta
+                    da se skroluje. */}
+                <FleetRow label={`Oldtajmeri iz ${cityGenitive(group.city)}`}>
                   {group.vehicles.map((v) => (
                     <article
                       key={v.id}
-                      className="group flex flex-col bg-white rounded-3xl border border-[#232323]/8 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-[#232323]/10 hover:-translate-y-1.5 transition-all duration-300"
+                      className="group flex flex-col shrink-0 snap-start w-[calc((100%-1rem)/2)] lg:w-[calc((100%-3rem)/3)] bg-white rounded-3xl border border-[#232323]/8 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-[#232323]/10 transition-all duration-300"
                     >
                       <div className="relative aspect-[16/11] overflow-hidden bg-[radial-gradient(ellipse_at_50%_45%,#fdfcf6_0%,#f1efdb_55%,#e2dfc6_100%)]">
                         {v.image ? (
@@ -568,20 +634,23 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
                             </span>
                           </div>
                         )}
-                        <span className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-widest text-[#F5F4DC] bg-[#AE343F]/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg">
+                        <span className="absolute top-2 left-2 lg:top-3 lg:left-3 text-[9px] lg:text-[10px] font-bold uppercase tracking-wider lg:tracking-widest text-[#F5F4DC] bg-[#AE343F]/90 backdrop-blur-sm px-2 lg:px-3 py-1 rounded-full shadow-lg">
                           {v.badge}
                         </span>
                       </div>
 
-                      <div className="p-6 pt-5 flex flex-col flex-1">
-                        <h3 className="font-serif text-2xl text-[#232323] leading-tight">
+                      {/* Na uskoj kartici (dve u redu na telefonu) tekst se
+                          skraćuje i smanjuje — inače opis ode na petnaest
+                          redova i kartica preraste visinu ekrana. */}
+                      <div className="p-4 lg:p-6 lg:pt-5 flex flex-col flex-1">
+                        <h3 className="font-serif text-lg lg:text-2xl text-[#232323] leading-tight">
                           {v.name}
                         </h3>
-                        <p className="text-sm text-[#232323]/45 mt-1 mb-4">
+                        <p className="text-xs lg:text-sm text-[#232323]/45 mt-1 mb-3 lg:mb-4">
                           {v.tagline}
                           {v.year ? ` · ${v.year}` : ""}
                         </p>
-                        <p className="text-sm text-[#232323]/55 leading-relaxed mb-6 flex-1">
+                        <p className="text-[13px] lg:text-sm text-[#232323]/55 leading-relaxed mb-4 lg:mb-6 flex-1 line-clamp-6 lg:line-clamp-none">
                           {v.blurb}
                         </p>
 
@@ -597,7 +666,7 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
                       </div>
                     </article>
                   ))}
-                </div>
+                </FleetRow>
               </div>
             ))}
 
@@ -642,16 +711,21 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
                   </tr>
                 </thead>
                 {/* Jedan <tbody> po gradu polaska — napomena o transportu se
-                    tako piše jednom umesto u svakom redu. */}
-                {fleetByCity.map((group) => (
+                    tako piše jednom umesto u svakom redu. Redosled je po ceni
+                    naviše, ne po redosledu flote. */}
+                {fleetByPrice.map((group) => (
                   <tbody key={group.city}>
                     <tr className="bg-[#f5f4dc]/70 border-t border-[#232323]/8">
                       <th
                         colSpan={2}
                         className="py-3 px-5 text-left font-normal"
                       >
+                        {/* Grad uz uslugu, ne sam grad: „Paraćin" ne cilja
+                            nijedan upit, a „Oldtajmeri Paraćin" pogađa obrazac
+                            usluga+grad i ponavlja ga u još jednom delu
+                            stranice, drugačije formulisano nego u naslovu. */}
                         <span className="font-serif text-lg text-[#232323]">
-                          {group.city}
+                          Oldtajmeri {group.city}
                         </span>
                         {group.priceNote && (
                           <span className="block text-xs text-[#232323]/45 mt-0.5">
@@ -714,12 +788,6 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
               </div>
             </div>
 
-            <p className="text-center text-sm text-[#232323]/50 mt-8 max-w-2xl mx-auto leading-relaxed">
-              Poređenja radi, oldtajmeri se na srpskom tržištu uglavnom
-              naplaćuju od oko 120 € za prvi sat, odnosno 500 € i više za ceo
-              dan. Naše cene su fiksne za svadbeni termin, bez računanja po
-              započetom satu.
-            </p>
           </div>
         </section>
 
@@ -896,8 +964,8 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
                 <span className="italic text-[#AE343F]">vašem gradu</span>
               </h2>
               <p className="text-[#232323]/55 max-w-2xl mx-auto">
-                Vozila polaze iz Beograda i Pančeva. Za ostale gradove računamo
-                transport prema udaljenosti sale.
+                Vozila polaze iz {fleetCitiesGenitive()}. Za ostale gradove
+                računamo transport prema udaljenosti sale.
               </p>
             </div>
 
@@ -983,7 +1051,7 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
                 >
                   modernih luksuznih automobila za venčanje
                 </Link>{" "}
-                — Mercedes E, S, GLE i G klasa sa šoferom. Najbolje od oba sveta
+                — Mercedes E, S, GLE i G klasa sa vozačem. Najbolje od oba sveta
                 je kombinacija: retro auto za mladence, moderno vozilo za goste.
               </p>
             </div>
@@ -1093,13 +1161,16 @@ export default function IznajmljivanjeOldtajmeraZaVencanje() {
             vozila se iznajmljuju sa vozačem, a ponuda se stalno širi. Oldtajmer
             možete uzeti kao auto za mladence, kao vozilo na čelu svadbene
             kolone sa barjaktarom, ili samo za fotografisanje i predsvadbeno
-            snimanje. Vozila polaze iz Beograda i Pančeva, a uz dogovoren
-            transport izlaze na venčanja u Novom Sadu, Nišu, Kragujevcu,
-            Subotici, Čačku i ostalim gradovima. Ako tražite stari automobil za
-            venčanje, retro auto za svadbu, klasična ili vintage vozila za
-            mladence — ovde su cene, uslovi i dostupnost na jednom mestu. Za
-            moderna vozila pogledajte našu ponudu luksuznih automobila sa
-            šoferom.
+            snimanje. Vozila polaze iz {fleetCitiesGenitive()}. Iz Paraćina
+            pokrivamo celo Pomoravlje bez doplate za prevoz — Paraćin, Ćupriju i
+            Jagodinu, kao i okolna mesta u krugu od pedesetak kilometara,
+            uključujući vožnju do manastira Ravanica i Manasija za
+            fotografisanje. Uz dogovoren prevoz auto-transporterom vozila izlaze
+            i na svadbe u Kruševcu, Nišu, Kragujevcu, Novom Sadu, Subotici,
+            Čačku i ostalim gradovima. Ako tražite stari automobil za venčanje,
+            retro auto za svadbu, klasična ili vintage vozila za mladence — ovde
+            su cene, uslovi i dostupnost na jednom mestu. Za moderna vozila
+            pogledajte našu ponudu luksuznih automobila sa vozačem.
           </p>
         </section>
       </main>

@@ -121,7 +121,7 @@ export default async function OGImage() {
                 textAlign: "center",
               }}
             >
-              Mercedes E · S · GLE · G klasa — sa profesionalnim šoferom
+              Mercedes E · S · GLE · G klasa — sa profesionalnim vozačem
             </span>
 
             <span
