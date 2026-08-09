@@ -32,6 +32,8 @@ interface Pricing {
     essential: {
       name: string;
       price: number;
+      /** Frozen onto card/IPS orders for the `telefon` kind (foreign-card view). */
+      priceEur: number;
       discountPrice?: number | null;
       discountActive?: boolean;
     };

@@ -75,12 +75,16 @@ Pun i revidiran plan:
 `docs/dev-log/2026-08-04-pocetna-raskrsnica-primitivi/faza-5-plan.md`.
 Tamo su brojke, obrazloženja po stavci i lista `sr-only` blokova sa odlukom.
 
-### 2026-08-10 — SAMO provera regresije
+### 2026-08-15 — SAMO provera regresije
 
-> **Ako je datum 2026-08-10 ili kasnije a ovaj pododeljak još stoji, podseti
+> **Ako je datum 2026-08-15 ili kasnije a ovaj pododeljak još stoji, podseti
 > korisnika na njega pre nego što započneš drugi posao.**
+>
+> (Pomereno sa 2026-08-10 odlukom vlasnika 2026-08-10 — sada je to 11 dana
+> posle deploy-a, ne 6, pa uzmi `--days 30` i dalje: prozor pokriva i pre i
+> posle, poređenje radi skript.)
 
-Šest dana pokazuje samo **da li je nešto puklo**. Pozicije se sležu 2–4 nedelje
+Jedanaest dana pokazuje samo **da li je nešto puklo**. Pozicije se sležu 2–4 nedelje
 (rizik R2: pozicija i CTR mogu PASTI dok se preračunava — ne reagovati panično).
 **Tog dana se ne donose sadržajne odluke.**
 

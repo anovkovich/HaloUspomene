@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     punoletstvo: "/napravi-punoletstvo",
     raspored: "/raspored-sedenja",
     galerija: "/qr-galerija-slika-sa-vencanja",
+    telefon: "/telefon-uspomena/online-placanje",
   };
   const product = body.product ?? "pozivnica";
   const path = PRODUCT_PATHS[product];

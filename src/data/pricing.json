@@ -3,6 +3,7 @@
     "essential": {
       "name": "Audio Guest Book",
       "price": 6900,
+      "priceEur": 59,
       "discountPrice": null,
       "discountActive": false
     }

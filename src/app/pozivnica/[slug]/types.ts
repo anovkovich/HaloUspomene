@@ -149,6 +149,12 @@ export interface WeddingData {
   receipt_valid?: boolean; // Receipt link is active (set false after payment)
   receipt_created?: string; // ISO date when receipt was generated
   custom_discount?: number; // Custom discount in RSD on website pozivnica
+  /** Free-form extra lines the admin put on this couple's receipt (Galerija tab:
+   *  izrada zahvalnica, štampa stalaka, …), in the same `{l, p}` shape the /racun
+   *  payload uses. Persisted because the receipt link, the "Kopiraj link" rebuild
+   *  and the mark-paid prefill are all derived from it — keeping it only in React
+   *  state meant a reload silently dropped the extras and undercharged. */
+  receipt_custom_items?: { l: string; p: number }[];
   // Premium AI fields
   premium?: boolean;
   premium_theme?: PremiumThemeType;

@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { revalidatePath } from "next/cache";
-import { getOrder, transitionOrder, type PaymentKind } from "@/lib/orders";
+import {
+  getOrder,
+  transitionOrder,
+  deleteOrder,
+  type PaymentKind,
+} from "@/lib/orders";
 import { KINDS } from "@/lib/payments/kinds";
 import { productUrl } from "@/lib/payments/product-urls";
 import { recordRedemption } from "@/lib/promo-redemptions";
@@ -82,11 +87,40 @@ export async function POST(
   }
 
   if (body.action === "reject") {
-    await transitionOrder(orderId, ["review"], "canceled", {
+    // `pending` is allowed for the same reason as in approve: the admin sees an
+    // X on pending rows too, and rejecting one used to silently no-op while the
+    // response still claimed success.
+    const ok = await transitionOrder(orderId, ["review", "pending"], "canceled", {
       adminNote: body.adminNote?.slice(0, 200),
     });
+    if (!ok)
+      return NextResponse.json(
+        { error: "Uplata je u međuvremenu promenila status. Osveži listu." },
+        { status: 409 },
+      );
     return NextResponse.json({ ok: true, status: "canceled" });
   }
 
   return NextResponse.json({ error: "Nepoznata akcija." }, { status: 400 });
+}
+
+/** Removes an order that never saw money. A paid/unlocked/refunded/revoked row
+ *  is the money audit trail and is refused — those are reversed with a refund
+ *  or a revoke, never deleted. */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ orderId: string }> },
+) {
+  if (!(await isAdmin(req)))
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { orderId } = await params;
+  const res = await deleteOrder(orderId);
+  if (res.ok) return NextResponse.json({ ok: true });
+  if (res.reason === "not_found")
+    return NextResponse.json({ error: "Nije pronađeno." }, { status: 404 });
+  return NextResponse.json(
+    { error: "Plaćena uplata se ne briše — koristi refundaciju ili povlačenje." },
+    { status: 409 },
+  );
 }

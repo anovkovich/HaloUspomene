@@ -52,6 +52,8 @@ export interface ReceiptFlags {
   mu?: number;
   p?: number;
   t18?: number;
+  /** Flat custom discount in dinars, subtracted after the bundle discount. */
+  d?: number;
   /** Event invitation add-on on a standalone seating (kind: "raspored"). */
   dp?: number;
   ci?: Array<{ l: string; p: number }>;
@@ -126,6 +128,18 @@ export function currentPriceTable(): PriceTable {
     dogadjajPozivnica: getDogadjajPozivnicaPrice(),
     dogadjajPaket: getDogadjajPaketPrice(),
   };
+}
+
+/** What a receipt built from these flags actually adds up to, net of the bundle
+ *  and custom discounts. Shared by every admin tab that prefills the "Označi kao
+ *  plaćeno" modal, so the ledger amount can never drift from the printed receipt. */
+export function receiptTotal(f: ReceiptFlags, T: PriceTable): number {
+  const { items, bundleDiscount } = buildReceiptItems(f, T);
+  const sum =
+    items.reduce((acc, i) => acc + i.p, 0) -
+    (bundleDiscount || 0) -
+    (f.d ?? 0);
+  return Math.max(0, sum);
 }
 
 /** Build receipt line items + bundle discount for the given flags & price table.

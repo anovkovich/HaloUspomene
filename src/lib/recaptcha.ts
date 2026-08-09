@@ -20,7 +20,8 @@ export type RecaptchaAction =
   | "contact"
   | "quickstart"
   | "payment_notify"
-  | "create_gallery";
+  | "create_gallery"
+  | "create_telefon";
 
 export class RecaptchaError extends Error {
   constructor(

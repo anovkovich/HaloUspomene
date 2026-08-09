@@ -27,8 +27,10 @@ import { encodeToBase64 } from "@/lib/encoding";
 import {
   buildReceiptItems,
   currentPriceTable,
+  receiptTotal,
   type ReceiptFlags,
 } from "@/lib/receipt-items";
+import type { MarkPaidTarget } from "@/lib/admin-mark-paid";
 import DatePicker from "@/components/ui/DatePicker";
 import ShareLinkButton from "./ShareLinkButton";
 import SeatingInvitationModal from "./SeatingInvitationModal";
@@ -37,6 +39,7 @@ import HallSchemesSection from "./HallSchemesSection";
 interface Props {
   onNeedsLogin: () => void;
   bankAccountIdx: number;
+  onMarkPaid: (target: MarkPaidTarget) => void;
 }
 
 type AdminSeating = StandaloneSeating & {
@@ -46,7 +49,11 @@ type AdminSeating = StandaloneSeating & {
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
-export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props) {
+export default function SeatingAdminTab({
+  onNeedsLogin,
+  bankAccountIdx,
+  onMarkPaid,
+}: Props) {
   const [seatings, setSeatings] = useState<AdminSeating[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -231,8 +238,10 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
     return `${SITE_URL}/raspored-sedenja/${slug}`;
   }
 
-  function buildReceiptUrl(s: StandaloneSeating) {
-    const data: Record<string, unknown> = {
+  /** Flags shared by the printed receipt and the ledger prefill, so the amount
+   *  we file can never disagree with the amount we billed. */
+  function receiptFlags(s: StandaloneSeating): Record<string, unknown> {
+    return {
       kind: "raspored",
       s: s.slug,
       par: s.eventName,
@@ -244,13 +253,47 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
       a: s.paid_for_audio ? 1 : undefined,
       d: s.custom_discount ?? 0,
       ba: bankAccountIdx,
-      t: Date.now(),
     };
+  }
+
+  function buildReceiptUrl(s: StandaloneSeating) {
+    const data = receiptFlags(s);
+    // Cache-buster on the receipt URL only — it must not reach receiptTotal.
+    Object.assign(data, { t: Date.now() });
     const { items, bundleDiscount } = buildReceiptItems(
       data as unknown as ReceiptFlags,
       currentPriceTable(),
     );
     return `${SITE_URL}/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
+  }
+
+  /** Hands the seating to the shared mark-paid modal, so a manual (žiralna)
+   *  payment lands in the Uplate ledger like every other product — and a
+   *  pending self-serve order can be linked and approved, which runs unlock(). */
+  function openMarkPaid(s: StandaloneSeating) {
+    // The seating + invitation + gallery combination IS the Korporativni paket,
+    // so file it under that kind — otherwise the ledger would call a 12.000 din
+    // package "Raspored sedenja".
+    const isPaket = !!(s.paid_for_invitation && s.paid_for_gallery);
+    onMarkPaid({
+      slug: s.slug,
+      name: s.eventName || s.slug,
+      premium: false,
+      kind: isPaket ? "dogadjaj" : "raspored",
+      defaultTier: "default",
+      prefillAmount: receiptTotal(
+        receiptFlags(s) as unknown as ReceiptFlags,
+        currentPriceTable(),
+      ),
+      prefillLabel: isPaket
+        ? `Korporativni paket — ${s.eventName || s.slug}`.slice(0, 120)
+        : `Raspored sedenja — ${s.eventName || s.slug}`.slice(0, 120),
+      slugEditable: false,
+      source: {
+        type: "external",
+        onInvalidate: () => handleInvalidateReceipt(s.slug),
+      },
+    });
   }
 
   async function patchSeating(slug: string, body: Record<string, unknown>) {
@@ -689,7 +732,7 @@ export default function SeatingAdminTab({ onNeedsLogin, bankAccountIdx }: Props)
                   });
                 }}
                 onCopy={() => copyReceiptLink(s)}
-                onPaid={() => handleInvalidateReceipt(s.slug)}
+                onPaid={() => openMarkPaid(s)}
                 onDiscount={(amount) => handleSetDiscount(s.slug, amount)}
               />
             </div>

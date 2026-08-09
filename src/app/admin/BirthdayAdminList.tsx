@@ -7,8 +7,10 @@ import { encodeToBase64 } from "@/lib/encoding";
 import {
   buildReceiptItems,
   currentPriceTable,
+  receiptTotal,
   type ReceiptFlags,
 } from "@/lib/receipt-items";
+import type { MarkPaidTarget } from "@/lib/admin-mark-paid";
 import ShareLinkButton from "./ShareLinkButton";
 
 interface Birthday {
@@ -35,9 +37,46 @@ interface BirthdayStats {
 interface Props {
   onNeedsLogin: () => void;
   bankAccountIdx: number;
+  onMarkPaid: (target: MarkPaidTarget) => void;
 }
 
-export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Props) {
+/** Flags shared by the printed receipt and the ledger prefill, so the amount we
+ *  file can never disagree with the amount we billed. */
+function receiptFlags(
+  b: Birthday,
+  bankAccountIdx: number,
+): Record<string, unknown> {
+  return {
+    kind: "rodjendan",
+    s: b.slug,
+    par: b.child_name || b.slug,
+    datum: b.event_date,
+    r: b.paid_for_raspored ? 1 : 0,
+    t18: b.type === "eighteenth" ? 1 : 0,
+    d: b.custom_discount ?? 0,
+    ba: bankAccountIdx,
+  };
+}
+
+/** Module scope, not a closure over component state: it stamps `Date.now()` and
+ *  is only ever called from event handlers, so keeping it out of the render body
+ *  is what makes that legal. */
+function buildReceiptUrl(b: Birthday, bankAccountIdx: number) {
+  // Cache-buster belongs on the receipt URL only — it must never reach the
+  // amount we file in the ledger.
+  const data = { ...receiptFlags(b, bankAccountIdx), t: Date.now() };
+  const { items, bundleDiscount } = buildReceiptItems(
+    data as unknown as ReceiptFlags,
+    currentPriceTable(),
+  );
+  return `https://halouspomene.rs/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
+}
+
+export default function BirthdayAdminList({
+  onNeedsLogin,
+  bankAccountIdx,
+  onMarkPaid,
+}: Props) {
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
   const [stats, setStats] = useState<Record<string, BirthdayStats>>({});
   const [shareStats, setShareStats] = useState<Record<string, { visit_count: number; last_visited_at?: string }>>({});
@@ -130,23 +169,32 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
     return `pre ${Math.abs(diff)} dana`;
   }
 
-  function buildReceiptUrl(b: Birthday) {
-    const data: Record<string, unknown> = {
-      kind: "rodjendan",
-      s: b.slug,
-      par: b.child_name || b.slug,
-      datum: b.event_date,
-      r: b.paid_for_raspored ? 1 : 0,
-      t18: b.type === "eighteenth" ? 1 : 0,
-      d: b.custom_discount ?? 0,
-      ba: bankAccountIdx,
-      t: Date.now(),
-    };
-    const { items, bundleDiscount } = buildReceiptItems(
-      data as unknown as ReceiptFlags,
-      currentPriceTable(),
-    );
-    return `https://halouspomene.rs/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
+  /** Hands the birthday to the shared mark-paid modal, so a manual (žiralna)
+   *  payment lands in the Uplate ledger like every other product — and a
+   *  pending self-serve order can be linked and approved, which runs unlock(). */
+  function openMarkPaid(b: Birthday) {
+    // Punoletstvo docs live in the same collection but are their own payment
+    // kind — filing one as `rodjendan` would mislabel it in the ledger.
+    const isEighteenth = b.type === "eighteenth";
+    onMarkPaid({
+      slug: b.slug,
+      name: b.child_name || b.slug,
+      premium: false,
+      kind: isEighteenth ? "punoletstvo" : "rodjendan",
+      defaultTier: "default",
+      prefillAmount: receiptTotal(
+        receiptFlags(b, bankAccountIdx) as unknown as ReceiptFlags,
+        currentPriceTable(),
+      ),
+      prefillLabel: isEighteenth
+        ? `Pozivnica za punoletstvo — ${b.child_name || b.slug}`.slice(0, 120)
+        : `Rođendanska pozivnica — ${b.child_name || b.slug}`.slice(0, 120),
+      slugEditable: false,
+      source: {
+        type: "external",
+        onInvalidate: () => handleInvalidateReceipt(b.slug),
+      },
+    });
   }
 
   async function patchBirthday(slug: string, body: Record<string, unknown>) {
@@ -194,7 +242,7 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
   }
 
   async function copyReceiptLink(b: Birthday) {
-    const url = buildReceiptUrl(b);
+    const url = buildReceiptUrl(b, bankAccountIdx);
     await navigator.clipboard.writeText(url);
     setReceiptCopiedSlug(b.slug);
     setTimeout(() => setReceiptCopiedSlug(null), 2500);
@@ -390,7 +438,7 @@ export default function BirthdayAdminList({ onNeedsLogin, bankAccountIdx }: Prop
                   await copyReceiptLink(b);
                 }}
                 onCopy={() => copyReceiptLink(b)}
-                onPaid={() => handleInvalidateReceipt(b.slug)}
+                onPaid={() => openMarkPaid(b)}
                 onDiscount={(amount) => handleSetDiscount(b.slug, amount)}
               />
             </div>

@@ -3,31 +3,43 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search, QrCode, CalendarPlus, Wallet, Images } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search, QrCode, CalendarPlus, Wallet, Images, Ticket } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
 import { downloadGalleryQR } from "@/lib/gallery-qr";
 import { isGalleryOnlyCouple } from "@/lib/gallery-only";
 import {
   buildReceiptItems,
   currentPriceTable,
+  receiptTotal,
   type ReceiptFlags,
 } from "@/lib/receipt-items";
+import type { MarkPaidTarget } from "@/lib/admin-mark-paid";
 import { getAudioPrice } from "@/data/pricing";
 import DeleteModal from "./DeleteModal";
 import BirthdayAdminList from "./BirthdayAdminList";
 import VendorAdminTab from "./VendorAdminTab";
 import SeatingAdminTab from "./SeatingAdminTab";
 import GalleryAdminTab from "./GalleryAdminTab";
-import PhoneRentalModal from "./PhoneRentalModal";
+import PhoneAdminTab from "./PhoneAdminTab";
 import OrdersAdminTab from "./OrdersAdminTab";
-import AdminCalendar from "./AdminCalendar";
+import PromoAdminTab from "./PromoAdminTab";
 import BypassLinkModal from "./BypassLinkModal";
 import ShareLinkButton from "./ShareLinkButton";
 import DatePicker from "@/components/ui/DatePicker";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 
-type AdminTab = "pozivnice" | "rodjendani" | "vendori" | "raspored-sedenja" | "galerija" | "uplate";
+type AdminTab =
+  | "pozivnice"
+  | "rodjendani"
+  | "raspored-sedenja"
+  | "galerija"
+  | "telefon"
+  | "uplate"
+  | "promo"
+  | "vendori";
 
+/** Exactly 8 tabs: 2 rows of 4 on desktop, 4 rows of 2 on phones. Adding a 9th
+ *  breaks that grid — rebalance the layout rather than letting a row dangle. */
 const TABS: ReadonlyArray<{
   id: AdminTab;
   label: string;
@@ -36,10 +48,12 @@ const TABS: ReadonlyArray<{
 }> = [
   { id: "pozivnice", label: "Pozivnice", icon: Heart, activeBg: "bg-[#AE343F]" },
   { id: "rodjendani", label: "Rođendani", icon: Cake, activeBg: "bg-[#FF6B6B]" },
-  { id: "vendori", label: "Vendori", icon: Star, activeBg: "bg-[#d4af37]" },
   { id: "raspored-sedenja", label: "Raspored sedenja", icon: Armchair, activeBg: "bg-[#2563eb]" },
   { id: "galerija", label: "Galerija", icon: Images, activeBg: "bg-[#7c3aed]" },
+  { id: "telefon", label: "Retro telefon", icon: Phone, activeBg: "bg-[#0d9488]" },
   { id: "uplate", label: "Uplate", icon: Wallet, activeBg: "bg-[#16a34a]" },
+  { id: "promo", label: "Promo kodovi", icon: Ticket, activeBg: "bg-[#db2777]" },
+  { id: "vendori", label: "Vendori", icon: Star, activeBg: "bg-[#d4af37]" },
 ];
 
 const BANK_ACCOUNTS = [
@@ -81,22 +95,6 @@ type SortMode = "newest" | "event_proximity";
 
 /** Target of the "Označi kao plaćeno" modal — either a couple's receipt or a
  *  custom receipt with no couple behind it. */
-interface MarkPaidTarget {
-  slug: string;
-  name: string;
-  premium: boolean;
-  /** Payment kind written onto the recorded order. Defaults to "pozivnica";
-   *  the Galerija tab passes "galerija" so the Uplate ledger names the right
-   *  product (and a later approve can't publish an invitation nobody bought). */
-  kind?: "pozivnica" | "galerija";
-  /** Overrides the tier dropdown default. The galerija adapter has exactly one
-   *  tier ("default"), so its selector is hidden. */
-  defaultTier?: string;
-  prefillAmount: number;
-  prefillLabel: string;
-  slugEditable: boolean;
-  source: { type: "couple" } | { type: "custom"; id: string };
-}
 
 /** Latin-ASCII slug from a free-text custom-receipt recipient name. */
 function slugifyPar(s: string): string {
@@ -164,15 +162,7 @@ function receiptTotalFor(c: Couple): number {
     p: c.premium ? 1 : 0,
     d: c.custom_discount ?? 0,
   };
-  const { items, bundleDiscount } = buildReceiptItems(
-    data as unknown as ReceiptFlags,
-    currentPriceTable(),
-  );
-  const sum =
-    items.reduce((acc, i) => acc + i.p, 0) -
-    (bundleDiscount || 0) -
-    (c.custom_discount ?? 0);
-  return Math.max(0, sum);
+  return receiptTotal(data as unknown as ReceiptFlags, currentPriceTable());
 }
 
 /** Closest event to today first; on a tie the future one wins. Module scope so
@@ -207,7 +197,6 @@ export default function AdminPage() {
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [bankAccountIdx, setBankAccountIdx] = useState(0); // default: Erste (340)
-  const [showPhoneRental, setShowPhoneRental] = useState(false);
   const [showCustomReceipt, setShowCustomReceipt] = useState(false);
   const [markPaid, setMarkPaid] = useState<MarkPaidTarget | null>(null);
   const [showBypassLink, setShowBypassLink] = useState(false);
@@ -282,17 +271,14 @@ export default function AdminPage() {
     if (!tabInitializedRef.current) {
       tabInitializedRef.current = true;
       const t = new URLSearchParams(window.location.search).get("tab");
-      if (
-        t === "rodjendani" ||
-        t === "vendori" ||
-        t === "raspored-sedenja" ||
-        t === "galerija" ||
-        t === "uplate"
-      )
+      // Validated against TABS rather than a hand-written list, so a new tab is
+      // deep-linkable the moment it is registered.
+      const known = TABS.find((tab) => tab.id === t);
+      if (known)
         // Same false positive as `mounted` above: the URL is external state and
         // it can only be read after mount (no `window` during SSR).
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setActiveTab(t);
+        setActiveTab(known.id);
       return;
     }
     const url = new URL(window.location.href);
@@ -510,12 +496,14 @@ export default function AdminPage() {
     if (!markPaid) return;
     if (markPaid.source.type === "couple") {
       await handleInvalidateReceipt(markPaid.slug);
-    } else {
+    } else if (markPaid.source.type === "custom") {
       const id = markPaid.source.id;
       await fetch(`/api/admin/custom-receipts/${id}`, { method: "DELETE" }).catch(
         () => {},
       );
       setCustomReceipts((prev) => prev.filter((x) => x.id !== id));
+    } else {
+      await markPaid.source.onInvalidate();
     }
     if (mode === "linked") {
       // Approving an order runs unlock() server-side (draft/paid_* flags) —
@@ -607,6 +595,26 @@ export default function AdminPage() {
     });
   }
 
+  /** Persists the Galerija tab's free-form receipt lines onto the couple, the
+   *  same way the discount above is stored — so the quote, the "Kopiraj link"
+   *  rebuild and the mark-paid prefill all read from one saved source instead of
+   *  from React state that a reload wipes. */
+  async function handleSaveReceiptItems(
+    slug: string,
+    items: { l: string; p: number }[],
+  ) {
+    setCouples((prev) =>
+      prev.map((c) =>
+        c.slug === slug ? { ...c, receipt_custom_items: items } : c
+      )
+    );
+    await fetch(`/api/admin/couples/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receipt_custom_items: items }),
+    });
+  }
+
   function daysUntil(dateStr: string) {
     // Compare local calendar days (ignore time-of-day) so an event at 22:00
     // doesn't show "za 1 dan" when it's already today. Math.round absorbs
@@ -623,8 +631,8 @@ export default function AdminPage() {
 
   return (
     <div>
-      {/* Admin Calendar */}
-      <AdminCalendar couples={couples} />
+      {/* The availability calendar used to sit here, collapsed, above every tab.
+          It now lives inside the Retro telefon tab where it means something. */}
 
       {/* Bank account selector + custom receipt */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
@@ -714,8 +722,8 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Tab bar — 2-wide on mobile, single row on sm+ */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-1 mb-6 sm:mb-8 bg-white/5 rounded-xl p-1">
+      {/* Tab bar — 4 rows of 2 on phones, 2 rows of 4 from lg up */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 mb-6 sm:mb-8 bg-white/5 rounded-xl p-1">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
@@ -747,6 +755,15 @@ export default function AdminPage() {
           onNeedsLogin={() => setNeedsLogin(true)}
           onCountChange={setUplateCount}
         />
+      ) : activeTab === "promo" ? (
+        <PromoAdminTab onNeedsLogin={() => setNeedsLogin(true)} />
+      ) : activeTab === "telefon" ? (
+        <PhoneAdminTab
+          bankAccountIdx={bankAccountIdx}
+          couples={couples}
+          onNeedsLogin={() => setNeedsLogin(true)}
+          onMarkPaid={setMarkPaid}
+        />
       ) : activeTab === "vendori" ? (
         <>
           <div className="mb-4">
@@ -763,6 +780,7 @@ export default function AdminPage() {
         <SeatingAdminTab
           onNeedsLogin={() => setNeedsLogin(true)}
           bankAccountIdx={bankAccountIdx}
+          onMarkPaid={setMarkPaid}
         />
       ) : activeTab === "galerija" ? (
         <GalleryAdminTab
@@ -777,6 +795,7 @@ export default function AdminPage() {
           onGenerateReceipt={handleGenerateReceipt}
           onMarkPaid={setMarkPaid}
           onDiscount={handleSetDiscount}
+          onSaveItems={handleSaveReceiptItems}
           onCopiedSlug={(slug) => {
             setCopiedSlug(slug);
             setTimeout(() => setCopiedSlug(null), 2500);
@@ -786,6 +805,7 @@ export default function AdminPage() {
         <BirthdayAdminList
           onNeedsLogin={() => setNeedsLogin(true)}
           bankAccountIdx={bankAccountIdx}
+          onMarkPaid={setMarkPaid}
         />
       ) : (
       <>
@@ -845,13 +865,6 @@ export default function AdminPage() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setShowPhoneRental(true)}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-            title="Iznajmljivanje telefona"
-          >
-            <Phone size={16} />
-          </button>
           <button
             onClick={() => router.push("/admin/nova")}
             className="flex items-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-lg px-3 sm:px-4 py-2 text-sm font-medium transition-colors"
@@ -1209,13 +1222,6 @@ export default function AdminPage() {
           above the tab bar and are visible on every tab, so keeping the modals
           inside the Pozivnice branch left those controls dead everywhere else:
           the click set state, but the modal was never mounted to react to it. */}
-      {mounted && showPhoneRental && (
-        <PhoneRentalModal
-          onClose={() => setShowPhoneRental(false)}
-          bankAccountIdx={bankAccountIdx}
-        />
-      )}
-
       {markPaid && (
         <MarkPaidModal
           target={markPaid}
@@ -1596,11 +1602,12 @@ function MarkPaidModal({
               placeholder="Iznos u din"
               className="flex-1 text-sm text-white/70 bg-white/5 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/25"
             />
-            {/* A gallery has exactly one tier, so there is nothing to pick. */}
+            {/* Only `pozivnica` has tiers — every other kind sells exactly one
+                thing, so there is nothing to pick. */}
             <select
               value={tier}
               onChange={(e) => setTier(e.target.value)}
-              hidden={target.kind === "galerija"}
+              hidden={!!target.kind && target.kind !== "pozivnica"}
               className="text-sm text-white/70 bg-white/5 border border-white/10 rounded-lg px-2 py-2 outline-none focus:border-white/25 cursor-pointer"
               style={{ backgroundColor: "#2a2a2a" }}
             >
@@ -1608,10 +1615,6 @@ function MarkPaidModal({
               <option value="kompletan">Kompletan</option>
               <option value="premium">Premium</option>
               <option value="custom">Kombinacija</option>
-              {/* Retro telefon nema svoj `kind` u registru placanja (nije
-                  samousluzan proizvod), pa se rucna evidencija vodi kao tier.
-                  OrdersAdminTab ga zato ispisuje samostalno, bez prefiksa. */}
-              <option value="retro_telefon">Retro telefon</option>
             </select>
           </div>
           <input

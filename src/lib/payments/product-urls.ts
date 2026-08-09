@@ -20,6 +20,10 @@ export function productUrl(kind: PaymentKind, slug: string): string {
     case "dogadjaj":
       // The package's headline deliverable is the public invitation.
       return `/dogadjaj/${slug}/`;
+    case "telefon":
+      // Physical rental — there is no per-buyer page, so we send them back to
+      // the product page they bought from.
+      return `/telefon-uspomena/`;
   }
 }
 
@@ -30,4 +34,5 @@ export const KIND_LABEL_SR: Record<PaymentKind, string> = {
   raspored: "Raspored sedenja",
   galerija: "QR galerija",
   dogadjaj: "Korporativni paket",
+  telefon: "Retro telefon",
 };

@@ -19,12 +19,15 @@ const REGION_COUNTRIES: { code: CountryCode; flag: string; dial: string }[] = [
   { code: "SI", flag: "SI", dial: "+386" },
 ];
 
+// Every code here MUST have a matching entry in PRODUCT_PATHS
+// (src/app/api/admin/bypass-link/route.ts) — the API 400s on an unknown one.
 type ProductCode =
   | "pozivnica"
   | "deciji"
   | "punoletstvo"
   | "raspored"
-  | "galerija";
+  | "galerija"
+  | "telefon";
 
 const PRODUCTS: { code: ProductCode; label: string }[] = [
   { code: "pozivnica", label: "Pozivnica za venčanje" },
@@ -32,6 +35,7 @@ const PRODUCTS: { code: ProductCode; label: string }[] = [
   { code: "punoletstvo", label: "Punoletstvo" },
   { code: "raspored", label: "Raspored sedenja" },
   { code: "galerija", label: "QR galerija fotografija" },
+  { code: "telefon", label: "Retro telefon" },
 ];
 
 export default function BypassLinkModal({ open, onClose }: Props) {

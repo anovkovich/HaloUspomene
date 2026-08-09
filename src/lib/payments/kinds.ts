@@ -21,6 +21,7 @@ import {
   setStandaloneActive,
   patchStandaloneFeatures,
 } from "@/lib/standalone-seating";
+import { getPhoneRentalById, patchPhoneRental } from "@/lib/phone-rentals";
 import type {
   PaymentKind,
   CheckoutLine,
@@ -603,6 +604,60 @@ const galerija: KindAdapter = {
   },
 };
 
+// ── telefon (retro Audio Guest Book phone rental) ────────────────────────────
+// The only kind whose entity is a PHYSICAL booking: the row is created by the
+// self-serve form at /telefon-uspomena/online-placanje (which already checked
+// the date against PHONE_UNITS) and payment confirms the reservation.
+//
+// Deliberately sells at the STANDARD price (pricing.packages.essential.price),
+// not getAudioPrice(): the LS variant is a fixed 6.900 product. Activating the
+// audio discount in pricing.json therefore does NOT reach this rail — to run a
+// promo here, add a flat LS discount code and wire it through `lsDiscountCode`,
+// the way `raspored` does. Otherwise the charged total would disagree with the
+// frozen amount and the webhook would quarantine every order.
+
+const telefon: KindAdapter = {
+  async loadEntity(slug) {
+    const r = await getPhoneRentalById(slug);
+    if (!r) return null;
+    return {
+      slug,
+      displayName: r.contact_name || "Retro telefon",
+      eventDate: r.rental_date,
+      premium: false,
+      unlockedTiers: r.paid ? ["default"] : [],
+    };
+  },
+  tiers(e) {
+    if (e.unlockedTiers.includes("default")) return [];
+    return [
+      {
+        id: "default",
+        labelSr: "Retro telefon — Audio Guest Book",
+        rsd: pricing.packages.essential.price,
+        eur: pricing.packages.essential.priceEur,
+        lsVariantEnv: "LS_VARIANT_TELEFON",
+      },
+    ];
+  },
+  computeOrder(e, tierId) {
+    if (tierId !== "default") throw new PaymentError("INVALID_TIER");
+    if (e.unlockedTiers.includes("default"))
+      throw new PaymentError("ALREADY_UNLOCKED");
+    return oneLine(
+      "Retro telefon — Audio Guest Book",
+      pricing.packages.essential.price,
+      pricing.packages.essential.priceEur,
+    );
+  },
+  async unlock(slug) {
+    await patchPhoneRental(slug, { paid: true });
+  },
+  async revoke(slug) {
+    await patchPhoneRental(slug, { paid: false });
+  },
+};
+
 export const KINDS: Record<PaymentKind, KindAdapter> = {
   pozivnica,
   rodjendan,
@@ -610,6 +665,7 @@ export const KINDS: Record<PaymentKind, KindAdapter> = {
   raspored,
   galerija,
   dogadjaj,
+  telefon,
 };
 
 /** Type guard for a raw string coming off the URL. */

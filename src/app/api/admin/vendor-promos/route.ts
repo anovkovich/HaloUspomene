@@ -38,9 +38,10 @@ export async function POST(req: NextRequest) {
   }
 
   // Friend codes are auto-generated (random single-use PRIJATELJ####); only the
-  // tier percent (50 or 75) is taken from the client, validated in the facade.
+  // tier percent (20, 50 or 75) and the optional "for whom" note come from the
+  // client, both validated/trimmed in the facade.
   if (body.type === "friend") {
-    const r = await createFriendPromo(Number(body.percent));
+    const r = await createFriendPromo(Number(body.percent), body.note);
     if (!r.ok) return NextResponse.json({ error: r.error }, { status: 400 });
     return NextResponse.json({ ok: true, code: r.code });
   }

@@ -19,16 +19,23 @@ import { countRedemptions } from "./promo-redemptions";
 // parallel tracking is added.
 
 /** "vendor" = referral partner (5/10%, uncapped, commission owed). "friend" =
- *  personal single-use gift code (75%, no commission). Docs created before this
- *  field default to "vendor" when read. */
+ *  personal single-use gift code (20/50/75%, no commission). Docs created before
+ *  this field default to "vendor" when read. */
 export type PromoType = "vendor" | "friend";
+
+/** Every percent a stored promo row may carry: 5/10 for vendors, 20/50/75 for
+ *  friend gift codes. Each has a matching LS discount code (lsCodeForPercent). */
+export type PromoPercent = 5 | 10 | 20 | 50 | 75;
+
+/** Max length of a promo note — the admin list renders it on one line. */
+const NOTE_MAX = 300;
 
 export interface VendorPromo {
   code: string;
   vendorName: string;
   contact: string;
   note: string;
-  percent: 5 | 10 | 50 | 75;
+  percent: PromoPercent;
   commissionRsd: number; // what we owe the vendor per realized purchase (0 for friend)
   active: boolean;
   createdAt: Date;
@@ -42,7 +49,7 @@ export interface VendorPromoRow {
   vendorName: string;
   contact: string;
   note: string;
-  percent: 5 | 10 | 50 | 75;
+  percent: PromoPercent;
   commissionRsd: number;
   active: boolean;
   createdAt: string; // ISO for the client
@@ -111,7 +118,7 @@ export async function createVendorPromo(
       code,
       vendorName,
       contact: (input.contact || "").trim().slice(0, 160),
-      note: (input.note || "").trim().slice(0, 300),
+      note: (input.note || "").trim().slice(0, NOTE_MAX),
       percent: input.percent,
       commissionRsd,
       active: true,
@@ -171,6 +178,21 @@ export async function listVendorPromos(): Promise<VendorPromoRow[]> {
   });
 }
 
+/** Sets the free-text note on a promo. For a friend code that's WHOSE code it is
+ *  ("Marko sa posla") — the code string itself is random, so without this the
+ *  admin list can't tell two gift codes apart. Empty string clears it. */
+export async function setPromoNote(
+  code: string,
+  note: string,
+): Promise<boolean> {
+  const c = await col();
+  const r = await c.updateOne(
+    { code: (code || "").trim().toUpperCase() },
+    { $set: { note: (note || "").trim().slice(0, NOTE_MAX) } },
+  );
+  return r.matchedCount > 0;
+}
+
 /** Hard-deletes a vendor code. Past redemptions in `promo_redemptions` stay
  *  (they're the payment audit trail); only the code definition is removed. */
 export async function deleteVendorPromo(code: string): Promise<boolean> {
@@ -212,18 +234,20 @@ export async function verifyVendorPromo(
   return { valid: true, code: doc.code, percent: doc.percent };
 }
 
-const FRIEND_PERCENTS = new Set([50, 75]);
+const FRIEND_PERCENTS = new Set([20, 50, 75]);
 
 /** Auto-generates a single-use friend code: PRIJATELJ + 4 random digits (random,
  *  not sequential, so codes reveal no order/count when friends compare them). The
- *  percent (50 or 75) is NOT encoded in the code string — two friends on different
- *  tiers can't tell them apart; only the admin list shows the percent.
- *  Guessability is harmless — every redemption is DB-validated + single-use. */
+ *  percent (20, 50 or 75) is NOT encoded in the code string — two friends on
+ *  different tiers can't tell them apart; only the admin list shows the percent.
+ *  Guessability is harmless — every redemption is DB-validated + single-use.
+ *  `note` is who the code is for — optional, editable later via setPromoNote. */
 export async function createFriendPromo(
   percent: number,
+  note?: string,
 ): Promise<{ ok: true; code: string } | { ok: false; error: string }> {
   if (!FRIEND_PERCENTS.has(percent)) {
-    return { ok: false, error: "Prijatelj-popust mora biti 50% ili 75%." };
+    return { ok: false, error: "Prijatelj-popust mora biti 20%, 50% ili 75%." };
   }
   const c = await col();
   await ensureIndex(c);
@@ -238,8 +262,8 @@ export async function createFriendPromo(
         code,
         vendorName: "Prijatelj",
         contact: "",
-        note: "",
-        percent: percent as 50 | 75,
+        note: (note || "").trim().slice(0, NOTE_MAX),
+        percent: percent as PromoPercent,
         commissionRsd: 0,
         active: true,
         createdAt: new Date(),

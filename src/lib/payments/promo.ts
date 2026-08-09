@@ -26,19 +26,22 @@ export const PROMO_CAP = 25; // max redemptions per code (leak cap)
  *  result as `discount_code` so LS applies the SAME percent already frozen into
  *  order.amountRsd — a wrong code here undercharges and quarantines the webhook.
  *
- *  The 5%/10% codes are memorable (low abuse value). The 50%/75% friend codes live
- *  in ENV vars and MUST be unguessable random strings: an LS discount code can be
- *  typed directly on LS's hosted checkout, bypassing our own single-use validation
- *  — a guessable "PROMO75HU" would hand anyone the discount. Only 5/10/50/75 exist;
- *  any other percent throws rather than silently mis-map. */
+ *  The 5%/10% codes are memorable (low abuse value). The 20/50/75% friend codes
+ *  live in ENV vars and MUST be unguessable random strings: an LS discount code
+ *  can be typed directly on LS's hosted checkout, bypassing our own single-use
+ *  validation — a guessable "PROMO75HU" would hand anyone the discount. Only
+ *  5/10/20/50/75 exist; any other percent throws rather than silently mis-map. */
+const FRIEND_LS_ENV: Record<number, string> = {
+  20: "LS_FRIEND_DISCOUNT_CODE_20",
+  50: "LS_FRIEND_DISCOUNT_CODE_50",
+  75: "LS_FRIEND_DISCOUNT_CODE_75",
+};
+
 export function lsCodeForPercent(percent: number): string {
   if (percent === 10) return PROMO_LS_CODE;
   if (percent === 5) return PROMO_LS_CODE_5;
-  if (percent === 75 || percent === 50) {
-    const envName =
-      percent === 75
-        ? "LS_FRIEND_DISCOUNT_CODE_75"
-        : "LS_FRIEND_DISCOUNT_CODE_50";
+  const envName = FRIEND_LS_ENV[percent];
+  if (envName) {
     const code = process.env[envName];
     if (!code) throw new Error(`${envName} env not set`);
     return code;

@@ -17,7 +17,8 @@ export type PaymentKind =
   | "punoletstvo"
   | "raspored"
   | "galerija"
-  | "dogadjaj";
+  | "dogadjaj"
+  | "telefon";
 
 export type OrderRail = "card" | "ips";
 
@@ -135,6 +136,41 @@ export async function transitionOrder(
     { $set: { ...set, status: to, updatedAt: new Date() } },
   );
   return r.matchedCount === 1;
+}
+
+/** Statuses that mean money was actually seen. These rows are the audit trail —
+ *  `deleteOrder` refuses them, so a paid order can only ever be refunded or
+ *  revoked, never made to disappear. */
+const MONEY_SEEN: ReadonlySet<OrderStatus> = new Set([
+  "paid",
+  "unlocked",
+  "refunded",
+  "revoked",
+]);
+
+export function isDeletableStatus(status: OrderStatus): boolean {
+  return !MONEY_SEEN.has(status);
+}
+
+/** Hard-deletes an order that never saw money (pending / review / canceled /
+ *  expired) so the admin queue can be cleared of junk and abandoned checkouts.
+ *  Returns "not_found" or "protected" instead of throwing, so the route can say
+ *  WHY nothing happened. */
+export async function deleteOrder(
+  orderId: string,
+): Promise<{ ok: true } | { ok: false; reason: "not_found" | "protected" }> {
+  const c = await col();
+  const existing = await c.findOne({ orderId });
+  if (!existing) return { ok: false, reason: "not_found" };
+  if (!isDeletableStatus(existing.status))
+    return { ok: false, reason: "protected" };
+  // Status is re-checked in the filter: between the read and the delete a
+  // webhook could have flipped the very same row to `paid`.
+  const r = await c.deleteOne({
+    orderId,
+    status: { $nin: [...MONEY_SEEN] },
+  });
+  return r.deletedCount === 1 ? { ok: true } : { ok: false, reason: "protected" };
 }
 
 export interface CreateOrderInput {

@@ -15,6 +15,7 @@ import {
   Receipt,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
+import type { MarkPaidTarget } from "@/lib/admin-mark-paid";
 import { encodeToBase64 } from "@/lib/encoding";
 import {
   buildReceiptItems,
@@ -48,7 +49,14 @@ export interface GalleryCouple {
   standalone_gallery?: boolean;
   receipt_valid?: boolean;
   custom_discount?: number;
+  receipt_custom_items?: ReceiptCustomItem[];
   created_at?: string;
+}
+
+/** A saved extra receipt line, in the same shape /racun reads (`l`abel, `p`rice). */
+export interface ReceiptCustomItem {
+  l: string;
+  p: number;
 }
 
 interface Props {
@@ -64,18 +72,11 @@ interface Props {
   onGenerateReceipt: (slug: string) => void | Promise<void>;
   /** Opens the shared "Označi kao plaćeno" modal, which writes the order that
    *  shows up on the Uplate tab. Same flow as the Pozivnice tab. */
-  onMarkPaid: (target: {
-    slug: string;
-    name: string;
-    premium: boolean;
-    kind?: "pozivnica" | "galerija";
-    defaultTier?: string;
-    prefillAmount: number;
-    prefillLabel: string;
-    slugEditable: boolean;
-    source: { type: "couple" };
-  }) => void;
+  onMarkPaid: (target: MarkPaidTarget) => void;
   onDiscount: (slug: string, amount: number) => void;
+  /** Persists the extra receipt lines onto the couple. Called on blur / remove,
+   *  so an admin who types a line and walks away still has it tomorrow. */
+  onSaveItems: (slug: string, items: ReceiptCustomItem[]) => void | Promise<void>;
   onCopiedSlug: (slug: string) => void;
 }
 
@@ -105,10 +106,16 @@ const PHASE_CLASS: Record<GalleryPhase, string> = {
 };
 
 /** Custom items the admin typed, cleaned into receipt line items. */
-function cleanCustomItems(drafts: CustomItemDraft[]) {
+function cleanCustomItems(drafts: CustomItemDraft[]): ReceiptCustomItem[] {
   return drafts
     .map((it) => ({ l: it.label.trim(), p: Math.round(Number(it.price) || 0) }))
     .filter((it) => it.l.length > 0);
+}
+
+/** Saved items → editable drafts. The price becomes a string because the input
+ *  is controlled and must be able to hold an empty value while being typed. */
+function toDrafts(saved: ReceiptCustomItem[] | undefined): CustomItemDraft[] {
+  return (saved ?? []).map((it) => ({ label: it.l, price: String(it.p) }));
 }
 
 /**
@@ -176,6 +183,7 @@ export default function GalleryAdminTab({
   onGenerateReceipt,
   onMarkPaid,
   onDiscount,
+  onSaveItems,
   onCopiedSlug,
 }: Props) {
   const [showCreate, setShowCreate] = useState(false);
@@ -508,6 +516,7 @@ export default function GalleryAdminTab({
                   })
                 }
                 onDiscount={(amount) => onDiscount(c.slug, amount)}
+                onSaveItems={(items) => onSaveItems(c.slug, items)}
               />
             </div>
           );
@@ -710,6 +719,7 @@ function GalleryReceiptDropdown({
   onCopy,
   onPaid,
   onDiscount,
+  onSaveItems,
 }: {
   couple: GalleryCouple;
   copiedSlug: string | null;
@@ -717,10 +727,21 @@ function GalleryReceiptDropdown({
   onCopy: (items: CustomItemDraft[]) => void;
   onPaid: (items: CustomItemDraft[]) => void;
   onDiscount: (amount: number) => void;
+  onSaveItems: (items: ReceiptCustomItem[]) => void | Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<CustomItemDraft[]>([]);
+  // Seeded from the couple, so reopening the panel (or the whole admin, days
+  // later) shows the same extras the client was quoted.
+  const [items, setItems] = useState<CustomItemDraft[]>(() =>
+    toDrafts(couple.receipt_custom_items),
+  );
   const ref = useRef<HTMLDivElement>(null);
+
+  /** Writes the current lines to the couple. Called on blur and on remove
+   *  rather than per keystroke: one save per edited field, no debounce. */
+  function persist(next: CustomItemDraft[]) {
+    onSaveItems(cleanCustomItems(next));
+  }
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -774,6 +795,7 @@ function GalleryReceiptDropdown({
                 onChange={(e) =>
                   setItems((prev) => prev.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))
                 }
+                onBlur={() => persist(items)}
                 placeholder="npr. Izrada zahvalnica"
                 className="flex-1 min-w-0 text-[11px] text-white/70 bg-white/5 border border-white/10 rounded px-2 py-1 outline-none focus:border-white/20"
               />
@@ -785,11 +807,18 @@ function GalleryReceiptDropdown({
                 onChange={(e) =>
                   setItems((prev) => prev.map((x, j) => (j === i ? { ...x, price: e.target.value } : x)))
                 }
+                onBlur={() => persist(items)}
                 placeholder="0"
                 className="w-16 text-[11px] text-white/60 bg-white/5 border border-white/10 rounded px-2 py-1 text-right outline-none focus:border-white/20"
               />
               <button
-                onClick={() => setItems((prev) => prev.filter((_, j) => j !== i))}
+                onClick={() => {
+                  // Computed outside the updater: persist() is a side effect and
+                  // React may run a state updater twice in dev StrictMode.
+                  const next = items.filter((_, j) => j !== i);
+                  setItems(next);
+                  persist(next);
+                }}
                 className="p-1 rounded text-white/30 hover:text-red-300 cursor-pointer transition-colors"
                 title="Ukloni"
               >

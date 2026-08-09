@@ -8,25 +8,19 @@ import {
   AlertTriangle,
   ExternalLink,
   RefreshCw,
-  ChevronDown,
-  ChevronRight,
-  Plus,
   Trash2,
-  Ticket,
-  Gift,
-  Copy,
 } from "lucide-react";
 import { formatPrice } from "@/data/pricing";
 import { KIND_LABEL_SR, productUrl } from "@/lib/payments/product-urls";
 import type { PaymentKind } from "@/lib/orders";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
-import VendorPromoModal from "./VendorPromoModal";
 
 /**
- * Tiers used for products that have no `kind` of their own. The payments
- * registry only covers self-serve products, so a manually recorded retro-phone
- * rental has to be filed under `pozivnica` and would otherwise render as
- * "Pozivnica · retro_telefon". These labels stand on their own instead.
+ * Tiers used for products that have no `kind` of their own. A retro-phone
+ * rental recorded MANUALLY (admin "Označi kao plaćeno") is filed under
+ * `pozivnica` and would otherwise render as "Pozivnica · retro_telefon"; these
+ * labels stand on their own instead. Self-serve phone orders don't come through
+ * here — they carry the real `telefon` kind and read straight off KIND_LABEL_SR.
  */
 const STANDALONE_TIER_LABEL: Record<string, string> = {
   retro_telefon: "Retro telefon",
@@ -160,6 +154,38 @@ export default function OrdersAdminTab({
     }
   }
 
+  /** Removes a row that never saw money (odbijeno / isteklo / čeka). The server
+   *  refuses anything paid, so a mis-click can't erase the money trail. */
+  async function remove(orderId: string) {
+    const row = orders.find((o) => o.orderId === orderId);
+    const ok = await confirm({
+      title: "Obriši uplatu iz evidencije?",
+      message: `${orderId}${row ? ` — ${formatPrice(row.amountRsd)}` : ""}\nOvo briše zapis potpuno i ne može da se vrati.`,
+      danger: true,
+      confirmLabel: "Obriši",
+    });
+    if (!ok) return;
+
+    setBusy(orderId);
+    try {
+      const r = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "DELETE",
+      });
+      if (r.status === 401) {
+        onNeedsLogin();
+        return;
+      }
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        alert(d.error || "Greška. Pokušaj ponovo.");
+        return;
+      }
+      setOrders((prev) => prev.filter((o) => o.orderId !== orderId));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   if (loading) {
     return <p className="text-white/40 py-10 text-center">Učitavanje…</p>;
   }
@@ -174,7 +200,6 @@ export default function OrdersAdminTab({
   return (
     <div>
       {dialog}
-      <VendorPromoSection onNeedsLogin={onNeedsLogin} />
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl sm:text-2xl font-semibold text-white">
           Uplate {actionable.length > 0 && `(${actionable.length})`}
@@ -196,7 +221,13 @@ export default function OrdersAdminTab({
       {actionable.length > 0 && (
         <div className="space-y-3 mb-8">
           {actionable.map((o) => (
-            <OrderCard key={o.orderId} o={o} busy={busy === o.orderId} onAct={act} />
+            <OrderCard
+              key={o.orderId}
+              o={o}
+              busy={busy === o.orderId}
+              onAct={act}
+              onRemove={remove}
+            />
           ))}
         </div>
       )}
@@ -208,7 +239,14 @@ export default function OrdersAdminTab({
           </span>
           <div className="space-y-2 mt-2">
             {history.map((o) => (
-              <OrderCard key={o.orderId} o={o} busy={false} onAct={act} compact />
+              <OrderCard
+                key={o.orderId}
+                o={o}
+                busy={busy === o.orderId}
+                onAct={act}
+                onRemove={remove}
+                compact
+              />
             ))}
           </div>
         </>
@@ -221,11 +259,13 @@ function OrderCard({
   o,
   busy,
   onAct,
+  onRemove,
   compact = false,
 }: {
   o: OrderRow;
   busy: boolean;
   onAct: (orderId: string, action: "approve" | "reject") => void;
+  onRemove: (orderId: string) => void;
   compact?: boolean;
 }) {
   const st = STATUS_LABEL[o.status] ?? {
@@ -233,6 +273,11 @@ function OrderCard({
     cls: "bg-white/10 text-white/50",
   };
   const showActions = o.status === "review" || o.status === "pending";
+  // Mirrors the server rule in `isDeletableStatus` (src/lib/orders.ts): anything
+  // that saw money stays as the audit trail and is refused there anyway.
+  const canRemove = !["paid", "unlocked", "refunded", "revoked"].includes(
+    o.status,
+  );
 
   return (
     <div
@@ -314,331 +359,29 @@ function OrderCard({
                 </button>
                 <button
                   onClick={() => onAct(o.orderId, "reject")}
+                  title="Odbij — ostaje u istoriji"
                   className="flex items-center gap-1 bg-white/5 hover:bg-red-500/20 text-white/40 hover:text-red-300 rounded-lg px-2.5 py-1.5 text-xs transition-colors cursor-pointer"
                 >
                   <X size={13} />
                 </button>
               </>
             ))}
+          {canRemove && !busy && (
+            <button
+              onClick={() => onRemove(o.orderId)}
+              title="Obriši iz evidencije — nepovratno"
+              className="p-1.5 rounded-lg text-white/25 hover:text-red-300 hover:bg-red-500/15 transition-colors cursor-pointer"
+              aria-label="Obriši uplatu"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
+          {busy && !showActions && (
+            <Loader2 size={16} className="animate-spin text-white/50" />
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-interface VendorPromoRow {
-  code: string;
-  vendorName: string;
-  contact: string;
-  note: string;
-  percent: 5 | 10 | 75;
-  commissionRsd: number;
-  active: boolean;
-  createdAt: string;
-  type: "vendor" | "friend";
-  maxUses: number | null;
-  activations: number;
-  owedRsd: number;
-  usedUp: boolean;
-}
-
-function VendorPromoSection({ onNeedsLogin }: { onNeedsLogin: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [rows, setRows] = useState<VendorPromoRow[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [busy, setBusy] = useState<string | null>(null);
-  const [genBusy, setGenBusy] = useState(false);
-  const [copied, setCopied] = useState<string | null>(null);
-  const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
-
-  async function load() {
-    setLoading(true);
-    try {
-      const r = await fetch("/api/admin/vendor-promos");
-      if (r.status === 401) {
-        onNeedsLogin();
-        return;
-      }
-      const d = await r.json();
-      if (Array.isArray(d.promos)) setRows(d.promos);
-      setLoaded(true);
-    } catch {
-      /* ignore */
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Lazy-load the list only when the section is first expanded.
-  useEffect(() => {
-    if (open && !loaded) load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  async function remove(code: string) {
-    const ok = await confirm({
-      title: "Obriši kod",
-      message: `Ukloniti vendor kod „${code}“? Prošle aktivacije ostaju u evidenciji uplata.`,
-      danger: true,
-      confirmLabel: "Obriši",
-    });
-    if (!ok) return;
-    setBusy(code);
-    try {
-      const r = await fetch(`/api/admin/vendor-promos/${encodeURIComponent(code)}`, {
-        method: "DELETE",
-      });
-      if (r.status === 401) {
-        onNeedsLogin();
-        return;
-      }
-      if (r.ok) setRows((prev) => prev.filter((p) => p.code !== code));
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function generateFriend(percent: 50 | 75) {
-    setGenBusy(true);
-    try {
-      const r = await fetch("/api/admin/vendor-promos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "friend", percent }),
-      });
-      if (r.status === 401) {
-        onNeedsLogin();
-        return;
-      }
-      const d = await r.json().catch(() => ({}));
-      if (r.ok && d.code) {
-        await load();
-        copyCode(d.code);
-      }
-    } finally {
-      setGenBusy(false);
-    }
-  }
-
-  async function copyCode(code: string) {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(code);
-      setTimeout(() => setCopied(null), 2000);
-    } catch {
-      /* clipboard blocked — user can select manually */
-    }
-  }
-
-  // Ready-to-send message for a vendor partner — they forward the code to their
-  // clients (couples). Copied verbatim so the founder never retypes it.
-  async function copyVendorMessage(r: VendorPromoRow) {
-    const msg =
-      `Poštovani,\n\n` +
-      `na osnovu našeg dogovora, kreiran je promo kod sa ${r.percent}% popusta ` +
-      `na proizvode sa halouspomene.rs koji možete proslediti svojim klijentima (mladencima).\n\n` +
-      `Promo kod: ${r.code}\n\n` +
-      `Kod se unosi na stranici za plaćanje. Hvala na saradnji!\n\n` +
-      `HaloUspomene`;
-    try {
-      await navigator.clipboard.writeText(msg);
-      setCopied(r.code);
-      setTimeout(() => setCopied(null), 2000);
-    } catch {
-      /* clipboard blocked — user can select manually */
-    }
-  }
-
-  const totalOwed = rows.reduce((s, r) => s + r.owedRsd, 0);
-
-  return (
-    <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03]">
-      {dialog}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 cursor-pointer"
-      >
-        <span className="flex items-center gap-2 text-sm font-semibold text-white/80">
-          {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-          <Ticket size={15} className="text-[#AE343F]" />
-          Vendor promo kodovi
-          {loaded && rows.length > 0 && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50">
-              {rows.length}
-            </span>
-          )}
-        </span>
-        {loaded && totalOwed > 0 && (
-          <span className="text-xs text-white/45">
-            duguješ ukupno{" "}
-            <span className="font-semibold text-white/70">
-              {formatPrice(totalOwed)}
-            </span>
-          </span>
-        )}
-      </button>
-
-      {open && (
-        <div className="px-4 pb-4">
-          <div className="mb-3 flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setShowModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#AE343F] hover:bg-[#8d2a33] text-white px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer"
-            >
-              <Plus size={14} /> Vendor kod
-            </button>
-            <button
-              onClick={() => generateFriend(75)}
-              disabled={genBusy}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 hover:bg-white/15 disabled:opacity-50 text-white/80 px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer"
-            >
-              {genBusy ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Gift size={14} />
-              )}{" "}
-              Prijatelj 75%
-            </button>
-            <button
-              onClick={() => generateFriend(50)}
-              disabled={genBusy}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 hover:bg-white/15 disabled:opacity-50 text-white/80 px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer"
-            >
-              {genBusy ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Gift size={14} />
-              )}{" "}
-              Prijatelj 50%
-            </button>
-          </div>
-
-          {loading ? (
-            <p className="text-white/40 py-4 text-center text-sm">Učitavanje…</p>
-          ) : rows.length === 0 ? (
-            <p className="text-white/40 py-4 text-center text-sm">
-              Još nema vendor kodova.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {rows.map((r) => (
-                <div
-                  key={r.code}
-                  className={`rounded-xl px-3 py-2.5 border flex items-center justify-between gap-3 flex-wrap ${
-                    r.active
-                      ? "bg-white/5 border-white/10"
-                      : "bg-white/[0.02] border-white/5 opacity-60"
-                  }`}
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-sm font-semibold text-white tracking-wider">
-                        {r.code}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#AE343F]/20 text-[#e39aa2]">
-                        {r.percent}%
-                      </span>
-                      {r.type === "friend" && (
-                        <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300">
-                          <Gift size={10} /> prijatelj
-                        </span>
-                      )}
-                      {r.type === "friend" && (
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full ${
-                            r.usedUp
-                              ? "bg-white/10 text-white/40"
-                              : "bg-blue-500/15 text-blue-300"
-                          }`}
-                        >
-                          {r.usedUp ? "iskorišćen" : "neiskorišćen"}
-                        </span>
-                      )}
-                      {!r.active && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/40">
-                          neaktivan
-                        </span>
-                      )}
-                    </div>
-                    {r.type !== "friend" && (
-                      <div className="text-xs text-white/50 mt-0.5">
-                        {r.vendorName}
-                        {r.contact && (
-                          <span className="text-white/30"> · {r.contact}</span>
-                        )}
-                      </div>
-                    )}
-                    <div className="text-[11px] text-white/35 mt-0.5">
-                      {new Date(r.createdAt).toLocaleDateString("sr-RS")}
-                      {r.type === "friend"
-                        ? ` · ${r.activations} iskorišćenja`
-                        : ` · ${r.activations} aktivacija · provizija ${formatPrice(r.commissionRsd)}`}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    {r.type === "friend" ? (
-                      <button
-                        onClick={() => copyCode(r.code)}
-                        className="inline-flex items-center gap-1 text-xs text-white/50 hover:text-white transition-colors cursor-pointer"
-                      >
-                        {copied === r.code ? (
-                          <>
-                            <Check size={13} className="text-emerald-400" /> kopirano
-                          </>
-                        ) : (
-                          <>
-                            <Copy size={13} /> kopiraj
-                          </>
-                        )}
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => copyVendorMessage(r)}
-                          className="inline-flex items-center gap-1 text-xs text-white/50 hover:text-white transition-colors cursor-pointer"
-                          title="Kopiraj poruku sa kodom za vendora"
-                        >
-                          {copied === r.code ? (
-                            <>
-                              <Check size={13} className="text-emerald-400" /> kopirano
-                            </>
-                          ) : (
-                            <>
-                              <Copy size={13} /> poruka
-                            </>
-                          )}
-                        </button>
-                        <span className="text-sm font-bold text-white">
-                          {formatPrice(r.owedRsd)}
-                        </span>
-                      </>
-                    )}
-                    {busy === r.code ? (
-                      <Loader2 size={16} className="animate-spin text-white/50" />
-                    ) : (
-                      <button
-                        onClick={() => remove(r.code)}
-                        className="text-white/30 hover:text-red-300 transition-colors p-1 cursor-pointer"
-                        aria-label="Obriši"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      <VendorPromoModal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        onCreated={load}
-      />
-    </div>
-  );
-}

@@ -34,8 +34,11 @@ export function BypassPhoneInput({
   // "+" is the INT catch-all: the customer types their own country code as part
   // of the number, so the prompt must ask for the full international number.
   const international = callingCode === "+";
+  // The INT placeholder must NOT show a real calling code: next to the bare "+"
+  // prefix, a concrete "381 …" reads as an instruction to type a Serbian number,
+  // which is the opposite of what an international link is for.
   const effectivePlaceholder =
-    placeholder ?? (international ? "381 6X XXX XXX" : "6X XXX XXX");
+    placeholder ?? (international ? "XX XX XXX XXXX" : "6X XXX XXX");
   const styles =
     variant === "dark"
       ? {

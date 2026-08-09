@@ -77,7 +77,9 @@ export default async function HvalaPage({
               Uplata potvrđena
             </h1>
             <p className="text-sm text-gray-500 mb-6">
-              Sve je aktivirano. Možete nastaviti.
+              {kind === "telefon"
+                ? "Vaš termin je rezervisan. Javljamo vam se porukom oko dostave telefona."
+                : "Sve je aktivirano. Možete nastaviti."}
             </p>
             {premiumInProduction && (
               <div className="mb-6 rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/[0.06] p-4 text-left">

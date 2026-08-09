@@ -85,8 +85,17 @@ export async function POST(req: NextRequest) {
   if (!isPaymentKind(kind))
     return NextResponse.json({ error: "Nepoznat proizvod." }, { status: 400 });
 
-  const slug = (body.slug ?? "").trim().toLowerCase();
-  if (!/^[a-z0-9-]{1,80}$/.test(slug))
+  // A phone rental is keyed by a nanoid (`tel-V1StGXR8`), whose alphabet is
+  // `A-Za-z0-9_-`. Lowercasing one would file the payment under an id that
+  // matches no rental, and a `_` in it would be rejected outright. Every other
+  // kind is keyed by a human slug that is lowercase by construction.
+  const raw = (body.slug ?? "").trim();
+  const isNanoIdKey = kind === "telefon";
+  const slug = isNanoIdKey ? raw : raw.toLowerCase();
+  const slugValid = isNanoIdKey
+    ? /^[A-Za-z0-9_-]{1,80}$/.test(slug)
+    : /^[a-z0-9-]{1,80}$/.test(slug);
+  if (!slugValid)
     return NextResponse.json(
       { error: "Slug: samo mala slova, brojevi i crtice." },
       { status: 400 },
