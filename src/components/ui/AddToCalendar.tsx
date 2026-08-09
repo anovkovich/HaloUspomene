@@ -42,6 +42,20 @@ export default function AddToCalendar({
 }: Props) {
   const [open, setOpen] = useState(false);
 
+  /**
+   * Close AFTER the browser has dispatched the link's default action.
+   *
+   * React flushes discrete events (click) synchronously, so closing straight
+   * from the anchor's onClick unmounts that very anchor before the navigation
+   * runs. Safari then cancels it and the tap does nothing — while Chrome
+   * usually still follows the link, which is why this only ever showed up on
+   * iPhones. Deferring by one task keeps the anchor alive through the default
+   * action; the dialog still closes on the very next tick.
+   */
+  const closeAfterNavigation = () => {
+    setTimeout(() => setOpen(false), 0);
+  };
+
   return (
     <>
       <button
@@ -81,7 +95,7 @@ export default function AddToCalendar({
                 href={googleCalendarUrl(event)}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setOpen(false)}
+                onClick={closeAfterNavigation}
                 className="flex items-center justify-between gap-2 rounded-xl border border-[#232323]/15 px-4 py-3 text-sm font-medium text-[#232323] transition-colors hover:border-[#AE343F]/45 hover:text-[#AE343F]"
               >
                 {googleLabel}
@@ -92,7 +106,7 @@ export default function AddToCalendar({
                   endpoint's Content-Disposition header. */}
               <a
                 href={icsHref(event, icsFilename)}
-                onClick={() => setOpen(false)}
+                onClick={closeAfterNavigation}
                 className="flex w-full items-center justify-between gap-2 rounded-xl border border-[#232323]/15 px-4 py-3 text-sm font-medium text-[#232323] transition-colors hover:border-[#AE343F]/45 hover:text-[#AE343F] cursor-pointer"
               >
                 {appleLabel}
