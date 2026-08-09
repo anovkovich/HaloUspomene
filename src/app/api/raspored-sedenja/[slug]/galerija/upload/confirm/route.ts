@@ -17,7 +17,7 @@ import { canGuestUpload } from "@/lib/gallery-lifecycle";
  */
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-const MAX_PHOTOS_PER_SLUG = 2000;
+const MAX_PHOTOS_PER_SLUG = 3000; // abuse guard (300 guests x ~10 photos)
 const MAX_PHOTOS_PER_UPLOADER = 50;
 const MAX_PHOTOS_PER_IP = 500;
 const ALLOWED_MIME = new Set([

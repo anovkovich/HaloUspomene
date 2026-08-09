@@ -476,10 +476,55 @@ PWA install prompt detects `beforeinstallprompt` (Android/Chrome) with iOS instr
 
 - Gated by `paid_for_audio` on couple
 - Recording window: **event day + 1 day after only** (enforced server-side)
-- Max 100 recordings per slug
+- Max 300 recordings per slug (`MAX_AUDIO_MESSAGES_PER_SLUG`, both audio routes)
 - Format: WebM, ≤60s, ≤2MB
 - Blobs in Vercel Blob, metadata in `audio_messages` collection
 - Admin can download all messages or merge into a single WAV via portal Audio view
+
+### Self-Serve Payments — the `kind` registry
+
+Every self-serve product plugs into ONE checkout at `/placanje/[kind]/[slug]/`
+(card via Lemon Squeezy overlay + IPS bank QR, `/hvala` after). A product becomes
+purchasable by adding an adapter to `KINDS` in `src/lib/payments/kinds.ts` — the
+page, the checkout panel, the webhook and the admin Uplate tab are all generic
+and need no per-product code.
+
+An adapter loads + summarizes its entity, lists the tiers still purchasable for
+THAT entity, freezes the money (always server-computed from `pricing.json`, never
+client input), and flips / reverses the entity flags on `unlock()` / `revoke()`.
+Kinds today: `pozivnica`, `rodjendan`, `punoletstvo`, `raspored`, `galerija`,
+`dogadjaj`, `telefon`.
+
+**Rules that quarantine a paid order if broken:**
+- The tier price in `pricing.json` MUST equal its LS product price. A promo
+  that lives only on our side needs a matching flat LS discount code on the
+  tier (`lsDiscountCode`, as `raspored` does) — otherwise the charged total
+  disagrees with the frozen amount and the webhook parks the order in `review`.
+- `unlock()` MUST be idempotent (`$set` to fixed values) and `revoke()` MUST
+  reverse exactly what it set.
+- Orders NEVER gate runtime access. The entity flags (`draft`, `paid_for_*`,
+  `active`, `paid`) stay the sole access gate; `orders` is an audit trail.
+- A new LS product must have **"Display on storefront" OFF** — a storefront
+  purchase carries no `order_id`, so the money arrives and nothing unlocks.
+- `LS_VARIANT_<TIER>` env per tier. Missing env ⇒ card button reports "nije
+  konfigurisano" and IPS still works — never a broken page.
+  `scripts/ls-variant-ids.mjs` re-derives ids and price-checks against the code.
+
+**Retro telefon (`telefon`)** is the only kind whose entity is a PHYSICAL
+booking, so it carries rules the digital products don't:
+- Entity is a `phone_rentals` row; `slug` is its `tel-…` id. Created by the
+  self-serve form at `/telefon-uspomena/online-placanje/` — **noindex, out of
+  the sitemap, deliberately not linked from any public page**: we copy the link
+  out of the admin Retro telefon tab and send it to a buyer we already agreed
+  with. Do NOT add a public CTA to it without asking.
+- **`PHONE_UNITS` in `src/lib/phone-rentals.ts` is how many phones we own (2).**
+  Bump it when the fleet grows — availability everywhere derives from it. A date
+  is occupied by every admin booking, every paid rental, and a self-serve row
+  inside its 1h payment hold; the server re-checks capacity on submit, the
+  greyed-out dates in the form are only a courtesy.
+- Sells at the STANDARD price (`pricing.packages.essential.price`), NOT
+  `getAudioPrice()` — activating the audio discount in `pricing.json` does not
+  reach this rail, because the LS variant is a fixed 6.900 product.
 
 ### OG Images
 
@@ -587,6 +632,7 @@ BLOB_READ_WRITE_TOKEN="..."      # Vercel Blob storage
 FAL_KEY="..."                    # fal.ai birefnet (background removal)
 LS_FRIEND_DISCOUNT_CODE_75="..." # RANDOM/unguessable LS 75% discount-code string for friend promo codes (must NOT be memorable — LS codes can be typed directly on the hosted checkout)
 LS_FRIEND_DISCOUNT_CODE_50="..." # RANDOM/unguessable LS 50% discount-code string for the 2nd friend tier (same secrecy requirement)
+LS_FRIEND_DISCOUNT_CODE_20="..." # RANDOM/unguessable LS 20% discount-code string for the 3rd friend tier (same secrecy requirement)
 CONTACT_EMAIL="halouspomene@gmail.com"
 ```
 

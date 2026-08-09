@@ -2,7 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/admin-auth";
 import { put } from "@vercel/blob";
 import { getWeddingData } from "@/lib/couples";
-import { addAudioMessage, getAudioMessages } from "@/lib/audio";
+import {
+  addAudioMessage,
+  getAudioMessages,
+  getAudioMessageCount,
+} from "@/lib/audio";
+
+/** Ceiling per event. Guests record one short message each, so this is an
+ *  abuse guard — a 300-guest wedding must not hit it. */
+const MAX_AUDIO_MESSAGES_PER_SLUG = 300;
 
 
 // GET — Admin-only: fetch audio messages for a slug
@@ -62,9 +70,11 @@ export async function POST(
     );
   }
 
-  // Cap at 100 recordings per slug
-  const existing = await getAudioMessages(slug);
-  if (existing.length >= 100) {
+  // Cap per slug. Counted in Mongo rather than by pulling every document —
+  // at 300 messages the old `getAudioMessages()` fetched the whole list (blob
+  // URLs and all) on every single recording just to read `.length`.
+  const existing = await getAudioMessageCount(slug);
+  if (existing >= MAX_AUDIO_MESSAGES_PER_SLUG) {
     return NextResponse.json(
       { error: "Maximum recordings reached" },
       { status: 429 }

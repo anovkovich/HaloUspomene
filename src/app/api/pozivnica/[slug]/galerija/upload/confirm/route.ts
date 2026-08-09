@@ -19,7 +19,7 @@ import { galleryKeyMatches } from "@/lib/gallery-key";
  */
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-const MAX_PHOTOS_PER_SLUG = 2000; // abuse guard
+const MAX_PHOTOS_PER_SLUG = 3000; // abuse guard (300 guests x ~10 photos)
 const MAX_PHOTOS_PER_UPLOADER = 50; // per-device cap (primary)
 const MAX_PHOTOS_PER_IP = 500; // per-IP backstop (a wedding shares one venue WiFi)
 const ALLOWED_MIME = new Set([

@@ -2,7 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/admin-auth";
 import { put } from "@vercel/blob";
 import { getStandaloneSeating } from "@/lib/standalone-seating";
-import { addAudioMessage, getAudioMessages } from "@/lib/audio";
+import {
+  addAudioMessage,
+  getAudioMessages,
+  getAudioMessageCount,
+} from "@/lib/audio";
+
+/** Ceiling per event. Guests record one short message each, so this is an
+ *  abuse guard — a 300-guest wedding must not hit it. */
+const MAX_AUDIO_MESSAGES_PER_SLUG = 300;
 
 /**
  * Standalone seating audio guest book. Parallels the couple route at
@@ -68,9 +76,9 @@ export async function POST(
     );
   }
 
-  // Cap at 100 recordings per slug.
-  const existing = await getAudioMessages(slug);
-  if (existing.length >= 100) {
+  // Cap per slug — counted in Mongo, not by fetching every document.
+  const existing = await getAudioMessageCount(slug);
+  if (existing >= MAX_AUDIO_MESSAGES_PER_SLUG) {
     return NextResponse.json(
       { error: "Maximum recordings reached" },
       { status: 429 },
