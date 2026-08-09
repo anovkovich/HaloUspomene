@@ -72,6 +72,15 @@ export default function GalleryCard({
   const [deleting, setDeleting] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [zipping, setZipping] = useState(false);
+  /** Progress for the export. Downloading a wedding's photos takes tens of
+   *  seconds before the browser's save dialog appears; without this the button
+   *  looks inert and people click it again. */
+  const [zipStatus, setZipStatus] = useState<{
+    phase: "fetch" | "pack" | "save";
+    done: number;
+    total: number;
+    pct: number;
+  } | null>(null);
 
   const loadingRef = useRef(false);
 
@@ -140,6 +149,7 @@ export default function GalleryCard({
   const downloadSelected = useCallback(async () => {
     if (selected.size === 0) return;
     setZipping(true);
+    setZipStatus({ phase: "fetch", done: 0, total: selected.size, pct: 0 });
     try {
       const JSZip = (await import("jszip")).default;
       const chosen = photos.filter((p) => selected.has(p._id));
@@ -157,10 +167,15 @@ export default function GalleryCard({
 
       const flush = async () => {
         if (inPart === 0) return;
-        parts.push({
-          blob: await zip.generateAsync({ type: "blob" }),
-          index: partIndex,
-        });
+        const blob = await zip.generateAsync({ type: "blob" }, (meta) =>
+          setZipStatus({
+            phase: "pack",
+            done: total,
+            total: chosen.length,
+            pct: Math.round(meta.percent),
+          })
+        );
+        parts.push({ blob, index: partIndex });
         zip = new JSZip();
         partBytes = 0;
         inPart = 0;
@@ -177,6 +192,12 @@ export default function GalleryCard({
           inPart++;
           partBytes += blob.size;
           zip.file(`${safeName(p.guestName || "gost")}-${total}.jpg`, blob);
+          setZipStatus({
+            phase: "fetch",
+            done: total,
+            total: chosen.length,
+            pct: 0,
+          });
           if (partBytes >= ZIP_PART_BYTES) await flush();
         } catch {
           /* skip a failed one, keep zipping the rest */
@@ -188,6 +209,8 @@ export default function GalleryCard({
         toast.error("Greška pri preuzimanju");
         return;
       }
+
+      setZipStatus({ phase: "save", done: total, total: chosen.length, pct: 100 });
 
       // A single part keeps the old, unsuffixed filename.
       for (const part of parts) {
@@ -206,6 +229,7 @@ export default function GalleryCard({
       }
     } finally {
       setZipping(false);
+      setZipStatus(null);
     }
   }, [selected, photos, slug, dlBase]);
 
@@ -376,11 +400,46 @@ export default function GalleryCard({
               ) : (
                 <Download size={16} />
               )}
-              {selected.size > 0
-                ? `Preuzmi izabrane (${selected.size})`
-                : "Preuzmi izabrane"}
+              {zipStatus
+                ? zipStatus.phase === "fetch"
+                  ? `Pripremam ${zipStatus.done}/${zipStatus.total}…`
+                  : zipStatus.phase === "pack"
+                    ? `Pakujem ${zipStatus.pct}%…`
+                    : "Preuzimanje kreće…"
+                : selected.size > 0
+                  ? `Preuzmi izabrane (${selected.size})`
+                  : "Preuzmi izabrane"}
             </button>
           </div>
+
+          {/* Export progress. The save dialog only appears once everything is
+              fetched and packed, which on a full gallery is tens of seconds —
+              long enough that a bare spinner reads as "nothing happened". */}
+          {zipStatus && (
+            <div className="mb-4">
+              <div className="h-1 w-full rounded-full bg-[#232323]/10 overflow-hidden">
+                <div
+                  className="h-full bg-[#AE343F] transition-[width] duration-200"
+                  style={{
+                    width: `${
+                      zipStatus.phase === "fetch"
+                        ? zipStatus.total
+                          ? Math.round((zipStatus.done / zipStatus.total) * 90)
+                          : 0
+                        : zipStatus.phase === "pack"
+                          ? 90 + Math.round(zipStatus.pct * 0.1)
+                          : 100
+                    }%`,
+                  }}
+                />
+              </div>
+              <p className="mt-1.5 text-[11px] text-[#232323]/50">
+                {zipStatus.phase === "save"
+                  ? "Pregledač sada nudi čuvanje fajla."
+                  : "Ne zatvarajte stranicu — priprema traje dok se sve slike ne spakuju."}
+              </p>
+            </div>
+          )}
 
           {/* Grid */}
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
