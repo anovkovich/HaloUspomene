@@ -99,3 +99,6 @@ coverage.xml
 # Scratch: saved web pages / scrape dumps (npr. ch.html iz vendor scrapinga)
 *.scrape.html
 ch.html
+
+# Lokalni pregledi (npr. scripts/preview-welcome-sign.mjs)
+tmp/

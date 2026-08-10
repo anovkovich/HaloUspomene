@@ -85,8 +85,10 @@ interface Props {
   /** Optional secondary CTA below the top action. Standalone uses it to link
    *  the owner portal (audio/gallery/planner). */
   sidebarSecondaryAction?: { label: string; href: string };
-  /** Welcome-PDF generator. Each consumer (wedding/birthday/standalone) supplies its own. */
-  onGenerateWelcomePDF: () => void | Promise<void>;
+  /** One menu entry per welcome-sign design this product offers. Weddings and
+   *  events list two; birthdays list one. Each entry downloads a single file,
+   *  so a click never trips the browser's multiple-download prompt. */
+  welcomeSigns: { label: string; run: () => void | Promise<unknown> }[];
   /** Full URL for the guest-seat-lookup page (used in QR + copy link). */
   guestLookupUrl?: string;
   /** When true, hide wedding-only elements (Mladenački sto) from the add-table UI. */
@@ -142,7 +144,7 @@ export default function RasporedClient({
   hideBackButton,
   sidebarTopAction,
   sidebarSecondaryAction,
-  onGenerateWelcomePDF,
+  welcomeSigns,
   guestLookupUrl,
   hideWeddingOnlyElements,
   hideDecorations,
@@ -194,7 +196,9 @@ export default function RasporedClient({
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLayoutScreen, setShowLayoutScreen] = useState(false);
   const [mobileGuestSearch, setMobileGuestSearch] = useState("");
-  const [pdfLoading, setPdfLoading] = useState(false);
+  /** Label of whatever download is currently running, or null when idle. */
+  const [busyLabel, setBusyLabel] = useState<string | null>(null);
+  const pdfLoading = busyLabel !== null;
   const [showHallSchemes, setShowHallSchemes] = useState(false);
   const { confirm, dialog: confirmDialog } = useConfirmDialog({
     variant: "light",
@@ -1002,11 +1006,11 @@ export default function RasporedClient({
                     onClick={async () => {
                       setShowMobileMenu(false);
                       if (isDirty) { showToast("Sačuvaj pre preuzimanja"); return; }
-                      setPdfLoading(true);
+                      setBusyLabel("Pripremam PDF...");
                       try {
                         await generateAndDownloadPDF(tables, attending, coupleNames, slug, resolvedLookupUrl);
                       } finally {
-                        setPdfLoading(false);
+                        setBusyLabel(null);
                       }
                     }}
                     disabled={pdfLoading || isDirty}
@@ -1017,24 +1021,29 @@ export default function RasporedClient({
                     {pdfLoading ? "Pripremam PDF..." : "Preuzmi PDF"}
                   </button>
                   <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
-                  <button
-                    onClick={async () => {
-                      setShowMobileMenu(false);
-                      try {
-                        await onGenerateWelcomePDF();
-                      } catch (err) {
-                        console.error("QR pano PDF failed:", err);
-                        showToast(
-                          "Greška pri generisanju QR pano PDF-a",
-                        );
-                      }
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium active:bg-black/5"
-                    style={{ color: "var(--theme-text)" }}
-                  >
-                    <Heart size={16} style={{ color: "var(--theme-primary)" }} />
-                    Preuzmi QR pano PDF
-                  </button>
+                  {welcomeSigns.map((sign) => (
+                    <button
+                      key={sign.label}
+                      onClick={async () => {
+                        setShowMobileMenu(false);
+                        setBusyLabel("Pripremam QR pano...");
+                        try {
+                          await sign.run();
+                        } catch (err) {
+                          console.error("QR pano PDF failed:", err);
+                          showToast("Greška pri generisanju QR pano PDF-a");
+                        } finally {
+                          setBusyLabel(null);
+                        }
+                      }}
+                      disabled={pdfLoading}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium active:bg-black/5 disabled:opacity-40"
+                      style={{ color: "var(--theme-text)" }}
+                    >
+                      <Heart size={16} style={{ color: "var(--theme-primary)" }} />
+                      {sign.label}
+                    </button>
+                  ))}
                   {/* Pano group: QR pano PDF + samo QR + Zatraži dizajn — no internal dividers */}
                   <button
                     onClick={async () => {
@@ -1458,7 +1467,7 @@ export default function RasporedClient({
             paidForRaspored={paidForRaspored}
             backHref={backHref}
             hideBackButton={hideBackButton}
-            onGenerateWelcomePDF={onGenerateWelcomePDF}
+            welcomeSigns={welcomeSigns}
             guestLookupUrl={resolvedLookupUrl}
             onSave={() => handleSave()}
             onDownloadPDF={() =>
@@ -1643,7 +1652,7 @@ export default function RasporedClient({
             >
               <span className="loading loading-spinner loading-xs" style={{ color: "var(--theme-primary)" }} />
               <span className="text-xs font-raleway font-medium" style={{ color: "var(--theme-text)" }}>
-                Pripremam PDF...
+                {busyLabel}
               </span>
             </div>
           )}
@@ -1663,11 +1672,11 @@ export default function RasporedClient({
                 <button
                   onClick={async () => {
                     setShowPWAMenu(false);
-                    setPdfLoading(true);
+                    setBusyLabel("Pripremam PDF...");
                     try {
                       await generateAndDownloadPDF(tables, attending, coupleNames, slug, resolvedLookupUrl);
                     } finally {
-                      setPdfLoading(false);
+                      setBusyLabel(null);
                     }
                   }}
                   disabled={pdfLoading}
@@ -1678,22 +1687,29 @@ export default function RasporedClient({
                   {pdfLoading ? "Pripremam PDF..." : "Preuzmi PDF raspored"}
                 </button>
                 <div className="h-px" style={{ backgroundColor: "var(--theme-border-light)" }} />
-                <button
-                  onClick={async () => {
-                    setShowPWAMenu(false);
-                    try {
-                      await onGenerateWelcomePDF();
-                    } catch (err) {
-                      console.error("QR pano PDF failed:", err);
-                      showToast("Greška pri generisanju QR pano PDF-a");
-                    }
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium hover:bg-black/5"
-                  style={{ color: "var(--theme-text)" }}
-                >
-                  <Heart size={16} style={{ color: "var(--theme-primary)" }} />
-                  Preuzmi QR pano PDF
-                </button>
+                {welcomeSigns.map((sign) => (
+                  <button
+                    key={sign.label}
+                    onClick={async () => {
+                      setShowPWAMenu(false);
+                      setBusyLabel("Pripremam QR pano...");
+                      try {
+                        await sign.run();
+                      } catch (err) {
+                        console.error("QR pano PDF failed:", err);
+                        showToast("Greška pri generisanju QR pano PDF-a");
+                      } finally {
+                        setBusyLabel(null);
+                      }
+                    }}
+                    disabled={pdfLoading}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-raleway font-medium hover:bg-black/5 disabled:opacity-50"
+                    style={{ color: "var(--theme-text)" }}
+                  >
+                    <Heart size={16} style={{ color: "var(--theme-primary)" }} />
+                    {sign.label}
+                  </button>
+                ))}
                 {/* Pano group: QR pano PDF + samo QR + Zatraži dizajn — no internal dividers */}
                 <button
                   onClick={async () => {

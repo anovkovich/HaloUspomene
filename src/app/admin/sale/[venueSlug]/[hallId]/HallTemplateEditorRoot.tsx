@@ -112,9 +112,16 @@ export default function HallTemplateEditorRoot({
       hideWeddingOnlyElements
       themeVarsOverride={HALO_BRAND_VARS}
       guestLookupUrl={`https://halouspomene.rs/raspored-sedenja/`}
-      onGenerateWelcomePDF={() => {
-        toast.info(`Šema sale ${venueName} (${city}) — bez PDF-a dobrodošlice.`);
-      }}
+      welcomeSigns={[
+        {
+          label: "Preuzmi QR pano PDF",
+          run: () => {
+            toast.info(
+              `Šema sale ${venueName} (${city}) — bez PDF-a dobrodošlice.`,
+            );
+          },
+        },
+      ]}
     />
   );
 }

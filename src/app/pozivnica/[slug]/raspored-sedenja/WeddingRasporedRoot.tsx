@@ -37,15 +37,21 @@ export default function WeddingRasporedRoot({
         load: loadRaspored,
         checkPaid: checkPaidStatus,
       }}
-      onGenerateWelcomePDF={() =>
-        generateWelcomePDF({
-          slug,
-          coupleDisplay: coupleNames,
-          theme,
-          scriptFont,
-          useCyrillic,
-        })
-      }
+      welcomeSigns={[
+        { label: "QR pano — dizajn 1 (klasik)", variant: "poster" as const },
+        { label: "QR pano — dizajn 2 (sa lukom)", variant: "arch" as const },
+      ].map(({ label, variant }) => ({
+        label,
+        run: () =>
+          generateWelcomePDF({
+            slug,
+            coupleDisplay: coupleNames,
+            theme,
+            scriptFont,
+            useCyrillic,
+            variant,
+          }),
+      }))}
     />
   );
 }

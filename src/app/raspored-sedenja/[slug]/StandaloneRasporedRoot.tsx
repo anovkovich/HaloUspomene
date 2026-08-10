@@ -142,9 +142,13 @@ export default function StandaloneRasporedRoot({
         enableHallSchemes
         hideDecorations
         themeVarsOverride={HALO_BRAND_VARS}
-        onGenerateWelcomePDF={() =>
-          generateStandaloneWelcomePDF({ slug, eventName })
-        }
+        welcomeSigns={[
+          { label: "QR pano — dizajn 1 (klasik)", variant: "poster" as const },
+          { label: "QR pano — dizajn 2 (sa lukom)", variant: "arch" as const },
+        ].map(({ label, variant }) => ({
+          label,
+          run: () => generateStandaloneWelcomePDF({ slug, eventName, variant }),
+        }))}
         onRequestPanoDesign={() => setShowRequestModal(true)}
         onDownloadRsvpQR={async () => {
           const QRCode = (await import("qrcode")).default;

@@ -27,14 +27,16 @@ interface Props {
   saveError: string;
   paidForRaspored: boolean;
   onSave: () => void;
-  onDownloadPDF: () => void;
+  onDownloadPDF: () => void | Promise<unknown>;
   /** Back-link target. Each consumer route supplies its own. */
   backHref?: string;
   /** When true, hide the "← Nazad" link entirely. Used by standalone routes
    *  where there's no parent portal to return to. */
   hideBackButton?: boolean;
-  /** Welcome PDF generator. Each consumer (wedding/birthday/standalone) supplies its own. */
-  onGenerateWelcomePDF: () => void | Promise<void>;
+  /** One menu entry per welcome-sign design this product offers. Weddings and
+   *  events list two; birthdays list one. Each entry downloads a single file,
+   *  so a click never trips the browser's multiple-download prompt. */
+  welcomeSigns: { label: string; run: () => void | Promise<unknown> }[];
   /** Full URL of the seat-lookup page used for QR + copy link. */
   guestLookupUrl?: string;
   /** When provided, the download dropdown shows an extra "Zatraži dizajn QR panoa" item. */
@@ -86,7 +88,7 @@ export default function Toolbar({
   onDownloadPDF,
   backHref = "/moje-vencanje?tab=guests",
   hideBackButton = false,
-  onGenerateWelcomePDF,
+  welcomeSigns,
   guestLookupUrl,
   onRequestPanoDesign,
   onDownloadRsvpQR,
@@ -98,6 +100,31 @@ export default function Toolbar({
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Which slow download is running. Rendering two B1 signs with four embedded
+   * fonts each takes seconds, so the menu stays open and reports progress
+   * instead of closing on click and leaving the couple staring at nothing.
+   */
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const runDownload = async (
+    key: string,
+    fn: () => void | Promise<unknown>,
+    errorMessage: string,
+  ) => {
+    if (busy) return;
+    setBusy(key);
+    try {
+      await fn();
+      setDownloadOpen(false);
+    } catch (err) {
+      console.error(errorMessage, err);
+      alert(errorMessage);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -215,38 +242,56 @@ export default function Toolbar({
             }}
           >
             <button
-              onClick={() => {
-                onDownloadPDF();
-                setDownloadOpen(false);
-              }}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
+              onClick={() =>
+                runDownload(
+                  "pdf",
+                  onDownloadPDF,
+                  "Greška pri generisanju PDF-a rasporeda. Pokušajte ponovo.",
+                )
+              }
+              disabled={busy !== null}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer disabled:opacity-50 disabled:cursor-default"
               style={{ color: "var(--theme-text)" }}
             >
-              <FileDown size={14} style={{ color: "var(--theme-primary)" }} />
-              Preuzmi PDF raspored
+              {busy === "pdf" ? (
+                <span
+                  className="loading loading-spinner loading-xs"
+                  style={{ color: "var(--theme-primary)" }}
+                />
+              ) : (
+                <FileDown size={14} style={{ color: "var(--theme-primary)" }} />
+              )}
+              {busy === "pdf" ? "Pripremam PDF..." : "Preuzmi PDF raspored"}
             </button>
             <div
               className="h-px"
               style={{ backgroundColor: "var(--theme-border-light)" }}
             />
-            <button
-              onClick={async () => {
-                setDownloadOpen(false);
-                try {
-                  await onGenerateWelcomePDF();
-                } catch (err) {
-                  console.error("QR pano PDF failed:", err);
-                  alert(
+            {welcomeSigns.map((sign, i) => (
+              <button
+                key={sign.label}
+                onClick={() =>
+                  runDownload(
+                    `pano-${i}`,
+                    sign.run,
                     "Greška pri generisanju QR pano PDF-a. Pokušajte ponovo.",
-                  );
+                  )
                 }
-              }}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
-              style={{ color: "var(--theme-text)" }}
-            >
-              <Heart size={14} style={{ color: "var(--theme-primary)" }} />
-              Preuzmi QR pano PDF
-            </button>
+                disabled={busy !== null}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer disabled:opacity-50 disabled:cursor-default"
+                style={{ color: "var(--theme-text)" }}
+              >
+                {busy === `pano-${i}` ? (
+                  <span
+                    className="loading loading-spinner loading-xs"
+                    style={{ color: "var(--theme-primary)" }}
+                  />
+                ) : (
+                  <Heart size={14} style={{ color: "var(--theme-primary)" }} />
+                )}
+                {busy === `pano-${i}` ? "Pripremam..." : sign.label}
+              </button>
+            ))}
             {/* Pano group: QR pano PDF + samo QR + Zatraži dizajn — no internal dividers */}
             <button
               onClick={() => {
