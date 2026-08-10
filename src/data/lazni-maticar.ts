@@ -25,8 +25,20 @@
  * rutiranje upita je u `src/lib/partneri.ts`, koji je server-only.
  */
 
-/** Standardna ceremonija u Beogradu, u EUR. Prikazuje se kao "od X €". */
-export const priceFrom = 150;
+/**
+ * Standardna ceremonija u Beogradu, u DINARIMA.
+ *
+ * Do 2026-08-10 je stajalo 150 € (≈ 17.600 din). Odlukom vlasnika cena je
+ * spuštena na 15.000 din i prebačena u dinare — domaći par računa u dinarima,
+ * a cifra u evrima je delovala skuplje nego što jeste.
+ *
+ * Prikazuje se kroz `formatPrice()` iz `pricing.ts`, kao i sve ostale cene na
+ * sajtu, da format bude isti svuda („15.000 din").
+ */
+export const priceFrom = 15000;
+
+/** Valuta — ide u schema.org Offer. */
+export const priceCurrency = "RSD";
 
 /** Grad na koji se odnosi `priceFrom`. */
 export const priceBaseCity = "Beograd";
@@ -35,10 +47,9 @@ export const priceBaseCity = "Beograd";
 /** Šta je uvek uključeno u nastup, bez obzira na paket. */
 export const includedAlways = [
   "Dolazak na vašu lokaciju u dogovoreno vreme",
-  "Ceremonija u odelu, sa lentom i knjigom venčanih — kao na pravom venčanju",
+  "Ceremonija sa simboličnom lentom i knjigom venčanih — svečan utisak bez ijednog pravnog elementa",
   "Govor pisan po vašoj priči, usaglašen sa vama unapred",
   "Dogovor tona: klasično, emotivno, šaljivo ili kombinovano",
-  "Razmena zaveta i potpisivanje knjige venčanih — kadrovi koje parovi najviše vole",
 ];
 
 /** Dogovara se posebno i ne ulazi u osnovnu cenu. */

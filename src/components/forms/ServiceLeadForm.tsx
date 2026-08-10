@@ -213,6 +213,7 @@ const ServiceLeadForm: React.FC<ServiceLeadFormProps> = ({
         ok?: boolean;
         error?: string;
         routing?: string;
+        priceNote?: string;
       };
 
       if (!verifyRes.ok || !verifyData.ok) {
@@ -247,6 +248,9 @@ const ServiceLeadForm: React.FC<ServiceLeadFormProps> = ({
           paket,
           ...(verifyData.routing
             ? { interno_prosledi_partneru: verifyData.routing }
+            : {}),
+          ...(verifyData.priceNote
+            ? { interno_cenovnik: verifyData.priceNote }
             : {}),
         }),
       });

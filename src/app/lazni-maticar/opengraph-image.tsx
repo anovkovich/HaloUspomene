@@ -125,7 +125,7 @@ export default async function OGImage() {
                 textAlign: "center",
               }}
             >
-              Ceremoniju vodi glumac, po vašoj priči
+              Ceremoniju vodi profesionalni voditelj, po vašoj priči
             </span>
 
             {/* eslint-disable-next-line @next/next/no-img-element */}

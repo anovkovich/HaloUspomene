@@ -24,19 +24,24 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import ServiceLeadForm from "@/components/forms/ServiceLeadForm";
 import {
   priceFrom,
+  priceCurrency,
   priceBaseCity,
   includedAlways,
   extras,
   toneOptions,
   occasionOptions,
 } from "@/data/lazni-maticar";
+import { formatPrice } from "@/data/pricing";
+
+/** „15.000 din" — isti format kao sve ostale cene na sajtu. */
+const priceLabel = formatPrice(priceFrom);
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 const pageUrl = `${siteUrl}/lazni-maticar`;
 
 export const metadata: Metadata = {
   title: "Lažni matičar — simbolična ceremonija i cene",
-  description: `Glumac u ulozi matičara vodi simboličnu ceremoniju po vašoj priči — emotivnu ili šaljivu. Cene od ${priceFrom} EUR, dolazimo u celu Srbiju. Zakažite termin.`,
+  description: `Simboličnu ceremoniju venčanja vodi profesionalni voditelj, po vašoj priči — emotivnu ili šaljivu. Cena od ${priceLabel}, dolazimo u celu Srbiju. Zakažite termin.`,
   keywords: [
     "lažni matičar",
     "lazni maticar",
@@ -65,7 +70,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Lažni matičar — simbolična ceremonija venčanja | HALO Uspomene",
     description:
-      "Ceremonija koju vodi glumac u ulozi matičara, po vašoj priči — emotivna ili šaljiva. Cene, trajanje i odgovori na sva pitanja.",
+      "Simbolična ceremonija koju vodi profesionalni voditelj, po vašoj priči — emotivna ili šaljiva. Cene, trajanje i odgovori na sva pitanja.",
     type: "website",
     url: pageUrl,
     siteName: "Halo Uspomene",
@@ -74,7 +79,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Lažni matičar — simbolična ceremonija venčanja",
     description:
-      "Glumac u ulozi matičara vodi ceremoniju po vašoj priči. Cene i dostupnost za celu Srbiju.",
+      "Simboličnu ceremoniju vodi profesionalni voditelj, po vašoj priči. Cene i dostupnost za celu Srbiju.",
   },
   alternates: {
     canonical: pageUrl,
@@ -98,8 +103,8 @@ const trustPoints = [
   },
   {
     icon: <Sparkles size={24} />,
-    title: "Izgleda kao pravo",
-    desc: "Odelo, lenta, mikrofon i knjiga venčanih koju mladenci potpisuju. Dok ne kaže drugačije, gosti veruju da gledaju zvaničnu ceremoniju.",
+    title: "Svečano kao pravo",
+    desc: "Simbolična lenta, mikrofon i knjiga venčanih koju mladenci potpisuju — rekviziti bez pravne vrednosti, ali utisak pravi.",
   },
   {
     icon: <MapPin size={24} />,
@@ -116,8 +121,8 @@ const ceremonyFlow = [
   },
   {
     n: "02",
-    title: "Ulazak i zvanični deo",
-    desc: "Matičar staje pred goste, otvara knjigu i počinje kao na pravom venčanju. Ovo je trenutak kada svi ustanu.",
+    title: "Ulazak i svečani deo",
+    desc: "Voditelj ceremonije staje pred goste, otvara knjigu i vodi čin kao na venčanju. Ovo je trenutak kada svi ustanu.",
   },
   {
     n: "03",
@@ -127,7 +132,7 @@ const ceremonyFlow = [
   {
     n: "04",
     title: "Zaveti i veliko DA",
-    desc: "Razmena zaveta, simbolično potpisivanje i proglašenje — uz aplauz, fotografije i pokoju maramicu.",
+    desc: "Razmena zaveta, simbolično potpisivanje i simbolično proglašenje — uz aplauz, fotografije i pokoju maramicu.",
   },
 ];
 
@@ -188,11 +193,11 @@ const faqItems = [
   },
   {
     q: `Koliko košta lažni matičar?`,
-    a: `Standardna ceremonija u ${priceBaseCity}u košta ${priceFrom} € — fiksno, sa svime uključenim i bez putnih troškova. Za lokacije van ${priceBaseCity}a, ceremoniju na engleskom ili ruskom i složenije scenarije cenu šaljemo na upit, jer zavisi od udaljenosti, termina i scenarija. Poređenja radi, izlazak pravog matičara na teren u ${priceBaseCity}u naplaćuje se i do 18.212 dinara — dakle otprilike isto, samo što matičar dolazi isključivo na lokaciju koju matična služba odobri i čita propisani obrazac, a ovde i lokaciju i tekst birate vi.`,
+    a: `Standardna ceremonija u ${priceBaseCity}u je oko ${priceLabel}, sa svime uključenim i bez dodatnih putnih troškova. To je orijentacioni iznos za najčešći slučaj — za lokacije van ${priceBaseCity}a, ceremoniju na engleskom ili ruskom i složenije scenarije cenu šaljemo na upit, jer zavisi od udaljenosti, termina i scenarija. Javite datum i lokaciju pa dobijate tačan iznos, bez obaveze.`,
   },
   {
     q: "Da li dobijamo neki dokument ili pečat?",
-    a: "Pečata nema — pečat ima samo zvanični čin u opštini, i mi to nikada ne glumimo. Ono što postoji jeste knjiga venčanih koju mladenci potpišu tokom ceremonije. Nema pravno dejstvo, ali su fotografije tog trenutka među najlepšima sa celog venčanja i parovi ih redovno izdvajaju.",
+    a: "Pečata nema — pečat ima samo zvanični čin u opštini, i mi to nikada ne glumimo. Ono što postoji jeste simbolična knjiga venčanih, bez ikakve pravne vrednosti, koju mladenci potpišu tokom ceremonije. Fotografije tog trenutka su među najlepšima sa celog venčanja i parovi ih redovno izdvajaju.",
   },
   {
     q: "Može li ceremonija da bude na engleskom ili ruskom?",
@@ -228,7 +233,7 @@ const faqItems = [
   },
   {
     q: "Ko izvodi ceremoniju?",
-    a: "Glumac, odnosno iskusan voditelj ceremonija koji ovo radi redovno. Nastup je odigran, ne pročitan — i baš zato prvih nekoliko minuta gosti stvarno veruju da gledaju zvaničnu ceremoniju.",
+    a: "Iskusan voditelj simboličnih ceremonija sa glumačkim zanatom, koji ovo radi redovno. Nastup je odigran, ne pročitan — i zato ceremonija deluje uverljivo od prvog trenutka.",
   },
   {
     q: "Koliko unapred treba rezervisati?",
@@ -250,7 +255,7 @@ const serviceSchema = {
   serviceType: "Lažni matičar — simbolična ceremonija venčanja",
   name: "Lažni matičar za svadbu i simboličnu ceremoniju venčanja",
   description:
-    "Simbolična ceremonija venčanja koju vodi glumac u ulozi matičara, sa govorom pisanim po priči para. Emotivna ili šaljiva varijanta, na lokaciji po izboru, širom Srbije. Ceremonija nema pravno dejstvo — brak se zaključuje pred ovlašćenim matičarem.",
+    "Simbolična ceremonija venčanja koju vodi profesionalni voditelj, sa govorom pisanim po priči para. Emotivna ili šaljiva varijanta, na lokaciji po izboru, širom Srbije. Ceremonija nema pravno dejstvo — brak se zaključuje pred ovlašćenim matičarem.",
   provider: {
     "@type": "Organization",
     name: "HALO Uspomene",
@@ -263,13 +268,13 @@ const serviceSchema = {
   // cena cele usluge — da strukturirani podaci ne obecavaju vise nego stranica.
   offers: {
     "@type": "Offer",
-    priceCurrency: "EUR",
+    priceCurrency,
     price: priceFrom,
     description: `Standardna ceremonija u ${priceBaseCity}u. Ostale lokacije i ceremonija na stranom jeziku — cena na upit.`,
     priceSpecification: {
       "@type": "PriceSpecification",
       minPrice: priceFrom,
-      priceCurrency: "EUR",
+      priceCurrency,
     },
     availability: "https://schema.org/InStock",
   },
@@ -334,7 +339,7 @@ export default function LazniMaticar() {
                 <span className="italic text-[#AE343F]">prave suze</span>
               </h1>
               <p className="text-lg sm:text-xl text-[#232323]/60 max-w-2xl mx-auto mb-4 leading-relaxed">
-                Glumac u ulozi matičara vodi ceremoniju napisanu po vašoj priči
+                Simboličnu ceremoniju vodi profesionalni voditelj, po tekstu napisanom po vašoj priči
                 — tamo gde vi želite, onda kada vi želite. Emotivnu, šaljivu ili
                 oboje.
               </p>
@@ -366,7 +371,7 @@ export default function LazniMaticar() {
               <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mb-9 text-[#232323]/50 text-sm">
                 <span className="flex items-center gap-2">
                   <Sparkles size={16} className="text-[#AE343F]" />
-                  {priceFrom} € u {priceBaseCity}u
+                  {priceLabel} u {priceBaseCity}u
                 </span>
                 <span className="flex items-center gap-2">
                   <Clock size={16} className="text-[#AE343F]" />
@@ -443,9 +448,10 @@ export default function LazniMaticar() {
             </div>
             <div className="space-y-5 text-[#232323]/65 leading-relaxed text-[17px] text-justify hyphens-auto">
               <p>
-                Lažni matičar je glumac koji vodi ceremoniju venčanja koja
-                izgleda i zvuči kao prava — odelo, lenta, mikrofon i knjiga
-                venčanih koju mladenci potpisuju.{" "}
+                Lažni matičar je profesionalni voditelj simbolične ceremonije
+                venčanja — čina koji je po toku i atmosferi vrlo sličan
+                zvaničnom: simbolična lenta, mikrofon i knjiga venčanih koju
+                mladenci potpisuju.{" "}
                 <strong className="text-[#232323]">
                   Ceremonija je simbolična i nema nijedan zakonski element
                 </strong>
@@ -462,9 +468,9 @@ export default function LazniMaticar() {
                 </strong>{" "}
                 — nema obrasca koji se čita, nema strepnje da li ćete nešto
                 pogrešiti i nema osećaja da vas neko požuruje jer sledeći par
-                čeka pred vratima. Za to da je matičar glumac znaju samo
-                mladenci i kumovi; gosti ne znaju, pa je i njihova reakcija
-                potpuno iskrena.
+                čeka pred vratima. Mladenci i kumovi znaju da je ceremonija
+                simbolična; gosti ne moraju da znaju — i u tome je čar. Ono što
+                gosti vide je svečan čin, a ono što osete je stvarno.
               </p>
               <p>
                 Zato ovakve ceremonije ispadnu i lepše i fotogeničnije od
@@ -491,9 +497,10 @@ export default function LazniMaticar() {
                 <strong className="text-[#232323]">
                   nema pečata, jer pečat ima samo zvanični čin
                 </strong>
-                . Ono što postoji jeste knjiga venčanih koju mladenci potpišu —
-                a te fotografije parovi redovno izdvajaju kao jedne od
-                najlepših sa celog venčanja.
+                . Ono što postoji jeste simbolična knjiga venčanih, bez ikakve
+                pravne vrednosti, koju mladenci potpišu — a te fotografije
+                parovi redovno izdvajaju kao jedne od najlepših sa celog
+                venčanja.
                 Ideja nije ni nova kod nas: srpske svadbe vekovima imaju
                 odigrane uloge, od lažne mlade do kupovine mlade. Ovo je samo
                 najnovija u nizu.
@@ -653,11 +660,12 @@ export default function LazniMaticar() {
                 Standardna ceremonija · {priceBaseCity}
               </p>
               <p className="font-serif text-5xl sm:text-6xl text-[#F5F4DC] mb-3">
-                {priceFrom} €
+                {priceLabel}
               </p>
               <p className="text-[#F5F4DC]/50 text-sm leading-relaxed">
-                Fiksna cena za ceremoniju u {priceBaseCity}u, sa svime što je
-                navedeno ispod. Bez putnih troškova i bez naknadnih stavki.
+                Orijentaciona cena za ceremoniju u {priceBaseCity}u, sa svime
+                što je navedeno ispod i bez dodatnih putnih troškova. Tačan
+                iznos potvrđujemo uz datum i lokaciju.
               </p>
 
               {/* Stavke koje idu na upit NISU ovde nabrojane — stoje u kartici
@@ -709,11 +717,12 @@ export default function LazniMaticar() {
               </div>
             </div>
 
+            {/* Poređenje sa cenom izlaska pravog matičara je uklonjeno
+                2026-08-10: čitalo se kao „umesto matičara uzmite ovo", a to je
+                jedini okvir koji uslugu gura ka zoni zamene zvaničnog čina. */}
             <p className="text-center text-sm text-[#232323]/50 mt-8 max-w-2xl mx-auto leading-relaxed">
-              Za poređenje: izlazak pravog matičara na teren u Beogradu
-              naplaćuje se i do 18.212 dinara — dakle otprilike isto. Razlika je
-              u tome što matičar dolazi samo na lokaciju koju matična služba
-              odobri i čita propisani obrazac, a ovde i lokaciju i tekst birate vi.
+              Nakon upita povezujemo vas sa ekipom koja vodi ceremoniju, pa
+              termin, tekst i detalje dogovarate direktno sa njima.
             </p>
           </div>
         </section>
@@ -869,7 +878,7 @@ export default function LazniMaticar() {
                 href="/blog/lazni-maticar-kako-izgleda"
                 className="text-[#AE343F] font-medium hover:underline"
               >
-                Pročitajte tekst o tome kad vas venča glumac
+                Pročitajte kako izgleda simbolična ceremonija iznutra
               </Link>
               .
             </p>
@@ -920,10 +929,10 @@ export default function LazniMaticar() {
           </h2>
           <p>
             HALO Uspomene posreduje uslugu lažnog matičara za venčanja, svadbe i
-            proslave u Srbiji. Lazni maticar je glumac koji vodi simboličnu
-            ceremoniju venčanja — u odelu, sa lentom, knjigom i mikrofonom —
-            koja izgleda kao zvanična, ali nema pravno dejstvo i ne sadrži
-            nijedan zakonski element. Namenjena je parovima koji su brak već
+            proslave u Srbiji. Lazni maticar je profesionalni voditelj koji vodi simboličnu
+            ceremoniju venčanja — sa simboličnom lentom, knjigom venčanih i
+            mikrofonom — koja je po toku i atmosferi vrlo slična zvaničnoj, ali
+            nema pravno dejstvo i ne sadrži nijedan zakonski element. Namenjena je parovima koji su brak već
             sklopili — u opštini ili u inostranstvu — a ceremonija se u
             potpunosti personalizuje po želji mladenaca. Može biti emotivna ili
             šaljiva, a govor se piše po njihovoj priči.
@@ -932,7 +941,8 @@ export default function LazniMaticar() {
             par venčan u inostranstvu, obnova bračnih zaveta i godišnjice braka,
             kao i šaljivi program i iznenađenje za mladence. Dolazimo u Beograd,
             Novi Sad, Niš, Kragujevac i ostale gradove, kao i na lokacije u
-            prirodi. Standardna ceremonija u {priceBaseCity}u košta {priceFrom} evra, a za ostale lokacije i ceremoniju na stranom jeziku cenu šaljemo na upit. Za
+            prirodi. Standardna ceremonija u {priceBaseCity}u košta {priceLabel},
+            a za ostale lokacije i ceremoniju na stranom jeziku cenu šaljemo na upit. Za
             simbolično venčanje nije potrebna nikakva papirologija — brak se u
             Srbiji zaključuje isključivo pred ovlašćenim matičarem.
           </p>

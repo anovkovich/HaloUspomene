@@ -67,9 +67,19 @@ export async function POST(req: NextRequest) {
   // sme da sazna kom partneru ide upit. Kontakti partnera se nikada ne
   // renderuju na stranici — v. src/lib/partneri.ts.
   if (body.routingProduct) {
-    const { resolvePartnerRouting } = await import("@/lib/partneri");
+    const { resolvePartnerRouting, internalPriceNote } = await import(
+      "@/lib/partneri"
+    );
     const routing = resolvePartnerRouting(body.routingProduct, body.selection);
-    if (routing) return NextResponse.json({ ok: true, routing });
+    // Interni cenovnik ide istim kanalom — u mejl kod nas, nikada na stranicu.
+    const priceNote = internalPriceNote(body.routingProduct);
+    if (routing) {
+      return NextResponse.json({
+        ok: true,
+        routing,
+        ...(priceNote ? { priceNote } : {}),
+      });
+    }
   }
 
   return NextResponse.json({ ok: true });

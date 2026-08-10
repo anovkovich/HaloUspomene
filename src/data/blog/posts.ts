@@ -212,9 +212,9 @@ const allBlogPosts: BlogPost[] = [
   },
   {
     slug: "lazni-maticar-kako-izgleda",
-    title: "Kobajagi Matičar, Prave Suze: Kako Izgleda Kad Vas Venča Glumac",
+    title: "Kobajagi Matičar, Prave Suze: Kako Izgleda Simbolična Ceremonija",
     description:
-      "Šta je lažni matičar i kako izgleda simbolična ceremonija koju vodi glumac: zašto se angažuje, kako teče, koliko košta i zašto papiri idu u opštinu.",
+      "Šta je lažni matičar i kako izgleda simbolična ceremonija venčanja: zašto se angažuje, kako teče, koliko košta i zašto papiri idu u opštinu.",
     category: "Saveti",
     tags: [
       "lažni matičar",

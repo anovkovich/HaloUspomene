@@ -99,6 +99,21 @@ export const partners: Partner[] = [
   },
 ];
 
+/**
+ * INTERNI cenovnik po uslugama — ide samo u mejl koji stiže nama uz upit, kao
+ * orijentacija dok se ne javimo klijentu. NIKADA se ne prikazuje na stranici:
+ * objavljen bi partneru sutra sužavao prostor za dogovor.
+ */
+const INTERNAL_PRICE_NOTES: Partial<Record<RoutingProduct, string>> = {
+  "lazni-maticar":
+    "Orijentaciono (partnerov cenovnik, NE objavljivati): Beograd ~15.000 din · Avala/Smederevo do 200 € · Fruška gora 300 € · Niš 350 € · ceremonija na stranom jeziku od 400 €. Sve van Beograda zavisi od udaljenosti i termina.",
+};
+
+/** Interna napomena o cenama za datu uslugu, ako je imamo. */
+export function internalPriceNote(product: string): string | null {
+  return INTERNAL_PRICE_NOTES[product as RoutingProduct] ?? null;
+}
+
 /** Jedan red za mejl: "Ime (osoba) — telefon (kanali) — @instagram". */
 function formatPartner(p: Partner): string {
   const who = p.contactPerson ? `${p.name} (${p.contactPerson})` : p.name;
@@ -156,6 +171,7 @@ export function resolvePartnerRouting(
   if (product === "lazni-maticar") {
     return allPartnersFallback("lazni-maticar", "Partneri za lažnog matičara");
   }
+
 
   return null;
 }
