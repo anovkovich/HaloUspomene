@@ -487,7 +487,7 @@ const faqs = [
   },
   {
     q: "Da li dobijam i QR kod za potvrdu dolaska?",
-    a: "Da, uz QR pano za sedenje dobijate i drugi QR kod koji vodi na stranicu za online potvrdu dolaska. Možete ga štampati na klasičnim koverat-pozivnicama — gost skenira, ukuca ime i potvrdi dolazak, a potvrda automatski upada u vašu listu gostiju.",
+    a: "Da, uz QR pano za sedenje dobijate i drugi QR kod koji vodi na stranicu za online potvrdu dolaska. Možete ga štampati na klasičnim koverta-pozivnicama — gost skenira, ukuca ime i potvrdi dolazak, a potvrda automatski upada u vašu listu gostiju.",
   },
 ];
 

@@ -111,13 +111,14 @@ const allBlogPosts: BlogPost[] = [
   },
   {
     slug: "koliko-se-daje-na-svadbi",
-    title: "Koliko se Daje na Svadbi 2026: Koverat, Kum i Ostali Gosti",
+    title: "Koliko se Daje na Svadbi 2026: Koverta, Kum i Ostali Gosti",
     description:
-      "Koliko se daje na svadbi 2026 u dinarima: po ulozi gosta, razlike Beograd i manja mesta, po osobi ili po paru, šta sa decom i kako se koverat predaje.",
+      "Koliko se daje na svadbi 2026 u dinarima: po ulozi gosta, razlike Beograd i manja mesta, po osobi ili po paru, šta sa decom i kako se koverta predaje.",
     category: "Saveti",
     tags: [
       "koliko se daje na svadbi",
       "koliko se daje u koverti",
+      "koverta za svadbu",
       "koverat za svadbu",
       "koliko daje kum na svadbi",
       "svadbeni običaji",
@@ -169,7 +170,7 @@ const allBlogPosts: BlogPost[] = [
     slug: "cestitke-za-vencanje",
     title: "Čestitke za Venčanje: 45 Gotovih Poruka za Mladence",
     description:
-      "45 gotovih čestitki za venčanje: kratke za koverat, klasične, emotivne, duhovite, od kuma i roditelja, na ćirilici i engleskom. Kopirajte i pošaljite.",
+      "45 gotovih čestitki za venčanje: kratke za kovertu, klasične, emotivne, duhovite, od kuma i roditelja, na ćirilici i engleskom. Kopirajte i pošaljite.",
     category: "Vodič",
     tags: [
       "čestitke za venčanje",
