@@ -92,3 +92,65 @@
   `/lazni-maticar` = 5 i `/telefon-uspomena` = 3 `data-track="cta_click"`;
   kartica sa cenom snimljena na 1440 i 420 px.
 - **Status:** code-complete
+
+## 2026-08-10 — Pravna revizija po primedbama partnera + cena u dinarima
+
+- **Šta je urađeno:**
+  - Cena spuštena sa 150 € na **15.000 din** i prebačena u dinare
+    (`src/data/lazni-maticar.ts`: `priceFrom`, novo `priceCurrency`). Prikaz ide
+    kroz `formatPrice()` kao i sve ostale cene na sajtu. Formulacija promenjena
+    iz „fiksno" u „orijentaciono za Beograd, ostalo na upit" — vlasnik je
+    potvrdio da je to orijentaciona suma i da se sve van Beograda dogovara.
+  - Prošli smo kroz partnerovu prepisku (analizu radio Fable 5). Njegovo pravilo:
+    nigde „matičar" bez „simbolični", državni simboli uvek označeni kao bez
+    pravne vrednosti, i ne pozicionirati se kao zamena za zvanični čin.
+    Primenjeno na **opisne rečenice**, ne na naziv usluge.
+  - „glumac" → „profesionalni voditelj" u `title`, OG, Twitter, JSON-LD i hero;
+    ostavljen jednom u FAQ jer naglašava da je reč o nastupu.
+  - Lenta i knjiga svuda označene kao simbolične i bez pravne vrednosti; korak
+    „Ulazak i **zvanični** deo" → „svečani deo"; „Matičar staje pred goste" →
+    „Voditelj ceremonije".
+  - Izbačena rečenica „gosti veruju da gledaju zvaničnu ceremoniju". Zamenjena
+    formulacijom koju je vlasnik tražio, a Fable presekao: „Mladenci i kumovi
+    znaju da je ceremonija simbolična; gosti ne moraju da znaju — i u tome je
+    čar. Ono što gosti vide je svečan čin, a ono što osete je stvarno."
+  - Obrisano poređenje sa cenom izlaska pravog matičara (18.212 din) sa **oba**
+    mesta na stranici (tekst + FAQ koji ide u FAQPage schemu) i iz blog teksta.
+  - Blog `lazni-maticar-kako-izgleda`: uklonjena protivrečnost sa landingom oko
+    knjige venčanih, tri rečenice o tome da gosti misle da gledaju pravo
+    venčanje, i naslov koji je tvrdio da vas glumac venčava.
+  - Interni cenovnik partnera sada ide u mejl uz upit (`interno_cenovnik`),
+    istim server-only kanalom kao kontakt partnera (`internalPriceNote()` u
+    `partneri.ts` → `/api/contact` → `ServiceLeadForm`).
+  - Registar partnera: dodat **Dimitrije Šajković** (066 919 9332,
+    `@lazni_maticar_beograd`, Beograd i bliža okolina). Prvom saradniku je bio
+    upisan pogrešan Instagram — nalozi se razlikuju samo po tačkama i donjim
+    crtama; ispravljen na `@lazni.maticar.beograd`. Dodato polje `coverage`.
+  - **Partner potvrdio da lenta NEMA grb Republike Srbije.**
+- **Commit / PR:** `ee02474`, `c40421c` (oba na `deploy`).
+- **Na šta utiče dalje:** `llms.txt` ažuriran (cena i „voditelj"); AI modeli ga
+  keširaju nedeljama pa se stara cena može pojavljivati još neko vreme. Ako se
+  ikad doda treći saradnik, `coverage` polje treba popuniti jer se po njemu u
+  mejlu vidi koga zvati prvog.
+- **Posledice:** cena je sada u dinarima i u schema.org Offer-u (`priceCurrency:
+  "RSD"`, `price: 15000`) — stari EUR iznos više ne postoji nigde. Interni
+  cenovnik i kontakti partnera **prolaze kroz browser klijenta** (server → browser
+  → Web3Forms), jer Cloudflare blokira poziv ka Web3Forms sa servera; vidljivi su
+  u DevTools-u onome ko prođe reCAPTCHA i SMS verifikaciju. Vlasnik je to prihvatio
+  za sada; alternativa je slanje mejla sa servera preko Resend/SMTP, što menja sve
+  forme. Vraćanje: `git revert ee02474 c40421c`.
+- **Šta je rešeno:** partnerove primedbe u celosti; protivrečnost između bloga i
+  landinga oko knjige venčanih; upiti za lažnog matičara više ne ostaju bez
+  telefona (imamo Šajkovića).
+- **Šta je odblokirano:** pošto lenta nema grb, sme se pisati „**bez državnih
+  obeležja**" u opisu rekvizita — do sada nismo smeli jer je upotreba grba
+  posebno regulisana, a to je po analizi bila **jedina tačka sa realnom pravnom
+  izloženošću**, i to ona koju partner sam nije pomenuo. Formulacija još nije
+  ubačena u tekst; trenutno stoji samo „simbolična, bez pravne vrednosti".
+- **Status:** code-complete (nepromenjen)
+- **Blokade / sledeći korak:** (1) da li su lenta i knjiga **fizički označene**
+  kao neslužbene — čeka se fotografija; dok ne stigne, ne pišemo da jesu, jer bi
+  netačna tvrdnja na našem sajtu bila gora od sadašnjeg stanja. (2) Telefon
+  prvog saradnika (ime možda Milena — nepotvrđeno, zato nije upisano).
+  (3) Odluka da li ubaciti „bez državnih obeležja" u tekst sada kad je grb
+  raščišćen.
