@@ -546,12 +546,12 @@ const EquipmentRentalLeadForm: React.FC = () => {
               max={12}
             />
             <QuantitySelector
-              label="Ventilator (uskoro)"
+              label="Ventilator (40€/dan)"
               icon={<Wind size={18} />}
               value={formData.ventilatori}
               onChange={(v) => setFormData({ ...formData, ventilatori: v })}
-              disabled={true}
-              max={0}
+              disabled={isLoading}
+              max={4}
             />
           </div>
         )}

@@ -123,7 +123,7 @@ const equipment: Equipment[] = [
     id: "ventilator",
     name: "Rashladni Ventilator",
     tagline: "Industrijski ventilator za letnje evente",
-    badge: "Uskoro dostupno",
+    badge: "Za letnje svadbe",
     icon: <Wind size={32} />,
     image: "/images/equipment/ventilator.png",
     description:
@@ -145,6 +145,7 @@ interface PricingItem {
   name: string;
   perDay: number;
   perWeekend: number;
+  /** Free-form marker rendered as a pill next to the name. */
   note?: string;
 }
 
@@ -162,7 +163,7 @@ const individualPricing: PricingItem[] = [
   { name: "Paviljon 3×3m sa zavesama", perDay: 30, perWeekend: 60 },
   { name: "Barski sto 80cm (sa navlakom)", perDay: 10, perWeekend: 20 },
   { name: "Kible za piće (1 velika + 2 male za led)", perDay: 3, perWeekend: 6 },
-  { name: "Rashladni ventilator", perDay: 40, perWeekend: 80, note: "uskoro" },
+  { name: "Rashladni ventilator", perDay: 40, perWeekend: 80 },
 ];
 
 const packages: PricingPackage[] = [
@@ -279,7 +280,7 @@ const howItWorks = [
 const faqItems = [
   {
     q: "Koliko košta iznajmljivanje paviljona za venčanje?",
-    a: "Paviljon 3×3m sa zavesama košta 30€ po danu. Barski sto (80cm prečnik, sa navlakom) je 10€ po danu. Nudimo i povoljne pakete — npr. Starter paket (1 paviljon + 3 stola) je 55€, a Komplet paket (2 paviljona + 6 stolova) je 105€. Ventilatori (~40€/dan) stižu uskoro!",
+    a: "Paviljon 3×3m sa zavesama košta 30€ po danu. Barski sto (80cm prečnik, sa navlakom) je 10€ po danu. Nudimo i povoljne pakete — npr. Starter paket (1 paviljon + 3 stola) je 55€, a Komplet paket (2 paviljona + 6 stolova) je 105€. Rashladni ventilator je 40€ po danu, odnosno 80€ za ceo vikend.",
   },
   {
     q: "Da li je dostava i montaža uključena u cenu?",
@@ -307,7 +308,7 @@ const faqItems = [
   },
   {
     q: "Koliko opreme trenutno imate na raspolaganju?",
-    a: "Trenutno na raspolaganju imamo 4 paviljona (3×3m) i 12 visokih barskih stolova. Uskoro stižu i rashladni ventilatori, kao i dodatni stolovi za sedenje. Za velike proslave preporučujemo ranije rezervisanje da bismo osigurali dostupnost.",
+    a: "Trenutno na raspolaganju imamo 4 paviljona (3×3m) i 12 visokih barskih stolova. Na raspolaganju su i rashladni ventilatori. Uskoro stižu i dodatni stolovi za sedenje. Za velike proslave preporučujemo ranije rezervisanje da bismo osigurali dostupnost.",
   },
 ];
 
@@ -351,10 +352,7 @@ const serviceSchema = {
         name: item.name,
         priceCurrency: "EUR",
         price: item.perDay,
-        availability:
-          item.note === "uskoro"
-            ? "https://schema.org/PreOrder"
-            : "https://schema.org/InStock",
+        availability: "https://schema.org/InStock",
         priceValidUntil,
         priceSpecification: [
           {
@@ -673,7 +671,7 @@ export default function IznajmljivanjeOpremeZaVencanje() {
                         key={item.name}
                         className={`border-b border-[#232323]/5 ${
                           idx % 2 === 0 ? "bg-[#f5f4dc]/20" : ""
-                        } ${item.note ? "opacity-60" : ""}`}
+                        }`}
                       >
                         <td className="py-4 px-4 text-[#232323]/80">
                           {item.name}
@@ -685,16 +683,16 @@ export default function IznajmljivanjeOpremeZaVencanje() {
                         </td>
                         <td className="py-4 px-4 text-center">
                           <span className="font-serif text-xl text-[#232323]">
-                            {item.note ? "~" : ""}{item.perDay}€
+                            {item.perDay}€
                           </span>
                         </td>
                         <td className="py-4 px-4 text-center">
                           <div className="flex flex-col items-center gap-0.5">
                             <span className="text-xs text-[#232323]/40 line-through">
-                              {item.note ? "~" : ""}{item.perDay * 3}€
+                              {item.perDay * 3}€
                             </span>
                             <span className="font-serif text-xl text-[#AE343F] font-semibold">
-                              {item.note ? "~" : ""}{item.perWeekend}€
+                              {item.perWeekend}€
                             </span>
                           </div>
                         </td>
@@ -955,7 +953,7 @@ export default function IznajmljivanjeOpremeZaVencanje() {
             stolovi 80cm prečnika sa navlakama za koktel prijeme (10€/dan),
             kible za piće i male kible za led (komplet 1 velika + 2 male za 3€),
             i rashladni industrijski ventilatori za letnje svadbe na otvorenom
-            (~40€/dan, uskoro dostupni). Trenutno na raspolaganju: 4 paviljona
+            (40€/dan). Trenutno na raspolaganju: 4 paviljona
             i 12 visokih stolova. Starter paket
             (1 paviljon + 3 stola) samo 55€, Komplet paket (2 paviljona + 6 stolova)
             105€. Oprema je idealna za doček svatova, polazak od kuće, ceremonije u
