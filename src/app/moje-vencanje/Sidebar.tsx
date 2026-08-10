@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { LayoutDashboard, LogOut, ExternalLink, Lock, Sparkles } from "lucide-react";
 import { type ActiveView, getNavItems } from "./nav-items";
+import { coupleDisplayName } from "@/lib/couple-display-name";
 
 export type { ActiveView } from "./nav-items";
 
@@ -65,7 +66,7 @@ export default function Sidebar({
             } as React.CSSProperties
           }
         >
-          {coupleInfo.bride} & {coupleInfo.groom}
+          {coupleDisplayName(coupleInfo)}
         </h2>
         <p className="text-xs text-[#232323]/60 mt-1">
           {hasDate ? `${eventDateFormatted} · još ${days}d` : "Datum nije unet"}

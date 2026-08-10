@@ -6,6 +6,7 @@ import { guestGate } from "@/lib/gallery-lifecycle";
 import { galleryKeyMatches } from "@/lib/gallery-key";
 import { getThemeCSSVariables } from "../constants";
 import GalerijaClient from "./GalerijaClient";
+import { coupleDisplayName } from "@/lib/couple-display-name";
 
 export const dynamicParams = true;
 export const revalidate = 30;
@@ -24,7 +25,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const weddingData = await getWeddingData(slug);
   if (!weddingData) return {};
   const title = `${weddingData.couple_names.full_display} — Galerija`;
-  const description = `Podelite vaše fotografije sa venčanja — ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`;
+  // Gallery-only clients have an empty `groom`, so this must not interpolate
+  // the two fields blindly — the title above already uses full_display.
+  const description = `Podelite vaše fotografije sa venčanja — ${coupleDisplayName(weddingData.couple_names)}`;
   return {
     title,
     description,

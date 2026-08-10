@@ -12,6 +12,9 @@ export interface PortalCoupleInfo {
   bride: string;
   groom: string;
   eventDate: string;
+  /** RSVP deadline (`submit_until`, ISO YYYY-MM-DD) — the portal both shows it
+   *  and lets the couple push it back once it runs out. */
+  submitUntil: string;
   scriptFont: string;
   draft: boolean;
   hasInvitationData: boolean;
@@ -29,6 +32,7 @@ export function toPortalCoupleInfo(data: WeddingData): PortalCoupleInfo {
     bride: data.couple_names.bride,
     groom: data.couple_names.groom,
     eventDate: data.event_date,
+    submitUntil: data.submit_until ?? "",
     scriptFont: data.scriptFont ?? "great-vibes",
     draft: data.draft ?? false,
     hasInvitationData: (data.locations ?? []).length > 0,

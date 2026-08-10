@@ -3,6 +3,7 @@
 import { isAdminSession } from "@/lib/admin-auth";
 
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { jwtVerify } from "jose";
 import { getWeddingData } from "@/data/pozivnice";
 import { patchCouple, toPortalCoupleInfo } from "@/lib/couples";
@@ -127,6 +128,76 @@ export async function saveMeniAction(meni: MeniData) {
   // Meni lives on the couple record (WeddingData) so the guest hub can read it.
   await patchCouple(slug, { meni });
   return { ok: true };
+}
+
+/* ── Rok za potvrde dolaska (submit_until) ─────────────────── */
+
+/** Most days the portal will push the deadline back in one go. A cap keeps a
+ *  stuck "+" button from parking the deadline months past the wedding. */
+const MAX_EXTENSION_DAYS = 30;
+
+/** Local-calendar ISO date (YYYY-MM-DD). `toISOString()` would shift the day
+ *  back in UTC+1/+2, which is exactly the off-by-one the guests would feel. */
+function toISODate(d: Date): string {
+  const m = `${d.getMonth() + 1}`.padStart(2, "0");
+  const day = `${d.getDate()}`.padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/** Pushes `submit_until` back by N days, counted from today or the existing
+ *  deadline — whichever is later. Capped at the wedding day: a confirmation
+ *  that lands after the event helps nobody, and the invitation is behind
+ *  EventPassedGuard by then anyway. */
+export async function extendRsvpDeadlineAction(days: number): Promise<
+  | { ok: true; submitUntil: string; capped: boolean }
+  | { ok?: false; error: string }
+> {
+  const slug = await getAuthSlug();
+  if (!slug) return { error: "Niste prijavljeni" };
+
+  const n = Math.floor(Number(days));
+  if (!Number.isFinite(n) || n < 1 || n > MAX_EXTENSION_DAYS) {
+    return { error: "Neispravan broj dana" };
+  }
+
+  const data = await getWeddingData(slug);
+  if (!data) return { error: "Pozivnica nije pronađena" };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const current = new Date(data.submit_until);
+  const base = new Date(
+    !isNaN(current.getTime()) && current.getTime() > today.getTime()
+      ? current.setHours(0, 0, 0, 0)
+      : today.getTime(),
+  );
+  base.setDate(base.getDate() + n);
+
+  let capped = false;
+  const eventDate = new Date(data.event_date);
+  if (!isNaN(eventDate.getTime())) {
+    eventDate.setHours(0, 0, 0, 0);
+    if (eventDate.getTime() < today.getTime()) {
+      return { error: "Venčanje je prošlo — rok se više ne može produžiti" };
+    }
+    if (base.getTime() > eventDate.getTime()) {
+      base.setTime(eventDate.getTime());
+      capped = true;
+    }
+  }
+
+  const submitUntil = toISODate(base);
+  if (submitUntil === data.submit_until) {
+    return { error: "Rok već ističe na dan venčanja" };
+  }
+
+  await patchCouple(slug, { submit_until: submitUntil });
+  // The invitation is cached; without this the guests would keep seeing the old
+  // deadline (and a disabled form) until the next revalidation window.
+  revalidatePath(`/pozivnica/${slug}`);
+  revalidatePath(`/premium-pozivnica/${slug}`);
+
+  return { ok: true, submitUntil, capped };
 }
 
 /* ── Guest List (private planning list of invitees) ────────── */

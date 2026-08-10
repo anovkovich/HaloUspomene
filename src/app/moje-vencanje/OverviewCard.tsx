@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -24,14 +24,19 @@ import {
   Lock,
   FileImage,
   FileText,
+  CalendarPlus,
+  Minus,
+  Plus,
 } from "lucide-react";
 import {
   loadOverviewAction,
   getWeddingDataForPDF,
+  extendRsvpDeadlineAction,
 } from "./actions";
 import type { ActiveView } from "./Sidebar";
 import type { ChecklistItem, PortalBudget } from "./types";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
+import { coupleDisplayName } from "@/lib/couple-display-name";
 
 interface Props {
   coupleInfo: {
@@ -39,6 +44,7 @@ interface Props {
     bride: string;
     groom: string;
     eventDate: string;
+    submitUntil: string;
     scriptFont: string;
     draft: boolean;
     hasInvitationData: boolean;
@@ -48,6 +54,21 @@ interface Props {
   checklist: ChecklistItem[];
   budget: PortalBudget;
   onNavigate: (view: ActiveView) => void;
+  /** Lifts a freshly extended RSVP deadline back to the portal shell. */
+  onSubmitUntilChange?: (submitUntil: string) => void;
+}
+
+/** Same cap the server enforces — the stepper must not offer what it will reject. */
+const MAX_EXTENSION_DAYS = 30;
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("sr-Latn-RS", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 function daysUntil(dateStr: string): number {
@@ -92,6 +113,7 @@ export default function OverviewCard({
   checklist,
   budget,
   onNavigate,
+  onSubmitUntilChange,
 }: Props) {
   const [guestStats, setGuestStats] = useState<{
     attending: number;
@@ -114,6 +136,9 @@ export default function OverviewCard({
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [extendOpen, setExtendOpen] = useState(false);
+  const [extendDays, setExtendDays] = useState(7);
+  const [extending, setExtending] = useState(false);
   const [paidForRaspored, setPaidForRaspored] = useState(false);
   const [paidForGallery, setPaidForGallery] = useState(false);
   const [printSheet, setPrintSheet] = useState<"potvrde" | "gdesedim" | null>(
@@ -196,7 +221,7 @@ export default function OverviewCard({
       await import("@/lib/audio-utils/generateAudioFlyerPDF");
     await generateAudioFlyerPDF(
       coupleInfo.slug,
-      `${coupleInfo.bride} & ${coupleInfo.groom}`,
+      coupleDisplayName(coupleInfo),
       "#AE343F",
       false,
     );
@@ -223,7 +248,7 @@ export default function OverviewCard({
   }, [coupleInfo.slug]);
 
   // A6 print-flyer variants (shared generator). Event name = couple names.
-  const eventNameStr = `${coupleInfo.bride} & ${coupleInfo.groom}`;
+  const eventNameStr = coupleDisplayName(coupleInfo);
   const SITE = "https://halouspomene.rs";
   const runFlyer = useCallback(
     async (cfg: {
@@ -282,6 +307,62 @@ export default function OverviewCard({
       }),
     [runFlyer, coupleInfo.slug],
   );
+
+  /* ── Rok za potvrde dolaska ─────────────────────────────────
+   *  The couple only ever sees this on the last day of the deadline or after
+   *  it has run out — that is when a guest calls saying "the form is closed".
+   *  Once the deadline already sits on the wedding day there is nothing left
+   *  to extend, so the button stays hidden. */
+  const deadline = useMemo(() => {
+    const d = new Date(coupleInfo.submitUntil);
+    if (!coupleInfo.submitUntil || isNaN(d.getTime())) return null;
+    d.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysLeft = Math.round((d.getTime() - today.getTime()) / 86_400_000);
+
+    const event = new Date(coupleInfo.eventDate);
+    const eventValid = !isNaN(event.getTime());
+    if (eventValid) event.setHours(0, 0, 0, 0);
+    const eventPassed = eventValid && event.getTime() < today.getTime();
+    const atEventDate = eventValid && d.getTime() >= event.getTime();
+    const maxDays = eventValid
+      ? Math.min(
+          MAX_EXTENSION_DAYS,
+          Math.round((event.getTime() - Math.max(d.getTime(), today.getTime())) / 86_400_000),
+        )
+      : MAX_EXTENSION_DAYS;
+
+    return {
+      daysLeft,
+      display: formatDate(coupleInfo.submitUntil),
+      canExtend: daysLeft <= 0 && !eventPassed && !atEventDate && maxDays >= 1,
+      maxDays: Math.max(1, maxDays),
+    };
+  }, [coupleInfo.submitUntil, coupleInfo.eventDate]);
+
+  const handleExtendDeadline = useCallback(async () => {
+    if (extending) return;
+    setExtending(true);
+    try {
+      const result = await extendRsvpDeadlineAction(extendDays);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      onSubmitUntilChange?.(result.submitUntil);
+      setExtendOpen(false);
+      toast.success(
+        result.capped
+          ? `Rok je produžen do dana venčanja — ${formatDate(result.submitUntil)}.`
+          : `Rok za potvrde je produžen do ${formatDate(result.submitUntil)}.`,
+      );
+    } catch {
+      toast.error("Greška pri produžavanju roka. Pokušajte ponovo.");
+    } finally {
+      setExtending(false);
+    }
+  }, [extending, extendDays, onSubmitUntilChange]);
 
   // Derived stats
   const days = daysUntil(coupleInfo.eventDate);
@@ -433,6 +514,78 @@ export default function OverviewCard({
                 )}
                 {copied ? "Link je kopiran" : "Kopiraj link pozivnice"}
               </button>
+            </div>
+          )}
+
+          {!coupleInfo.draft && deadline?.canExtend && (
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <p className="text-[11px] text-[#232323]/55">
+                {deadline.daysLeft === 0
+                  ? `Danas je poslednji dan za potvrde dolaska (${deadline.display})`
+                  : `Rok za potvrde dolaska je istekao ${deadline.display}`}
+              </p>
+
+              {extendOpen && (
+                <div className="flex items-center gap-1 rounded-full border border-[#d4af37]/45 bg-white px-1.5 py-1 shadow-[0_2px_8px_-4px_rgba(174,52,63,0.3)]">
+                  <button
+                    type="button"
+                    onClick={() => setExtendDays((d) => Math.max(1, d - 1))}
+                    disabled={extending || extendDays <= 1}
+                    aria-label="Jedan dan manje"
+                    className="h-7 w-7 flex items-center justify-center rounded-full text-[#232323]/70 hover:bg-[#F5F4DC] hover:text-[#AE343F] disabled:opacity-35 disabled:hover:bg-transparent transition-colors cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <span className="min-w-[5.5rem] text-center text-xs font-semibold text-[#232323]">
+                    {extendDays}{" "}
+                    <span className="font-normal text-[#232323]/60">
+                      {plural(extendDays, "dan", "dana", "dana")}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExtendDays((d) => Math.min(deadline.maxDays, d + 1))
+                    }
+                    disabled={extending || extendDays >= deadline.maxDays}
+                    aria-label="Jedan dan više"
+                    className="h-7 w-7 flex items-center justify-center rounded-full text-[#232323]/70 hover:bg-[#F5F4DC] hover:text-[#AE343F] disabled:opacity-35 disabled:hover:bg-transparent transition-colors cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!extendOpen) {
+                    setExtendDays(Math.min(7, deadline.maxDays));
+                    setExtendOpen(true);
+                    return;
+                  }
+                  handleExtendDeadline();
+                }}
+                disabled={extending}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium bg-[#AE343F] text-white hover:bg-[#962c36] disabled:opacity-60 transition-colors cursor-pointer disabled:cursor-not-allowed"
+              >
+                <CalendarPlus size={13} />
+                {extending
+                  ? "Čuvanje..."
+                  : extendOpen
+                    ? "Produži rok!"
+                    : "Produži rok za potvrde"}
+              </button>
+
+              {extendOpen && !extending && (
+                <button
+                  type="button"
+                  onClick={() => setExtendOpen(false)}
+                  className="text-[11px] text-[#232323]/45 hover:text-[#232323]/70 transition-colors cursor-pointer"
+                >
+                  Otkaži
+                </button>
+              )}
             </div>
           )}
         </div>

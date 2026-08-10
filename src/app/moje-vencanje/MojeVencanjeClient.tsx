@@ -53,6 +53,7 @@ const GalleryCard = React.lazy(() => import("./GalleryCard"));
 const GuestsCard = React.lazy(() => import("./GuestsCard"));
 const MeniCard = React.lazy(() => import("./MeniCard"));
 import OverviewCard from "./OverviewCard";
+import { coupleDisplayName } from "@/lib/couple-display-name";
 
 type AppState = "loading" | "guest" | "auth";
 
@@ -99,6 +100,7 @@ export default function MojeVencanjeClient() {
     bride: string;
     groom: string;
     eventDate: string;
+    submitUntil: string;
     scriptFont: string;
     draft: boolean;
     hasInvitationData: boolean;
@@ -157,6 +159,7 @@ export default function MojeVencanjeClient() {
             bride: result.bride!,
             groom: result.groom!,
             eventDate: result.eventDate!,
+            submitUntil: result.submitUntil ?? "",
             scriptFont: result.scriptFont ?? "great-vibes",
             draft: result.draft ?? false,
             hasInvitationData: result.hasInvitationData ?? false,
@@ -271,6 +274,7 @@ export default function MojeVencanjeClient() {
           bride: json.couple.bride,
           groom: json.couple.groom,
           eventDate: json.couple.eventDate,
+          submitUntil: json.couple.submitUntil ?? "",
           scriptFont: json.couple.scriptFont ?? "great-vibes",
           draft: json.couple.draft ?? false,
           hasInvitationData: json.couple.hasInvitationData ?? false,
@@ -316,6 +320,13 @@ export default function MojeVencanjeClient() {
     },
     [slug, password],
   );
+
+  // Both OverviewCard instances (PWA + browser) are mounted at once and only
+  // hidden by CSS, so the new deadline is lifted here instead of living in
+  // whichever copy the couple happened to tap.
+  const handleSubmitUntilChange = useCallback((submitUntil: string) => {
+    setCoupleInfo((prev) => (prev ? { ...prev, submitUntil } : prev));
+  }, []);
 
   const handleLogout = useCallback(() => {
     document.cookie =
@@ -595,7 +606,7 @@ export default function MojeVencanjeClient() {
                       } as React.CSSProperties
                     }
                   >
-                    {coupleInfo.bride} & {coupleInfo.groom}
+                    {coupleDisplayName(coupleInfo)}
                   </h1>
                 </div>
                 {/* PWA sub-tabs on Overview — toggleable */}
@@ -669,6 +680,7 @@ export default function MojeVencanjeClient() {
                         coupleInfo={coupleInfo}
                         checklist={checklist}
                         budget={budget}
+                        onSubmitUntilChange={handleSubmitUntilChange}
                         onNavigate={(v) => {
                           if (v === "checklist" || v === "budget") {
                             setPwaSubView(v);
@@ -686,6 +698,7 @@ export default function MojeVencanjeClient() {
                       coupleInfo={coupleInfo}
                       checklist={checklist}
                       budget={budget}
+                      onSubmitUntilChange={handleSubmitUntilChange}
                       onNavigate={(v) => {
                         setActiveView(v);
                         window.scrollTo({ top: 0 });
@@ -739,7 +752,7 @@ export default function MojeVencanjeClient() {
                 >
                   <AudioCard
                     slug={coupleInfo.slug}
-                    coupleNames={`${coupleInfo.bride} & ${coupleInfo.groom}`}
+                    coupleNames={coupleDisplayName(coupleInfo)}
                   />
                 </React.Suspense>
               )}
@@ -937,7 +950,7 @@ export default function MojeVencanjeClient() {
           <div className="absolute left-0 top-0 h-full w-72 bg-[#F5F4DC] shadow-2xl flex flex-col overflow-y-auto">
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
               <h2 className="font-serif text-lg text-[#232323] whitespace-nowrap truncate">
-                {coupleInfo.bride} & {coupleInfo.groom}
+                {coupleDisplayName(coupleInfo)}
               </h2>
               <button
                 onClick={() => setMobileSidebar(false)}
