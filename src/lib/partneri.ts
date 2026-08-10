@@ -41,6 +41,11 @@ export interface Partner {
   /** Kojim kanalima je taj broj dostupan. */
   channels?: string;
   instagram?: string;
+  /**
+   * Kratka interna napomena za mejl: šta pokriva ili šta o njemu znamo
+   * (npr. „Beograd i bliža okolina"). Pomaže da se odmah zna kome zvati.
+   */
+  coverage?: string;
   /** Koje usluge ovaj partner pokriva. */
   products: RoutingProduct[];
   /**
@@ -89,12 +94,27 @@ export const partners: Partner[] = [
       "moskvic-407-1962",
     ],
   },
+  // Za lažnog matičara imamo dva saradnika i nemamo podatak o lokaciji u
+  // izboru sa forme, pa u mejl idu OBA — prvi je onaj sa telefonom, da se zna
+  // koga zvati odmah. Instagram nalozi im se razlikuju samo po tačkama i
+  // donjim crtama, pa pažljivo pri prepisivanju.
+  {
+    id: "lazni-maticar-sajkovic",
+    name: "Lažni matičar Beograd (Šajković)",
+    contactPerson: "Dimitrije Šajković",
+    phone: "066 919 9332",
+    instagram: "@lazni_maticar_beograd",
+    coverage: "Beograd i bliža okolina",
+    products: ["lazni-maticar"],
+  },
   {
     id: "lazni-maticar-beograd",
-    name: "Lažni matičar Beograd",
-    // TODO: dopuniti ime osobe i telefon kada stignu od partnera. Do tada je
-    // Instagram jedini kanal koji imamo, pa on ide u mejl.
-    instagram: "@lazni_maticar_beograd",
+    name: "Lažni matičar Beograd (prvi saradnik)",
+    // TODO: dopuniti ime osobe i telefon kada stignu. Do tada je Instagram
+    // jedini kanal koji imamo, pa on ide u mejl.
+    instagram: "@lazni.maticar.beograd",
+    coverage:
+      "nemamo telefon, samo Instagram; od njega su orijentacione cene ispod",
     products: ["lazni-maticar"],
   },
 ];
@@ -106,7 +126,7 @@ export const partners: Partner[] = [
  */
 const INTERNAL_PRICE_NOTES: Partial<Record<RoutingProduct, string>> = {
   "lazni-maticar":
-    "Orijentaciono (partnerov cenovnik, NE objavljivati): Beograd ~15.000 din · Avala/Smederevo do 200 € · Fruška gora 300 € · Niš 350 € · ceremonija na stranom jeziku od 400 €. Sve van Beograda zavisi od udaljenosti i termina.",
+    "Orijentaciono (cenovnik prvog saradnika, NE objavljivati): Beograd ~15.000 din · Avala/Smederevo do 200 € · Fruška gora 300 € · Niš 350 € · ceremonija na stranom jeziku od 400 €. Sve van Beograda zavisi od udaljenosti i termina.",
 };
 
 /** Interna napomena o cenama za datu uslugu, ako je imamo. */
@@ -120,6 +140,7 @@ function formatPartner(p: Partner): string {
   const parts = [who];
   if (p.phone) parts.push(`${p.phone}${p.channels ? ` (${p.channels})` : ""}`);
   if (p.instagram) parts.push(p.instagram);
+  if (p.coverage) parts.push(p.coverage);
   return parts.join(" — ");
 }
 
@@ -169,7 +190,10 @@ export function resolvePartnerRouting(
   }
 
   if (product === "lazni-maticar") {
-    return allPartnersFallback("lazni-maticar", "Partneri za lažnog matičara");
+    return allPartnersFallback(
+      "lazni-maticar",
+      "Saradnici za lažnog matičara — prvo probati onog sa telefonom",
+    );
   }
 
 
