@@ -63,6 +63,8 @@ function strings(cyr: boolean) {
         uploading: "Отпремање…",
         loadMore: "Учитај још",
         empty: "Још нема фотографија. Будите први!",
+        emptyHint:
+          "Сликајте телефоном и додајте — све фотографије стижу младенцима на једно место.",
         beforeMsg:
           "Галерија још није отворена. Фотографије можете додати на дан венчања.",
         beforeTitle: "Галерија се отвара на дан венчања",
@@ -99,6 +101,8 @@ function strings(cyr: boolean) {
         uploading: "Otpremanje…",
         loadMore: "Učitaj još",
         empty: "Još nema fotografija. Budite prvi!",
+        emptyHint:
+          "Slikajte telefonom i dodajte — sve fotografije stižu mladencima na jedno mesto.",
         beforeMsg:
           "Galerija još nije otvorena. Fotografije možete dodati na dan venčanja.",
         beforeTitle: "Galerija se otvara na dan venčanja",
@@ -138,12 +142,21 @@ function stacksFromPhotos(photos: GalleryPhoto[]): GalleryStack[] {
   return Array.from(map.values());
 }
 
-function readStoredName(): string {
-  if (typeof window === "undefined") return "";
+/** Name this device last uploaded under IN THIS gallery. Used only to relabel
+ *  that device's earlier photos when the guest types a different name — never to
+ *  pre-fill the input: the field starts empty so nobody finds a stranger's (or
+ *  their own, from another couple's wedding) name already typed in. Keyed per
+ *  slug for the same reason. */
+function storedNameKey(slug: string): string {
+  return `hu_gallery_name:${slug}`;
+}
+
+function readStoredName(slug: string): string | null {
+  if (typeof window === "undefined") return null;
   try {
-    return localStorage.getItem("hu_gallery_name") || "";
+    return localStorage.getItem(storedNameKey(slug));
   } catch {
-    return "";
+    return null;
   }
 }
 
@@ -212,7 +225,7 @@ export default function GalerijaClient({
   }
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [guestName, setGuestName] = useState<string>(readStoredName);
+  const [guestName, setGuestName] = useState<string>("");
   const [caption, setCaption] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -230,13 +243,11 @@ export default function GalerijaClient({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Per-device identity: a random token in localStorage ties a guest's uploads
-  // together (survives shared venue WiFi), pre-fills their name, and authorizes
-  // renaming only their own photos.
+  // together (survives shared venue WiFi) and authorizes renaming only their own
+  // photos. The NAME is not pre-filled from it — see storedNameKey above.
   const uploaderIdRef = useRef<string>("");
   const savedNameRef = useRef<string | null>(null);
   useEffect(() => {
-    // guestName is pre-filled via the lazy initializer; here we only set up the
-    // device token (a side effect) and record the saved name for rename diffing.
     try {
       let uid = localStorage.getItem("hu_gallery_uid");
       if (!uid) {
@@ -244,11 +255,11 @@ export default function GalerijaClient({
         localStorage.setItem("hu_gallery_uid", uid);
       }
       uploaderIdRef.current = uid;
-      savedNameRef.current = localStorage.getItem("hu_gallery_name");
+      savedNameRef.current = readStoredName(slug);
     } catch {
       /* localStorage unavailable (private mode) — feature degrades gracefully */
     }
-  }, []);
+  }, [slug]);
 
   const canUpload = phase === "upload";
   const showGrid =
@@ -367,7 +378,7 @@ export default function GalerijaClient({
       const finalName = guestName.trim();
       const prevName = savedNameRef.current;
       try {
-        localStorage.setItem("hu_gallery_name", finalName);
+        localStorage.setItem(storedNameKey(slug), finalName);
       } catch {
         /* ignore */
       }
@@ -396,7 +407,7 @@ export default function GalerijaClient({
 
     if (added.length > 0) toast.success(t.thanks);
     if (failed > 0) toast.error(`${failed} × ✕`);
-  }, [files, guestName, t, uploadOne, base, galleryKey]);
+  }, [files, guestName, t, uploadOne, base, galleryKey, slug]);
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const picked = Array.from(e.target.files ?? []);
@@ -548,9 +559,22 @@ export default function GalerijaClient({
         {/* Stacks — one per uploader (guests don't browse everyone's photos flat) */}
         {showGrid &&
           (groups.length === 0 ? (
-            <p className="text-center font-serif text-lg py-16" style={{ color: "var(--theme-text-muted)" }}>
-              {t.empty}
-            </p>
+            // Empty state mirrors the portal's GalleryCard: icon, headline,
+            // hint — a bare line of text left the screen looking unfinished.
+            <div
+              className="text-center py-16 px-6"
+              style={{ color: "var(--theme-text-muted)" }}
+            >
+              <Camera
+                size={40}
+                className="mx-auto mb-4"
+                style={{ color: "var(--theme-primary)", opacity: 0.35 }}
+              />
+              <p className="font-serif text-lg">{t.empty}</p>
+              <p className="font-raleway text-sm mt-2 max-w-xs mx-auto leading-relaxed opacity-80">
+                {t.emptyHint}
+              </p>
+            </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 sm:gap-7">
               {groups.map((g) => {

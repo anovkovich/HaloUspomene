@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
+import Image from "next/image";
 import { Search, Armchair } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type {
@@ -580,6 +581,36 @@ export default function GdeSedimClient({
                 }}
               />
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Placeholder illustration — the page is just a label and one input
+          until a name is typed, which left the screen looking broken. Shown
+          only when there is nothing else to fill it: no result card, and no
+          hall map underneath (the hub tab hides the map, and a standalone page
+          without tables has none). */}
+      <AnimatePresence initial={false}>
+        {!selected && (!showMap || tables.length === 0) && (
+          <motion.div
+            key="seating-placeholder"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-10 flex flex-col items-center"
+            style={{ overflow: "hidden" }}
+            aria-hidden="true"
+          >
+            <Image
+              src="/images/gde-sedim.webp"
+              alt=""
+              width={520}
+              height={416}
+              priority={false}
+              className="w-full max-w-[420px] h-auto select-none pointer-events-none"
+              style={{ opacity: 0.9 }}
+            />
           </motion.div>
         )}
       </AnimatePresence>
