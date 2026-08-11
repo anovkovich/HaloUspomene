@@ -13,6 +13,7 @@ import { EnvelopeLoader } from "@/app/pozivnica/[slug]/components/EnvelopeLoader
 import { BirthdayRSVPForm } from "@/app/deciji-rodjendan/[slug]/components/BirthdayRSVPForm";
 import PolaroidGallery from "@/app/pozivnica/[slug]/PolaroidGallery";
 import PreviewRsvpLock from "@/components/PreviewRsvpLock";
+import { InvitationCredit } from "@/components/invitation/InvitationCredit";
 import { MultilineText } from "@/lib/multiline";
 import AddToCalendar from "@/components/ui/AddToCalendar";
 import {
@@ -480,7 +481,14 @@ export default function PunoletstvoInvitationClient({
                     // (brightness + drop-shadow) promotes this whole box to a
                     // GPU layer whose rectangular edge flickers as a "border" on
                     // iOS Safari. The seal keeps its static drop-shadow below.
-                    className="relative w-36 h-36 sm:w-60 sm:h-60"
+                    // A custom illustration sits in a smaller box than the wax
+                    // seal: the seal is drawn to fill its frame, a bespoke
+                    // drawing reads as oversized at the same size.
+                    className={`relative ${
+                      data.hero_emblem_url
+                        ? "w-32 h-32 sm:w-48 sm:h-48"
+                        : "w-36 h-36 sm:w-60 sm:h-60"
+                    }`}
                   >
                     {data.hero_emblem_url ? (
                       /* Custom illustration replaces the whole emblem — the
@@ -904,6 +912,7 @@ export default function PunoletstvoInvitationClient({
             >
               Hvala što ćete biti deo moje proslave
             </p>
+            <InvitationCredit className="mt-10" />
           </footer>
         </main>
       </div>
