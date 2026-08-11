@@ -26,6 +26,8 @@ import {
   useRecaptcha,
   RecaptchaDisclosure,
 } from "@/components/forms/RecaptchaProvider";
+import { refreshPhoneTrustToken } from "@/lib/phone-trust-refresh";
+import { redactPayloadForEmail } from "@/lib/wizard-notify";
 
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 
@@ -778,6 +780,19 @@ export default function BirthdayQuestionnaireForm({
         return;
       }
 
+      // The phone was verified on an early step; this form is routinely filled
+      // in longer than the trust token lives. Re-sign it for the same number
+      // (no SMS, no user-visible step) so a slow submit isn't rejected as
+      // unverified. Bypass links carry their own authorization.
+      const contactPhoneE164 = `${bypassInfo?.callingCode || "+381"}${formData.contact_phone}`;
+      const phoneTrustToken = bypassInfo
+        ? formData.phone_trust_token
+        : await refreshPhoneTrustToken({
+            phoneE164: contactPhoneE164,
+            currentToken: formData.phone_trust_token,
+            executeRecaptcha,
+          });
+
       // 1) Persist as draft in MongoDB (mirrors wedding classic flow).
       const birthdayApiPayload = {
         theme: formData.theme,
@@ -797,8 +812,8 @@ export default function BirthdayQuestionnaireForm({
         },
         countdown_enabled: formData.countdown_enabled,
         map_enabled: formData.map_enabled,
-        contact_phone: `${bypassInfo?.callingCode || "+381"}${formData.contact_phone}`,
-        phone_trust_token: formData.phone_trust_token,
+        contact_phone: contactPhoneE164,
+        phone_trust_token: phoneTrustToken,
         ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
         recaptcha_token: recaptchaToken,
       };
@@ -847,7 +862,7 @@ export default function BirthdayQuestionnaireForm({
             "Kontakt telefon": `${bypassInfo?.callingCode || "+381"}${formData.contact_phone}`,
             Napomena: formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/rodjendan/${created.slug}`,
-            "JSON podaci": JSON.stringify(birthdayApiPayload, (k, v) => k === "recaptcha_token" ? undefined : v, 2),
+            "JSON podaci": redactPayloadForEmail(birthdayApiPayload),
           }),
         }).catch(() => {});
       }

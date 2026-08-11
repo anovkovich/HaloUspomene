@@ -7,6 +7,13 @@
  * Rate limit policy: 3 sends / IP / 10 minutes.
  * Verified-phones cache: 30 days. A re-verification within that window
  * short-circuits the OTP flow and returns a fresh trust token immediately.
+ *
+ * Trust-token TTL is 60 min because the long wizards (/napravi-pozivnicu and
+ * siblings) ask for the phone on step 2 of 6-7 and submit it at the end — a
+ * short TTL expired mid-form and rejected a genuinely verified number. Clients
+ * ALSO refresh the token right before submit via /api/verify/refresh, so the
+ * TTL only needs to cover the gap between two page-lifetime events, not the
+ * whole session.
  */
 
 import { SignJWT, jwtVerify } from "jose";
@@ -17,7 +24,7 @@ import { verifyBypassToken, type BypassCountry } from "./bypass-token";
 const TRUST_SECRET_RAW =
   process.env.PHONE_VERIFY_JWT_SECRET || process.env.JWT_SECRET || "dev-secret";
 const TRUST_SECRET = new TextEncoder().encode(TRUST_SECRET_RAW);
-const TRUST_TTL = "15m";
+const TRUST_TTL = "60m";
 
 const TRUST_ISSUER = "halouspomene-phone-verify";
 const TRUST_AUDIENCE = "halouspomene-form";

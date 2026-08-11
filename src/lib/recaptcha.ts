@@ -13,6 +13,7 @@ const DEFAULT_THRESHOLD = 0.5;
 
 export type RecaptchaAction =
   | "verify_send"
+  | "verify_refresh"
   | "create_invitation"
   | "create_birthday"
   | "create_punoletstvo"

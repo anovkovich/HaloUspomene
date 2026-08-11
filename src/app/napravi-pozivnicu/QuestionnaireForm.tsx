@@ -58,6 +58,8 @@ import dynamic from "next/dynamic";
 import { PhoneAuthField } from "@/components/verification/PhoneAuthField";
 import type { BypassInfo } from "./FormPageWrapper";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import { refreshPhoneTrustToken } from "@/lib/phone-trust-refresh";
+import { redactPayloadForEmail } from "@/lib/wizard-notify";
 
 const PremiumStepAIPhoto = dynamic(() => import("./steps/PremiumStepAIPhoto"), {
   ssr: false,
@@ -3055,6 +3057,18 @@ export default function QuestionnaireForm({
       ? phoneEntries.map((e) => e.name)
       : undefined;
 
+    // The phone was verified back on step 2; this form is routinely filled in
+    // longer than the trust token lives. Re-sign it for the same number (no SMS,
+    // no user-visible step) so a slow submit isn't rejected as unverified.
+    // Bypass links carry their own authorization and need no trust token.
+    const phoneTrustToken = bypassInfo
+      ? formData.phone_trust_token
+      : await refreshPhoneTrustToken({
+          phoneE164: phoneEntries[0]?.phone || "",
+          currentToken: formData.phone_trust_token,
+          executeRecaptcha,
+        });
+
     // Photo gallery gating + per-tier cap. Classic = 3 (paid add-on, gated by
     // the extras checkbox); Premium Fountain = 2 (bundled, gated only by the
     // user having queued at least one file); other premium themes = none.
@@ -3171,7 +3185,7 @@ export default function QuestionnaireForm({
           custom_primary_color: formData.custom_primary_color,
           custom_background_color: formData.custom_background_color,
           contact_phone: combinedPhone,
-          phone_trust_token: formData.phone_trust_token,
+          phone_trust_token: phoneTrustToken,
           ...(phoneShowNumbers ? { show_numbers: phoneShowNumbers } : {}),
           ...(phoneNumberNames ? { number_names: phoneNumberNames } : {}),
           paid_for_images: isFountainGallery,
@@ -3270,11 +3284,7 @@ export default function QuestionnaireForm({
                   : "❌ Ne",
               "Preview URL": `https://halouspomene.rs/premium-pozivnica/${data.slug}`,
               "Admin link": `https://halouspomene.rs/admin/${data.slug}`,
-              "JSON podaci": JSON.stringify(
-                premiumPayload,
-                (k, v) => (k === "recaptcha_token" ? undefined : v),
-                2,
-              ),
+              "JSON podaci": redactPayloadForEmail(premiumPayload),
             }),
           }).catch(() => {});
         }
@@ -3357,7 +3367,7 @@ export default function QuestionnaireForm({
         custom_primary_color: formData.custom_primary_color || undefined,
         custom_background_color: formData.custom_background_color || undefined,
         contact_phone: combinedPhone,
-        phone_trust_token: formData.phone_trust_token,
+        phone_trust_token: phoneTrustToken,
         ...(phoneShowNumbers ? { show_numbers: phoneShowNumbers } : {}),
         ...(phoneNumberNames ? { number_names: phoneNumberNames } : {}),
         ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
@@ -3431,11 +3441,7 @@ export default function QuestionnaireForm({
                 : "❌ Ne",
             Napomena: formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/${data.slug}`,
-            "JSON podaci": JSON.stringify(
-              classicApiPayload,
-              (k, v) => (k === "recaptcha_token" ? undefined : v),
-              2,
-            ),
+            "JSON podaci": redactPayloadForEmail(classicApiPayload),
           }),
         }).catch(() => {});
       }
