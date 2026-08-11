@@ -11,6 +11,7 @@ import type {
 import { ThemeProvider } from "@/app/pozivnica/[slug]/components/ThemeProvider";
 import { EnvelopeLoader } from "@/app/pozivnica/[slug]/components/EnvelopeLoader";
 import { BirthdayRSVPForm } from "@/app/deciji-rodjendan/[slug]/components/BirthdayRSVPForm";
+import PolaroidGallery from "@/app/pozivnica/[slug]/PolaroidGallery";
 import PreviewRsvpLock from "@/components/PreviewRsvpLock";
 import { MultilineText } from "@/lib/multiline";
 import AddToCalendar from "@/components/ui/AddToCalendar";
@@ -365,10 +366,21 @@ export default function PunoletstvoInvitationClient({
   const punoletstvoCalLabels = calendarLabels(false);
 
   return (
-    <ThemeProvider theme={theme} scriptFont={scriptFont}>
+    <ThemeProvider
+      theme={theme}
+      scriptFont={scriptFont}
+      customPrimaryColor={data.custom_primary_color}
+      // Deliberately NOT passing customBackgroundColor: buildCustomColorOverrides
+      // repaints --theme-surface and --theme-surface-alt with the same colour,
+      // which would tint the framed cards too. We want the page only, so the
+      // variable is overridden one level down instead.
+    >
       <div
         style={{
           ["--theme-display-font" as string]: FONT_VAR_BY_KEY[scriptFont],
+          ...(data.custom_background_color
+            ? { ["--theme-background" as string]: data.custom_background_color }
+            : {}),
         }}
       >
         {!loaderDone && (
@@ -470,30 +482,45 @@ export default function PunoletstvoInvitationClient({
                     // iOS Safari. The seal keeps its static drop-shadow below.
                     className="relative w-36 h-36 sm:w-60 sm:h-60"
                   >
-                    <SunburstRing />
-                    <div className="absolute inset-2 flex items-center justify-center">
-                      {/* Real 3D gold wax seal — same asset used by premium invitation */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {data.hero_emblem_url ? (
+                      /* Custom illustration replaces the whole emblem — the
+                       * sunburst and the "18" belong to the wax seal look and
+                       * would fight a bespoke drawing. */
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
-                        src="/images/premium/envelope-details/gold-wax.webp"
-                        alt="Zlatna voštana pečat"
+                        src={data.hero_emblem_url}
+                        alt={`Ilustracija — ${displayName}`}
                         className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
-                        style={{ filter: "drop-shadow(0 18px 36px rgba(0,0,0,0.4))" }}
                         decoding="async"
                       />
-                      {/* "18" overlaid on the empty center of the seal */}
-                      <span
-                        className="relative text-4xl sm:text-6xl font-serif font-semibold select-none leading-none"
-                        style={{
-                          color: "#7a5318",
-                          textShadow:
-                            "0 1px 1px rgba(255,232,150,0.85), 0 0 8px rgba(90,55,10,0.4)",
-                          letterSpacing: "0.02em",
-                        }}
-                      >
-                        18
-                      </span>
-                    </div>
+                    ) : (
+                      <>
+                        <SunburstRing />
+                        <div className="absolute inset-2 flex items-center justify-center">
+                          {/* Real 3D gold wax seal — same asset used by premium invitation */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src="/images/premium/envelope-details/gold-wax.webp"
+                            alt="Zlatna voštana pečat"
+                            className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+                            style={{ filter: "drop-shadow(0 18px 36px rgba(0,0,0,0.4))" }}
+                            decoding="async"
+                          />
+                          {/* "18" overlaid on the empty center of the seal */}
+                          <span
+                            className="relative text-4xl sm:text-6xl font-serif font-semibold select-none leading-none"
+                            style={{
+                              color: "#7a5318",
+                              textShadow:
+                                "0 1px 1px rgba(255,232,150,0.85), 0 0 8px rgba(90,55,10,0.4)",
+                              letterSpacing: "0.02em",
+                            }}
+                          >
+                            18
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </motion.div>
                 </div>
 
@@ -630,6 +657,17 @@ export default function PunoletstvoInvitationClient({
               </motion.a>
             </div>
           </section>
+
+          {/* ─── GALERIJA ─────────────────────────────────────────────────── */}
+          {/* Theme-agnostic: PolaroidGallery reads only CSS variables, which
+              ThemeProvider already supplies for both punoletstvo themes. */}
+          {data.paid_for_images && data.images && data.images.length > 0 && (
+            <PolaroidGallery
+              images={data.images}
+              imageLayout={data.image_layout}
+              showTitle={false}
+            />
+          )}
 
           {/* ─── COUNTDOWN ────────────────────────────────────────────────── */}
           {data.countdown_enabled && (

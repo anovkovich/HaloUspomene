@@ -1,4 +1,5 @@
 import clientPromise from "./mongodb";
+import { del } from "@vercel/blob";
 import { BirthdayData } from "@/app/deciji-rodjendan/[slug]/types";
 import { deleteShareLinksForProduct } from "./share-links";
 
@@ -56,6 +57,8 @@ export async function upsertBirthday(
 
 export async function deleteBirthday(slug: string): Promise<void> {
   const c = await col();
+  // Read before deleting — the doc carries the blob urls we must clean up.
+  const doc = await c.findOne({ slug });
   await c.deleteOne({ slug });
 
   // Cascade: RSVP responses + share links
@@ -64,6 +67,22 @@ export async function deleteBirthday(slug: string): Promise<void> {
     client.db("halouspomene").collection("birthday_rsvp").deleteMany({ slug }),
     deleteShareLinksForProduct("birthday", slug),
   ]);
+
+  // Cascade: gallery + hero emblem blobs. Failures are swallowed per blob — a
+  // leaked blob is preferable to leaving the event half-deleted.
+  const urls = [
+    ...(doc?.images ?? []).map((img) => img.url),
+    doc?.hero_emblem_url,
+  ].filter((u): u is string => !!u);
+  if (urls.length > 0) {
+    await Promise.all(
+      urls.map((url) =>
+        del(url).catch((err) =>
+          console.error(`Blob cleanup failed for ${url}:`, err),
+        ),
+      ),
+    );
+  }
 }
 
 export async function patchBirthday(

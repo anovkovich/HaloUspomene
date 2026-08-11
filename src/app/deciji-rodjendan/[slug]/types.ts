@@ -63,6 +63,34 @@ export interface BirthdayData {
    * the couple settles the custom receipt for this add-on.
    */
   paid_for_raspored?: boolean;
+  /**
+   * Unlocks the polaroid photo gallery on the invitation. Mirrors the wedding
+   * `paid_for_images` gate field-for-field so the admin panel, the upload route
+   * and PolaroidGallery all behave identically across products.
+   * Currently rendered only by punoletstvo; the children's birthday renderer
+   * ignores it until that product wants a gallery too.
+   */
+  paid_for_images?: boolean;
+  /** Up to 3 Vercel Blob images. Gated by `paid_for_images`. */
+  images?: Array<{ url: string; pathname: string }>;
+  /** Polaroid arrangement. "triangle" only applies at exactly 3 images. */
+  image_layout?: "line" | "triangle";
+  /**
+   * Per-invitation look, same field names as the wedding product, so a one-off
+   * colour request needs no new theme and no code change.
+   *
+   * NOTE the scope difference from the wedding product: there,
+   * custom_background_color also repaints the card surfaces. On punoletstvo it
+   * only sets the page background — the framed cards keep the theme's surface
+   * colour, which is what the design depends on for contrast.
+   */
+  custom_primary_color?: string;
+  custom_background_color?: string;
+  /**
+   * Replaces the sunburst + gold wax seal + "18" emblem in the punoletstvo
+   * hero with a custom illustration. Blob url, uploaded from the admin panel.
+   */
+  hero_emblem_url?: string;
   receipt_valid?: boolean;
   receipt_created?: string;
   custom_discount?: number;

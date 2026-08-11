@@ -11,6 +11,11 @@ interface PolaroidGalleryProps {
   images: PolaroidImage[];
   useCyrillic?: boolean;
   imageLayout?: "line" | "triangle";
+  /**
+   * "Naši trenuci" heading. Wedding invitations keep it; punoletstvo renders
+   * the photos bare, since the copy is couple-specific.
+   */
+  showTitle?: boolean;
 }
 
 const LAYOUT_ROTATIONS: Record<number, number[]> = {
@@ -106,6 +111,7 @@ export default function PolaroidGallery({
   images,
   useCyrillic,
   imageLayout = "line",
+  showTitle = true,
 }: PolaroidGalleryProps) {
   const canHoverRef = useRef(false);
 
@@ -139,14 +145,16 @@ export default function PolaroidGallery({
 
       <div className="max-w-4xl mx-auto">
         {/* Section heading */}
-        <div className="text-center mb-16 sm:mb-20">
-          <h2
-            className="text-5xl sm:text-7xl font-script mb-3"
-            style={{ color: "var(--theme-primary)" }}
-          >
-            {useCyrillic ? "Наши тренуци" : "Naši trenuci"}
-          </h2>
-        </div>
+        {showTitle && (
+          <div className="text-center mb-16 sm:mb-20">
+            <h2
+              className="text-5xl sm:text-7xl font-script mb-3"
+              style={{ color: "var(--theme-primary)" }}
+            >
+              {useCyrillic ? "Наши тренуци" : "Naši trenuci"}
+            </h2>
+          </div>
+        )}
 
         {isTriangle ? (
           <>

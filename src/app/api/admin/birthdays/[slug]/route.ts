@@ -7,8 +7,11 @@ import { getBirthdayData, upsertBirthday, deleteBirthday, patchBirthday } from "
 
 // Drop ISR cache so admin edits show up immediately instead of waiting for
 // the revalidate window + a visitor to trigger background regeneration.
+// Both products read the same birthday_events record, and the slug alone does
+// not tell us which route renders it — so revalidate both.
 function revalidateBirthdayPaths(slug: string) {
   revalidatePath(`/deciji-rodjendan/${slug}`);
+  revalidatePath(`/punoletstvo/${slug}`);
 }
 
 export async function PUT(
