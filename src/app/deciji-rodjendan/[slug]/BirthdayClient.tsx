@@ -13,6 +13,7 @@ import { SceneDecorations, AgeBadge } from "./components/Illustrations";
 import { BirthdayCountdown } from "./components/Countdown";
 import { BirthdayRSVPForm } from "./components/BirthdayRSVPForm";
 import PreviewRsvpLock from "@/components/PreviewRsvpLock";
+import { InvitationCredit } from "@/components/invitation/InvitationCredit";
 import { MultilineText } from "@/lib/multiline";
 import {
   type CalendarEvent,
@@ -377,12 +378,7 @@ export default function BirthdayClient({ data, slug, preview = false, promoCode,
               className="h-px w-16 mx-auto mt-4"
               style={{ backgroundColor: "var(--theme-border)" }}
             />
-            <p
-              className="text-xs uppercase tracking-[0.2em] mt-4"
-              style={{ color: "var(--theme-text-light)" }}
-            >
-              halouspomene.rs
-            </p>
+            <InvitationCredit className="mt-6" />
           </div>
         </footer>
       </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Heart, Calendar, MapPin, Mic, Church } from "lucide-react";
 // MapPin retained for Feature Cards section below
@@ -16,6 +15,7 @@ import { generateInvitationPDF } from "./generateInvitationPDF";
 import PolaroidGallery from "./PolaroidGallery";
 import CallCTA from "@/components/CallCTA";
 import AddToCalendar from "@/components/ui/AddToCalendar";
+import { InvitationCredit } from "@/components/invitation/InvitationCredit";
 import {
   type CalendarEvent,
   parseLocalDate,
@@ -1049,26 +1049,7 @@ export default function InvitationClient({
               {formattedDate.short}
             </p>
           </div>
-          <Link
-            href="/"
-            className="mt-8 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
-          >
-            <Image
-              src="/images/logo.png"
-              alt="Halo Uspomene LOGO"
-              width={3519}
-              height={1301}
-              className="h-6 mb-1 w-auto"
-            />
-          </Link>
-
-          <Link
-            href="/"
-            className="w-full flex font-serif text-center gap-1 mb-3 justify-center items-center text-[10px] sm:text-xs mt-0 sm:mt-2 opacity-50"
-          >
-            Made with <Heart size={10} className="text-[#AE343F]" /> | Halo
-            Pozivnice
-          </Link>
+          <InvitationCredit className="mt-8" />
 
           <button
             onClick={() =>

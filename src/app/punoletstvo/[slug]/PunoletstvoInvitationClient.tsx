@@ -13,6 +13,7 @@ import { EnvelopeLoader } from "@/app/pozivnica/[slug]/components/EnvelopeLoader
 import { BirthdayRSVPForm } from "@/app/deciji-rodjendan/[slug]/components/BirthdayRSVPForm";
 import PolaroidGallery from "@/app/pozivnica/[slug]/PolaroidGallery";
 import PreviewRsvpLock from "@/components/PreviewRsvpLock";
+import { InvitationCredit } from "@/components/invitation/InvitationCredit";
 import { MultilineText } from "@/lib/multiline";
 import AddToCalendar from "@/components/ui/AddToCalendar";
 import {
@@ -911,6 +912,7 @@ export default function PunoletstvoInvitationClient({
             >
               Hvala što ćete biti deo moje proslave
             </p>
+            <InvitationCredit className="mt-10" />
           </footer>
         </main>
       </div>
