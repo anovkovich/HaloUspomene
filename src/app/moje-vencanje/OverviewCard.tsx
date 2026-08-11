@@ -27,6 +27,7 @@ import {
   CalendarPlus,
   Minus,
   Plus,
+  ClipboardList,
 } from "lucide-react";
 import {
   loadOverviewAction,
@@ -53,7 +54,11 @@ interface Props {
   };
   checklist: ChecklistItem[];
   budget: PortalBudget;
-  onNavigate: (view: ActiveView) => void;
+  /** `guestsSubView` picks which tab the Gosti view opens on (default: potvrde). */
+  onNavigate: (
+    view: ActiveView,
+    opts?: { guestsSubView?: "potvrde" | "lista" },
+  ) => void;
   /** Lifts a freshly extended RSVP deadline back to the portal shell. */
   onSubmitUntilChange?: (submitUntil: string) => void;
 }
@@ -122,6 +127,7 @@ export default function OverviewCard({
     uncategorized: number;
     notInvited: number;
     unlinkedConfirmations: number;
+    inviteeCount: number;
     recentResponses: {
       name: string;
       attending: string;
@@ -591,15 +597,46 @@ export default function OverviewCard({
         </div>
       </motion.div>
 
-      {/* Na prvi pogled — status band: 3 numeric stats fused with the Pažnja strip */}
-      <motion.div {...sectionMotion(0.1)}>
-        <div className="flex items-center gap-3 mb-2.5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#232323]/45">
-            Na prvi pogled
-          </p>
-          <span className="h-px flex-1 bg-[#d4af37]/35" />
-        </div>
+      {/* Lista zvanica CTA — svakom paru koji je još nije započeo. Parovima sa
+       *  rasporedom sedenja dodaje se i rečenica o njemu: njihovi gosti u
+       *  raspored ulaze preko potvrda, pa je lista prirodan prvi korak.
+       *  Stoji PRE statusne trake — dok liste nema, to je sledeći potez. */}
+      {!loading && guestStats?.inviteeCount === 0 && (
+        <motion.div
+          {...sectionMotion(0.1)}
+          className="relative overflow-hidden rounded-2xl bg-white border border-[#d4af37]/40 p-5 shadow-[0_10px_26px_-18px_rgba(174,52,63,0.35)]"
+        >
+          <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
+          <div className="flex items-start gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#AE343F]/10 shrink-0">
+              <ClipboardList size={18} className="text-[#AE343F]" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-serif text-lg text-[#232323] mb-1">
+                Napravite listu zvanica
+              </p>
+              <p className="text-[13px] text-[#232323]/70 leading-relaxed">
+                Upišite koga zovete — po porodicama i grupama, sa kumovima i
+                ostalim ulogama. Spisak vidite samo vi, a potvrde koje stignu
+                povezuju se sa njim, pa uvek znate ko još nije odgovorio.
+                {paidForRaspored &&
+                  " Zvanice koje potvrde dolazak odmah možete rasporediti u rasporedu sedenja."}
+              </p>
+              <button
+                onClick={() => onNavigate("guests", { guestsSubView: "lista" })}
+                className="mt-3.5 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#AE343F] text-white shadow-[0_6px_16px_-8px_rgba(174,52,63,0.6)] hover:bg-[#962d36] transition-colors cursor-pointer"
+              >
+                <Plus size={15} />
+                Dodaj listu zvanica
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
+      {/* Status band: 3 numeric stats fused with the Pažnja strip. Bez naslova —
+       *  brojke se čitaju same, a poziv iznad nosi pažnju. */}
+      <motion.div {...sectionMotion(0.14)}>
         <div className="rounded-2xl bg-white border border-[#232323]/8 overflow-hidden shadow-[0_1px_3px_rgba(35,35,35,0.05)]">
           <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#232323]/8">
             {/* Checklista */}

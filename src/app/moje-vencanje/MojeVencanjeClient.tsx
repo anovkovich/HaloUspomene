@@ -85,6 +85,16 @@ export default function MojeVencanjeClient() {
     "none",
   );
   const [activeView, setActiveView] = useState<ActiveView>("overview");
+  // Which Gosti tab the next mount of GuestsCard opens on. Set by the Pregled
+  // CTA; reset as soon as the couple leaves the Gosti view, so ordinary
+  // navigation always lands on Potvrde gostiju.
+  const [guestsSubView, setGuestsSubView] = useState<"potvrde" | "lista">(
+    "potvrde",
+  );
+
+  useEffect(() => {
+    if (activeView !== "guests") setGuestsSubView("potvrde");
+  }, [activeView]);
 
   // PWA install
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
@@ -681,7 +691,9 @@ export default function MojeVencanjeClient() {
                         checklist={checklist}
                         budget={budget}
                         onSubmitUntilChange={handleSubmitUntilChange}
-                        onNavigate={(v) => {
+                        onNavigate={(v, opts) => {
+                          if (opts?.guestsSubView)
+                            setGuestsSubView(opts.guestsSubView);
                           if (v === "checklist" || v === "budget") {
                             setPwaSubView(v);
                           } else {
@@ -699,7 +711,9 @@ export default function MojeVencanjeClient() {
                       checklist={checklist}
                       budget={budget}
                       onSubmitUntilChange={handleSubmitUntilChange}
-                      onNavigate={(v) => {
+                      onNavigate={(v, opts) => {
+                        if (opts?.guestsSubView)
+                          setGuestsSubView(opts.guestsSubView);
                         setActiveView(v);
                         window.scrollTo({ top: 0 });
                       }}
@@ -792,7 +806,11 @@ export default function MojeVencanjeClient() {
                     </div>
                   }
                 >
-                  <GuestsCard slug={coupleInfo.slug} draft={coupleInfo.draft} />
+                  <GuestsCard
+                    slug={coupleInfo.slug}
+                    draft={coupleInfo.draft}
+                    initialSubView={guestsSubView}
+                  />
                 </React.Suspense>
               )}
             </div>

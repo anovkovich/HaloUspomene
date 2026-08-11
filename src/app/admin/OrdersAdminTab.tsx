@@ -35,6 +35,8 @@ interface OrderRow {
   status: string;
   amountRsd: number;
   amountEur: number;
+  /** LS-charged total incl. VAT (RSD) — the base LS takes its fee from. */
+  lsTotalRsd: number | null;
   ipsRef: string;
   payerName: string | null;
   approvedBy: string | null;
@@ -54,6 +56,93 @@ const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   refunded: { label: "Refundirano", cls: "bg-red-500/20 text-red-300" },
   revoked: { label: "Povučeno", cls: "bg-red-500/20 text-red-300" },
 };
+
+/**
+ * Procena Lemon Squeezy provizije. Tačan iznos NE stiže u webhook payloadu (LS
+ * šalje samo total), vidi se tek na payoutu — zato je red u istoriji procena
+ * ("~"). IPS i ručno evidentirane uplate ne plaćaju ništa i ne ulaze u račun.
+ *
+ * Kalibrisano na stvarnom payoutu od 28.08.2026 — TRI kartične transakcije
+ * (4.500 + 4.799,45 sa PDV-om za stranog kupca + 100 test = 9.399,45 RSD):
+ *   Earnings $91,92 · Fees $8,22 · Earnings RSD 9.399,85 ⇒ kurs 102,3 RSD/$
+ *   (8,22 − 3 × 0,50) / 91,92 = 7,31 %
+ * Gornja granica po objavljenom cenovniku je 8 % (5 % osnovno + 1,5 % strana
+ * kartica + 1,5 % konverzija valute, jer se RSD naplaćuje preko USD) — izmereno
+ * je nešto niže, verovatno jer neka od dve doplate ne pada na svaku uplatu.
+ * PRERAČUNAJ obe konstante na sledećem payoutu: broj transakcija × 0,50 $ se
+ * oduzme od Fees, ostatak podeli sa Earnings (USD).
+ *
+ * Osnovica je ono što je LS NAPLATIO (`lsTotalRsd`), dakle sa PDV-om koji LS
+ * dodaje stranom kupcu — proviziju plaćamo i na taj deo, iako nam ne pripada.
+ * Kad `lsTotalRsd` nema (order je pao u `review`, pa ga je admin odobrio ručno —
+ * webhook u toj grani ne stigne da upiše `ls`), pada se na našu cenu, pa je
+ * procena za tu uplatu manja od stvarne za proviziju na PDV.
+ */
+const LS_FEE_PERCENT = 0.073;
+const LS_FEE_FIXED_RSD = 51; // ≈ 0,50 $ pri 102,3 RSD/$
+
+/** Statuses that mean the money actually landed and stayed (refundirano /
+ *  povučeno / odbijeno / isteklo namerno ne ulaze u mesečni zbir). */
+const MONTH_SUM_STATUSES = new Set(["paid", "unlocked"]);
+
+function monthKey(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${d.getMonth()}`;
+}
+
+function monthLabel(iso: string): string {
+  return new Date(iso).toLocaleDateString("sr-Latn-RS", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+/** Serbian numeric declension for the transaction count. */
+function plural(n: number, one: string, few: string, many: string): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
+}
+
+interface MonthGroup {
+  key: string;
+  label: string;
+  rows: OrderRow[];
+  sumRsd: number;
+  cardCount: number;
+  feeRsd: number;
+}
+
+/** Splits an already newest-first list into month buckets with their totals. */
+function groupByMonth(rows: OrderRow[]): MonthGroup[] {
+  const groups: MonthGroup[] = [];
+  for (const o of rows) {
+    const key = monthKey(o.createdAt);
+    let g = groups.find((x) => x.key === key);
+    if (!g) {
+      g = {
+        key,
+        label: monthLabel(o.createdAt),
+        rows: [],
+        sumRsd: 0,
+        cardCount: 0,
+        feeRsd: 0,
+      };
+      groups.push(g);
+    }
+    g.rows.push(o);
+    if (!MONTH_SUM_STATUSES.has(o.status)) continue;
+    g.sumRsd += o.amountRsd;
+    if (o.rail === "card") {
+      g.cardCount += 1;
+      g.feeRsd +=
+        (o.lsTotalRsd ?? o.amountRsd) * LS_FEE_PERCENT + LS_FEE_FIXED_RSD;
+    }
+  }
+  return groups;
+}
 
 function ageLabel(iso: string): string {
   const then = new Date(iso).getTime();
@@ -237,19 +326,53 @@ export default function OrdersAdminTab({
           <span className="text-[10px] text-white/30 uppercase tracking-wider">
             Istorija
           </span>
-          <div className="space-y-2 mt-2">
-            {history.map((o) => (
-              <OrderCard
-                key={o.orderId}
-                o={o}
-                busy={busy === o.orderId}
-                onAct={act}
-                onRemove={remove}
-                compact
-              />
-            ))}
-          </div>
+          {groupByMonth(history).map((g) => (
+            <div key={g.key}>
+              <MonthDivider group={g} />
+              <div className="space-y-2">
+                {g.rows.map((o) => (
+                  <OrderCard
+                    key={o.orderId}
+                    o={o}
+                    busy={busy === o.orderId}
+                    onAct={act}
+                    onRemove={remove}
+                    compact
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
         </>
+      )}
+    </div>
+  );
+}
+
+/** Month separator inside Istorija: naplaćeno u mesecu, pa procena LS provizije
+ *  i neto iznos. Kada u mesecu nema nijedne kartične uplate, provizije nema. */
+function MonthDivider({ group: g }: { group: MonthGroup }) {
+  const fee = Math.round(g.feeRsd);
+  return (
+    <div className="flex items-baseline gap-3 flex-wrap mt-5 mb-2">
+      <span className="text-[11px] uppercase tracking-wider text-white/45">
+        {g.label}
+      </span>
+      <span className="h-px flex-1 min-w-6 bg-white/10 self-center" />
+      <span className="text-sm font-semibold text-white/75 tabular-nums">
+        {formatPrice(g.sumRsd)}
+      </span>
+      {g.cardCount > 0 && (
+        <span
+          className="text-[11px] text-white/35 tabular-nums"
+          title="Procena: ~7,3% + 0,50 $ po transakciji, na iznos koji je LS naplatio (sa PDV-om ako je kupac iz inostranstva). Kalibrisano na payoutu od 28.08.2026. Tačan iznos vidiš tek na LS payoutu."
+        >
+          (− ~{formatPrice(fee)} LS provizija ·{" "}
+          {g.cardCount}{" "}
+          {plural(g.cardCount, "kartična", "kartične", "kartičnih")}{" "}
+          {plural(g.cardCount, "uplata", "uplate", "uplata")} →{" "}
+          {formatPrice(g.sumRsd - fee)} neto)
+        </span>
       )}
     </div>
   );

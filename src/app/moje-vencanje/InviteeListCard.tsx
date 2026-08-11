@@ -1598,6 +1598,24 @@ export default function InviteeListCard({
         </div>
       )}
 
+      {/* Ručna potvrda — points at the green UserCheck button on each row. Most
+          zvanice javljaju usmeno, pa se potvrda unosi ovde. Nestaje sama čim
+          postoji prvi odgovor, tako da nema potrebe za gašenjem. */}
+      {stats.total > 0 && stats.confirmed === 0 && stats.declined === 0 && (
+        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-[#4a8a5c]/35 bg-[#4a8a5c]/[0.07] px-3.5 py-3">
+          <span className="mt-px shrink-0 w-7 h-7 flex items-center justify-center rounded-lg border border-[#4a8a5c]/40 text-[#4a8a5c] bg-white">
+            <UserCheck size={14} />
+          </span>
+          <p className="text-xs text-[#232323]/75 leading-relaxed">
+            <span className="font-semibold text-[#232323]">
+              Zvanica vam je javila usmeno?
+            </span>{" "}
+            Kliknite zeleno dugme pored njenog imena i unesite potvrdu ručno —
+            odmah ulazi u potvrde gostiju, isto kao da je sama popunila formu.
+          </p>
+        </div>
+      )}
+
       {/* Posebne uloge (key wedding roles) — reference album, not counted in totals */}
       <div className="mb-4 border border-[#d4af37]/40 rounded-xl bg-[#F5F4DC]/40 overflow-hidden">
         <button

@@ -42,6 +42,13 @@ export async function GET(req: NextRequest) {
     status: o.status,
     amountRsd: o.amountRsd,
     amountEur: o.amountEur,
+    // What LS actually charged, INCLUDING any VAT it added on top for a foreign
+    // buyer — the base Lemon Squeezy computes its fee on. Null for IPS/manual
+    // rows and for anything charged in another currency.
+    lsTotalRsd:
+      o.ls?.currency === "RSD" && typeof o.ls.totalCents === "number"
+        ? o.ls.totalCents / 100
+        : null,
     ipsRef: o.ipsRef,
     payerName: o.notify?.payerName ?? null,
     approvedBy: o.approvedBy ?? null,

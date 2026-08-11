@@ -501,6 +501,8 @@ export async function loadOverviewAction(): Promise<{
     uncategorized: number;
     notInvited: number;
     unlinkedConfirmations: number;
+    /** Zvanice in the private planning list — 0 means the couple never started one. */
+    inviteeCount: number;
     recentResponses: { name: string; attending: string; guestCount: string; timestamp: string }[];
   };
   audioStats: { count: number; totalDurationMs: number; paidForAudio: boolean };
@@ -513,7 +515,7 @@ export async function loadOverviewAction(): Promise<{
   if (!data) return null;
 
   // Guests
-  let guestStats = { attending: 0, notAttending: 0, totalGuests: 0, uncategorized: 0, notInvited: 0, unlinkedConfirmations: 0, recentResponses: [] as { name: string; attending: string; guestCount: string; timestamp: string }[] };
+  let guestStats = { attending: 0, notAttending: 0, totalGuests: 0, uncategorized: 0, notInvited: 0, unlinkedConfirmations: 0, inviteeCount: 0, recentResponses: [] as { name: string; attending: string; guestCount: string; timestamp: string }[] };
   try {
     const responses = await getRSVPResponses(slug);
     const att = responses.filter((r) => r.attending === "Da");
@@ -529,6 +531,7 @@ export async function loadOverviewAction(): Promise<{
       totalGuests: att.reduce((s, r) => s + (parseInt(r.guestCount) || 1), 0),
       uncategorized: att.filter((r) => !r.category).length,
       notInvited: invitees.filter((i) => i.status === "not-invited").length,
+      inviteeCount: invitees.length,
       // Only meaningful once the couple actually uses the planning list.
       unlinkedConfirmations:
         invitees.length > 0

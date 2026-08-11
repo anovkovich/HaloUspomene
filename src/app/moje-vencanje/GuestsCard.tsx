@@ -16,6 +16,8 @@ import {
   ChevronDown,
   Trash2,
   Link2,
+  ClipboardList,
+  ArrowRight,
 } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
 import type { GuestList, Invitee } from "./types";
@@ -484,9 +486,11 @@ function EditGuestModal({
 interface Props {
   slug: string;
   draft?: boolean;
+  /** Which tab to open on — set when arriving from a Pregled CTA. */
+  initialSubView?: "potvrde" | "lista";
 }
 
-export default function GuestsCard({ draft }: Props) {
+export default function GuestsCard({ draft, initialSubView }: Props) {
   const [attending, setAttending] = useState<RSVPEntry[]>([]);
   const [notAttending, setNotAttending] = useState<RSVPEntry[]>([]);
   const [totalGuests, setTotalGuests] = useState(0);
@@ -505,7 +509,9 @@ export default function GuestsCard({ draft }: Props) {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEntry, setEditingEntry] = useState<RSVPEntry | null>(null);
-  const [subView, setSubView] = useState<"potvrde" | "lista">("potvrde");
+  const [subView, setSubView] = useState<"potvrde" | "lista">(
+    initialSubView ?? "potvrde",
+  );
 
   useEffect(() => {
     loadGuestsAction().then((result) => {
@@ -1041,11 +1047,29 @@ export default function GuestsCard({ draft }: Props) {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Empty state — dok nema nijedne potvrde ni zvanice, ovaj ekran je prvo
+          što par vidi, pa vodi u listu zvanica umesto da ga ostavi na praznom. */}
       {attending.length === 0 && notAttending.length === 0 && (
         <div className="text-center py-12 mb-4 bg-[#F5F4DC]/30 rounded-xl border border-[#232323]/15">
           <Users size={32} className="mx-auto mb-3 text-[#AE343F]/40" />
           <p className="text-sm text-[#232323]/65">Još uvek nema potvrda</p>
+          {guestList.invitees.length === 0 && !guestListLoading && (
+            <>
+              <p className="text-xs text-[#232323]/55 mt-2 mb-4 px-6 leading-relaxed max-w-md mx-auto">
+                Dok čekate prve potvrde, napravite listu zvanica — spisak koga
+                zovete, koji samo vi vidite. Potvrde koje stignu povezuju se sa
+                njom, pa uvek znate ko još nije odgovorio.
+              </p>
+              <button
+                onClick={() => setSubView("lista")}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#AE343F] text-white shadow-[0_6px_16px_-8px_rgba(174,52,63,0.6)] hover:bg-[#962d36] transition-colors cursor-pointer"
+              >
+                <ClipboardList size={15} />
+                Napravi listu zvanica
+                <ArrowRight size={14} />
+              </button>
+            </>
+          )}
         </div>
       )}
 
