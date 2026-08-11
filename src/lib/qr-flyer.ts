@@ -72,7 +72,7 @@ export async function generateQrFlyerPDF(input: QrFlyerInput): Promise<void> {
   const [serifB64, sansB64, scriptB64] = await Promise.all([
     loadFont("/fonts/invitation/CormorantGaramond-Regular.ttf"),
     loadFont("/fonts/invitation/JosefinSans-Regular.ttf"),
-    loadFont("/fonts/invitation/GreatVibes-Regular.ttf"),
+    loadFont("/fonts/invitation/GreatVibesHU-Regular.ttf"),
   ]);
   doc.addFileToVFS("Serif.ttf", serifB64);
   doc.addFont("Serif.ttf", "Serif", "normal");

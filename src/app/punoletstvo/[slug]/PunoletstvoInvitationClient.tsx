@@ -40,9 +40,12 @@ const FONT_VAR_BY_KEY: Record<ScriptFontType, string> = {
   "alex-brush": "var(--font-alex-brush)",
   parisienne: "var(--font-parisienne)",
   allura: "var(--font-allura)",
+  "cormorant-garamond": "var(--font-serif)",
+  "poiret-one": "var(--font-poiret-one)",
   "marck-script": "var(--font-marck-script)",
   caveat: "var(--font-caveat)",
   "bad-script": "var(--font-bad-script)",
+  jasminum: "var(--font-jasminum)",
 };
 
 const MONTHS_NOM = [

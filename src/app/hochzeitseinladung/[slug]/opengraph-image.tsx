@@ -31,14 +31,17 @@ function formatDateDe(iso: string): string {
 }
 
 const SCRIPT_FONT_FILES: Record<ScriptFontType, string> = {
-  "great-vibes": "GreatVibes-Regular.ttf",
+  "great-vibes": "GreatVibesHU-Regular.ttf",
   "dancing-script": "DancingScript-Regular.ttf",
   "alex-brush": "AlexBrush-Regular.ttf",
   parisienne: "Parisienne-Regular.ttf",
   allura: "Allura-Regular.ttf",
+  "cormorant-garamond": "CormorantGaramond-Regular.ttf",
+  "poiret-one": "PoiretOne-Regular.ttf",
   "marck-script": "MarckScript-Regular.ttf",
   caveat: "Caveat-Regular.ttf",
   "bad-script": "BadScript-Regular.ttf",
+  jasminum: "Jasminum-Regular.ttf",
 };
 
 export default async function OGImage({
@@ -74,7 +77,7 @@ export default async function OGImage({
   const dateStr = formatDateDe(data.event_date);
   const scriptFontKey = data.scriptFont ?? "great-vibes";
   const scriptFontFile =
-    SCRIPT_FONT_FILES[scriptFontKey] ?? "GreatVibes-Regular.ttf";
+    SCRIPT_FONT_FILES[scriptFontKey] ?? "GreatVibesHU-Regular.ttf";
 
   // Reuse the font assets already shipped with the Serbian invitation route
   // — file paths are absolute via process.cwd(), so this works fine.

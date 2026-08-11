@@ -27,14 +27,17 @@ function formatDate(iso: string): string {
 }
 
 const SCRIPT_FONT_FILES: Record<ScriptFontType, string> = {
-  "great-vibes": "GreatVibes-Regular.ttf",
+  "great-vibes": "GreatVibesHU-Regular.ttf",
   "dancing-script": "DancingScript-Regular.ttf",
   "alex-brush": "AlexBrush-Regular.ttf",
   parisienne: "Parisienne-Regular.ttf",
   allura: "Allura-Regular.ttf",
+  "cormorant-garamond": "CormorantGaramond-Regular.ttf",
+  "poiret-one": "PoiretOne-Regular.ttf",
   "marck-script": "MarckScript-Regular.ttf",
   caveat: "Caveat-Regular.ttf",
   "bad-script": "BadScript-Regular.ttf",
+  jasminum: "Jasminum-Regular.ttf",
 };
 
 function cornerOrnamentSVG(color: string, rotate: number) {
@@ -100,7 +103,7 @@ export default async function OGImage({
   const scriptFontKey: ScriptFontType =
     ((data as { scriptFont?: ScriptFontType }).scriptFont as ScriptFontType) ||
     "great-vibes";
-  const scriptFontFile = SCRIPT_FONT_FILES[scriptFontKey] ?? "GreatVibes-Regular.ttf";
+  const scriptFontFile = SCRIPT_FONT_FILES[scriptFontKey] ?? "GreatVibesHU-Regular.ttf";
 
   const fontsDir = join(process.cwd(), "src/app/pozivnica/[slug]/fonts");
 

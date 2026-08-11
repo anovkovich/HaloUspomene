@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import {
   Geist,
   Geist_Mono,
-  Great_Vibes,
   Dancing_Script,
   Alex_Brush,
   Parisienne,
@@ -10,10 +9,12 @@ import {
   Marck_Script,
   Caveat,
   Bad_Script,
+  Poiret_One,
   Cormorant_Garamond,
   Josefin_Sans,
   Raleway,
 } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -34,10 +35,20 @@ const geistMono = Geist_Mono({
 });
 
 // Wedding script fonts
-const greatVibes = Great_Vibes({
-  weight: "400",
+/**
+ * Great Vibes, but with the capital A replaced by Alex Brush's — the stock one
+ * is a round bowl that reads as an enlarged lowercase "a", and it was the first
+ * thing clients complained about. Cyrillic А is a composite over the same
+ * outline, so both alphabets are fixed by the one graft.
+ *
+ * Built by scripts/build-great-vibes-hu.py from the untouched originals, which
+ * stay in public/fonts/invitation/ as its input. Self-hosted rather than pulled
+ * from Google Fonts for the obvious reason: the patched glyph does not exist
+ * there. The CSS variable name is unchanged so nothing downstream cares.
+ */
+const greatVibes = localFont({
+  src: "./fonts/GreatVibesHU-Regular.woff2",
   variable: "--font-great-vibes",
-  subsets: ["latin"],
   display: "swap",
 });
 
@@ -91,11 +102,31 @@ const badScript = Bad_Script({
   display: "swap",
 });
 
+/**
+ * Jasminum — calligraphic handwriting by Jasmina Zornić (Serbia), used with the
+ * designer's permission. Not on Google Fonts, so it ships from src/app/fonts/.
+ * Offered as a Cyrillic-only choice: its capital А is a proper triangular A
+ * rather than the enlarged lowercase "а" of the Russian school-cursive scripts.
+ */
+const jasminum = localFont({
+  src: "./fonts/Jasminum-Regular.woff2",
+  variable: "--font-jasminum",
+  display: "swap",
+});
+
+const poiretOne = Poiret_One({
+  weight: "400",
+  variable: "--font-poiret-one",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
+
+// Body serif, and also offered as a display choice for names — hence Cyrillic.
 const cormorantGaramond = Cormorant_Garamond({
   weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
   variable: "--font-serif",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin", "latin-ext", "cyrillic"],
   display: "swap",
 });
 
@@ -606,7 +637,7 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${cormorantGaramond.variable} ${josefinSans.variable} ${raleway.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${dancingScript.variable} ${alexBrush.variable} ${parisienne.variable} ${allura.variable} ${marckScript.variable} ${caveat.variable} ${badScript.variable} ${jasminum.variable} ${poiretOne.variable} ${cormorantGaramond.variable} ${josefinSans.variable} ${raleway.variable} antialiased`}
       >
         <RecaptchaProvider>{children}</RecaptchaProvider>
         <Toaster

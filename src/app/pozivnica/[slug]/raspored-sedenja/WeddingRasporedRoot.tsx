@@ -14,6 +14,16 @@ interface Props {
   theme: ThemeType;
   scriptFont?: ScriptFontType;
   useCyrillic: boolean;
+  /** Bride/groom as stored, so the pano overrides land on the right half. */
+  brideName?: string;
+  groomName?: string;
+  /** Print the QR pano in Cyrillic even on a Latin invitation. */
+  panoCyrillic?: boolean;
+  /** Sign-only script font, overriding `scriptFont`. */
+  panoScriptFont?: ScriptFontType;
+  /** Exact names for the pano, bypassing transliteration. */
+  panoBrideName?: string;
+  panoGroomName?: string;
 }
 
 export default function WeddingRasporedRoot({
@@ -24,6 +34,12 @@ export default function WeddingRasporedRoot({
   theme,
   scriptFont,
   useCyrillic,
+  brideName,
+  groomName,
+  panoCyrillic,
+  panoScriptFont,
+  panoBrideName,
+  panoGroomName,
 }: Props) {
   return (
     <RasporedClient
@@ -49,6 +65,12 @@ export default function WeddingRasporedRoot({
             theme,
             scriptFont,
             useCyrillic,
+            brideName,
+            groomName,
+            panoCyrillic,
+            panoScriptFont,
+            panoBrideName,
+            panoGroomName,
             variant,
           }),
       }))}

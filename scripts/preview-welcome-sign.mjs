@@ -9,6 +9,11 @@
  *
  *   node --env-file=.env.local scripts/preview-welcome-sign.mjs --slug=ana-dejan
  *
+ * Add --font=<kljuc> and/or --cyrillic to try a different script font or the
+ * Cyrillic sign on that couple, without touching their saved record:
+ *
+ *   node --env-file=.env.local scripts/preview-welcome-sign.mjs --slug=ana-dejan --font=jasminum --cyrillic
+ *
  * Compiles the shared renderer on the fly (it deliberately imports nothing but
  * jspdf + qrcode, so it type-checks standalone) and feeds it a filesystem
  * asset loader in place of the browser's fetch.
@@ -21,6 +26,17 @@ import { pathToFileURL } from "node:url";
 const ROOT = resolve(import.meta.dirname, "..");
 const argv = process.argv.slice(2);
 const slugArg = argv.find((a) => a.startsWith("--slug="))?.slice("--slug=".length);
+/** Try a font on the sign WITHOUT changing what the couple has saved. */
+const fontArg = argv.find((a) => a.startsWith("--font="))?.slice("--font=".length);
+/** Same, for pano_cyrillic — preview the Cyrillic sign before setting the flag. */
+const cyrillicArg = argv.includes("--cyrillic");
+/**
+ * Raw .ttf filename from public/fonts/invitation, for auditioning a face that
+ * is not in the product's font registry yet. Bypasses --font entirely.
+ */
+const fontFileArg = argv
+  .find((a) => a.startsWith("--fontfile="))
+  ?.slice("--fontfile=".length);
 const OUT = resolve(argv.find((a) => !a.startsWith("--")) ?? join(ROOT, "tmp", "pano-preview"));
 // Must live inside the repo so the compiled output can resolve jspdf/qrcode.
 const BUILD = join(ROOT, "node_modules", ".cache", "welcome-sign-preview");
@@ -28,6 +44,9 @@ const BUILD = join(ROOT, "node_modules", ".cache", "welcome-sign-preview");
 const SRC = [
   "src/lib/seating/pdf/welcomeSign.ts",
   "src/lib/seating/pdf/welcomeSignContent.ts",
+  // Compiled in rather than re-implemented here, so the preview transliterates
+  // names with exactly the rules the browser will use.
+  "src/lib/serbian-script.ts",
 ];
 
 rmSync(BUILD, { recursive: true, force: true });
@@ -41,6 +60,11 @@ execFileSync(
     ...SRC,
     "--outDir",
     BUILD,
+    // Pinned so the emitted tree stays stable: without it tsc derives the root
+    // from the common ancestor of SRC, so adding a file outside seating/pdf
+    // silently moves every output path.
+    "--rootDir",
+    "src/lib",
     "--module",
     "esnext",
     "--target",
@@ -55,23 +79,36 @@ execFileSync(
 // tsc emits .js; Node needs the ESM extension hint via package.json type.
 writeFileSync(join(BUILD, "package.json"), JSON.stringify({ type: "module" }));
 
-// Node resolves "jspdf" to the CJS build, whose namespace object is not a
-// constructor. Bundlers give the browser the ES build, which has a real
-// default export — point this preview at the same file.
-const emitted = join(BUILD, "welcomeSign.js");
-writeFileSync(
-  emitted,
-  readFileSync(emitted, "utf8").replace(
-    /from ["']jspdf["']/g,
-    'from "jspdf/dist/jspdf.es.min.js"',
-  ),
-);
+const emitted = join(BUILD, "seating", "pdf", "welcomeSign.js");
 
-const { generateWelcomeSign } = await import(
-  pathToFileURL(join(BUILD, "welcomeSign.js")).href
+for (const file of [
+  emitted,
+  join(BUILD, "seating", "pdf", "welcomeSignContent.js"),
+  join(BUILD, "serbian-script.js"),
+]) {
+  const patched = readFileSync(file, "utf8")
+    // Node resolves "jspdf" to the CJS build, whose namespace object is not a
+    // constructor. Bundlers give the browser the ES build, which has a real
+    // default export — point this preview at the same file.
+    .replace(/from ["']jspdf["']/g, 'from "jspdf/dist/jspdf.es.min.js"')
+    // The app's relative imports carry no extension because a bundler resolves
+    // them; Node's ESM loader will not. Type-only imports vanish at compile
+    // time, so this only bites once a real value crosses a file boundary.
+    .replace(/from ["'](\.[^"']*)["']/g, (m, spec) =>
+      spec.endsWith(".js") ? m : `from "${spec}.js"`,
+    );
+  writeFileSync(file, patched);
+}
+
+const { generateWelcomeSign } = await import(pathToFileURL(emitted).href);
+const {
+  weddingSignContent,
+  eventSignContent,
+  birthdaySignContent,
+  panoWeddingNames,
+} = await import(
+  pathToFileURL(join(BUILD, "seating", "pdf", "welcomeSignContent.js")).href
 );
-const { weddingSignContent, eventSignContent, birthdaySignContent } =
-  await import(pathToFileURL(join(BUILD, "welcomeSignContent.js")).href);
 
 /** Serves /fonts/... and /images/... straight off the public dir. */
 const assets = async (path) =>
@@ -92,16 +129,27 @@ const THEME_PRIMARY = {
   white_gold_navy: "#0A1F44",
 };
 const SCRIPT_FONT_FILES = {
-  "great-vibes": "GreatVibes-Regular.ttf",
+  "great-vibes": "GreatVibesHU-Regular.ttf",
   "dancing-script": "DancingScript-Regular.ttf",
   "alex-brush": "AlexBrush-Regular.ttf",
   parisienne: "Parisienne-Regular.ttf",
   allura: "Allura-Regular.ttf",
+  "cormorant-garamond": "CormorantGaramond-Regular.ttf",
+  "poiret-one": "PoiretOne-Regular.ttf",
   "marck-script": "MarckScript-Regular.ttf",
   caveat: "Caveat-Regular.ttf",
   "bad-script": "BadScript-Regular.ttf",
+  jasminum: "Jasminum-Regular.ttf",
 };
-const CYRILLIC_SCRIPT_FONTS = ["marck-script", "caveat", "bad-script"];
+const CYRILLIC_SCRIPT_FONTS = [
+  "great-vibes",
+  "cormorant-garamond",
+  "poiret-one",
+  "marck-script",
+  "caveat",
+  "bad-script",
+  "jasminum",
+];
 
 async function coupleSample(slug) {
   if (!process.env.MONGODB_URI) {
@@ -116,7 +164,19 @@ async function coupleSample(slug) {
     .collection("couples")
     .findOne(
       { slug },
-      { projection: { _id: 0, couple_names: 1, theme: 1, scriptFont: 1, useCyrillic: 1 } },
+      {
+        projection: {
+          _id: 0,
+          couple_names: 1,
+          theme: 1,
+          scriptFont: 1,
+          useCyrillic: 1,
+          pano_cyrillic: 1,
+          pano_script_font: 1,
+          pano_bride_name: 1,
+          pano_groom_name: 1,
+        },
+      },
     );
   await client.close();
 
@@ -125,26 +185,50 @@ async function coupleSample(slug) {
     process.exit(1);
   }
 
-  const cyrillic = !!doc.useCyrillic;
-  const requested = doc.scriptFont ?? "great-vibes";
+  // Mirrors generateWelcomePDF.ts: the sign is Cyrillic if the invitation is,
+  // or if the couple asked for this one printed piece in the other script.
+  const cyrillic = !!doc.useCyrillic || !!doc.pano_cyrillic || cyrillicArg;
+  const requested =
+    fontArg ?? doc.pano_script_font ?? doc.scriptFont ?? "great-vibes";
+  if (fontArg && !SCRIPT_FONT_FILES[fontArg]) {
+    console.error(
+      `Nepoznat font '${fontArg}'. Dostupni: ${Object.keys(SCRIPT_FONT_FILES).join(", ")}`,
+    );
+    process.exit(1);
+  }
   const effective =
     cyrillic && !CYRILLIC_SCRIPT_FONTS.includes(requested) ? "marck-script" : requested;
   const display =
     doc.couple_names?.full_display ??
     `${doc.couple_names?.groom ?? ""} & ${doc.couple_names?.bride ?? ""}`;
 
+  const names = panoWeddingNames(
+    display,
+    {
+      bride: doc.couple_names?.bride,
+      groom: doc.couple_names?.groom,
+      panoBride: doc.pano_bride_name,
+      panoGroom: doc.pano_groom_name,
+    },
+    cyrillic && !doc.useCyrillic,
+  );
+
   console.log(
-    `Par '${slug}': ${display} · tema ${doc.theme ?? "classic_rose"} · font ${effective}` +
-      (cyrillic ? " · ćirilica" : ""),
+    `Par '${slug}': ${names} · tema ${doc.theme ?? "classic_rose"} · font ${effective}` +
+      (cyrillic ? " · ćirilica" : "") +
+      (names !== display ? `  (preslovljeno iz "${display}")` : ""),
   );
 
   return {
     name: slug,
     accent: THEME_PRIMARY[doc.theme] ?? THEME_PRIMARY.classic_rose,
-    scriptFontFile: SCRIPT_FONT_FILES[effective] ?? SCRIPT_FONT_FILES["great-vibes"],
+    scriptFontFile:
+      fontFileArg ??
+      SCRIPT_FONT_FILES[effective] ??
+      SCRIPT_FONT_FILES["great-vibes"],
     cyrillic,
     qrUrl: `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`,
-    content: weddingSignContent(display, cyrillic),
+    content: weddingSignContent(names, cyrillic),
   };
 }
 
@@ -152,7 +236,7 @@ const SAMPLES = slugArg ? [await coupleSample(slugArg)] : [
   {
     name: "vencanje",
     accent: "#AE343F",
-    scriptFontFile: "GreatVibes-Regular.ttf",
+    scriptFontFile: "GreatVibesHU-Regular.ttf",
     qrUrl: "https://halouspomene.rs/pozivnica/marija-petar/gde-sedim/",
     content: weddingSignContent("Marija & Petar", false),
   },
@@ -174,7 +258,7 @@ const SAMPLES = slugArg ? [await coupleSample(slugArg)] : [
   {
     name: "dogadjaj",
     accent: "#AE343F",
-    scriptFontFile: "GreatVibes-Regular.ttf",
+    scriptFontFile: "GreatVibesHU-Regular.ttf",
     qrUrl: "https://halouspomene.rs/raspored-sedenja/tim-godisnjica/gde-sedim/",
     content: eventSignContent("Godišnja proslava"),
   },

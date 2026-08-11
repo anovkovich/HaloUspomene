@@ -86,7 +86,9 @@ const isUrlWhitened = (url: string | undefined): boolean =>
 
 // ─── Font categorization ──────────────────────────────────────────────────────
 
-// Fonts hidden in Cyrillic mode (Latin-only; great-vibes works for both)
+// Fonts hidden in Cyrillic mode (Latin-only). Anything listed in NEITHER set
+// carries both alphabets and stays on offer in both modes: great-vibes,
+// cormorant-garamond, poiret-one.
 const LATIN_ONLY_FONTS = new Set<ScriptFontType>([
   "dancing-script",
   "alex-brush",
@@ -99,6 +101,7 @@ const CYRILLIC_ONLY_FONTS = new Set<ScriptFontType>([
   "marck-script",
   "caveat",
   "bad-script",
+  "jasminum",
 ]);
 
 // ─── Date/text helpers ────────────────────────────────────────────────────────
@@ -1531,8 +1534,7 @@ function Step1({
         </div>
         {formData.useCyrillic && (
           <p className="text-xs text-stone-400 mt-2">
-            Za ćirilicu je dostupan ograničen broj kaligrafskih fontova (4
-            umesto 5).
+            Ponuda fontova se menja — ćirilica dobija svoje kaligrafske fontove.
           </p>
         )}
       </div>

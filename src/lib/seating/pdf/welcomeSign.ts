@@ -59,6 +59,45 @@ function capHeight(pt: number): number {
   return pt * 0.3528 * 0.7;
 }
 
+/**
+ * Per-face display metrics for the script font, keyed by the .ttf filename the
+ * caller already passes in.
+ *
+ * Every size in the layouts below was tuned against the flowing scripts (Great
+ * Vibes and kin), which fill most of their em. A condensed face draws far less
+ * ink at the same point size — Jasminum's letters come out roughly a third the
+ * height of Great Vibes at 150pt — so a name set in it sits lost inside the
+ * arch. Such a face is scaled up and tracked out here instead of everywhere it
+ * is drawn.
+ *
+ * A font NOT listed keeps `scale: 1, tracking: 0`, which reduces every formula
+ * below to the original constant. Signs already in the couples' hands therefore
+ * render byte-identically.
+ */
+interface ScriptMetrics {
+  /** Multiplies every point size set in the script font. */
+  scale: number;
+  /** Letter spacing for script name lines, in mm. */
+  tracking: number;
+  /**
+   * Multiplies the arch's vertical gaps. Deliberately independent of `scale`:
+   * a condensed face draws small ink inside a full-size em box, so the stock
+   * gaps are already generous for it and growing them alongside the type only
+   * makes the block tall enough to push the eyebrow out through the crown.
+   */
+  leading: number;
+}
+
+const DEFAULT_SCRIPT_METRICS: ScriptMetrics = {
+  scale: 1,
+  tracking: 0,
+  leading: 1,
+};
+
+const SCRIPT_METRICS: Record<string, ScriptMetrics> = {
+  "Jasminum-Regular.ttf": { scale: 1.9, tracking: 9, leading: 1 },
+};
+
 export type WelcomeSignVariant = "poster" | "arch";
 
 /**
@@ -511,6 +550,7 @@ interface Ctx {
   eyebrow: string;
   hook: string;
   instruction: string;
+  script: ScriptMetrics;
 }
 
 /**
@@ -518,7 +558,8 @@ interface Ctx {
  * colour, script demoted to an accent glyph.
  */
 function layoutPoster(ctx: Ctx) {
-  const { doc, accent, body, hero } = ctx;
+  const { doc, accent, body, hero, script } = ctx;
+  const s = script.scale;
   const lines = 1 + (hero.middle ? 1 : 0) + (hero.secondary ? 1 : 0);
 
   const primaryPt = lines === 3 ? 170 : 190;
@@ -561,11 +602,24 @@ function layoutPoster(ctx: Ctx) {
     // age ghost is set larger to occupy the same optical area. Both hang below
     // their baseline, hence the push upward to centre them on the name block.
     const digits = /^\d+$/.test(hero.ghost);
-    const size = fitSize(doc, hero.ghost, "Script", digits ? 700 : 560, 360, 340);
+    const size = fitSize(
+      doc,
+      hero.ghost,
+      "Script",
+      (digits ? 700 : 560) * s,
+      360 * s,
+      340,
+    );
     const blockTop = yPrimary - capHeight(primaryPt);
     const blockBottom = lines === 3 ? ySecondary : lines === 2 ? yMiddle : yPrimary;
     const centre = (blockTop + blockBottom) / 2;
-    drawGhost(doc, hero.ghost, centre + (digits ? 44.5 : 41.5) + shift, size, accent);
+    drawGhost(
+      doc,
+      hero.ghost,
+      centre + (digits ? 44.5 : 41.5) * s + shift,
+      size,
+      accent,
+    );
   }
 
   centerLine(
@@ -584,10 +638,10 @@ function layoutPoster(ctx: Ctx) {
       doc,
       hero.middle,
       yMiddle + shift,
-      isAmp ? 110 : 90,
+      (isAmp ? 110 : 90) * s,
       "Script",
       isAmp ? accent : CHARCOAL,
-      { minPt: 50 },
+      { minPt: 50 * s },
     );
   }
 
@@ -625,7 +679,12 @@ const ARCH_APEX = 330;
 const ARCH_TOP = ARCH_APEX - ARCH_R;
 
 function layoutArch(ctx: Ctx) {
-  const { doc, accent, body, hero } = ctx;
+  const { doc, accent, body, hero, script } = ctx;
+  const s = script.scale;
+  const lead = script.leading;
+  // The serif "&" between the names grows more gently than the names do, so it
+  // stays a connector instead of competing with them.
+  const connector = 1 + (s - 1) * 0.4;
 
   // The burst sits just above the crown, the way it sits above the handset in
   // the logo. Its lowest ink is the inner tip of the 50° ray, so place the
@@ -653,13 +712,13 @@ function layoutArch(ctx: Ctx) {
   const yEyebrow1 = y;
   y += 29;
   const yEyebrow2 = y;
-  y = (eyebrow.length === 2 ? yEyebrow2 : yEyebrow1) + 96;
+  y = (eyebrow.length === 2 ? yEyebrow2 : yEyebrow1) + 96 * lead;
   const yPrimary = y;
-  y += 62;
+  y += 62 * lead;
   const yMiddle = y;
-  y += 63;
+  y += 63 * lead;
   const ySecondary = y;
-  y = (lines === 3 ? ySecondary : lines === 2 ? yMiddle : yPrimary) + 55;
+  y = (lines === 3 ? ySecondary : lines === 2 ? yMiddle : yPrimary) + 55 * lead;
   const yDivider = y;
   y += 70;
   const yHook = y;
@@ -684,23 +743,34 @@ function layoutArch(ctx: Ctx) {
   }
 
   // Inside the arch the script font leads and the serif plays the connector.
-  centerLine(doc, hero.primary, yPrimary + shift, 150, "Script", accent, {
-    minPt: 80,
+  centerLine(doc, hero.primary, yPrimary + shift, 150 * s, "Script", accent, {
+    minPt: 80 * s,
     maxWidth: 440,
+    charSpace: script.tracking,
   });
 
   if (hero.middle) {
-    centerLine(doc, hero.middle, yMiddle + shift, 64, "Serif", CHARCOAL, {
-      minPt: 36,
-      maxWidth: 440,
-    });
+    centerLine(
+      doc,
+      hero.middle,
+      yMiddle + shift,
+      64 * connector,
+      "Serif",
+      CHARCOAL,
+      { minPt: 36 * connector, maxWidth: 440 },
+    );
   }
 
   if (hero.secondary) {
-    centerLine(doc, hero.secondary, ySecondary + shift, 150, "Script", accent, {
-      minPt: 80,
-      maxWidth: 440,
-    });
+    centerLine(
+      doc,
+      hero.secondary,
+      ySecondary + shift,
+      150 * s,
+      "Script",
+      accent,
+      { minPt: 80 * s, maxWidth: 440, charSpace: script.tracking },
+    );
   }
 
   drawDivider(doc, CX, yDivider + shift, accent, onCream(CHARCOAL, 0.55));
@@ -784,6 +854,7 @@ export async function generateWelcomeSign(
     eyebrow: input.eyebrow,
     hook: input.hook,
     instruction: input.instruction,
+    script: SCRIPT_METRICS[input.scriptFontFile] ?? DEFAULT_SCRIPT_METRICS,
   };
 
   doc.setFillColor(...CREAM);

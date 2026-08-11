@@ -70,7 +70,7 @@ export default async function OGImage() {
   const [serifFontData, sansFontData, scriptFontData] = await Promise.all([
     readFile(join(fontsDir, "CormorantGaramond-Regular.ttf")),
     readFile(join(fontsDir, "JosefinSans-Regular.ttf")),
-    readFile(join(fontsDir, "GreatVibes-Regular.ttf")),
+    readFile(join(fontsDir, "GreatVibesHU-Regular.ttf")),
   ]);
 
   // QR code mock pattern (12x12 grid)

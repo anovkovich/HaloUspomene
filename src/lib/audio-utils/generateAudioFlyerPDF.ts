@@ -22,14 +22,17 @@ function blendColor(
 }
 
 const SCRIPT_FONT_FILES: Record<string, string> = {
-  "great-vibes": "GreatVibes-Regular.ttf",
+  "great-vibes": "GreatVibesHU-Regular.ttf",
   "dancing-script": "DancingScript-Regular.ttf",
   "alex-brush": "AlexBrush-Regular.ttf",
   parisienne: "Parisienne-Regular.ttf",
   allura: "Allura-Regular.ttf",
+  "cormorant-garamond": "CormorantGaramond-Regular.ttf",
+  "poiret-one": "PoiretOne-Regular.ttf",
   "marck-script": "MarckScript-Regular.ttf",
   caveat: "Caveat-Regular.ttf",
   "bad-script": "BadScript-Regular.ttf",
+  jasminum: "Jasminum-Regular.ttf",
 };
 
 async function loadFont(path: string): Promise<string> {
@@ -64,7 +67,7 @@ export async function generateAudioFlyerPDF(
   const cx = W / 2;
 
   // Load fonts
-  const scriptFile = SCRIPT_FONT_FILES[scriptFont ?? "great-vibes"] ?? "GreatVibes-Regular.ttf";
+  const scriptFile = SCRIPT_FONT_FILES[scriptFont ?? "great-vibes"] ?? "GreatVibesHU-Regular.ttf";
   const [serifB64, sansB64, scriptB64] = await Promise.all([
     loadFont("/fonts/invitation/CormorantGaramond-Regular.ttf"),
     loadFont("/fonts/invitation/JosefinSans-Regular.ttf"),

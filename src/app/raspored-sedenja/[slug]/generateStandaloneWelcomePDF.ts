@@ -29,7 +29,7 @@ export async function generateStandaloneWelcomePDF(
     {
       qrUrl: `https://halouspomene.rs/raspored-sedenja/${slug}/gde-sedim/`,
       accent: BRAND_PRIMARY,
-      scriptFontFile: "GreatVibes-Regular.ttf",
+      scriptFontFile: "GreatVibesHU-Regular.ttf",
       ...eventSignContent(eventName),
     },
     `dobrodosli-${safeName || slug}`,

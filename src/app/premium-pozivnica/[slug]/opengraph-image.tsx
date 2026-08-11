@@ -32,14 +32,17 @@ function formatDate(iso: string, useCyrillic = false): string {
 }
 
 const SCRIPT_FONT_FILES: Record<ScriptFontType, string> = {
-  "great-vibes": "GreatVibes-Regular.ttf",
+  "great-vibes": "GreatVibesHU-Regular.ttf",
   "dancing-script": "DancingScript-Regular.ttf",
   "alex-brush": "AlexBrush-Regular.ttf",
   "parisienne": "Parisienne-Regular.ttf",
   "allura": "Allura-Regular.ttf",
+  "cormorant-garamond": "CormorantGaramond-Regular.ttf",
+  "poiret-one": "PoiretOne-Regular.ttf",
   "marck-script": "MarckScript-Regular.ttf",
   "caveat": "Caveat-Regular.ttf",
   "bad-script": "BadScript-Regular.ttf",
+  "jasminum": "Jasminum-Regular.ttf",
 };
 
 function fallbackCard() {
@@ -78,7 +81,7 @@ export default async function PremiumOGImage({
 
   const scriptFontKey = (data.scriptFont ?? "great-vibes") as ScriptFontType;
   const scriptFontFile =
-    SCRIPT_FONT_FILES[scriptFontKey] ?? "GreatVibes-Regular.ttf";
+    SCRIPT_FONT_FILES[scriptFontKey] ?? "GreatVibesHU-Regular.ttf";
 
   // Fonts live under the classic route — reuse them here.
   const fontsDir = join(process.cwd(), "src/app/pozivnica/[slug]/fonts");

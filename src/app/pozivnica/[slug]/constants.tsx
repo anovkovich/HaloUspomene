@@ -21,46 +21,75 @@ export const WEDDING_THEME_KEYS: ThemeType[] = [
   "warm_terracotta",
 ];
 
+/**
+ * Every script/display font a client can pick, in picker order: the Latin-only
+ * scripts first, then the two that carry both alphabets, then the Cyrillic ones.
+ *
+ * `description` is rendered straight into the Serbian wizards, so it is written
+ * in Serbian — do not translate it back.
+ *
+ * Adding a font here is not enough on its own. It also needs: the next/font
+ * declaration + CSS variable in src/app/layout.tsx, a .ttf in BOTH
+ * public/fonts/invitation/ (jsPDF) and src/app/pozivnica/[slug]/fonts/ (OG
+ * images), an entry in every SCRIPT_FONT_FILES map, and — if it does not carry
+ * both alphabets — a place in LATIN_ONLY_FONTS or CYRILLIC_ONLY_FONTS in
+ * QuestionnaireForm.tsx.
+ */
 export const SCRIPT_FONT_CONFIGS: Record<ScriptFontType, ScriptFontConfig> = {
   "great-vibes": {
     name: "Great Vibes",
     variable: "var(--font-great-vibes)",
-    description: "Elegant flowing script (Latin & Cyrillic)",
+    description: "Elegantni ukošeni script — latinica i ćirilica",
   },
   "dancing-script": {
     name: "Dancing Script",
     variable: "var(--font-dancing-script)",
-    description: "Casual and friendly",
+    description: "Opušten i prijateljski",
   },
   "alex-brush": {
     name: "Alex Brush",
     variable: "var(--font-alex-brush)",
-    description: "Brush-style calligraphy",
+    description: "Kaligrafska kičica",
   },
   parisienne: {
     name: "Parisienne",
     variable: "var(--font-parisienne)",
-    description: "Romantic French style",
+    description: "Romantičan francuski stil",
   },
   allura: {
     name: "Allura",
     variable: "var(--font-allura)",
-    description: "Classic formal script",
+    description: "Klasičan svečani script",
+  },
+  "cormorant-garamond": {
+    name: "Cormorant Garamond",
+    variable: "var(--font-serif)",
+    description: "Elegantna antikva — latinica i ćirilica",
+  },
+  "poiret-one": {
+    name: "Poiret One",
+    variable: "var(--font-poiret-one)",
+    description: "Prozračni art deco — latinica i ćirilica",
   },
   "marck-script": {
     name: "Marck Script",
     variable: "var(--font-marck-script)",
-    description: "Elegant Cyrillic script",
+    description: "Elegantna ćirilica",
   },
   caveat: {
     name: "Caveat",
     variable: "var(--font-caveat)",
-    description: "Flowing handwritten Cyrillic",
+    description: "Tečna ćirilica rukopisa",
   },
   "bad-script": {
     name: "Bad Script",
     variable: "var(--font-bad-script)",
-    description: "Casual handwritten Cyrillic",
+    description: "Opuštena ćirilica",
+  },
+  jasminum: {
+    name: "Jasminum",
+    variable: "var(--font-jasminum)",
+    description: "Uska kaligrafija, samo ćirilica",
   },
 };
 

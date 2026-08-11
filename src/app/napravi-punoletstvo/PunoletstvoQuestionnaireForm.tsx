@@ -27,6 +27,8 @@ import {
 } from "@/components/forms/RecaptchaProvider";
 import { refreshPhoneTrustToken } from "@/lib/phone-trust-refresh";
 import { redactPayloadForEmail } from "@/lib/wizard-notify";
+import { SCRIPT_FONT_CONFIGS } from "@/app/pozivnica/[slug]/constants";
+import type { ScriptFontType } from "@/app/pozivnica/[slug]/types";
 
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 
@@ -45,15 +47,13 @@ function toSerbianDeadline(dateStr: string): string {
 
 // ─── Form data ──────────────────────────────────────────────────────────────
 
-type ScriptFont =
-  | "great-vibes"
-  | "dancing-script"
-  | "alex-brush"
-  | "parisienne"
-  | "allura"
-  | "marck-script"
-  | "caveat"
-  | "bad-script";
+/**
+ * The punoletstvo invitation renders through the wedding ThemeProvider, so its
+ * font keys ARE the wedding ones. This used to be a hand-copied union plus a
+ * hand-copied label list, which silently drifted the moment a font was added on
+ * the wedding side; both now derive from SCRIPT_FONT_CONFIGS instead.
+ */
+type ScriptFont = ScriptFontType;
 
 interface FormData {
   honoree_name: string;
@@ -86,16 +86,17 @@ const STEP_TITLES = [
   "Poslednji korak",
 ];
 
-const SCRIPT_FONTS: { key: ScriptFont; name: string; cssVar: string; description: string }[] = [
-  { key: "great-vibes", name: "Great Vibes", cssVar: "var(--font-great-vibes)", description: "Elegantni ukošeni script" },
-  { key: "dancing-script", name: "Dancing Script", cssVar: "var(--font-dancing-script)", description: "Opušten i prijateljski" },
-  { key: "alex-brush", name: "Alex Brush", cssVar: "var(--font-alex-brush)", description: "Kaligrafska kičica" },
-  { key: "parisienne", name: "Parisienne", cssVar: "var(--font-parisienne)", description: "Romantičan francuski stil" },
-  { key: "allura", name: "Allura", cssVar: "var(--font-allura)", description: "Klasičan svečani script" },
-  { key: "marck-script", name: "Marck Script", cssVar: "var(--font-marck-script)", description: "Elegantna ćirilica" },
-  { key: "caveat", name: "Caveat", cssVar: "var(--font-caveat)", description: "Tečna ćirilica rukopisa" },
-  { key: "bad-script", name: "Bad Script", cssVar: "var(--font-bad-script)", description: "Opuštena ćirilica" },
-];
+const SCRIPT_FONTS: {
+  key: ScriptFont;
+  name: string;
+  cssVar: string;
+  description: string;
+}[] = (Object.keys(SCRIPT_FONT_CONFIGS) as ScriptFont[]).map((key) => ({
+  key,
+  name: SCRIPT_FONT_CONFIGS[key].name,
+  cssVar: SCRIPT_FONT_CONFIGS[key].variable,
+  description: SCRIPT_FONT_CONFIGS[key].description,
+}));
 
 const THEME_CARDS: {
   key: PunoletstvoTheme;

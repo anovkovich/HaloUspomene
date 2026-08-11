@@ -12,9 +12,12 @@ export type ScriptFontType =
   | "alex-brush"
   | "parisienne"
   | "allura"
+  | "cormorant-garamond"
+  | "poiret-one"
   | "marck-script"
   | "caveat"
-  | "bad-script";
+  | "bad-script"
+  | "jasminum";
 
 // Premium AI types
 export type PremiumThemeType =
@@ -98,6 +101,30 @@ export interface WeddingData {
   timeline: TimelineItem[];
   countdown_enabled: boolean;
   map_enabled: boolean;
+  /**
+   * Prints the QR pano dobrodošlice in Cyrillic even though the invitation
+   * itself stays in Latin — the sign is the one physical piece, and a couple
+   * can reasonably want it in the other script. Switches the fixed sign copy,
+   * forces a Cyrillic-capable script font, and transliterates the names.
+   * Ignored when `useCyrillic` is already true (the sign is Cyrillic anyway).
+   */
+  pano_cyrillic?: boolean;
+  /**
+   * Exact names for the sign, bypassing transliteration — e.g. "Џенана".
+   * Set either, both, or neither: a name left empty is transliterated from
+   * `couple_names`, so a couple only fills in what the rules get wrong (see the
+   * `dj` / `dz` note in src/lib/serbian-script.ts). Applies to the printed sign
+   * only — the invitation keeps `couple_names` untouched.
+   */
+  pano_bride_name?: string;
+  pano_groom_name?: string;
+  /**
+   * Script font for the printed sign only, overriding `scriptFont`. The sign is
+   * set at billboard scale on cream and answers to different constraints than a
+   * phone screen, so a couple can carry one face on the invitation and another
+   * on the board. Falls back to `scriptFont` when unset.
+   */
+  pano_script_font?: ScriptFontType;
   paid_for_raspored?: boolean; // Unlocks full seating chart (default: false = demo, 1 seat only)
   paid_for_pdf?: boolean; // Unlocks watermark-free PDF export
   paid_for_audio?: boolean; // Unlocks audio guest book recording

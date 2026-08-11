@@ -32,14 +32,17 @@ function formatDate(iso: string, useCyrillic = false): string {
 }
 
 const SCRIPT_FONT_FILES: Record<ScriptFontType, string> = {
-  "great-vibes": "GreatVibes-Regular.ttf",
+  "great-vibes": "GreatVibesHU-Regular.ttf",
   "dancing-script": "DancingScript-Regular.ttf",
   "alex-brush": "AlexBrush-Regular.ttf",
   "parisienne": "Parisienne-Regular.ttf",
   "allura": "Allura-Regular.ttf",
+  "cormorant-garamond": "CormorantGaramond-Regular.ttf",
+  "poiret-one": "PoiretOne-Regular.ttf",
   "marck-script": "MarckScript-Regular.ttf",
   "caveat": "Caveat-Regular.ttf",
   "bad-script": "BadScript-Regular.ttf",
+  "jasminum": "Jasminum-Regular.ttf",
 };
 
 export default async function OGImage({
@@ -65,7 +68,7 @@ export default async function OGImage({
   const displayName = stripOgSymbols(data.couple_names.full_display);
   const tagline = data.tagline ? stripOgSymbols(data.tagline) : "";
   const scriptFontKey = data.scriptFont ?? "great-vibes";
-  const scriptFontFile = SCRIPT_FONT_FILES[scriptFontKey] ?? "GreatVibes-Regular.ttf";
+  const scriptFontFile = SCRIPT_FONT_FILES[scriptFontKey] ?? "GreatVibesHU-Regular.ttf";
 
   const fontsDir = join(process.cwd(), "src/app/pozivnica/[slug]/fonts");
   const [scriptFontData, serifFontData, sansFontData] = await Promise.all([

@@ -65,6 +65,12 @@ export default async function RasporedSedenja({ params }: PageProps) {
         theme={weddingData.theme}
         scriptFont={weddingData.scriptFont}
         useCyrillic={weddingData.useCyrillic ?? false}
+        brideName={weddingData.couple_names.bride}
+        groomName={weddingData.couple_names.groom}
+        panoCyrillic={weddingData.pano_cyrillic ?? false}
+        panoScriptFont={weddingData.pano_script_font}
+        panoBrideName={weddingData.pano_bride_name}
+        panoGroomName={weddingData.pano_groom_name}
       />
     </div>
   );

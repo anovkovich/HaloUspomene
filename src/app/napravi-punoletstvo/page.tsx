@@ -62,7 +62,7 @@ const faqItems = [
   },
   {
     q: "Da li pozivnica može da bude na ćirilici?",
-    a: "Može. Podržane su i latinica i ćirilica, a tri script fonta imaju ćirilične varijante — Marck Script, Caveat i Bad Script.",
+    a: "Može. Podržane su i latinica i ćirilica, a za ćirilicu je na raspolaganju sedam fontova — od kaligrafskih (Great Vibes, Jasminum, Marck Script) do elegantne antikve (Cormorant Garamond) i art deco stila (Poiret One).",
   },
   {
     q: "Može li roditelj da naruči pozivnicu umesto slavljenika?",
