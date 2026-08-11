@@ -1,6 +1,20 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useSyncExternalStore } from "react";
+
+// Hover capability is external browser state, so it is read through
+// useSyncExternalStore rather than an effect: the value is needed during render
+// (it decides whether the hover handlers are attached at all), the server
+// snapshot keeps SSR and hydration in agreement, and a pointer being attached
+// later re-renders on its own.
+const HOVER_QUERY = "(hover: hover)";
+const subscribeHover = (onChange: () => void) => {
+  const mq = window.matchMedia(HOVER_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+};
+const getHoverSnapshot = () => window.matchMedia(HOVER_QUERY).matches;
+const getHoverServerSnapshot = () => false;
 
 interface PolaroidImage {
   url: string;
@@ -113,11 +127,14 @@ export default function PolaroidGallery({
   imageLayout = "line",
   showTitle = true,
 }: PolaroidGalleryProps) {
-  const canHoverRef = useRef(false);
-
-  useEffect(() => {
-    canHoverRef.current = window.matchMedia("(hover: hover)").matches;
-  }, []);
+  // Previously a ref written in an effect and read during render — the write
+  // never triggered the re-render that would apply it, so the hover handlers
+  // stayed off on desktop entirely.
+  const canHover = useSyncExternalStore(
+    subscribeHover,
+    getHoverSnapshot,
+    getHoverServerSnapshot,
+  );
 
   if (!images || images.length === 0) return null;
 
@@ -170,23 +187,23 @@ export default function PolaroidGallery({
               style={{ perspective: "1000px" }}
             >
               {/* Second image (left on desktop) */}
-              <PolaroidItem img={images[1]} idx={1} rotation={rotations[1]} canHover={canHoverRef.current} />
+              <PolaroidItem img={images[1]} idx={1} rotation={rotations[1]} canHover={canHover} />
               {/* First image (center, lifted) */}
               <div style={{ marginBottom: "40px" }}>
-                <PolaroidItem img={images[0]} idx={0} rotation={rotations[0]} canHover={canHoverRef.current} />
+                <PolaroidItem img={images[0]} idx={0} rotation={rotations[0]} canHover={canHover} />
               </div>
               {/* Third image (right on desktop) */}
-              <PolaroidItem img={images[2]} idx={2} rotation={rotations[2]} canHover={canHoverRef.current} />
+              <PolaroidItem img={images[2]} idx={2} rotation={rotations[2]} canHover={canHover} />
             </div>
 
             {/* Mobile */}
             <div className="flex sm:hidden flex-col items-center gap-8">
               {/* First image — full size */}
-              <PolaroidItem img={images[0]} idx={0} rotation={rotations[0]} canHover={canHoverRef.current} />
+              <PolaroidItem img={images[0]} idx={0} rotation={rotations[0]} canHover={canHover} />
               {/* Second + Third — smaller, side by side */}
               <div className="flex items-center justify-center gap-6">
-                <PolaroidItem img={images[1]} idx={1} rotation={rotations[1]} small canHover={canHoverRef.current} />
-                <PolaroidItem img={images[2]} idx={2} rotation={rotations[2]} small canHover={canHoverRef.current} />
+                <PolaroidItem img={images[1]} idx={1} rotation={rotations[1]} small canHover={canHover} />
+                <PolaroidItem img={images[2]} idx={2} rotation={rotations[2]} small canHover={canHover} />
               </div>
             </div>
           </>
@@ -202,7 +219,7 @@ export default function PolaroidGallery({
                 img={img}
                 idx={idx}
                 rotation={rotations[idx] ?? 0}
-                canHover={canHoverRef.current}
+                canHover={canHover}
               />
             ))}
           </div>
