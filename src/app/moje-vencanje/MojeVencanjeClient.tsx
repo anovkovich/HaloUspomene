@@ -96,6 +96,15 @@ export default function MojeVencanjeClient() {
     if (activeView !== "guests") setGuestsSubView("potvrde");
   }, [activeView]);
 
+  // Zajedničko za obe instance Pregleda (PWA + browser) — da im se ponašanje
+  // ne razmimoiđe kad se doda još koja opcija.
+  const applyOverviewNavOpts = useCallback(
+    (opts?: { guestsSubView?: "potvrde" | "lista" }) => {
+      if (opts?.guestsSubView) setGuestsSubView(opts.guestsSubView);
+    },
+    [],
+  );
+
   // PWA install
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
   const [isStandalone, setIsStandalone] = useState(true);
@@ -692,8 +701,7 @@ export default function MojeVencanjeClient() {
                         budget={budget}
                         onSubmitUntilChange={handleSubmitUntilChange}
                         onNavigate={(v, opts) => {
-                          if (opts?.guestsSubView)
-                            setGuestsSubView(opts.guestsSubView);
+                          applyOverviewNavOpts(opts);
                           if (v === "checklist" || v === "budget") {
                             setPwaSubView(v);
                           } else {
@@ -712,8 +720,7 @@ export default function MojeVencanjeClient() {
                       budget={budget}
                       onSubmitUntilChange={handleSubmitUntilChange}
                       onNavigate={(v, opts) => {
-                        if (opts?.guestsSubView)
-                          setGuestsSubView(opts.guestsSubView);
+                        applyOverviewNavOpts(opts);
                         setActiveView(v);
                         window.scrollTo({ top: 0 });
                       }}

@@ -32,6 +32,7 @@ import {
   loadGuestListAction,
   saveGuestListAction,
 } from "./actions";
+import { createManualAnswer } from "./manual-answer";
 import InviteeListCard from "./InviteeListCard";
 
 // Normalize for fuzzy name matching: lowercase, strip diacritics, collapse spaces.
@@ -704,47 +705,26 @@ export default function GuestsCard({ draft, initialSubView }: Props) {
       }
       const coming = attends === "Da";
       const invitee = guestList.invitees.find((i) => i.id === inviteeId);
-      const cat = coming ? invitee?.category ?? "" : "";
-      const cleanName = name.trim() || invitee?.name || "Gost";
-      const cleanCount = coming ? Math.max(1, count) : 1;
-      const result = await addManualGuestAction(cleanName, cleanCount, attends);
-      if (!result.success || !result.id) {
-        toast(result.error ?? "Greška pri kreiranju potvrde");
+      // Serverski upis je zajednički sa prečicom na Pregledu — v. manual-answer.ts
+      const res = await createManualAnswer({ invitee, name, count, attends });
+      if (!res.ok) {
+        toast(res.error);
         return;
       }
-      const id = result.id;
-      const entry = {
-        id,
-        timestamp: new Date().toISOString(),
-        name: cleanName,
-        attending: attends,
-        guestCount: String(cleanCount),
-        details: "",
-        category: cat,
-      };
+      const { entry, category, patch } = res;
       if (coming) {
         setAttending((prev) => [...prev, entry]);
-        setTotalGuests((prev) => prev + cleanCount);
+        setTotalGuests((prev) => prev + (parseInt(entry.guestCount) || 1));
       } else {
         setNotAttending((prev) => [...prev, entry]);
       }
-      if (cat) {
-        setCategories((prev) => ({ ...prev, [id]: cat }));
-        updateGuestCategoryAction(id, cat);
+      if (category) {
+        setCategories((prev) => ({ ...prev, [entry.id]: category }));
       }
       mutateGuestList((gl) => ({
         ...gl,
         invitees: gl.invitees.map((i) =>
-          i.id === inviteeId
-            ? {
-                ...i,
-                linkedRsvpId: id,
-                status: coming ? ("confirmed" as const) : ("declined" as const),
-                // A cancelled zvanica keeps the party size it was planned with.
-                count: coming ? cleanCount : i.count,
-                manualPotvrda: true,
-              }
-            : i,
+          i.id === inviteeId ? { ...i, ...patch } : i,
         ),
       }));
       toast(

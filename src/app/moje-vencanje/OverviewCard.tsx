@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import {
   CheckCircle2,
   Wallet,
@@ -28,6 +29,7 @@ import {
   Minus,
   Plus,
   ClipboardList,
+  UserCheck,
 } from "lucide-react";
 import {
   loadOverviewAction,
@@ -38,6 +40,12 @@ import type { ActiveView } from "./Sidebar";
 import type { ChecklistItem, PortalBudget } from "./types";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
 import { coupleDisplayName } from "@/lib/couple-display-name";
+
+// Povlači i „Listu zvanica" sa sobom (deli birač i dijalog odgovora), pa se
+// učitava tek kad par klikne prečicu — Pregled se ne debljа zbog nje.
+const QuickAnswerModal = dynamic(() => import("./QuickAnswerModal"), {
+  ssr: false,
+});
 
 interface Props {
   coupleInfo: {
@@ -158,9 +166,10 @@ export default function OverviewCard({
   const [pdfIncludeQR, setPdfIncludeQR] = useState(true);
   const [pdfIncludePhones, setPdfIncludePhones] = useState(true);
   const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [quickAnswerOpen, setQuickAnswerOpen] = useState(false);
 
-  useEffect(() => {
-    loadOverviewAction().then((result) => {
+  const refreshOverview = useCallback(() => {
+    return loadOverviewAction().then((result) => {
       if (result) {
         setGuestStats(result.guestStats);
         setAudioStats(result.audioStats);
@@ -170,6 +179,10 @@ export default function OverviewCard({
       setLoading(false);
     });
   }, []);
+
+  useEffect(() => {
+    refreshOverview();
+  }, [refreshOverview]);
 
   const handleCopyLink = useCallback(() => {
     const path = coupleInfo.premium
@@ -632,6 +645,45 @@ export default function OverviewCard({
             </div>
           </div>
         </motion.div>
+      )}
+
+      {/* Prečica za ručni odgovor — najčešća radnja u portalu: zvanica javi
+       *  usmeno, par to upiše. Bez ovoga se do dijaloga stizalo tek kroz
+       *  Gosti → Lista zvanica → traženje osobe → zeleno dugme na redu.
+       *  Stoji IZNAD trake sa brojkama: brojke se samo čitaju, ovo je radnja.
+       *  Ima smisla tek kad lista postoji (inače stoji CTA za pravljenje liste). */}
+      {!loading && (guestStats?.inviteeCount ?? 0) > 0 && (
+        <motion.div {...sectionMotion(0.12)}>
+          <button
+            onClick={() => setQuickAnswerOpen(true)}
+            className="group w-full text-left flex items-center gap-3 rounded-xl border border-[#4a8a5c]/40 bg-[#4a8a5c]/[0.07] px-4 py-3 hover:bg-[#4a8a5c]/[0.12] hover:border-[#4a8a5c]/60 transition-colors cursor-pointer"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#4a8a5c]/40 bg-white text-[#4a8a5c] shrink-0">
+              <UserCheck size={17} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-[#232323] flex items-center gap-1.5">
+                Javila se zvanica?
+                <ArrowRight
+                  size={13}
+                  className="text-[#4a8a5c] transition-transform group-hover:translate-x-0.5"
+                />
+              </p>
+              <p className="text-[12px] text-[#232323]/60">
+                Upišite potvrdu ili otkazivanje umesto nje — ulazi u potvrde
+                gostiju isto kao da je sama popunila formu.
+              </p>
+            </div>
+          </button>
+        </motion.div>
+      )}
+
+      {quickAnswerOpen && (
+        <QuickAnswerModal
+          draft={coupleInfo.draft}
+          onClose={() => setQuickAnswerOpen(false)}
+          onSaved={refreshOverview}
+        />
       )}
 
       {/* Status band: 3 numeric stats fused with the Pažnja strip. Bez naslova —

@@ -108,6 +108,15 @@ function uid(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+/**
+ * Whether a zvanica already carries a real answer (potvrda ili otkazivanje).
+ * Such a zvanica takes its status FROM that answer, so the row dot, the row
+ * action button and the editor's planning chips all defer to the answer dialog.
+ */
+export function inviteeHasAnswer(inv: Invitee): boolean {
+  return inv.status === "confirmed" || !!inv.linkedRsvpId;
+}
+
 // Normalize for fuzzy name matching: lowercase, strip diacritics, collapse spaces.
 function normalizeName(s: string): string {
   return s
@@ -265,7 +274,7 @@ function LinkModal({
 
 /* ── Confirm-attendance modal (manual "Potvrdi dolazak") ───────── */
 
-function ConfirmAttendanceModal({
+export function ConfirmAttendanceModal({
   invitee,
   linkedRsvp,
   onClose,
@@ -593,6 +602,157 @@ function RolePickerModal({
   );
 }
 
+/* ── Answer picker (prečica sa Pregleda) ───────────────────── */
+
+/**
+ * "Ko vam se javio?" — search the whole guest list and jump straight into the
+ * answer dialog for that zvanica. Opened by the Pregled shortcut so a couple
+ * that just got a phone call doesn't have to hunt the person down in the list.
+ * Zvanice bez odgovora idu prve; one koje su već odgovorile ostaju dostupne
+ * (predomislile su se), samo prigušene i sa oznakom šta je upisano.
+ */
+export function AnswerPickerModal({
+  invitees,
+  onClose,
+  onPick,
+  onCreate,
+}: {
+  invitees: Invitee[];
+  onClose: () => void;
+  onPick: (inviteeId: string) => void;
+  onCreate: (name: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const q = normalizeName(query);
+  const trimmed = query.trim();
+  // Ponuda za dodavanje ide na TAČAN pogodak, ne na prazan spisak: „Rajko
+  // Petrović" mora da se doda i kada „Rajko" nešto pogađa.
+  const exact = invitees.some((i) => normalizeName(i.name) === q);
+
+  const matches = useMemo(() => {
+    const named = invitees.filter((i) => i.name.trim());
+    const list = q
+      ? named.filter((i) => normalizeName(i.name).includes(q))
+      : named;
+    return list
+      .map((inv, i) => ({ inv, i }))
+      // Stable sort: unanswered first, original order preserved within groups.
+      .sort(
+        (a, b) =>
+          Number(inviteeHasAnswer(a.inv)) - Number(inviteeHasAnswer(b.inv)) ||
+          a.i - b.i,
+      )
+      .map((e) => e.inv)
+      .slice(0, 60);
+  }, [invitees, q]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <div className="min-w-0">
+            <h3 className="font-serif text-lg text-[#232323]">
+              Ko vam se javio?
+            </h3>
+            <p className="text-xs text-[#232323]/60">
+              Izaberite zvanicu i upišite njen odgovor
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-[#232323]/60 hover:text-[#232323] transition-colors cursor-pointer shrink-0"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="px-5 pb-3">
+          <div className="relative">
+            <Search
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#232323]/55"
+            />
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Pretraži zvanice..."
+              className="w-full bg-white pl-10 pr-3 py-2.5 text-sm rounded-lg border border-[#232323]/20 placeholder:text-[#232323]/50 outline-none focus:border-[#AE343F] transition-colors"
+            />
+          </div>
+        </div>
+
+        <div className="px-5 pb-5 overflow-y-auto space-y-2">
+          {matches.length === 0 && !trimmed && (
+            <p className="text-center text-sm text-[#232323]/60 py-8">
+              Lista zvanica je prazna — prvo dodajte zvanice.
+            </p>
+          )}
+          {matches.map((inv) => {
+            const answered = inviteeHasAnswer(inv);
+            return (
+              <button
+                key={inv.id}
+                onClick={() => onPick(inv.id)}
+                className={`w-full text-left p-3 rounded-xl border transition-colors cursor-pointer ${
+                  answered
+                    ? "border-[#232323]/12 bg-[#232323]/[0.03] hover:border-[#232323]/25"
+                    : "border-[#232323]/15 hover:border-[#4a8a5c]/55 hover:bg-[#4a8a5c]/[0.06]"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span
+                    className={`text-sm font-medium truncate ${
+                      answered ? "text-[#232323]/55" : "text-[#232323]"
+                    }`}
+                  >
+                    {inv.name}
+                    {inv.count > 1 && (
+                      <span className="text-[#232323]/45 font-normal">
+                        {" "}
+                        ×{inv.count}
+                      </span>
+                    )}
+                  </span>
+                  {answered && (
+                    <span className="shrink-0 text-[10px] font-medium text-[#232323]/55 bg-[#F5F4DC] border border-[#232323]/12 rounded px-1.5 py-0.5">
+                      {inv.status === "confirmed" ? "potvrdio" : "otkazao"}
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+
+          {/* Zaboravljena zvanica — stoji ISPOD pogodaka da se ne klikne greškom
+              umesto postojeće osobe. Broj osoba se NE pita ovde: pita ga dijalog
+              odgovora, zajedno sa izborom potvrdio/otkazao. */}
+          {trimmed && !exact && (
+            <button
+              onClick={() => onCreate(trimmed)}
+              className="w-full text-left p-3 rounded-xl border border-[#AE343F]/40 bg-[#AE343F]/[0.04] hover:bg-[#AE343F]/[0.08] transition-colors cursor-pointer"
+            >
+              <span className="text-sm font-medium text-[#AE343F] flex items-center gap-2">
+                <UserPlus size={14} /> Dodaj „{trimmed}&rdquo; na listu zvanica
+              </span>
+              <span className="text-[11px] text-[#232323]/55">
+                nema ga u zvanicama — zatim upišite njegov odgovor
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Invitee editor modal ──────────────────────────────────── */
 
 function InviteeEditor({
@@ -627,7 +787,7 @@ function InviteeEditor({
   // A zvanica with a real potvrda (confirmed OR cancelled through the answer
   // dialog) takes its status from that potvrda — the planning chips are hidden
   // so the two can't drift apart.
-  const hasAnswer = isConfirmed || !!invitee.linkedRsvpId;
+  const hasAnswer = inviteeHasAnswer(invitee);
   const answerDeclined = hasAnswer && !isConfirmed;
 
   const handleSave = () => {
@@ -909,7 +1069,7 @@ function InviteeRow({
   const isConfirmed = invitee.status === "confirmed";
   // A linked zvanica takes its status from the potvrda, so the dot must not
   // cycle it out of sync — it opens the answer dialog instead.
-  const hasAnswer = isConfirmed || !!invitee.linkedRsvpId;
+  const hasAnswer = inviteeHasAnswer(invitee);
   return (
     <motion.div
       layout
