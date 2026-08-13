@@ -3,7 +3,6 @@ import { del } from "@vercel/blob";
 import { BirthdayData } from "@/app/deciji-rodjendan/[slug]/types";
 import { deleteShareLinksForProduct } from "./share-links";
 import { deleteAllGalleryPhotos } from "./gallery";
-import { deleteByPrefix } from "./r2";
 
 export type BirthdayDocument = BirthdayData & { slug: string };
 
@@ -75,9 +74,18 @@ export async function deleteBirthday(slug: string): Promise<void> {
 
   // Cascade: guest photos in R2. Swallowed like the blob cleanup below — an
   // orphaned object beats leaving the event half-deleted.
-  await deleteByPrefix(`gallery/${slug}/`).catch((err) =>
-    console.error(`R2 gallery cleanup failed for ${slug}:`, err),
-  );
+  //
+  // Imported lazily ON PURPOSE: `r2.ts` pulls in @aws-sdk/client-s3, and this
+  // module is loaded by the invitation pages, the OG images and the admin
+  // stats route — none of which touch R2. A static import puts the whole S3
+  // client in all of their graphs (and a broken transitive dep then fails
+  // routes that have nothing to do with storage).
+  try {
+    const { deleteByPrefix } = await import("./r2");
+    await deleteByPrefix(`gallery/${slug}/`);
+  } catch (err) {
+    console.error(`R2 gallery cleanup failed for ${slug}:`, err);
+  }
 
   // Cascade: gallery + hero emblem blobs. Failures are swallowed per blob — a
   // leaked blob is preferable to leaving the event half-deleted.
