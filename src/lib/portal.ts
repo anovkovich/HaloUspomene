@@ -1,5 +1,6 @@
 import clientPromise from "./mongodb";
 import type { PortalData, ChecklistItem, PortalBudget, GuestList } from "@/app/moje-vencanje/types";
+import type { SeatingNudgeDismiss } from "./seating/nudge";
 
 import { getDefaultChecklist, getDefaultBudgetCategories } from "@/app/moje-vencanje/defaults";
 
@@ -70,6 +71,17 @@ export async function saveGuestList(
   await c.updateOne(
     { slug },
     { $set: { guestList, updatedAt: new Date() } }
+  );
+}
+
+export async function saveSeatingNudge(
+  slug: string,
+  seatingNudge: SeatingNudgeDismiss
+): Promise<void> {
+  const c = await col();
+  await c.updateOne(
+    { slug },
+    { $set: { seatingNudge, updatedAt: new Date() } }
   );
 }
 

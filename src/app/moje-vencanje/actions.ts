@@ -15,9 +15,16 @@ import {
   saveBudget as dbSaveBudget,
   saveVendorFavorites as dbSaveVendorFavorites,
   saveGuestList as dbSaveGuestList,
+  saveSeatingNudge,
   getHighlightedVendors as dbGetHighlighted,
   setHighlightedVendors as dbSetHighlighted,
 } from "@/lib/portal";
+import { snoozeUntil } from "@/lib/seating/nudge";
+import type {
+  SeatingNudgeDismiss,
+  NudgeState,
+  NudgeStage,
+} from "@/lib/seating/nudge";
 import { getAudioMessages, deleteAudioMessage as dbDeleteAudio } from "@/lib/audio";
 import type { AudioMessage } from "@/lib/audio";
 import {
@@ -460,9 +467,16 @@ export async function loadSeatingStatsAction(): Promise<{
   seated: number;
   notSeated: number;
   slug: string;
+  paidForRaspored: boolean;
+  eventDate: string;
+  submitUntil?: string;
+  draft: boolean;
+  seatingNudge?: SeatingNudgeDismiss;
 } | null> {
   const slug = await getAuthSlug();
   if (!slug) return null;
+  const data = await getWeddingData(slug);
+  if (!data) return null;
 
   const { loadSeatingLayout } = await import("@/lib/seating");
 
@@ -487,7 +501,47 @@ export async function loadSeatingStatsAction(): Promise<{
     }
   } catch { /* ignore */ }
 
-  return { totalGuests, seated, notSeated: totalGuests - seated, slug };
+  let seatingNudge: SeatingNudgeDismiss | undefined;
+  try {
+    seatingNudge = (await dbLoadPortal(slug)).seatingNudge;
+  } catch { /* ignore */ }
+
+  return {
+    totalGuests,
+    seated,
+    notSeated: totalGuests - seated,
+    slug,
+    paidForRaspored: data.paid_for_raspored ?? false,
+    eventDate: data.event_date,
+    submitUntil: data.submit_until,
+    draft: data.draft ?? false,
+    seatingNudge,
+  };
+}
+
+/** Par je zatvorio ponudu za raspored sedenja. Slug se uzima iz kolačića —
+ *  klijent ga nikad ne šalje. */
+export async function dismissSeatingNudgeAction(
+  state: NudgeState,
+  stage: NudgeStage,
+): Promise<{ success: boolean }> {
+  const slug = await getAuthSlug();
+  if (!slug) return { success: false };
+  try {
+    const prev = (await dbLoadPortal(slug)).seatingNudge;
+    // Plafon se broji po stanju: par koji je odbio ponudu za kupovinu, pa
+    // kasnije kupio raspored, kreće od nule za poziv da uđe u alat.
+    const sameState = prev && (prev.state ?? "unpaid") === state;
+    await saveSeatingNudge(slug, {
+      count: (sameState ? prev.count : 0) + 1,
+      snoozedUntil: snoozeUntil(),
+      lastStage: stage,
+      state,
+    });
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
 }
 
 /* ── Overview ──────────────────────────────────────────────── */

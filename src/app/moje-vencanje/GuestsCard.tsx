@@ -31,8 +31,12 @@ import {
   deleteGuestAction,
   loadGuestListAction,
   saveGuestListAction,
+  loadSeatingStatsAction,
 } from "./actions";
 import { createManualAnswer } from "./manual-answer";
+import { evaluateSeatingNudge } from "@/lib/seating/nudge";
+import type { NudgeStage, NudgeState } from "@/lib/seating/nudge";
+import SeatingNudgeCard from "./SeatingNudgeCard";
 import InviteeListCard from "./InviteeListCard";
 
 // Normalize for fuzzy name matching: lowercase, strip diacritics, collapse spaces.
@@ -514,6 +518,50 @@ export default function GuestsCard({ draft, initialSubView }: Props) {
     initialSubView ?? "potvrde",
   );
 
+  // ── Ponuda rasporeda sedenja ─────────────────────────────────────────────
+  // Računa se jednom, pri montiranju: traka ne sme da iskoči paru pod prstima
+  // dok radi sa listom, niti da nestane sama od sebe posle jednog upisa.
+  const [seatingNudge, setSeatingNudge] = useState<
+    | {
+        show: true;
+        slug: string;
+        state: NudgeState;
+        stage: NudgeStage;
+        attendingPeople: number;
+      }
+    | { show: false }
+    | null
+  >(null);
+
+  useEffect(() => {
+    loadSeatingStatsAction().then((s) => {
+      if (!s) {
+        setSeatingNudge({ show: false });
+        return;
+      }
+      const verdict = evaluateSeatingNudge({
+        attendingPeople: s.totalGuests,
+        eventDate: s.eventDate,
+        submitUntil: s.submitUntil,
+        paidForRaspored: s.paidForRaspored,
+        seated: s.seated,
+        draft: s.draft || !!draft,
+        dismiss: s.seatingNudge,
+      });
+      setSeatingNudge(
+        verdict.show
+          ? {
+              show: true,
+              slug: s.slug,
+              state: verdict.state,
+              stage: verdict.stage,
+              attendingPeople: s.totalGuests,
+            }
+          : { show: false },
+      );
+    });
+  }, [draft]);
+
   useEffect(() => {
     loadGuestsAction().then((result) => {
       if (result) {
@@ -946,6 +994,17 @@ export default function GuestsCard({ draft, initialSubView }: Props) {
 
   return (
     <div>
+      {/* Ponuda rasporeda sedenja — iznad prekidača, da stoji i nad Potvrdama
+       *  i nad Listom zvanica. Sama odlučuje da li se uopšte prikazuje. */}
+      {seatingNudge?.show && (
+        <SeatingNudgeCard
+          slug={seatingNudge.slug}
+          state={seatingNudge.state}
+          stage={seatingNudge.stage}
+          attendingPeople={seatingNudge.attendingPeople}
+        />
+      )}
+
       {/* Sub-tab switcher: Potvrde (RSVP) vs Lista zvanica (planning) */}
       <div className="flex gap-1.5 mb-4">
         {(

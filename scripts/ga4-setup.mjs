@@ -104,6 +104,8 @@ const DIMENSIONS = [
   ["nav_location", "Navigacija mesto", "Zaglavlje ili podnozje (nav_click)"],
   ["city_name", "Grad", "Gradska stranica (location_view)"],
   ["blog_slug", "Blog slug", "Procitan clanak (blog_read)"],
+  ["nudge_state", "Ponuda rasporeda stanje", "unpaid ili paid_empty (seating_nudge_*)"],
+  ["nudge_stage", "Ponuda rasporeda okidac", "soft ili strong (seating_nudge_*)"],
 ];
 
 /** Radnje koje se broje kao konverzija. `form_submit` je naš jedini pravi lead. */

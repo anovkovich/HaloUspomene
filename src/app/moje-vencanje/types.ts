@@ -1,3 +1,5 @@
+import type { SeatingNudgeDismiss } from "@/lib/seating/nudge";
+
 export type ChecklistGroup =
   | "12+"
   | "9-12"
@@ -87,6 +89,10 @@ export interface PortalData {
   budget: PortalBudget;
   vendorFavorites: string[];
   guestList?: GuestList;
+  /** Kada je par utišao ponudu za raspored sedenja u tabu Gosti. Stoji na
+   *  serveru, a ne u localStorage-u: portal je PWA koji se otvara sa telefona
+   *  i laptopa, pa bi klijentski dismiss vaskrsavao traku na svakom uređaju. */
+  seatingNudge?: SeatingNudgeDismiss;
   updatedAt: Date;
   createdAt: Date;
 }
