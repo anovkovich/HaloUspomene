@@ -71,7 +71,8 @@ interface Pricing {
   rodjendan: {
     pozivnica: PriceEntryEur;
     punoletstvo: PriceEntryEur;
-    raspored: PriceEntry;
+    /** Card-sellable add-on on both birthday kinds — hence a fixed EUR price. */
+    raspored: PriceEntryEur;
   };
   standalone_seating: PromoPriceEntry & { priceEur: number };
   dogadjaj: {

@@ -9,6 +9,7 @@ import {
   pricing,
   getTier,
   getRodjendanPozivnicaPrice,
+  getRodjendanRasporedPrice,
   getStandaloneSeatingPrice,
   isStandaloneSeatingPromoActive,
   getDogadjajPaketPrice,
@@ -50,6 +51,10 @@ export interface KindEntitySummary {
    *  osnovni's unlock wouldn't cover those, so paying 5.000 would publish a
    *  full config. When true, osnovni is hidden and refused. */
   blockOsnovni?: boolean;
+  /** Birthday kinds: the record has no `contact_phone`, so the gallery's
+   *  purge-warning SMS could never be delivered. The add-on is hidden and
+   *  refused rather than sold with silent data loss attached. */
+  blockGallery?: boolean;
 }
 
 export interface KindTier {
@@ -339,101 +344,207 @@ const pozivnica: KindAdapter = {
   },
 };
 
-// ── rodjendan (children's birthday) ──────────────────────────────────────────
+// ── rodjendan + punoletstvo (both live in `birthday_events`) ─────────────────
+//
+// One factory, two kinds. The products differ only in which `type` they accept,
+// the base tier's label, and its price — everything past that (the raspored
+// add-on, the unlock flags) is identical, and duplicating it once already gave
+// us two byte-identical portals to un-duplicate.
+//
+// The `raspored` add-on is offered by BOTH kinds even though only punoletstvo
+// shows an upsell teaser in its portal. The tier is the sales rail; the teaser
+// is marketing. Decoupling them means a dečiji-rođendan parent who asks for
+// seating can just be sent /placanje/rodjendan/{slug}/ instead of being
+// invoiced by hand — at no extra cost, since it is the same LS product.
 
-const rodjendan: KindAdapter = {
-  async loadEntity(slug) {
-    const b = await getBirthdayData(slug);
-    if (!b) return null;
-    // Reject punoletstvo-typed docs — those belong to the `punoletstvo` kind.
-    if (b.type === "eighteenth") return null;
-    return {
-      slug,
-      displayName: b.child_name || "Rođendan",
-      eventDate: b.event_date,
-      premium: false,
-      unlockedTiers: b.draft ? [] : ["default"],
-    };
-  },
-  tiers(e) {
-    if (e.unlockedTiers.includes("default")) return [];
-    const rsd = getRodjendanPozivnicaPrice(false);
-    const eurAmt = pricing.rodjendan.pozivnica.priceEur;
-    return [
-      {
-        id: "default",
-        labelSr: "Rođendanska pozivnica",
-        rsd,
-        eur: eurAmt,
-        lsVariantEnv: "LS_VARIANT_PROSLAVA",
-      },
-    ];
-  },
-  computeOrder(e, tierId) {
-    if (tierId !== "default") throw new PaymentError("INVALID_TIER");
-    if (e.unlockedTiers.includes("default"))
-      throw new PaymentError("ALREADY_UNLOCKED");
-    const rsd = getRodjendanPozivnicaPrice(false);
-    const eurAmt = pricing.rodjendan.pozivnica.priceEur;
-    return oneLine("Rođendanska pozivnica", rsd, eurAmt);
-  },
-  async unlock(slug) {
-    await patchBirthday(slug, { draft: false });
-  },
-  async revoke(slug) {
-    await patchBirthday(slug, { draft: true });
-  },
+const BIRTHDAY_ADDON_LABEL: Record<string, string> = {
+  raspored: "Raspored sedenja",
+  galerija: "QR galerija fotografija",
+  slike: "Galerija fotografija na pozivnici",
 };
 
-// ── punoletstvo (18th birthday) ──────────────────────────────────────────────
+/** Add-on ids in the order they should be offered. */
+const BIRTHDAY_ADDONS = ["galerija", "raspored", "slike"] as const;
+type BirthdayAddon = (typeof BIRTHDAY_ADDONS)[number];
 
-const punoletstvo: KindAdapter = {
-  async loadEntity(slug) {
-    const b = await getBirthdayData(slug);
-    if (!b) return null;
-    // Strict: only punoletstvo-typed docs.
-    if (b.type !== "eighteenth") return null;
-    const name =
-      [b.honoree_name, b.honoree_surname].filter(Boolean).join(" ").trim() ||
-      b.child_name ||
-      "Punoletstvo";
+function birthdayAddonMoney(id: BirthdayAddon): { rsd: number; eur: number } {
+  if (id === "slike") {
+    // Flat extra shared with the wedding builder (`addons[id=images]`), so the
+    // same LS product backs both. Cheapest tier we sell — it only pays for
+    // itself because the buyer uploads the photos from their own portal.
+    const a = pricing.addons.find((x) => x.id === "images");
+    return { rsd: a?.price ?? 600, eur: 6 };
+  }
+  if (id === "galerija") {
+    // Priced identically to the standalone couple gallery ON PURPOSE — that is
+    // what lets all three kinds share one LS product (LS_VARIANT_GALERIJA).
+    // The webhook's money invariant compares the frozen amount against the LS
+    // charge, so if these two prices ever diverge, this tier needs its own LS
+    // product before the price changes, not after.
     return {
-      slug,
-      displayName: name,
-      eventDate: b.event_date,
-      premium: false,
-      unlockedTiers: b.draft ? [] : ["default"],
+      rsd: pricing.pozivnica.galerija.price,
+      eur: pricing.pozivnica.galerija.priceEur,
     };
-  },
-  tiers(e) {
-    if (e.unlockedTiers.includes("default")) return [];
-    const rsd = getRodjendanPozivnicaPrice(true);
-    const eurAmt = pricing.rodjendan.punoletstvo.priceEur;
-    return [
-      {
-        id: "default",
-        labelSr: "Pozivnica za punoletstvo",
-        rsd,
-        eur: eurAmt,
-        lsVariantEnv: "LS_VARIANT_PROSLAVA",
-      },
-    ];
-  },
-  computeOrder(e, tierId) {
-    if (tierId !== "default") throw new PaymentError("INVALID_TIER");
-    if (e.unlockedTiers.includes("default"))
-      throw new PaymentError("ALREADY_UNLOCKED");
-    const rsd = getRodjendanPozivnicaPrice(true);
-    const eurAmt = pricing.rodjendan.punoletstvo.priceEur;
-    return oneLine("Pozivnica za punoletstvo", rsd, eurAmt);
-  },
-  async unlock(slug) {
-    await patchBirthday(slug, { draft: false });
-  },
-  async revoke(slug) {
-    await patchBirthday(slug, { draft: true });
-  },
+  }
+  return {
+    rsd: getRodjendanRasporedPrice(),
+    eur: eur(pricing.rodjendan.raspored.priceEur, 25),
+  };
+}
+
+const BIRTHDAY_ADDON_VARIANT_ENV: Record<BirthdayAddon, string> = {
+  galerija: "LS_VARIANT_GALERIJA",
+  raspored: "LS_VARIANT_RODJENDAN_RASPORED",
+  slike: "LS_VARIANT_SLIKE",
 };
+
+/** Entity flag each add-on flips. unlock/revoke are exact mirrors. */
+const BIRTHDAY_ADDON_FLAG: Record<
+  BirthdayAddon,
+  "paid_for_gallery" | "paid_for_raspored" | "paid_for_images"
+> = {
+  galerija: "paid_for_gallery",
+  raspored: "paid_for_raspored",
+  slike: "paid_for_images",
+};
+
+function isBirthdayAddon(id: string): id is BirthdayAddon {
+  return (BIRTHDAY_ADDONS as readonly string[]).includes(id);
+}
+
+function makeBirthdayAdapter(opts: {
+  /** Which docs this kind owns — the other kind must reject them. */
+  isEighteenth: boolean;
+  baseLabel: string;
+  baseMoney: () => { rsd: number; eur: number };
+  /** LS product for the base invitation. Both products share one. */
+  baseVariantEnv: string;
+}): KindAdapter {
+  const { isEighteenth, baseLabel, baseMoney, baseVariantEnv } = opts;
+
+  const tierMoney = (tierId: string) =>
+    isBirthdayAddon(tierId) ? birthdayAddonMoney(tierId) : baseMoney();
+  const tierLabel = (tierId: string) =>
+    isBirthdayAddon(tierId) ? BIRTHDAY_ADDON_LABEL[tierId] : baseLabel;
+
+  return {
+    async loadEntity(slug) {
+      const b = await getBirthdayData(slug);
+      if (!b) return null;
+      if ((b.type === "eighteenth") !== isEighteenth) return null;
+
+      const name = isEighteenth
+        ? [b.honoree_name, b.honoree_surname].filter(Boolean).join(" ").trim() ||
+          b.child_name ||
+          "Punoletstvo"
+        : b.child_name || "Rođendan";
+
+      const unlockedTiers: string[] = [];
+      if (!b.draft) unlockedTiers.push("default");
+      if (b.paid_for_raspored) unlockedTiers.push("raspored");
+      if (b.paid_for_gallery) unlockedTiers.push("galerija");
+      if (b.paid_for_images) unlockedTiers.push("slike");
+      // No phone ⇒ the gallery's purge-warning SMS can never be sent, so the
+      // gallery is not offered at all. Better an unsellable add-on than a
+      // client whose photos vanish without notice.
+      const canSellGallery = !!b.contact_phone;
+
+      return {
+        slug,
+        displayName: name,
+        eventDate: b.event_date,
+        premium: false,
+        unlockedTiers,
+        blockGallery: !canSellGallery,
+      };
+    },
+
+    tiers(e) {
+      // Until the invitation itself is paid, that is the only thing on offer —
+      // selling an add-on onto a draft would leave the client with a feature
+      // hanging off an unpublished invitation.
+      if (!e.unlockedTiers.includes("default")) {
+        const m = baseMoney();
+        return [
+          {
+            id: "default",
+            labelSr: baseLabel,
+            rsd: m.rsd,
+            eur: m.eur,
+            lsVariantEnv: baseVariantEnv,
+          },
+        ];
+      }
+
+      return BIRTHDAY_ADDONS.filter(
+        (id) => !e.unlockedTiers.includes(id),
+      )
+        .filter((id) => !(id === "galerija" && e.blockGallery))
+        .map((id) => {
+          const m = birthdayAddonMoney(id);
+          return {
+            id,
+            labelSr: BIRTHDAY_ADDON_LABEL[id],
+            rsd: m.rsd,
+            eur: m.eur,
+            lsVariantEnv: BIRTHDAY_ADDON_VARIANT_ENV[id],
+          };
+        });
+    },
+
+    computeOrder(e, tierId) {
+      if (tierId !== "default" && !isBirthdayAddon(tierId))
+        throw new PaymentError("INVALID_TIER");
+      if (e.unlockedTiers.includes(tierId))
+        throw new PaymentError("ALREADY_UNLOCKED");
+      if (isBirthdayAddon(tierId)) {
+        // An add-on on an unpublished invitation is not a thing we sell.
+        if (!e.unlockedTiers.includes("default"))
+          throw new PaymentError("INVALID_TIER");
+        if (tierId === "galerija" && e.blockGallery)
+          throw new PaymentError("INVALID_TIER");
+      }
+      const m = tierMoney(tierId);
+      return oneLine(tierLabel(tierId), m.rsd, m.eur);
+    },
+
+    async unlock(slug, order) {
+      if (isBirthdayAddon(order.tier)) {
+        await patchBirthday(slug, { [BIRTHDAY_ADDON_FLAG[order.tier]]: true });
+        return;
+      }
+      await patchBirthday(slug, { draft: false });
+    },
+
+    async revoke(slug, order) {
+      if (isBirthdayAddon(order.tier)) {
+        await patchBirthday(slug, { [BIRTHDAY_ADDON_FLAG[order.tier]]: false });
+        return;
+      }
+      await patchBirthday(slug, { draft: true });
+    },
+  };
+}
+
+const rodjendan = makeBirthdayAdapter({
+  isEighteenth: false,
+  baseLabel: "Rođendanska pozivnica",
+  baseMoney: () => ({
+    rsd: getRodjendanPozivnicaPrice(false),
+    eur: pricing.rodjendan.pozivnica.priceEur,
+  }),
+  baseVariantEnv: "LS_VARIANT_PROSLAVA",
+});
+
+const punoletstvo = makeBirthdayAdapter({
+  isEighteenth: true,
+  baseLabel: "Pozivnica za punoletstvo",
+  baseMoney: () => ({
+    rsd: getRodjendanPozivnicaPrice(true),
+    eur: pricing.rodjendan.punoletstvo.priceEur,
+  }),
+  baseVariantEnv: "LS_VARIANT_PROSLAVA",
+});
 
 // ── raspored (standalone seating tool for organizers) ────────────────────────
 // EUR is fixed at 45 regardless of the RSD promo (locked product decision).

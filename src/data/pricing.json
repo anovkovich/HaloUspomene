@@ -97,7 +97,8 @@
     },
     "raspored": {
       "label": "Raspored sedenja",
-      "price": 2500
+      "price": 2500,
+      "priceEur": 25
     }
   },
   "standalone_seating": {
