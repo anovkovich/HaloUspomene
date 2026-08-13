@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
 import { getOrder, transitionOrder } from "@/lib/orders";
+import { sendSms } from "@/lib/infobip";
+import { KIND_LABEL_SR } from "@/lib/payments/product-urls";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,10 +13,27 @@ export const dynamic = "force-dynamic";
 // fired from the client afterwards (Cloudflare blocks server-side Web3Forms
 // from Vercel), and email delivery is NOT required — the queue is the truth,
 // the email is only a doorbell.
+//
+// The SMS below is the SECOND doorbell, and the one that actually wakes a
+// phone. It is deliberately worded as a CLAIM ("kupac javlja"), because that is
+// all this endpoint knows: clicking the button is the buyer saying they paid,
+// never proof that money moved. The poziv-na-broj is included precisely so the
+// owner can match it against the bank statement in one glance before approving.
 
 const ipMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 5; // max 5 notifies per IP per hour
 const RATE_WINDOW = 60 * 60 * 1000;
+
+/** Latin diacritics -> ASCII. Load-bearing for SMS: a single "d" with a stroke
+ *  in "Rodjendanska" flips the whole message from GSM-7 (160 chars) to UCS-2
+ *  (70), turning one segment into three. */
+function asciiFold(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "dj")
+    .replace(/Đ/g, "Dj");
+}
 
 function clientIp(req: NextRequest): string {
   const fwd = req.headers.get("x-forwarded-for");
@@ -84,6 +103,24 @@ export async function POST(req: NextRequest) {
     rail: "ips",
     notify: { at: new Date(), payerName, ip },
   });
+
+  // Doorbell. Server-side on purpose: unlike the client-side email it fires
+  // even if the buyer closes the tab. Never let it break the response — the
+  // review queue is already the source of truth.
+  const alertPhone = process.env.ADMIN_ALERT_PHONE;
+  if (alertPhone?.startsWith("+")) {
+    // Measured across all 7 kinds: 143-158 chars, i.e. one GSM-7 segment.
+    // The name cap and the fold are what keep it there.
+    const label = asciiFold(KIND_LABEL_SR[order.kind] ?? order.kind);
+    const who = payerName ? ` (${asciiFold(payerName).slice(0, 20)})` : "";
+    const text = (
+      `HALO: kupac javlja uplatu${who}. ${order.amountRsd} din - ${label}. ` +
+      `Poziv na broj: ${order.ipsRef}. Odobri: halouspomene.rs/admin/?tab=uplate`
+    ).slice(0, 160);
+    await sendSms(alertPhone, text).catch((e) =>
+      console.error("[notify] admin SMS failed:", orderId, e),
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }
