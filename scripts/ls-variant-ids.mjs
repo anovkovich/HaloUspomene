@@ -25,8 +25,13 @@ const MAP = [
   [/kompletan/i, "LS_VARIANT_KOMPLETAN", 9900],
   [/premium/i, "LS_VARIANT_PREMIUM", 13900],
   [/proslav/i, "LS_VARIANT_PROSLAVA", 4500],
+  // Mora PRE generickog /raspored/i, inace bi prvi match pojeo ovaj proizvod:
+  // rodjendanski raspored je 2.500, samostalni je 5.000.
+  [/rodjendan\s*raspored/i, "LS_VARIANT_RODJENDAN_RASPORED", 2500],
   [/raspored/i, "LS_VARIANT_RASPORED", 5000],
+  // QR galerija se DELI sa rodjendanima (ista cena) — jedan proizvod, dva kind-a.
   [/galerij/i, "LS_VARIANT_GALERIJA", 3500],
+  [/slike/i, "LS_VARIANT_SLIKE", 600],
   [/korporativ/i, "LS_VARIANT_DOGADJAJ", 12000],
   [/telefon/i, "LS_VARIANT_TELEFON", 6900],
 ];
