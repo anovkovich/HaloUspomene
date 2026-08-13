@@ -14,6 +14,7 @@ import {
   FileText,
 } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
+import { issueReceiptRef } from "@/lib/issue-receipt-ref";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatPrice, pricing } from "@/data/pricing";
 import {
@@ -23,6 +24,7 @@ import {
   type PhoneRental,
 } from "@/lib/phone-rentals-shared";
 import AdminCalendar from "./AdminCalendar";
+import FocusNotice from "./FocusNotice";
 import {
   buildReceiptItems,
   currentPriceTable,
@@ -41,6 +43,9 @@ export default function PhoneAdminTab({
   couples,
   onNeedsLogin,
   onMarkPaid,
+  focusSlug,
+  focusLabel,
+  onClearFocus,
 }: {
   bankAccountIdx: number;
   /** Weddings, shown as faint context dots in the availability calendar. */
@@ -52,6 +57,10 @@ export default function PhoneAdminTab({
   }>;
   onNeedsLogin: () => void;
   onMarkPaid: (target: MarkPaidTarget) => void;
+  /** Kad pretraga po pozivu na broj pogodi ovaj tab — prikaži samo taj `tel-…` id. */
+  focusSlug?: string | null;
+  focusLabel?: string;
+  onClearFocus?: () => void;
 }) {
   const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
   const [rentals, setRentals] = useState<PhoneRental[]>([]);
@@ -216,7 +225,7 @@ export default function PhoneAdminTab({
     };
   }
 
-  function buildReceiptUrl(rental: PhoneRental) {
+  async function buildReceiptUrl(rental: PhoneRental) {
     const data = receiptFlags(rental);
     // Cache-buster on the receipt URL only — it must not reach receiptTotal.
     Object.assign(data, { t: Date.now() });
@@ -224,6 +233,23 @@ export default function PhoneAdminTab({
       data as unknown as ReceiptFlags,
       currentPriceTable(),
     );
+    const total =
+      items.reduce((s, i) => s + i.p, 0) -
+      bundleDiscount -
+      (rental.custom_discount ?? 0);
+
+    Object.assign(data, {
+      t: await issueReceiptRef({
+        kind: "telefon",
+        slug: rental.id,
+        displayName: rental.contact_name || rental.id,
+        amountRsd: total,
+        items: items.map((i) => ({ l: i.l, p: i.p })),
+        bankAccountIdx,
+        t: (data as unknown as { t: number }).t,
+      }),
+    });
+
     const payload = { ...data, v: 2, li: items, bd: bundleDiscount };
     return `${SITE_URL}/racun?d=${btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}`;
   }
@@ -244,7 +270,7 @@ export default function PhoneAdminTab({
   async function handleCopyReceiptUrl(id: string) {
     const rental = rentals.find((r) => r.id === id);
     if (!rental) return;
-    await navigator.clipboard.writeText(buildReceiptUrl(rental));
+    await navigator.clipboard.writeText(await buildReceiptUrl(rental));
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2500);
   }
@@ -325,8 +351,12 @@ export default function PhoneAdminTab({
   const dateFull = !!rentalDate && takenThisWeekend >= units;
 
   const today = new Date().toISOString().slice(0, 10);
-  const upcoming = rentals.filter((r) => r.rental_date >= today);
-  const past = rentals.filter((r) => r.rental_date < today);
+  // Fokus iz pretrage po pozivu na broj suzi obe liste na taj `tel-…` id.
+  const visibleRentals = focusSlug
+    ? rentals.filter((r) => r.id === focusSlug)
+    : rentals;
+  const upcoming = visibleRentals.filter((r) => r.rental_date >= today);
+  const past = visibleRentals.filter((r) => r.rental_date < today);
 
   return (
     <div>
@@ -470,6 +500,13 @@ export default function PhoneAdminTab({
         </p>
       ) : (
         <div className="space-y-6">
+          {focusSlug && (
+            <FocusNotice
+              paymentRef={focusLabel ?? focusSlug}
+              count={visibleRentals.length}
+              onClear={() => onClearFocus?.()}
+            />
+          )}
           {upcoming.length > 0 && (
             <RentalList
               rentals={upcoming}

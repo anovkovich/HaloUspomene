@@ -107,9 +107,27 @@ export interface OrderDocument {
   meta?: { ip?: string; ua?: string };
 }
 
+let indexesEnsured = false;
+
 async function col() {
   const client = await clientPromise;
-  return client.db("halouspomene").collection<OrderDocument>("orders");
+  const c = client.db("halouspomene").collection<OrderDocument>("orders");
+  if (!indexesEnsured) {
+    indexesEnsured = true;
+    // Fire-and-forget: lookups by orderId (webhook, admin akcije) i po ipsRef
+    // (pretraga po pozivu na broj) su do sada skenirale kolekciju.
+    c.createIndex({ orderId: 1 }, { unique: true }).catch(() => {});
+    c.createIndex({ ipsRef: 1 }).catch(() => {});
+  }
+  return c;
+}
+
+/** Porudžbina po pozivu na broj — podloga za pretragu u admin panelu. */
+export async function getOrderByIpsRef(
+  ipsRef: string,
+): Promise<OrderDocument | null> {
+  const c = await col();
+  return c.findOne({ ipsRef });
 }
 
 /** "HU" + 12 crypto-random decimal digits (no leading zero). The 12 digits also

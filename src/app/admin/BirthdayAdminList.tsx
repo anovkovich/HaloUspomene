@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Copy, Check, Pencil, Users, Cake, Armchair, Images, Receipt, Eye } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
+import { issueReceiptRef } from "@/lib/issue-receipt-ref";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   buildReceiptItems,
@@ -13,6 +14,7 @@ import {
 } from "@/lib/receipt-items";
 import type { MarkPaidTarget } from "@/lib/admin-mark-paid";
 import ShareLinkButton from "./ShareLinkButton";
+import FocusNotice from "./FocusNotice";
 
 interface Birthday {
   slug: string;
@@ -41,6 +43,10 @@ interface Props {
   onNeedsLogin: () => void;
   bankAccountIdx: number;
   onMarkPaid: (target: MarkPaidTarget) => void;
+  /** Kad pretraga po pozivu na broj pogodi ovaj tab — prikaži samo taj slug. */
+  focusSlug?: string | null;
+  focusLabel?: string;
+  onClearFocus?: () => void;
 }
 
 /** Flags shared by the printed receipt and the ledger prefill, so the amount we
@@ -64,7 +70,7 @@ function receiptFlags(
 /** Module scope, not a closure over component state: it stamps `Date.now()` and
  *  is only ever called from event handlers, so keeping it out of the render body
  *  is what makes that legal. */
-function buildReceiptUrl(b: Birthday, bankAccountIdx: number) {
+async function buildReceiptUrl(b: Birthday, bankAccountIdx: number) {
   // Cache-buster belongs on the receipt URL only — it must never reach the
   // amount we file in the ledger.
   const data = { ...receiptFlags(b, bankAccountIdx), t: Date.now() };
@@ -72,6 +78,19 @@ function buildReceiptUrl(b: Birthday, bankAccountIdx: number) {
     data as unknown as ReceiptFlags,
     currentPriceTable(),
   );
+  const total =
+    items.reduce((s, i) => s + i.p, 0) - bundleDiscount - (b.custom_discount ?? 0);
+
+  data.t = await issueReceiptRef({
+    kind: b.type === "eighteenth" ? "punoletstvo" : "rodjendan",
+    slug: b.slug,
+    displayName: b.child_name || b.slug,
+    amountRsd: total,
+    items: items.map((i) => ({ l: i.l, p: i.p })),
+    bankAccountIdx,
+    t: data.t,
+  });
+
   return `https://halouspomene.rs/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
 }
 
@@ -79,6 +98,9 @@ export default function BirthdayAdminList({
   onNeedsLogin,
   bankAccountIdx,
   onMarkPaid,
+  focusSlug,
+  focusLabel,
+  onClearFocus,
 }: Props) {
   const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
@@ -278,7 +300,7 @@ export default function BirthdayAdminList({
   }
 
   async function copyReceiptLink(b: Birthday) {
-    const url = buildReceiptUrl(b, bankAccountIdx);
+    const url = await buildReceiptUrl(b, bankAccountIdx);
     await navigator.clipboard.writeText(url);
     setReceiptCopiedSlug(b.slug);
     setTimeout(() => setReceiptCopiedSlug(null), 2500);
@@ -319,7 +341,16 @@ export default function BirthdayAdminList({
       </div>
 
       <div className="space-y-3">
-        {birthdays.map((b) => {
+        {focusSlug && (
+          <FocusNotice
+            paymentRef={focusLabel ?? focusSlug}
+            count={birthdays.filter((b) => b.slug === focusSlug).length}
+            onClear={() => onClearFocus?.()}
+          />
+        )}
+        {birthdays
+          .filter((b) => !focusSlug || b.slug === focusSlug)
+          .map((b) => {
           const s = stats[b.slug];
           const eventDate = new Date(b.event_date);
           const today = new Date();

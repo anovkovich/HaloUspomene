@@ -23,6 +23,9 @@ import GalleryAdminTab from "./GalleryAdminTab";
 import PhoneAdminTab from "./PhoneAdminTab";
 import OrdersAdminTab from "./OrdersAdminTab";
 import PromoAdminTab from "./PromoAdminTab";
+import PaymentRefSearch, { type RefHit } from "./PaymentRefSearch";
+import FocusNotice from "./FocusNotice";
+import { issueReceiptRef } from "@/lib/issue-receipt-ref";
 import BypassLinkModal from "./BypassLinkModal";
 import ShareLinkButton from "./ShareLinkButton";
 import DatePicker from "@/components/ui/DatePicker";
@@ -114,7 +117,7 @@ function slugifyPar(s: string): string {
 /** Receipt URL for a couple. Module scope, not a closure over component state:
  *  it stamps `Date.now()` and is only ever called from event handlers, so the
  *  render pass must stay free of it. `bankAccountIdx` comes in as an argument. */
-function buildReceiptUrl(
+async function buildReceiptUrl(
   c: Couple,
   bankAccountIdx: number,
   extras?: { retro_phone?: boolean; dobrodoslica?: boolean; customItems?: Array<{l: string; p: number}> },
@@ -143,6 +146,22 @@ function buildReceiptUrl(
     data as unknown as ReceiptFlags,
     currentPriceTable(),
   );
+  const total =
+    items.reduce((s, i) => s + i.p, 0) -
+    bundleDiscount -
+    (c.custom_discount ?? 0);
+
+  // Zavedi poziv na broj pre nego što se link sastavi — `t` sme da se pomeri.
+  data.t = await issueReceiptRef({
+    kind: "pozivnica",
+    slug: c.slug,
+    displayName: c.couple_names?.full_display || c.slug,
+    amountRsd: total,
+    items: items.map((i) => ({ l: i.l, p: i.p })),
+    bankAccountIdx,
+    t: data.t as number,
+  });
+
   return `https://halouspomene.rs/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
 }
 
@@ -251,6 +270,51 @@ export default function AdminPage() {
       ).includes(nq),
     );
   }, [sortedCouples, search]);
+  /** Postavlja se pretragom po pozivu na broj: vodi na tab te stavke i suzi
+   *  njegovu listu na nju. Čisti se ručnim klikom na bilo koji tab. */
+  const [focus, setFocus] = useState<{
+    kind: string;
+    slug: string;
+    ref: string;
+  } | null>(null);
+
+  /** Koji tab pokriva koji proizvod. Self-serve porudžbina ide u Uplate — tamo
+   *  je i dugme za odobravanje, što je i razlog zbog kojeg se broj traži. */
+  function tabForHit(hit: { kind: string; source: string }): AdminTab {
+    if (hit.source === "placanje") return "uplate";
+    switch (hit.kind) {
+      case "rodjendan":
+      case "punoletstvo":
+        return "rodjendani";
+      case "raspored":
+        return "raspored-sedenja";
+      case "galerija":
+      case "dogadjaj":
+        return "galerija";
+      case "telefon":
+        return "telefon";
+      default:
+        return "pozivnice";
+    }
+  }
+
+  function openFromRef(hit: RefHit) {
+    const tab = tabForHit(hit);
+    setActiveTab(tab);
+    setFocus({
+      kind: hit.source === "placanje" ? "order" : hit.kind,
+      slug: hit.source === "placanje" ? hit.ref : hit.slug,
+      ref: hit.ref,
+    });
+    // Pozivnice tab već ima filter koji hvata i slug — nema smisla dupli.
+    if (tab === "pozivnice" && hit.kind === "pozivnica") setSearch(hit.slug);
+  }
+
+  /** Fokus za tab koji pokriva date `kind`-ove, inače null (lista puna). */
+  function focusSlugFor(...kinds: string[]): string | null {
+    return focus && kinds.includes(focus.kind) ? focus.slug : null;
+  }
+
   const [customReceipts, setCustomReceipts] = useState<Array<{ id: string; par: string; datum?: string; items: Array<{l: string; p: number}>; ba: number; created_at: string }>>([]);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -677,7 +741,16 @@ export default function AdminPage() {
       {customReceipts.length > 0 && (
         <div className="mb-6 space-y-2">
           <span className="text-[10px] text-white/30 uppercase tracking-wider">Prilagođeni računi</span>
-          {customReceipts.map((r) => {
+          {focus?.kind === "custom" && (
+            <FocusNotice
+              paymentRef={focus.ref}
+              count={customReceipts.filter((r) => r.id === focus.slug).length}
+              onClear={() => setFocus(null)}
+            />
+          )}
+          {customReceipts
+            .filter((r) => focus?.kind !== "custom" || r.id === focus.slug)
+            .map((r) => {
             const total = r.items.reduce((s, i) => s + i.p, 0);
             const url = `https://halouspomene.rs/racun?d=${encodeToBase64({ custom: 1, id: r.id, par: r.par, datum: r.datum, ba: r.ba, t: new Date(r.created_at).getTime(), d: 0, ci: r.items })}`;
             return (
@@ -722,6 +795,13 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* Pretraga po pozivu na broj — jedini globalni search, iznad tabova.
+          Filter po imenu je i dalje unutar Pozivnice taba, radi drugi posao. */}
+      <PaymentRefSearch
+        onOpen={openFromRef}
+        onNeedsLogin={() => setNeedsLogin(true)}
+      />
+
       {/* Tab bar — 4 rows of 2 on phones, 2 rows of 4 from lg up */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 mb-6 sm:mb-8 bg-white/5 rounded-xl p-1">
         {TABS.map((tab) => {
@@ -731,7 +811,10 @@ export default function AdminPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setFocus(null); // ručna navigacija poništava suženje iz pretrage
+              }}
               className={`relative flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
                 isActive
                   ? `text-white ${tab.activeBg}`
@@ -754,6 +837,9 @@ export default function AdminPage() {
         <OrdersAdminTab
           onNeedsLogin={() => setNeedsLogin(true)}
           onCountChange={setUplateCount}
+          focusRef={focusSlugFor("order")}
+          focusLabel={focus?.ref}
+          onClearFocus={() => setFocus(null)}
         />
       ) : activeTab === "promo" ? (
         <PromoAdminTab onNeedsLogin={() => setNeedsLogin(true)} />
@@ -763,6 +849,9 @@ export default function AdminPage() {
           couples={couples}
           onNeedsLogin={() => setNeedsLogin(true)}
           onMarkPaid={setMarkPaid}
+          focusSlug={focusSlugFor("telefon")}
+          focusLabel={focus?.ref}
+          onClearFocus={() => setFocus(null)}
         />
       ) : activeTab === "vendori" ? (
         <>
@@ -781,6 +870,9 @@ export default function AdminPage() {
           onNeedsLogin={() => setNeedsLogin(true)}
           bankAccountIdx={bankAccountIdx}
           onMarkPaid={setMarkPaid}
+          focusSlug={focusSlugFor("raspored")}
+          focusLabel={focus?.ref}
+          onClearFocus={() => setFocus(null)}
         />
       ) : activeTab === "galerija" ? (
         <GalleryAdminTab
@@ -800,12 +892,18 @@ export default function AdminPage() {
             setCopiedSlug(slug);
             setTimeout(() => setCopiedSlug(null), 2500);
           }}
+          focusSlug={focusSlugFor("galerija", "dogadjaj")}
+          focusLabel={focus?.ref}
+          onClearFocus={() => setFocus(null)}
         />
       ) : activeTab === "rodjendani" ? (
         <BirthdayAdminList
           onNeedsLogin={() => setNeedsLogin(true)}
           bankAccountIdx={bankAccountIdx}
           onMarkPaid={setMarkPaid}
+          focusSlug={focusSlugFor("rodjendan", "punoletstvo")}
+          focusLabel={focus?.ref}
+          onClearFocus={() => setFocus(null)}
         />
       ) : (
       <>
@@ -1183,13 +1281,13 @@ export default function AdminPage() {
                     });
                   }
 
-                  const url = buildReceiptUrl(c, bankAccountIdx, extras);
+                  const url = await buildReceiptUrl(c, bankAccountIdx, extras);
                   await navigator.clipboard.writeText(url);
                   setCopiedSlug(c.slug);
                   setTimeout(() => setCopiedSlug(null), 2500);
                 }}
                 onCopy={async (extras) => {
-                  const url = buildReceiptUrl(c, bankAccountIdx, extras);
+                  const url = await buildReceiptUrl(c, bankAccountIdx, extras);
                   await navigator.clipboard.writeText(url);
                   setCopiedSlug(c.slug);
                   setTimeout(() => setCopiedSlug(null), 2500);

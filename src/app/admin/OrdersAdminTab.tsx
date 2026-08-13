@@ -14,6 +14,7 @@ import { formatPrice } from "@/data/pricing";
 import { KIND_LABEL_SR, productUrl } from "@/lib/payments/product-urls";
 import type { PaymentKind } from "@/lib/orders";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
+import FocusNotice from "./FocusNotice";
 
 /**
  * Tiers used for products that have no `kind` of their own. A retro-phone
@@ -158,9 +159,16 @@ function ageLabel(iso: string): string {
 export default function OrdersAdminTab({
   onNeedsLogin,
   onCountChange,
+  focusRef,
+  focusLabel,
+  onClearFocus,
 }: {
   onNeedsLogin: () => void;
   onCountChange?: (n: number) => void;
+  /** Poziv na broj iz pretrage — suzi listu na tu porudžbinu. */
+  focusRef?: string | null;
+  focusLabel?: string;
+  onClearFocus?: () => void;
 }) {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -279,10 +287,15 @@ export default function OrdersAdminTab({
     return <p className="text-white/40 py-10 text-center">Učitavanje…</p>;
   }
 
-  const actionable = orders.filter(
+  // Fokus iz pretrage po pozivu na broj — suzi i actionable i istoriju, jer
+  // tražena uplata može biti u bilo kojoj od njih.
+  const visible = focusRef
+    ? orders.filter((o) => o.ipsRef === focusRef || o.orderId === focusRef)
+    : orders;
+  const actionable = visible.filter(
     (o) => o.status === "review" || o.status === "pending",
   );
-  const history = orders.filter(
+  const history = visible.filter(
     (o) => o.status !== "review" && o.status !== "pending",
   );
 
@@ -300,6 +313,14 @@ export default function OrdersAdminTab({
           <RefreshCw size={12} /> Osveži
         </button>
       </div>
+
+      {focusRef && (
+        <FocusNotice
+          paymentRef={focusLabel ?? focusRef}
+          count={visible.length}
+          onClear={() => onClearFocus?.()}
+        />
+      )}
 
       {orders.length === 0 && (
         <p className="text-center text-sm text-white/40 py-10">

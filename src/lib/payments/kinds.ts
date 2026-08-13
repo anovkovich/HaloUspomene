@@ -42,7 +42,7 @@ export class PaymentError extends Error {
 
 export interface KindEntitySummary {
   slug: string;
-  displayName: string; // "Ana & Dejan" / event name — panel + IPS S field
+  displayName: string; // "Ana & Dejan" / event name — prikaz u panelu (IPS svrha je konstanta)
   eventDate?: string;
   premium: boolean; // pozivnica only; false elsewhere
   unlockedTiers: string[]; // tiers whose flags are already fully set

@@ -24,6 +24,8 @@ import {
   type StandaloneEventKind,
 } from "@/lib/standalone-event-kind";
 import { encodeToBase64 } from "@/lib/encoding";
+import { issueReceiptRef } from "@/lib/issue-receipt-ref";
+import FocusNotice from "./FocusNotice";
 import {
   buildReceiptItems,
   currentPriceTable,
@@ -40,6 +42,10 @@ interface Props {
   onNeedsLogin: () => void;
   bankAccountIdx: number;
   onMarkPaid: (target: MarkPaidTarget) => void;
+  /** Kad pretraga po pozivu na broj pogodi ovaj tab — prikaži samo taj slug. */
+  focusSlug?: string | null;
+  focusLabel?: string;
+  onClearFocus?: () => void;
 }
 
 type AdminSeating = StandaloneSeating & {
@@ -53,6 +59,9 @@ export default function SeatingAdminTab({
   onNeedsLogin,
   bankAccountIdx,
   onMarkPaid,
+  focusSlug,
+  focusLabel,
+  onClearFocus,
 }: Props) {
   const [seatings, setSeatings] = useState<AdminSeating[]>([]);
   const [loading, setLoading] = useState(true);
@@ -256,7 +265,7 @@ export default function SeatingAdminTab({
     };
   }
 
-  function buildReceiptUrl(s: StandaloneSeating) {
+  async function buildReceiptUrl(s: StandaloneSeating) {
     const data = receiptFlags(s);
     // Cache-buster on the receipt URL only — it must not reach receiptTotal.
     Object.assign(data, { t: Date.now() });
@@ -264,6 +273,23 @@ export default function SeatingAdminTab({
       data as unknown as ReceiptFlags,
       currentPriceTable(),
     );
+    const total =
+      items.reduce((acc, i) => acc + i.p, 0) -
+      bundleDiscount -
+      (s.custom_discount ?? 0);
+
+    Object.assign(data, {
+      t: await issueReceiptRef({
+        kind: "raspored",
+        slug: s.slug,
+        displayName: s.eventName || s.slug,
+        amountRsd: total,
+        items: items.map((i) => ({ l: i.l, p: i.p })),
+        bankAccountIdx,
+        t: (data as { t: number }).t,
+      }),
+    });
+
     return `${SITE_URL}/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
   }
 
@@ -357,7 +383,7 @@ export default function SeatingAdminTab({
   }
 
   async function copyReceiptLink(s: StandaloneSeating) {
-    const url = buildReceiptUrl(s);
+    const url = await buildReceiptUrl(s);
     await navigator.clipboard.writeText(url);
     setReceiptCopiedSlug(s.slug);
     setTimeout(() => setReceiptCopiedSlug(null), 2500);
@@ -397,7 +423,16 @@ export default function SeatingAdminTab({
 
       {/* List */}
       <div className="space-y-3">
-        {seatings.map((s) => {
+        {focusSlug && (
+          <FocusNotice
+            paymentRef={focusLabel ?? focusSlug}
+            count={seatings.filter((s) => s.slug === focusSlug).length}
+            onClear={() => onClearFocus?.()}
+          />
+        )}
+        {seatings
+          .filter((s) => !focusSlug || s.slug === focusSlug)
+          .map((s) => {
           const isRevealed = revealed.has(s.slug);
           const url = urlFor(s.slug);
           const eventDate = s.eventDate ? new Date(s.eventDate) : null;

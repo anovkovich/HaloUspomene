@@ -17,6 +17,8 @@ import {
 import DatePicker from "@/components/ui/DatePicker";
 import type { MarkPaidTarget } from "@/lib/admin-mark-paid";
 import { encodeToBase64 } from "@/lib/encoding";
+import { issueReceiptRef } from "@/lib/issue-receipt-ref";
+import FocusNotice from "./FocusNotice";
 import {
   buildReceiptItems,
   currentPriceTable,
@@ -74,6 +76,10 @@ interface Props {
    *  shows up on the Uplate tab. Same flow as the Pozivnice tab. */
   onMarkPaid: (target: MarkPaidTarget) => void;
   onDiscount: (slug: string, amount: number) => void;
+  /** Kad pretraga po pozivu na broj pogodi ovaj tab — prikaži samo taj slug. */
+  focusSlug?: string | null;
+  focusLabel?: string;
+  onClearFocus?: () => void;
   /** Persists the extra receipt lines onto the couple. Called on blur / remove,
    *  so an admin who types a line and walks away still has it tomorrow. */
   onSaveItems: (slug: string, items: ReceiptCustomItem[]) => void | Promise<void>;
@@ -126,7 +132,7 @@ function toDrafts(saved: ReceiptCustomItem[] | undefined): CustomItemDraft[] {
  * Module scope, not a closure over component state: it stamps `Date.now()` and
  * only ever runs from a click handler, so the render pass stays pure.
  */
-function buildGalleryReceiptUrl(
+async function buildGalleryReceiptUrl(
   c: GalleryCouple,
   opts: { customItems: CustomItemDraft[]; bankAccountIdx: number }
 ) {
@@ -147,6 +153,21 @@ function buildGalleryReceiptUrl(
     data as unknown as ReceiptFlags,
     currentPriceTable()
   );
+  const total =
+    items.reduce((s, i) => s + i.p, 0) -
+    bundleDiscount -
+    (c.custom_discount ?? 0);
+
+  data.t = await issueReceiptRef({
+    kind: "galerija",
+    slug: c.slug,
+    displayName: c.couple_names?.full_display || c.slug,
+    amountRsd: total,
+    items: items.map((i) => ({ l: i.l, p: i.p })),
+    bankAccountIdx: opts.bankAccountIdx,
+    t: data.t as number,
+  });
+
   return `${SITE_URL}/racun?d=${encodeToBase64({ ...data, v: 2, li: items, bd: bundleDiscount })}`;
 }
 
@@ -185,6 +206,9 @@ export default function GalleryAdminTab({
   onDiscount,
   onSaveItems,
   onCopiedSlug,
+  focusSlug,
+  focusLabel,
+  onClearFocus,
 }: Props) {
   const [showCreate, setShowCreate] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
@@ -295,7 +319,16 @@ export default function GalleryAdminTab({
       )}
 
       <div className="space-y-3">
-        {galleries.map((c) => {
+        {focusSlug && (
+          <FocusNotice
+            paymentRef={focusLabel ?? focusSlug}
+            count={galleries.filter((c) => c.slug === focusSlug).length}
+            onClear={() => onClearFocus?.()}
+          />
+        )}
+        {galleries
+          .filter((c) => !focusSlug || c.slug === focusSlug)
+          .map((c) => {
           const isRevealed = revealed.has(c.slug);
           const extraDays = c.gallery_extra_days ?? 0;
           const phase = galleryPhase(c.event_date, extraDays);
@@ -486,7 +519,7 @@ export default function GalleryAdminTab({
                 couple={c}
                 copiedSlug={copiedSlug}
                 onGenerate={async (items) => {
-                  const url = buildGalleryReceiptUrl(c, {
+                  const url = await buildGalleryReceiptUrl(c, {
                     customItems: items,
                     bankAccountIdx,
                   });
@@ -495,7 +528,7 @@ export default function GalleryAdminTab({
                   onCopiedSlug(c.slug);
                 }}
                 onCopy={async (items) => {
-                  const url = buildGalleryReceiptUrl(c, {
+                  const url = await buildGalleryReceiptUrl(c, {
                     customItems: items,
                     bankAccountIdx,
                   });
