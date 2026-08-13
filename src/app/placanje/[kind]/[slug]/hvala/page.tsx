@@ -5,8 +5,10 @@ import { CheckCircle2, Clock, KeyRound } from "lucide-react";
 import { getOrder } from "@/lib/orders";
 import { getWeddingData } from "@/lib/couples";
 import { getStandaloneSeating } from "@/lib/standalone-seating";
+import { getBirthdayData } from "@/lib/birthday";
+import { createOrGetShareLink } from "@/lib/share-links";
 import { isPaymentKind } from "@/lib/payments/kinds";
-import { productUrl } from "@/lib/payments/product-urls";
+import { productUrl, shareProductKind } from "@/lib/payments/product-urls";
 import Refresher from "./Refresher";
 import CopyButton from "./CopyButton";
 
@@ -56,14 +58,35 @@ export default async function HvalaPage({
 
   // PIN za sve proizvode — buyer ga je dobio pri kreiranju ali često zaboravi.
   // Prikaz je gated na validan unlocked order (orderId je nepogodljiv capability token).
+  const orderMatches =
+    unlocked && !!order && order.slug === slug && order.kind === kind;
+
   let pin: string | null = null;
-  if (unlocked && order && order.slug === slug && order.kind === kind) {
+  if (orderMatches) {
     if (kind === "raspored" || kind === "dogadjaj") {
       // Both live on the same standalone seating record, so the same PIN opens
       // the organizer's tool and portal.
       pin = (await getStandaloneSeating(slug))?.password ?? null;
     } else if (kind === "pozivnica" || kind === "galerija") {
       pin = coupleData?.potvrde_password ?? null;
+    } else if (kind === "punoletstvo" || kind === "rodjendan") {
+      // Both products share `birthday_events`; the portal PIN is admin_password.
+      pin = (await getBirthdayData(slug))?.admin_password ?? null;
+    }
+  }
+
+  // Buyer's own access page — bundles the public link, the PIN, the portal and
+  // a ready-made guest message. Minted here (idempotent, stable per
+  // product+slug) rather than in the webhook: a throw there would return 500,
+  // make LS retry, and risk stranding an order that already unlocked.
+  let accessToken: string | null = null;
+  const shareKind = orderMatches ? shareProductKind(kind) : null;
+  if (shareKind) {
+    try {
+      accessToken = (await createOrGetShareLink(shareKind, slug)).token;
+    } catch (err) {
+      // Never let this break the confirmation page — the money is already in.
+      console.error("[hvala] share link failed:", slug, err);
     }
   }
 
@@ -112,12 +135,33 @@ export default async function HvalaPage({
                 </p>
               </div>
             )}
-            <Link
-              href={href}
-              className="inline-block bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-2xl px-6 py-3 font-semibold transition-colors"
-            >
-              Otvori
-            </Link>
+            {accessToken ? (
+              <div className="flex flex-col gap-3">
+                <Link
+                  href={`/pristup/${accessToken}/`}
+                  className="inline-block bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-2xl px-6 py-3 font-semibold transition-colors"
+                >
+                  Otvorite svoj pristup
+                </Link>
+                <p className="text-[11px] text-gray-400 -mt-1">
+                  Sačuvajte ovu stranicu — na njoj su link za goste, prijava na
+                  portal i gotova poruka za slanje.
+                </p>
+                <Link
+                  href={href}
+                  className="text-sm text-[#AE343F] hover:underline"
+                >
+                  Otvori {kind === "telefon" ? "stranicu" : "pozivnicu"}
+                </Link>
+              </div>
+            ) : (
+              <Link
+                href={href}
+                className="inline-block bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-2xl px-6 py-3 font-semibold transition-colors"
+              >
+                Otvori
+              </Link>
+            )}
           </>
         ) : (
           <>

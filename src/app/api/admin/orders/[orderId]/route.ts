@@ -8,7 +8,8 @@ import {
   type PaymentKind,
 } from "@/lib/orders";
 import { KINDS } from "@/lib/payments/kinds";
-import { productUrl } from "@/lib/payments/product-urls";
+import { productUrl, shareProductKind } from "@/lib/payments/product-urls";
+import { createOrGetShareLink } from "@/lib/share-links";
 import { recordRedemption } from "@/lib/promo-redemptions";
 
 export const runtime = "nodejs";
@@ -70,6 +71,15 @@ export async function POST(
         return NextResponse.json(
           { error: "Otključavanje nije uspelo — proverite entitet." },
           { status: 500 },
+        );
+      }
+      // Mint the buyer's /pristup page so the bank-transfer rail hands over the
+      // same thing the card rail shows on /hvala. Non-fatal: the order is
+      // already unlocked, and the admin can still mint it from the panel.
+      const shareKind = shareProductKind(order.kind);
+      if (shareKind) {
+        await createOrGetShareLink(shareKind, order.slug).catch((e) =>
+          console.error("[orders] share link failed:", orderId, e),
         );
       }
       if (order.promo) {
