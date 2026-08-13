@@ -19,11 +19,7 @@ import {
   Minus,
 } from "lucide-react";
 import type { BirthdayRSVPEntry } from "@/lib/birthday-rsvp";
-import {
-  addPunoletstvoManualGuestAction,
-  updatePunoletstvoGuestCountAction,
-  deletePunoletstvoGuestAction,
-} from "./actions";
+import type { ActionResult } from "@/lib/proslava/portal-actions-core";
 
 function formatTimestamp(ts: string): string {
   if (!ts) return "";
@@ -80,12 +76,26 @@ function useLongPress(callback: () => void, ms = 500) {
 interface Props {
   responses: BirthdayRSVPEntry[];
   slug: string;
-  displayName: string;
+  /** Bound per product — each route tree checks its own auth cookie. */
+  addGuestAction: (
+    slug: string,
+    name: string,
+    guestCount: number,
+  ) => Promise<ActionResult>;
+  updateGuestCountAction: (
+    slug: string,
+    id: string,
+    guestCount: number,
+  ) => Promise<ActionResult>;
+  deleteGuestAction: (slug: string, id: string) => Promise<ActionResult>;
 }
 
-export default function PunoletstvoPortalClient({
+export default function GuestListTab({
   responses: initial,
   slug,
+  addGuestAction,
+  updateGuestCountAction,
+  deleteGuestAction,
 }: Props) {
   const [responses, setResponses] = useState<BirthdayRSVPEntry[]>(initial);
   const [refreshing, setRefreshing] = useState(false);
@@ -119,7 +129,7 @@ export default function PunoletstvoPortalClient({
     setAddError("");
     setAdding(true);
     startTransition(async () => {
-      const result = await addPunoletstvoManualGuestAction(
+      const result = await addGuestAction(
         slug,
         addName.trim(),
         addCount,
@@ -164,7 +174,7 @@ export default function PunoletstvoPortalClient({
       }
       setEditSaving(true);
       setEditError("");
-      const result = await deletePunoletstvoGuestAction(slug, editEntry.id);
+      const result = await deleteGuestAction(slug, editEntry.id);
       setEditSaving(false);
       if (result.success) {
         setResponses((prev) => prev.filter((e) => e.id !== editEntry.id));
@@ -177,7 +187,7 @@ export default function PunoletstvoPortalClient({
 
     setEditSaving(true);
     setEditError("");
-    const result = await updatePunoletstvoGuestCountAction(slug, editEntry.id, n);
+    const result = await updateGuestCountAction(slug, editEntry.id, n);
     setEditSaving(false);
     if (result.success) {
       setResponses((prev) =>

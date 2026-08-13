@@ -18,6 +18,10 @@ interface MeniCardProps {
    *  passes seating-scoped equivalents. */
   loadAction?: typeof loadMeniAction;
   saveAction?: typeof saveMeniAction;
+  /** Overrides the description under the heading. The default below names the
+   *  pano dobrodošlice, which is the only route to a wedding menu; products
+   *  where a second QR also reaches it pass their own wording. */
+  description?: string;
 }
 
 const FOOD_CATS = [
@@ -129,6 +133,7 @@ function Section({
 export default function MeniCard({
   loadAction = loadMeniAction,
   saveAction = saveMeniAction,
+  description,
 }: MeniCardProps = {}) {
   const [food, setFood] = useState<MeniItem[]>([]);
   const [drinks, setDrinks] = useState<MeniItem[]>([]);
@@ -206,9 +211,13 @@ export default function MeniCard({
             Meni
           </h2>
           <p className="text-sm text-[#232323]/60 mt-1 max-w-xl">
-            Besplatan dodatak — dodajte jela i/ili pića. Gosti ih vide u „Meni”
-            tabu kada skeniraju QR kod sa panoa dobrodošlice. Možete dodati samo
-            piće, samo hranu, ili oboje.
+            {description ?? (
+              <>
+                Besplatan dodatak — dodajte jela i/ili pića. Gosti ih vide u
+                „Meni” tabu kada skeniraju QR kod sa panoa dobrodošlice. Možete
+                dodati samo piće, samo hranu, ili oboje.
+              </>
+            )}
           </p>
         </div>
         <button

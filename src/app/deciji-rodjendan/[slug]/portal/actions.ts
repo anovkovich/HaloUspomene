@@ -1,87 +1,71 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import {
-  addBirthdayRSVP,
-  updateBirthdayRSVPGuestCount,
-  deleteBirthdayRSVP,
-} from "@/lib/birthday-rsvp";
+  addManualGuestCore,
+  updateGuestCountCore,
+  deleteGuestCore,
+  loadGalleryCore,
+  deleteGalleryPhotoCore,
+  loadMeniCore,
+  saveMeniCore,
+  uploadInvitationImageCore,
+  deleteInvitationImageCore,
+  type ActionResult,
+} from "@/lib/proslava/portal-actions-core";
+import type { MeniData } from "@/app/pozivnica/[slug]/types";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret");
-
-/**
- * Returns the slug the caller is authenticated for, or null. Portal is gated
- * per-birthday with auth_birthday_${slug} cookies (middleware + prijava).
- */
-async function getAuthorizedSlug(expectedSlug: string): Promise<string | null> {
-  const jar = await cookies();
-  const token = jar.get(`auth_birthday_${expectedSlug}`)?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, secret);
-    const slug = (payload.slug as string) ?? null;
-    return slug === expectedSlug ? slug : null;
-  } catch {
-    return null;
-  }
-}
+// Thin binders over the shared core — server actions must be exported per
+// route, so only the cookie name differs between this file and the
+// punoletstvo one.
+const COOKIE = (slug: string) => `auth_birthday_${slug}`;
 
 export async function addBirthdayManualGuestAction(
   slug: string,
   name: string,
   guestCount: number,
-): Promise<{ success: boolean; id?: string; error?: string }> {
-  const authSlug = await getAuthorizedSlug(slug);
-  if (!authSlug) return { success: false, error: "Niste prijavljeni" };
-
-  const cleanName = name.trim();
-  const cleanCount = Math.max(1, Math.floor(guestCount || 1));
-  if (!cleanName) return { success: false, error: "Unesite ime gosta" };
-
-  try {
-    const id = await addBirthdayRSVP(authSlug, {
-      name: cleanName,
-      attending: "Da",
-      guestCount: cleanCount,
-      message: "",
-    });
-    return { success: true, id };
-  } catch {
-    return { success: false, error: "Greška pri dodavanju gosta" };
-  }
+): Promise<ActionResult> {
+  return addManualGuestCore(COOKIE(slug), slug, name, guestCount);
 }
 
 export async function updateBirthdayGuestCountAction(
   slug: string,
   id: string,
   guestCount: number,
-): Promise<{ success: boolean; error?: string }> {
-  const authSlug = await getAuthorizedSlug(slug);
-  if (!authSlug) return { success: false, error: "Niste prijavljeni" };
-  if (!id) return { success: false, error: "Nedostaje ID" };
-
-  const cleanCount = Math.max(1, Math.floor(guestCount || 1));
-  try {
-    await updateBirthdayRSVPGuestCount(id, cleanCount);
-    return { success: true };
-  } catch {
-    return { success: false, error: "Greška pri čuvanju" };
-  }
+): Promise<ActionResult> {
+  return updateGuestCountCore(COOKIE(slug), slug, id, guestCount);
 }
 
 export async function deleteBirthdayGuestAction(
   slug: string,
   id: string,
-): Promise<{ success: boolean; error?: string }> {
-  const authSlug = await getAuthorizedSlug(slug);
-  if (!authSlug) return { success: false, error: "Niste prijavljeni" };
-  if (!id) return { success: false, error: "Nedostaje ID" };
+): Promise<ActionResult> {
+  return deleteGuestCore(COOKIE(slug), slug, id);
+}
 
-  try {
-    await deleteBirthdayRSVP(id);
-    return { success: true };
-  } catch {
-    return { success: false, error: "Greška pri brisanju" };
-  }
+export async function loadBirthdayGalleryAction(
+  slug: string,
+  skip = 0,
+  limit = 60,
+) {
+  return loadGalleryCore(COOKIE(slug), slug, skip, limit);
+}
+
+export async function deleteBirthdayGalleryPhotoAction(slug: string, id: string) {
+  return deleteGalleryPhotoCore(COOKIE(slug), slug, id);
+}
+
+export async function loadBirthdayMeniAction(slug: string) {
+  return loadMeniCore(COOKIE(slug), slug);
+}
+
+export async function saveBirthdayMeniAction(slug: string, meni: MeniData) {
+  return saveMeniCore(COOKIE(slug), slug, meni);
+}
+
+export async function uploadBirthdayImageAction(slug: string, form: FormData) {
+  return uploadInvitationImageCore(COOKIE(slug), slug, form);
+}
+
+export async function deleteBirthdayImageAction(slug: string, url: string) {
+  return deleteInvitationImageCore(COOKIE(slug), slug, url);
 }

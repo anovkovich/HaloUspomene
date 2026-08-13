@@ -1,3 +1,5 @@
+import type { MeniData } from "@/app/pozivnica/[slug]/types";
+
 export type BirthdayGender = "boy" | "girl" | "neutral";
 
 export type BirthdayType = "child" | "eighteenth";
@@ -71,6 +73,27 @@ export interface BirthdayData {
    * ignores it until that product wants a gallery too.
    */
   paid_for_images?: boolean;
+  /**
+   * Unlocks the QR guest gallery — guests scan a code and upload photos from
+   * the party into a shared album.
+   *
+   * DELIBERATELY distinct from `paid_for_images`, which is the polaroid strip
+   * of up to 3 photos ON the invitation. Same split as the wedding product;
+   * the two words both read as "galerija" in Serbian but are different sales.
+   *
+   * Requires `contact_phone` — see the note there.
+   */
+  paid_for_gallery?: boolean;
+  /**
+   * E.164 phone of the person who ordered. Already collected and SMS-verified
+   * by the create routes, which until now threw it away.
+   *
+   * Load-bearing for `paid_for_gallery`: the gallery purges photos a few days
+   * after the event, and the two warning SMS messages (d4/d5) only go out if
+   * this is set. Selling a gallery to a record without it means deleting a
+   * client's photos with no warning.
+   */
+  contact_phone?: string;
   /** Up to 3 Vercel Blob images. Gated by `paid_for_images`. */
   images?: Array<{ url: string; pathname: string }>;
   /** Polaroid arrangement. "triangle" only applies at exactly 3 images. */
@@ -91,6 +114,16 @@ export interface BirthdayData {
    * hero with a custom illustration. Blob url, uploaded from the admin panel.
    */
   hero_emblem_url?: string;
+  /**
+   * Food/drink menu shown to guests in the hub at `/deciji-rodjendan/[slug]/gde-sedim`.
+   * Free value-add, same shape and same guest surface as the wedding product.
+   *
+   * NOTE the storage difference from the wedding: there, `meni` lives on the
+   * couple record too, but checklist/budget live in `wedding_portal`. Here
+   * everything is on the event document, so the portal's save action goes
+   * through `patchBirthday`, not the portal facade.
+   */
+  meni?: MeniData;
   receipt_valid?: boolean;
   receipt_created?: string;
   custom_discount?: number;
