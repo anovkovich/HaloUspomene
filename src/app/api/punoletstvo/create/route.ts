@@ -58,12 +58,17 @@ export async function POST(request: NextRequest) {
       throw err;
     }
 
+    // Keep the E.164 number: the QR gallery purges photos a few days after the
+    // event and only warns by SMS, so a record without a phone can never
+    // safely carry `paid_for_gallery`.
+    let contactPhone = "";
     try {
-      await resolvePhoneAuthorization({
+      const auth = await resolvePhoneAuthorization({
         rawPhone: body.contact_phone,
         bypassToken: body.bypass_token,
         phoneTrustToken: body.phone_trust_token,
       });
+      contactPhone = auth.phoneE164;
     } catch (err) {
       if (err instanceof PhoneAuthError) {
         return NextResponse.json({ error: err.message }, { status: err.status });
@@ -115,6 +120,7 @@ export async function POST(request: NextRequest) {
       map_enabled: body.map_enabled ?? true,
       admin_password: autoPassword,
       draft: true,
+      ...(contactPhone ? { contact_phone: contactPhone } : {}),
     };
 
     // scriptFont is persisted alongside — readable by future punoletstvo

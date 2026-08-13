@@ -9,12 +9,17 @@ import { getBirthdayRSVP } from "@/lib/birthday-rsvp";
 import { getBirthdayThemeCSSVariables } from "../constants";
 import type { TableData } from "@/lib/seating";
 import GdeSedimClient from "@/app/pozivnica/[slug]/gde-sedim/GdeSedimClient";
+import MeniTab from "@/app/pozivnica/[slug]/gde-sedim/MeniTab";
+import GalerijaClient from "@/app/pozivnica/[slug]/galerija/GalerijaClient";
+import { getGalleryUploaderStacks } from "@/lib/gallery";
+import { galleryPhase } from "@/lib/gallery-lifecycle";
 
 export const dynamicParams = true;
 export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }
 
 export async function generateMetadata({
@@ -44,12 +49,70 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }));
 }
 
-export default async function BirthdayGdeSedimPage({ params }: PageProps) {
+export default async function BirthdayGdeSedimPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { slug } = await params;
+  const { tab } = await searchParams;
   const data = await getBirthdayData(slug);
 
   if (!data) notFound();
-  if (!data.paid_for_raspored) notFound();
+
+  // The page is now a small guest hub, not only a seat lookup: it opens when
+  // EITHER add-on has something to show. Mirrors the standalone seating hub,
+  // whose gate is `hasGallery || hasAudio || hasMeni`.
+  const meni = data.meni;
+  const hasMeni = !!(
+    meni &&
+    ((meni.food && meni.food.length > 0) ||
+      (meni.drinks && meni.drinks.length > 0))
+  );
+  const hasSeating = !!data.paid_for_raspored;
+  const hasGallery = !!data.paid_for_gallery;
+  if (!hasSeating && !hasMeni && !hasGallery) notFound();
+
+  // Deliberately NO date gate on the hub: the seat lookup and the menu never
+  // expire, and the printed welcome-sign QR has to keep working. The gallery
+  // tab renders its own phase (before / upload / closed / expired) — the real
+  // upload window stays enforced server-side in the API route.
+  const galleryPhaseValue = hasGallery
+    ? galleryPhase(
+        data.event_date,
+        (data as { gallery_extra_days?: number }).gallery_extra_days ?? 0,
+      )
+    : "unknown";
+
+  let galleryStacks: Awaited<ReturnType<typeof getGalleryUploaderStacks>> = [];
+  if (
+    hasGallery &&
+    galleryPhaseValue !== "expired" &&
+    galleryPhaseValue !== "before"
+  ) {
+    try {
+      galleryStacks = await getGalleryUploaderStacks(slug);
+    } catch {
+      galleryStacks = [];
+    }
+  }
+
+  // Requested tab wins when it exists; otherwise fall back to whatever this
+  // event actually has, seat lookup first.
+  const requested =
+    tab === "meni" && hasMeni
+      ? "meni"
+      : tab === "galerija" && hasGallery
+        ? "galerija"
+        : null;
+  const activeTab =
+    requested ??
+    (hasSeating ? "sedenje" : hasGallery ? "galerija" : "meni");
+
+  const hubTabs = [
+    ...(hasSeating ? [{ key: "sedenje", label: "Gde sedim" }] : []),
+    ...(hasGallery ? [{ key: "galerija", label: "Galerija" }] : []),
+    ...(hasMeni ? [{ key: "meni", label: "Meni" }] : []),
+  ];
 
   const cssVars = getBirthdayThemeCSSVariables(data.theme, data.displayFont);
 
@@ -137,15 +200,66 @@ export default async function BirthdayGdeSedimPage({ params }: PageProps) {
                 style={{ backgroundColor: "var(--theme-border)" }}
               />
             </div>
-            <p
-              className="text-xs uppercase tracking-widest"
-              style={{ color: "var(--theme-text-light)" }}
-            >
-              Gde sedim?
-            </p>
+            {/* With a tab bar the eyebrow just repeats the active tab, so it
+                only earns its place on a single-purpose hub. */}
+            {hubTabs.length === 1 && (
+              <p
+                className="text-xs uppercase tracking-widest"
+                style={{ color: "var(--theme-text-light)" }}
+              >
+                {hasSeating ? "Gde sedim?" : hasGallery ? "Galerija" : "Meni"}
+              </p>
+            )}
           </div>
 
-          {parseError && (
+          {hubTabs.length > 1 && (
+            <div className="flex justify-center gap-2 mb-8 flex-wrap">
+              {hubTabs.map((t) => {
+                const on = activeTab === t.key;
+                return (
+                  <Link
+                    key={t.key}
+                    href={`/deciji-rodjendan/${slug}/gde-sedim/${
+                      t.key === "sedenje" ? "" : `?tab=${t.key}`
+                    }`}
+                    scroll={false}
+                    className="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                    style={{
+                      backgroundColor: on
+                        ? "var(--theme-primary)"
+                        : "var(--theme-surface)",
+                      color: on ? "#fff" : "var(--theme-text-muted)",
+                      border: on
+                        ? "1px solid var(--theme-primary)"
+                        : "1px solid var(--theme-border-light)",
+                    }}
+                  >
+                    {t.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {activeTab === "meni" && meni && (
+            <MeniTab meni={meni} useCyrillic={false} />
+          )}
+
+          {activeTab === "galerija" && (
+            <GalerijaClient
+              slug={slug}
+              coupleNames={honoree}
+              useCyrillic={false}
+              phase={galleryPhaseValue}
+              eventDate={data.event_date}
+              initialStacks={galleryStacks}
+              initialPhotos={[]}
+              embedded
+              apiBase={`/api/deciji-rodjendan/${slug}`}
+            />
+          )}
+
+          {activeTab === "sedenje" && parseError && (
             <div
               className="text-center py-14 px-6 rounded-xl"
               style={{
@@ -168,7 +282,7 @@ export default async function BirthdayGdeSedimPage({ params }: PageProps) {
             </div>
           )}
 
-          {!parseError && (
+          {activeTab === "sedenje" && !parseError && (
             <GdeSedimClient guestLookup={guestLookup} tables={tables} />
           )}
         </div>

@@ -4,6 +4,10 @@ import {
   listGalleryStandaloneSeatings,
   patchStandaloneGalleryLifecycle,
 } from "@/lib/standalone-seating";
+import {
+  listGalleryBirthdays,
+  patchBirthdayGalleryLifecycle,
+} from "@/lib/birthday";
 import { deleteAllGalleryPhotos } from "@/lib/gallery";
 import { deleteByPrefix } from "@/lib/r2";
 import { sendSms } from "@/lib/infobip";
@@ -41,6 +45,11 @@ function smsPurgeWarning(): string {
 }
 
 // Standalone events aren't weddings — link the owner portal instead of /moje-vencanje.
+function smsLastAccessBirthday(slug: string, isEighteenth: boolean): string {
+  const base = isEighteenth ? "punoletstvo" : "deciji-rodjendan";
+  return `HaloUspomene: Danas je poslednji dan da preuzmete fotografije iz galerije sa proslave. Otvorite: ${SITE}/${base}/${slug}/portal`;
+}
+
 function smsLastAccessStandalone(slug: string): string {
   return `HaloUspomene: Danas je poslednji dan da preuzmete fotografije iz galerije. Otvorite: ${SITE}/raspored-sedenja/${slug}/portal`;
 }
@@ -167,6 +176,65 @@ export async function GET(req: NextRequest) {
     } catch (err) {
       result.errors.push(
         `${s.slug}: ${err instanceof Error ? err.message : "unknown"}`,
+      );
+    }
+  }
+
+  // ── Birthday events (dečiji rođendan + punoletstvo) with the gallery ─────
+  // Same lifecycle math on the shared `birthday_events` collection. The
+  // reminder links whichever product the record belongs to.
+  const birthdays = await listGalleryBirthdays();
+  for (const b of birthdays) {
+    try {
+      if (task === "remind") {
+        const d = galleryDayOffset(b.event_date);
+        if (d === null) continue;
+        // No phone ⇒ no warning is possible, so skip rather than purge blind;
+        // the sale is supposed to require `contact_phone` for exactly this.
+        const phone =
+          b.contact_phone && b.contact_phone.startsWith("+")
+            ? b.contact_phone
+            : null;
+        if (!phone) continue;
+
+        if (d === GALLERY_ACCESS_LAST_DAY && !b.gallery_sms_last_access_sent) {
+          await sendSms(
+            phone,
+            smsLastAccessBirthday(b.slug, b.type === "eighteenth"),
+          );
+          await patchBirthdayGalleryLifecycle(b.slug, {
+            gallery_sms_last_access_sent: true,
+          });
+          result.sms++;
+        } else if (
+          d === GALLERY_PURGE_WARNING_DAY &&
+          !b.gallery_sms_purge_warning_sent
+        ) {
+          await sendSms(phone, smsPurgeWarning());
+          await patchBirthdayGalleryLifecycle(b.slug, {
+            gallery_sms_purge_warning_sent: true,
+          });
+          result.sms++;
+        }
+        result.processed++;
+      } else {
+        // purge
+        if (
+          shouldPurgeGallery(b.event_date, b.gallery_extra_days ?? 0) &&
+          !b.gallery_purged_at
+        ) {
+          await deleteByPrefix(`gallery/${b.slug}/`);
+          await deleteAllGalleryPhotos(b.slug);
+          await patchBirthdayGalleryLifecycle(b.slug, {
+            gallery_purged_at: new Date().toISOString(),
+          });
+          result.purged++;
+        }
+        result.processed++;
+      }
+    } catch (err) {
+      result.errors.push(
+        `${b.slug}: ${err instanceof Error ? err.message : "unknown"}`,
       );
     }
   }

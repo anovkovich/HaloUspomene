@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Copy, Check, Pencil, Users, Cake, Armchair, Receipt, Eye } from "lucide-react";
+import { Plus, Trash2, Copy, Check, Pencil, Users, Cake, Armchair, Images, Receipt, Eye } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   buildReceiptItems,
   currentPriceTable,
@@ -24,6 +25,8 @@ interface Birthday {
   type?: "child" | "eighteenth";
   draft?: boolean;
   paid_for_raspored?: boolean;
+  paid_for_gallery?: boolean;
+  contact_phone?: string;
   receipt_valid?: boolean;
   receipt_created?: string;
   custom_discount?: number;
@@ -77,6 +80,7 @@ export default function BirthdayAdminList({
   bankAccountIdx,
   onMarkPaid,
 }: Props) {
+  const { confirm, dialog } = useConfirmDialog({ variant: "dark" });
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
   const [stats, setStats] = useState<Record<string, BirthdayStats>>({});
   const [shareStats, setShareStats] = useState<Record<string, { visit_count: number; last_visited_at?: string }>>({});
@@ -132,6 +136,38 @@ export default function BirthdayAdminList({
         prev.map((b) =>
           b.slug === slug ? { ...b, draft: current } : b
         )
+      );
+    }
+  }
+
+  // Gallery needs a phone: the purge-warning SMS is the only notice a client
+  // gets before their photos are deleted. Refuse rather than sell silent loss.
+  async function handleToggleGallery(slug: string, current: boolean) {
+    const row = birthdays.find((b) => b.slug === slug);
+    if (!current && !row?.contact_phone) {
+      await confirm({
+        title: "Nedostaje broj telefona",
+        message:
+          "Galerija briše fotografije nekoliko dana posle proslave i upozorava klijenta SMS-om.\nBez broja klijent ostaje i bez slika i bez najave.",
+        warning: "Unesite contact_phone u JSON zapisa, pa pokušajte ponovo.",
+        confirmLabel: "U redu",
+      });
+      return;
+    }
+    const newVal = !current;
+    setBirthdays((prev) =>
+      prev.map((b) => (b.slug === slug ? { ...b, paid_for_gallery: newVal } : b)),
+    );
+    const res = await fetch(`/api/admin/birthdays/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paid_for_gallery: newVal }),
+    });
+    if (!res.ok) {
+      setBirthdays((prev) =>
+        prev.map((b) =>
+          b.slug === slug ? { ...b, paid_for_gallery: current } : b,
+        ),
       );
     }
   }
@@ -269,6 +305,7 @@ export default function BirthdayAdminList({
 
   return (
     <div>
+      {dialog}
       <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8 flex-wrap">
         <h2 className="text-xl sm:text-2xl font-semibold text-white">
           Rođendani ({birthdays.length})
@@ -392,6 +429,30 @@ export default function BirthdayAdminList({
                 )}
 
                 <div className="flex items-center gap-3 sm:ml-auto">
+                  <div
+                    className="flex items-center gap-1.5"
+                    title={
+                      b.contact_phone
+                        ? "QR galerija fotografija"
+                        : "QR galerija — nedostaje contact_phone"
+                    }
+                  >
+                    <Images size={12} className="text-white/30" />
+                    <button
+                      onClick={() =>
+                        handleToggleGallery(b.slug, !!b.paid_for_gallery)
+                      }
+                      className={`relative w-9 h-5 rounded-full transition-colors ${
+                        b.paid_for_gallery ? "bg-green-500" : "bg-white/10"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                          b.paid_for_gallery ? "translate-x-4" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
                   <div
                     className="flex items-center gap-1.5"
                     title="Raspored sedenja"
