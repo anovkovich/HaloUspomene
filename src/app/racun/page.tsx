@@ -251,7 +251,12 @@ function ReceiptContent() {
             </div>
 
             {/* NBS IPS QR */}
-            <NbsQrCode total={total} couple={couple} receiptNo={receiptNo} bankAccountIdx={payload.ba ?? 0} />
+            <NbsQrCode
+              total={total}
+              receiptNo={receiptNo}
+              bankAccountIdx={payload.ba ?? 0}
+              showPaymentSlip
+            />
           </div>
 
           {/* Torn bottom edge */}

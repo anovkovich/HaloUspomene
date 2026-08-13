@@ -108,11 +108,12 @@ export default function CheckoutPanel({
   const [error, setError] = useState<string | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
   const [cardLoading, setCardLoading] = useState(false);
-  // Which payment method is expanded. When card is unavailable (pre-KYC) the
-  // IPS accordion opens by default since it's the only option.
-  const [open, setOpen] = useState<"card" | "ips" | null>(
-    cardEnabled ? null : "ips",
-  );
+  // IPS opens by default, always. It is the rail we prefer (Lemon Squeezy is
+  // merchant of record and its per-transaction fee is ~15% of a 600 din add-on),
+  // and an open accordion means the QR is on screen with zero taps. The card
+  // rail keeps full visual weight right below — buyers abroad, buyers without
+  // mBanking, and buyers who want the instant unlock all need it unhindered.
+  const [open, setOpen] = useState<"card" | "ips" | null>("ips");
 
   const startCard = async () => {
     setCardError(null);
@@ -305,67 +306,23 @@ export default function CheckoutPanel({
                 </a>
               )}
 
-              {/* Card rail — always shown; disabled until LS is live (flag off) */}
-              {!ipsOnly && (
-                <PayAccordion
-                  open={open === "card"}
-                  onToggle={() => setOpen(open === "card" ? null : "card")}
-                  disabled={!cardEnabled}
-                  disabledNote="Uskoro"
-                  icon={<CreditCard size={18} className="text-[#AE343F]" />}
-                  title="Plati karticom i aktiviraj odmah"
-                  subtitle={
-                    <>
-                      Aktivacija je <strong>odmah</strong>, čim plaćanje prođe.
-                    </>
-                  }
-                >
-                  <button
-                    type="button"
-                    onClick={startCard}
-                    disabled={cardLoading}
-                    className="w-full flex items-center justify-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-2xl py-3.5 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {cardLoading ? (
-                      <>
-                        <Loader2 size={18} className="animate-spin" />
-                        Otvaramo plaćanje…
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard size={18} />
-                        Nastavi na plaćanje
-                      </>
-                    )}
-                  </button>
-                  {cardError && (
-                    <p className="text-[12px] text-[#AE343F] text-center mt-2">
-                      {cardError}
-                    </p>
-                  )}
-                  <p className="text-[11px] text-gray-400 text-center mt-2.5 leading-relaxed">
-                    Za kartice iz inostranstva procesor plaćanja može dodati PDV
-                    vaše zemlje na prikazanu cenu.
-                  </p>
-                </PayAccordion>
-              )}
-
-              {/* IPS rail */}
+              {/* IPS rail — FIRST and open by default, see the `open` state. */}
               <PayAccordion
+                badge="Preporučeno"
                 open={open === "ips"}
                 onToggle={() => setOpen(open === "ips" ? null : "ips")}
                 icon={<Landmark size={18} className="text-[#AE343F]" />}
                 title="Plati iz mBanking aplikacije"
                 subtitle={
                   <>
-                    Skenirajte IPS kod i uplatu obrađujemo u roku od{" "}
-                    <strong>sat vremena</strong>!
+                    Najjednostavnije — iz mBanking aplikacije ili uplatnicom u
+                    banci i pošti. Uplatu obrađujemo obično u roku od{" "}
+                    <strong>sat vremena</strong>.
                   </>
                 }
               >
                 <NbsQrCode
                   total={amountRsd}
-                  couple={displayName}
                   receiptNo={ipsRef}
                   bankAccountIdx={0}
                   hideTopDivider
@@ -374,7 +331,8 @@ export default function CheckoutPanel({
                 {!notifyOpen ? (
                   <div className="mt-3">
                     <p className="text-[12px] text-[#232323] font-medium text-center mb-2">
-                      Pustili ste uplatu? Zatražite obradu odmah!
+                      Pustili ste uplatu? Kliknite ispod da odmah krenemo sa
+                      obradom.
                     </p>
                     <button
                       type="button"
@@ -421,6 +379,52 @@ export default function CheckoutPanel({
                   </div>
                 )}
               </PayAccordion>
+              {/* Card rail — always shown; disabled until LS is live (flag off) */}
+              {!ipsOnly && (
+                <PayAccordion
+                  open={open === "card"}
+                  onToggle={() => setOpen(open === "card" ? null : "card")}
+                  disabled={!cardEnabled}
+                  disabledNote="Uskoro"
+                  icon={<CreditCard size={18} className="text-[#AE343F]" />}
+                  title="Plati karticom i aktiviraj odmah"
+                  subtitle={
+                    <>
+                      Aktivacija je automatska, <strong>odmah</strong> po
+                      plaćanju. Pogodno i za uplate iz inostranstva.
+                    </>
+                  }
+                >
+                  <button
+                    type="button"
+                    onClick={startCard}
+                    disabled={cardLoading}
+                    className="w-full flex items-center justify-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-2xl py-3.5 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {cardLoading ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        Otvaramo plaćanje…
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard size={18} />
+                        Nastavi na plaćanje
+                      </>
+                    )}
+                  </button>
+                  {cardError && (
+                    <p className="text-[12px] text-[#AE343F] text-center mt-2">
+                      {cardError}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-gray-400 text-center mt-2.5 leading-relaxed">
+                    Za kartice iz inostranstva procesor plaćanja može dodati PDV
+                    vaše zemlje na prikazanu cenu.
+                  </p>
+                </PayAccordion>
+              )}
+
             </div>
           )}
 
@@ -442,6 +446,7 @@ function PayAccordion({
   children,
   disabled = false,
   disabledNote,
+  badge,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -451,6 +456,8 @@ function PayAccordion({
   children: ReactNode;
   disabled?: boolean;
   disabledNote?: string;
+  /** Small pill in the header. Used to mark the rail we prefer. */
+  badge?: string;
 }) {
   const expanded = open && !disabled;
   return (
@@ -458,9 +465,11 @@ function PayAccordion({
       className={`rounded-2xl border transition-colors ${
         disabled
           ? "border-gray-200 opacity-55"
-          : expanded
-            ? "border-[#AE343F]/40"
-            : "border-gray-200"
+          : badge
+            ? "border-[#AE343F]/45 bg-[#AE343F]/[0.03]"
+            : expanded
+              ? "border-[#AE343F]/40"
+              : "border-gray-200"
       }`}
     >
       <button
@@ -474,7 +483,13 @@ function PayAccordion({
       >
         <div className="flex items-center gap-2 text-[#232323]">
           {icon}
-          <span className="font-semibold flex-1">{title}</span>
+          <span className="font-semibold">{title}</span>
+          {badge && (
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-[#AE343F] bg-[#AE343F]/10 rounded-full px-2 py-0.5">
+              {badge}
+            </span>
+          )}
+          <span className="flex-1" />
           {disabled ? (
             disabledNote && (
               <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
