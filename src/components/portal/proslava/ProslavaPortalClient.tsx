@@ -8,12 +8,14 @@ import {
   Images,
   Armchair,
   Lock,
-  ChevronRight,
-  Sparkles,
   ExternalLink,
   QrCode,
   UtensilsCrossed,
   ImagePlus,
+  Copy,
+  Check,
+  CalendarClock,
+  Loader2,
 } from "lucide-react";
 import type { BirthdayRSVPEntry } from "@/lib/birthday-rsvp";
 import type {
@@ -27,6 +29,9 @@ import MeniCard from "@/app/moje-vencanje/MeniCard";
 import SlikeTab from "./SlikeTab";
 import type { MeniData } from "@/app/pozivnica/[slug]/types";
 import { galleryQrDataUrl } from "@/lib/gallery-qr";
+import { generateQrFlyerPDF } from "@/lib/qr-flyer";
+import { describeDeadline } from "@/lib/rsvp-deadline";
+import PrintCard from "@/components/portal/PrintCard";
 import {
   getMeniDescription,
   getPortalTabs,
@@ -78,6 +83,14 @@ interface Props extends PortalFlags {
     slug: string,
     url: string,
   ) => Promise<{ ok: boolean; error?: string }>;
+  /** ISO `submit_until` — the RSVP cut-off shown (and extendable) on Pregled. */
+  submitUntil: string;
+  extendDeadlineAction: (
+    slug: string,
+    days: number,
+  ) => Promise<
+    { ok: true; submitUntil: string; capped: boolean } | { ok: false; error: string }
+  >;
   loadMeniAction: (slug: string) => Promise<MeniData | null>;
   saveMeniAction: (
     slug: string,
@@ -121,6 +134,8 @@ export default function ProslavaPortalClient({
   invitationImages,
   uploadImageAction,
   deleteImageAction,
+  submitUntil,
+  extendDeadlineAction,
   ...flags
 }: Props) {
   const tabs = getPortalTabs(flags);
@@ -146,6 +161,54 @@ export default function ProslavaPortalClient({
 
   // Production domain hardcoded like `gallery-qr.ts` does: this PNG gets
   // printed on table signs, so a preview host would hand out a dead URL.
+  const [copied, setCopied] = useState(false);
+  const [deadline, setDeadline] = useState(submitUntil);
+  const [extending, setExtending] = useState(false);
+  const [extendError, setExtendError] = useState("");
+  const [printSheet, setPrintSheet] = useState<"potvrde" | null>(null);
+
+  const base = flags.isEighteenth ? "punoletstvo" : "deciji-rodjendan";
+  const invitationUrl = `https://halouspomene.rs/${base}/${flags.slug}/`;
+  // Short, print-friendly reply page. `/rsvp/[id]` already routes both birthday
+  // kinds — the invitation anchor would open the whole page instead of the form.
+  const rsvpUrl = `https://halouspomene.rs/rsvp/${base === "punoletstvo" ? "punoletstvo" : "rodjendan"}-${flags.slug}/`;
+  const deadlineState = describeDeadline(deadline);
+
+  function copyInvitationLink() {
+    navigator.clipboard.writeText(invitationUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function extendDeadline() {
+    setExtending(true);
+    setExtendError("");
+    const res = await extendDeadlineAction(flags.slug, 7);
+    setExtending(false);
+    if (res.ok) setDeadline(res.submitUntil);
+    else setExtendError(res.error);
+  }
+
+  async function downloadPng(url: string, filename: string, camera = false) {
+    let dataUrl: string;
+    if (camera) {
+      dataUrl = await galleryQrDataUrl(url, 1400);
+    } else {
+      const QRCode = (await import("qrcode")).default;
+      dataUrl = await QRCode.toDataURL(url, {
+        width: 1400,
+        margin: 2,
+        color: { dark: "#232323", light: "#ffffff" },
+      });
+    }
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
   // Points at the HUB, not the standalone /galerija page: one scanned code then
   // carries the album, the seat lookup and the menu, exactly like the
   // standalone-seating product's welcome-sign QR does. The old /galerija route
@@ -277,7 +340,79 @@ export default function ProslavaPortalClient({
                   </span>
                 </p>
               )}
+
+              <button
+                onClick={copyInvitationLink}
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-colors cursor-pointer"
+                style={{
+                  backgroundColor: "var(--theme-background)",
+                  border: "1px solid var(--theme-border-light)",
+                  color: copied
+                    ? "var(--theme-primary)"
+                    : "var(--theme-text-muted)",
+                }}
+              >
+                {copied ? <Check size={13} /> : <Copy size={13} />}
+                {copied ? "Link je kopiran" : "Kopiraj link pozivnice"}
+              </button>
             </div>
+          )}
+
+          {/* Rok za potvrde — invisible until now, even though it already
+              gated the RSVP form. An expired deadline silently stopped guests
+              from replying and nobody could see why. */}
+          {deadlineState && (
+            <div
+              className="p-4 rounded-2xl flex items-center justify-between gap-3"
+              style={{
+                backgroundColor: "var(--theme-surface)",
+                border: "1px solid var(--theme-border-light)",
+              }}
+            >
+              <span className="flex items-center gap-2.5 min-w-0">
+                <CalendarClock
+                  size={16}
+                  style={{ color: "var(--theme-text-muted)" }}
+                  className="shrink-0"
+                />
+                <span className="min-w-0">
+                  <span
+                    className="block text-sm font-medium"
+                    style={{ color: "var(--theme-text)" }}
+                  >
+                    {deadlineState.expired
+                      ? "Rok za potvrde je istekao"
+                      : "Rok za potvrde dolaska"}
+                  </span>
+                  <span
+                    className="block text-xs"
+                    style={{ color: "var(--theme-text-muted)" }}
+                  >
+                    {deadlineState.display}
+                    {!deadlineState.expired &&
+                      deadlineState.daysLeft <= 7 &&
+                      ` — još ${deadlineState.daysLeft === 0 ? "danas" : `${deadlineState.daysLeft} dana`}`}
+                  </span>
+                </span>
+              </span>
+              {(deadlineState.expired || deadlineState.daysLeft <= 7) &&
+                days !== null &&
+                days >= 0 && (
+                <button
+                  onClick={extendDeadline}
+                  disabled={extending}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-white shrink-0 transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                  style={{ backgroundColor: "var(--theme-primary)" }}
+                >
+                  {extending && <Loader2 size={12} className="animate-spin" />}
+                  Produži 7 dana
+                </button>
+              )}
+            </div>
+          )}
+
+          {extendError && (
+            <p className="text-xs text-red-500 -mt-2">{extendError}</p>
           )}
 
           {/* Brojke */}
@@ -293,19 +428,55 @@ export default function ProslavaPortalClient({
               className="text-xs font-bold uppercase tracking-widest pt-2"
               style={{ color: "var(--theme-text-muted)" }}
             >
-              Dodaci za proslavu
+              Za štampu
             </p>
-            {tabs
-              .filter((t) => t.key === "galerija" || t.key === "raspored")
-              .map((t) => (
-                <AddonRow
-                  key={t.key}
-                  label={t.label}
-                  locked={t.locked}
-                  href={t.href}
-                  onClick={() => selectTab(t.key)}
-                />
-              ))}
+
+            {/* Sells the artefact, not the abstraction: a locked card names the
+                add-on that unlocks it instead of a bare "Saznajte više". */}
+            <PrintCard
+              featured
+              title="QR za potvrde dolaska"
+              sub="Dodajte na štampane pozivnice — gosti skeniraju i potvrde dolazak."
+              formats={["PNG", "PDF A6"]}
+              onClick={() => setPrintSheet("potvrde")}
+            />
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <PrintCard
+                title="QR — Gde sedim"
+                sub="Gosti pronalaze svoje mesto."
+                formats={["PNG"]}
+                locked={!flags.paidForRaspored}
+                lockLabel="Uz raspored sedenja"
+                onClick={() =>
+                  flags.paidForRaspored
+                    ? downloadPng(
+                        `https://halouspomene.rs/deciji-rodjendan/${flags.slug}/gde-sedim/`,
+                        `qr-gde-sedim-${flags.slug}.png`,
+                      )
+                    : selectTab("raspored")
+                }
+              />
+              <PrintCard
+                title="QR za galeriju"
+                sub="Gosti šalju svoje fotografije."
+                formats={["PNG"]}
+                locked={!flags.paidForGallery}
+                lockLabel="Uz galeriju fotografija"
+                // Printed in advance, but the guest link only opens on the day —
+                // saying so here stops "the code is broken" when it is tested early.
+                note="Aktivan na dan proslave i sutradan."
+                onClick={() =>
+                  flags.paidForGallery
+                    ? downloadPng(
+                        guestGalleryUrl,
+                        `qr-galerija-${flags.slug}.png`,
+                        true,
+                      )
+                    : selectTab("galerija")
+                }
+              />
+            </div>
           </div>
         </div>
       )}
@@ -395,6 +566,73 @@ export default function ProslavaPortalClient({
       {active === "raspored" && (
         <LockedTab feature="raspored" meta={getUpsellMeta("raspored", flags)} />
       )}
+
+      {printSheet === "potvrde" && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-4"
+          onClick={() => setPrintSheet(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-5"
+            style={{ backgroundColor: "var(--theme-surface)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p
+              className="text-lg font-bold mb-1"
+              style={{ color: "var(--theme-text)" }}
+            >
+              QR za potvrde dolaska
+            </p>
+            <p
+              className="text-xs mb-4"
+              style={{ color: "var(--theme-text-muted)" }}
+            >
+              Gost skenira i otvara stranicu za potvrdu — bez traženja pozivnice.
+            </p>
+            <div className="space-y-2">
+              <button
+                onClick={async () => {
+                  await downloadPng(rsvpUrl, `qr-potvrde-${flags.slug}.png`);
+                  setPrintSheet(null);
+                }}
+                className="w-full py-3 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 cursor-pointer"
+                style={{ backgroundColor: "var(--theme-primary)" }}
+              >
+                Preuzmi PNG
+              </button>
+              <button
+                onClick={async () => {
+                  await generateQrFlyerPDF({
+                    eventName: displayName,
+                    url: rsvpUrl,
+                    title: "Potvrdite dolazak",
+                    lines: [
+                      "Skenirajte QR kod telefonom",
+                      "i potvrdite svoj dolazak.",
+                    ],
+                    filename: `flajer-potvrde-${flags.slug}.pdf`,
+                  });
+                  setPrintSheet(null);
+                }}
+                className="w-full py-3 rounded-xl text-sm font-medium transition-opacity hover:opacity-80 cursor-pointer"
+                style={{
+                  border: "1px solid var(--theme-primary)",
+                  color: "var(--theme-primary)",
+                }}
+              >
+                Preuzmi A6 flajer (PDF)
+              </button>
+              <button
+                onClick={() => setPrintSheet(null)}
+                className="w-full py-2 text-xs cursor-pointer"
+                style={{ color: "var(--theme-text-muted)" }}
+              >
+                Zatvori
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -432,56 +670,3 @@ function StatTile({
   );
 }
 
-function AddonRow({
-  label,
-  locked,
-  href,
-  onClick,
-}: {
-  label: string;
-  locked: boolean;
-  href?: string;
-  onClick: () => void;
-}) {
-  const inner = (
-    <>
-      <span className="flex items-center gap-2.5">
-        {locked ? (
-          <Lock size={16} style={{ color: "var(--theme-text-muted)" }} />
-        ) : (
-          <Sparkles size={16} style={{ color: "var(--theme-primary)" }} />
-        )}
-        <span
-          className="font-medium text-sm"
-          style={{ color: "var(--theme-text)" }}
-        >
-          {label}
-        </span>
-      </span>
-      <span
-        className="flex items-center gap-1 text-xs"
-        style={{ color: "var(--theme-text-muted)" }}
-      >
-        {locked ? "Saznajte više" : "Otvori"}
-        <ChevronRight size={14} />
-      </span>
-    </>
-  );
-
-  const className =
-    "w-full flex items-center justify-between gap-3 p-4 rounded-2xl transition-opacity hover:opacity-80 cursor-pointer text-left";
-  const style = {
-    backgroundColor: "var(--theme-surface)",
-    border: "1px solid var(--theme-border-light)",
-  };
-
-  return href ? (
-    <Link href={href} className={className} style={style}>
-      {inner}
-    </Link>
-  ) : (
-    <button onClick={onClick} className={className} style={style}>
-      {inner}
-    </button>
-  );
-}

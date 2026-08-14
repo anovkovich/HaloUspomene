@@ -19,6 +19,7 @@ import {
   type GalleryPhase,
 } from "@/lib/gallery-lifecycle";
 import { hasEventSession } from "@/lib/seating/action-auth";
+import { computeExtendedDeadline } from "@/lib/rsvp-deadline";
 import { put, del as blobDel } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 
@@ -300,4 +301,36 @@ export async function deleteInvitationImageCore(
   await patchBirthday(slug, { images: current.filter((i) => i.url !== url) });
   revalidateBirthdayPaths(slug);
   return { ok: true };
+}
+
+/* ── Rok za potvrde dolaska ──────────────────────────────────────────────── */
+
+/** Pushes `submit_until` back. The date math lives in `@/lib/rsvp-deadline`
+ *  (pure); this only does auth, load, persist and cache-bust.
+ *
+ *  Revalidating BOTH product routes matters: the invitation is cached, and
+ *  without it guests keep seeing a closed RSVP form until the next window. */
+export async function extendDeadlineCore(
+  cookieName: string,
+  slug: string,
+  days: number,
+): Promise<
+  { ok: true; submitUntil: string; capped: boolean } | { ok: false; error: string }
+> {
+  if (!(await hasEventSession(cookieName, slug)))
+    return { ok: false, error: "Niste prijavljeni" };
+
+  const b = await getBirthdayData(slug);
+  if (!b) return { ok: false, error: "Proslava nije pronađena" };
+
+  const result = computeExtendedDeadline({
+    currentSubmitUntil: b.submit_until,
+    eventDate: b.event_date,
+    days,
+  });
+  if (!result.ok) return result;
+
+  await patchBirthday(slug, { submit_until: result.submitUntil });
+  revalidateBirthdayPaths(slug);
+  return result;
 }

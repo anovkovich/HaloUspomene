@@ -16,6 +16,7 @@ import {
   saveBirthdayMeniAction,
   uploadBirthdayImageAction,
   deleteBirthdayImageAction,
+  extendBirthdayDeadlineAction,
 } from "./actions";
 
 interface PageProps {
@@ -86,6 +87,8 @@ export default async function BirthdayPortalPage({ params }: PageProps) {
         invitationImages={data.images ?? []}
         uploadImageAction={uploadBirthdayImageAction}
         deleteImageAction={deleteBirthdayImageAction}
+        submitUntil={data.submit_until}
+        extendDeadlineAction={extendBirthdayDeadlineAction}
       />
     </div>
   );

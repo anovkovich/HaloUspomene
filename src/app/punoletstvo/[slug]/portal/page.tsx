@@ -17,6 +17,7 @@ import {
   savePunoletstvoMeniAction,
   uploadPunoletstvoImageAction,
   deletePunoletstvoImageAction,
+  extendPunoletstvoDeadlineAction,
 } from "./actions";
 
 interface PageProps {
@@ -97,6 +98,8 @@ export default async function PunoletstvoPortalPage({ params }: PageProps) {
         invitationImages={data.images ?? []}
         uploadImageAction={uploadPunoletstvoImageAction}
         deleteImageAction={deletePunoletstvoImageAction}
+        submitUntil={data.submit_until}
+        extendDeadlineAction={extendPunoletstvoDeadlineAction}
       />
     </div>
   );

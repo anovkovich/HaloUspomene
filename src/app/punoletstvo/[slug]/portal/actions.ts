@@ -10,6 +10,7 @@ import {
   saveMeniCore,
   uploadInvitationImageCore,
   deleteInvitationImageCore,
+  extendDeadlineCore,
   type ActionResult,
 } from "@/lib/proslava/portal-actions-core";
 import type { MeniData } from "@/app/pozivnica/[slug]/types";
@@ -68,4 +69,8 @@ export async function uploadPunoletstvoImageAction(slug: string, form: FormData)
 
 export async function deletePunoletstvoImageAction(slug: string, url: string) {
   return deleteInvitationImageCore(COOKIE(slug), slug, url);
+}
+
+export async function extendPunoletstvoDeadlineAction(slug: string, days: number) {
+  return extendDeadlineCore(COOKIE(slug), slug, days);
 }

@@ -39,3 +39,104 @@ export function isPastSubmitDeadline(
   const deadline = endOfDeadlineDay(submitUntil);
   return !!deadline && Date.now() > deadline.getTime();
 }
+
+/* ── Produženje roka (portal proslave) ───────────────────────────────────── */
+
+/** Days a single extension may add. A cap keeps a stuck "+" button from parking
+ *  the deadline months past the event. */
+export const MAX_EXTENSION_DAYS = 30;
+
+/** Local-calendar `YYYY-MM-DD`. Same trap as `endOfDeadlineDay` above, other
+ *  direction: `toISOString()` renders the PREVIOUS day in UTC+1/+2. */
+export function toISODate(d: Date): string {
+  const m = `${d.getMonth() + 1}`.padStart(2, "0");
+  const day = `${d.getDate()}`.padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+export type DeadlineExtension =
+  | { ok: true; submitUntil: string; capped: boolean }
+  | { ok: false; error: string };
+
+/**
+ * Pushes the deadline back by `days`, counted from today or the current
+ * deadline — whichever is later — and capped at the event date. A confirmation
+ * that lands after the party helps nobody.
+ */
+export function computeExtendedDeadline(input: {
+  currentSubmitUntil: string;
+  eventDate: string;
+  days: number;
+}): DeadlineExtension {
+  const n = Math.floor(Number(input.days));
+  if (!Number.isFinite(n) || n < 1 || n > MAX_EXTENSION_DAYS) {
+    return { ok: false, error: "Neispravan broj dana" };
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const current = endOfDeadlineDay(input.currentSubmitUntil);
+  const base =
+    current && current.getTime() > today.getTime()
+      ? new Date(current.getFullYear(), current.getMonth(), current.getDate())
+      : new Date(today.getTime());
+  base.setDate(base.getDate() + n);
+
+  let capped = false;
+  const event = endOfDeadlineDay(input.eventDate);
+  if (event) {
+    const eventDay = new Date(
+      event.getFullYear(),
+      event.getMonth(),
+      event.getDate(),
+    );
+    if (eventDay.getTime() < today.getTime()) {
+      return {
+        ok: false,
+        error: "Proslava je prošla — rok se više ne može produžiti",
+      };
+    }
+    if (base.getTime() > eventDay.getTime()) {
+      base.setTime(eventDay.getTime());
+      capped = true;
+    }
+  }
+
+  const submitUntil = toISODate(base);
+  if (submitUntil === input.currentSubmitUntil) {
+    return { ok: false, error: "Rok već ističe na dan proslave" };
+  }
+  return { ok: true, submitUntil, capped };
+}
+
+export type DeadlineState = {
+  iso: string;
+  /** Human date, e.g. "20. septembar 2026." */
+  display: string;
+  /** Whole days from today; negative once it has passed. */
+  daysLeft: number;
+  expired: boolean;
+};
+
+/** Read-only view for rendering. Null when the record has no usable date. */
+export function describeDeadline(submitUntil: string): DeadlineState | null {
+  const end = endOfDeadlineDay(submitUntil);
+  if (!end) return null;
+  const day = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const daysLeft = Math.round((day.getTime() - today.getTime()) / 86_400_000);
+
+  return {
+    iso: toISODate(day),
+    display: day.toLocaleDateString("sr-RS", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
+    daysLeft,
+    expired: daysLeft < 0,
+  };
+}
