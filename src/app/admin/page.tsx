@@ -218,6 +218,9 @@ export default function AdminPage() {
   const [bankAccountIdx, setBankAccountIdx] = useState(0); // default: Erste (340)
   const [showCustomReceipt, setShowCustomReceipt] = useState(false);
   const [markPaid, setMarkPaid] = useState<MarkPaidTarget | null>(null);
+  /** Brojac koji tera OrdersAdminTab da se ponovo montira i povuce listu, kad
+   *  je uplata zavedena a mi smo vec na tabu Uplate. */
+  const [uplateReload, setUplateReload] = useState(0);
   const [showBypassLink, setShowBypassLink] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
@@ -581,6 +584,17 @@ export default function AdminPage() {
         .catch(() => {});
     }
     setMarkPaid(null);
+
+    // Uplata je upravo zavedena — pokazi je. `onDone` se zove tek posle uspesnog
+    // odgovora servera, pa ovde nema skoka na tab bez zapisa iza sebe.
+    //
+    // Ako smo na drugom tabu, prelazak sam montira OrdersAdminTab i on povuce
+    // listu. Ako smo VEC na Uplatama, komponenta ostaje montirana i njen `load()`
+    // iz useEffect([]) se ne bi ponovo pokrenuo — zato brojac ide u `key`, sto
+    // je iznudi ponovno montiranje. Zato se brojac uvek uvecava.
+    setFocus(null); // suzenje iz pretrage bi sakrilo bas novu uplatu
+    setActiveTab("uplate");
+    setUplateReload((n) => n + 1);
   }
 
   async function handleGenerateReceipt(slug: string) {
@@ -835,6 +849,7 @@ export default function AdminPage() {
 
       {activeTab === "uplate" ? (
         <OrdersAdminTab
+          key={uplateReload}
           onNeedsLogin={() => setNeedsLogin(true)}
           onCountChange={setUplateCount}
           focusRef={focusSlugFor("order")}
