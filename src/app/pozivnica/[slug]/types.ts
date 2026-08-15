@@ -173,6 +173,9 @@ export interface WeddingData {
     customColor: boolean;
   };
   example?: boolean; // Demo/example couple — sorts to the bottom of the admin list
+  /** One-off marker: the seating-tool offer SMS has been sent. Never cleared —
+   *  the offer is sent once per couple, ever. */
+  seating_sms_offer_sent?: boolean;
   receipt_valid?: boolean; // Receipt link is active (set false after payment)
   receipt_created?: string; // ISO date when receipt was generated
   custom_discount?: number; // Custom discount in RSD on website pozivnica

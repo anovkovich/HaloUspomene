@@ -12,6 +12,10 @@ import { deleteAllGalleryPhotos } from "@/lib/gallery";
 import { deleteByPrefix } from "@/lib/r2";
 import { sendSms } from "@/lib/infobip";
 import {
+  findSeatingSmsCandidates,
+  seatingOfferSms,
+} from "@/lib/seating/nudge-sms";
+import {
   galleryDayOffset,
   shouldPurgeGallery,
   GALLERY_ACCESS_LAST_DAY,
@@ -19,7 +23,10 @@ import {
 } from "@/lib/gallery-lifecycle";
 
 /**
- * Gallery lifecycle cron. Triggered by Vercel Cron (see vercel.json).
+ * Gallery lifecycle cron. Triggered by GitHub Actions —
+ * `.github/workflows/gallery-lifecycle.yml`, NOT Vercel Cron (there is no
+ * vercel.json). Scheduled workflows only fire from the repo's DEFAULT branch,
+ * which is `deploy` for exactly this reason.
  *
  *   GET /api/cron/gallery?task=remind   → SMS #1 (d4) + SMS #2 (d5)
  *   GET /api/cron/gallery?task=purge    → delete photos for couples at d6+
@@ -235,6 +242,29 @@ export async function GET(req: NextRequest) {
     } catch (err) {
       result.errors.push(
         `${b.slug}: ${err instanceof Error ? err.message : "unknown"}`,
+      );
+    }
+  }
+
+  // ── Seating-tool offer SMS ───────────────────────────────────────────────
+  // Rides the daily remind pass rather than getting its own workflow: same
+  // civilised hour, and the eligibility rules live in `nudge-sms.ts`.
+  if (task === "remind") {
+    try {
+      for (const cand of await findSeatingSmsCandidates()) {
+        try {
+          await sendSms(cand.phone, seatingOfferSms());
+          await patchCouple(cand.slug, { seating_sms_offer_sent: true });
+          result.sms++;
+        } catch (err) {
+          result.errors.push(
+            `seating-sms ${cand.slug}: ${err instanceof Error ? err.message : "unknown"}`,
+          );
+        }
+      }
+    } catch (err) {
+      result.errors.push(
+        `seating-sms: ${err instanceof Error ? err.message : "unknown"}`,
       );
     }
   }
