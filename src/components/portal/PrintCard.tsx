@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, QrCode } from "lucide-react";
+import { Lock, Printer, QrCode } from "lucide-react";
 
 /**
  * Card for something the client PRINTS — a QR code or an A6 flyer.
@@ -11,10 +11,12 @@ import { Lock, QrCode } from "lucide-react";
  *
  * Presentation only: props in, JSX out, no data layer. There is a twin inside
  * `src/app/moje-vencanje/OverviewCard.tsx` that this was modelled on; the two
- * were deliberately NOT merged when this one was written, because the wedding
- * portal is live and works, and touching it to satisfy architecture would risk
- * a paying couple's screen for no functional gain. Converging them is optional
- * cleanup, not a prerequisite.
+ * A third copy still lives in `src/app/raspored-sedenja/[slug]/portal/PortalClient.tsx`;
+ * it converges when the standalone portal gets the print offer.
+ *
+ * NOTE the accent fallback: the wedding portal defines no `--theme-*` variables,
+ * so `var(--theme-primary, #AE343F)` is what keeps it on brand burgundy while
+ * themed birthday portals pick up their own colour.
  */
 export default function PrintCard({
   title,
@@ -23,6 +25,7 @@ export default function PrintCard({
   locked = false,
   lockLabel,
   featured = false,
+  offerPill,
   note,
   onClick,
 }: {
@@ -33,6 +36,8 @@ export default function PrintCard({
   /** Names the add-on that unlocks this — shown instead of the formats. */
   lockLabel?: string;
   featured?: boolean;
+  /** Gold pill next to the formats, hinting that we can print this for them. */
+  offerPill?: string;
   /** Extra line under the formats, e.g. when a guest link only opens on the
    *  day of the party. Keeps the client from thinking a code is broken. */
   note?: string;
@@ -42,12 +47,12 @@ export default function PrintCard({
     ? "#d4af37"
     : locked
       ? "rgba(35,35,35,0.18)"
-      : "var(--theme-primary)";
+      : "var(--theme-primary, #AE343F)";
 
   return (
     <button
       onClick={onClick}
-      className={`relative w-full bg-white rounded-lg shadow-[0_1px_3px_rgba(35,35,35,0.08)] overflow-hidden text-left cursor-pointer hover:shadow-[0_8px_20px_-8px_rgba(35,35,35,0.28)] transition-shadow ${
+      className={`relative w-full bg-white rounded-lg shadow-[0_1px_3px_rgba(35,35,35,0.08)] overflow-hidden text-left cursor-pointer hover:shadow-[0_8px_20px_-8px_rgba(174,52,63,0.28)] transition-shadow ${
         featured ? "flex items-center gap-4 p-4" : "p-3.5"
       }`}
     >
@@ -80,14 +85,26 @@ export default function PrintCard({
               <Lock size={11} /> {lockLabel}
             </span>
           ) : (
-            formats.map((f) => (
-              <span
-                key={f}
-                className="text-[10px] font-semibold uppercase tracking-[0.06em] px-1.5 py-0.5 rounded border border-[#232323]/15 text-[#232323]/55"
-              >
-                {f}
-              </span>
-            ))
+            <>
+              {formats.map((f) => (
+                <span
+                  key={f}
+                  className="text-[10px] font-semibold uppercase tracking-[0.06em] px-1.5 py-0.5 rounded border border-[#232323]/15 text-[#232323]/55"
+                >
+                  {f}
+                </span>
+              ))}
+              {offerPill && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.06em] px-1.5 py-0.5 rounded border border-[#d4af37]/55 bg-[#d4af37]/10 text-[#8a6d1f]">
+                  <Printer size={11} /> {offerPill}
+                </span>
+              )}
+              {featured && (
+                <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.08em] text-[#d4af37]">
+                  Preporučujemo
+                </span>
+              )}
+            </>
           )}
         </div>
         {note && !locked && (

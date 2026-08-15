@@ -29,9 +29,9 @@ import MeniCard from "@/app/moje-vencanje/MeniCard";
 import SlikeTab from "./SlikeTab";
 import type { MeniData } from "@/app/pozivnica/[slug]/types";
 import { galleryQrDataUrl } from "@/lib/gallery-qr";
-import { generateQrFlyerPDF } from "@/lib/qr-flyer";
 import { describeDeadline } from "@/lib/rsvp-deadline";
 import PrintCard from "@/components/portal/PrintCard";
+import PrintChoiceModal from "@/components/portal/PrintChoiceModal";
 import {
   getMeniDescription,
   getPortalTabs,
@@ -165,7 +165,9 @@ export default function ProslavaPortalClient({
   const [deadline, setDeadline] = useState(submitUntil);
   const [extending, setExtending] = useState(false);
   const [extendError, setExtendError] = useState("");
-  const [printSheet, setPrintSheet] = useState<"potvrde" | null>(null);
+  const [printChoice, setPrintChoice] = useState<"potvrde" | "galerija" | null>(
+    null,
+  );
 
   const base = flags.isEighteenth ? "punoletstvo" : "deciji-rodjendan";
   const invitationUrl = `https://halouspomene.rs/${base}/${flags.slug}/`;
@@ -437,8 +439,9 @@ export default function ProslavaPortalClient({
               featured
               title="QR za potvrde dolaska"
               sub="Dodajte na štampane pozivnice — gosti skeniraju i potvrde dolazak."
-              formats={["PNG", "PDF A6"]}
-              onClick={() => setPrintSheet("potvrde")}
+              formats={["PNG"]}
+              offerPill="štampamo za vas"
+              onClick={() => setPrintChoice("potvrde")}
             />
 
             <div className="grid grid-cols-2 gap-2.5">
@@ -466,19 +469,47 @@ export default function ProslavaPortalClient({
                 // Printed in advance, but the guest link only opens on the day —
                 // saying so here stops "the code is broken" when it is tested early.
                 note="Aktivan na dan proslave i sutradan."
+                offerPill="štampamo za vas"
                 onClick={() =>
                   flags.paidForGallery
-                    ? downloadPng(
-                        guestGalleryUrl,
-                        `qr-galerija-${flags.slug}.png`,
-                        true,
-                      )
+                    ? setPrintChoice("galerija")
                     : selectTab("galerija")
                 }
               />
             </div>
+
           </div>
         </div>
+      )}
+
+      {printChoice && (
+        <PrintChoiceModal
+          title={
+            printChoice === "potvrde" ? "QR za potvrde dolaska" : "QR za galeriju"
+          }
+          fileLabel="Samo QR kod — PNG"
+          fileHint="Za ubacivanje u vaš dizajn ili samostalnu štampu."
+          offerText={
+            printChoice === "potvrde"
+              ? "Štampane pozivnice sa QR kodom za potvrde dolaska, izrađene po vašoj želji."
+              : "Štampane zahvalnice sa QR kodom galerije — gosti skeniranjem ostavljaju svoje fotografije."
+          }
+          order={{
+            product:
+              printChoice === "potvrde"
+                ? "Pozivnice sa QR kodom za potvrde dolaska"
+                : "Zahvalnice sa QR kodom galerije",
+            slug: flags.slug,
+            displayName,
+            eventDate,
+          }}
+          onDownload={() => {
+            if (printChoice === "potvrde")
+              downloadPng(rsvpUrl, `qr-potvrde-${flags.slug}.png`);
+            else downloadPng(guestGalleryUrl, `qr-galerija-${flags.slug}.png`, true);
+          }}
+          onClose={() => setPrintChoice(null)}
+        />
       )}
 
       {active === "gosti" && (
@@ -567,72 +598,6 @@ export default function ProslavaPortalClient({
         <LockedTab feature="raspored" meta={getUpsellMeta("raspored", flags)} />
       )}
 
-      {printSheet === "potvrde" && (
-        <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-4"
-          onClick={() => setPrintSheet(null)}
-        >
-          <div
-            className="w-full max-w-sm rounded-2xl p-5"
-            style={{ backgroundColor: "var(--theme-surface)" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p
-              className="text-lg font-bold mb-1"
-              style={{ color: "var(--theme-text)" }}
-            >
-              QR za potvrde dolaska
-            </p>
-            <p
-              className="text-xs mb-4"
-              style={{ color: "var(--theme-text-muted)" }}
-            >
-              Gost skenira i otvara stranicu za potvrdu — bez traženja pozivnice.
-            </p>
-            <div className="space-y-2">
-              <button
-                onClick={async () => {
-                  await downloadPng(rsvpUrl, `qr-potvrde-${flags.slug}.png`);
-                  setPrintSheet(null);
-                }}
-                className="w-full py-3 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 cursor-pointer"
-                style={{ backgroundColor: "var(--theme-primary)" }}
-              >
-                Preuzmi PNG
-              </button>
-              <button
-                onClick={async () => {
-                  await generateQrFlyerPDF({
-                    eventName: displayName,
-                    url: rsvpUrl,
-                    title: "Potvrdite dolazak",
-                    lines: [
-                      "Skenirajte QR kod telefonom",
-                      "i potvrdite svoj dolazak.",
-                    ],
-                    filename: `flajer-potvrde-${flags.slug}.pdf`,
-                  });
-                  setPrintSheet(null);
-                }}
-                className="w-full py-3 rounded-xl text-sm font-medium transition-opacity hover:opacity-80 cursor-pointer"
-                style={{
-                  border: "1px solid var(--theme-primary)",
-                  color: "var(--theme-primary)",
-                }}
-              >
-                Preuzmi A6 flajer (PDF)
-              </button>
-              <button
-                onClick={() => setPrintSheet(null)}
-                className="w-full py-2 text-xs cursor-pointer"
-                style={{ color: "var(--theme-text-muted)" }}
-              >
-                Zatvori
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

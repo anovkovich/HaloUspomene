@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
+import PrintChoiceModal from "@/components/portal/PrintChoiceModal";
+import PrintCard from "@/components/portal/PrintCard";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -13,7 +15,6 @@ import {
   Copy,
   Check,
   Clock,
-  QrCode,
   X,
   Sparkles,
   Mail,
@@ -22,9 +23,6 @@ import {
   Heart,
   ArrowRight,
   ChevronRight,
-  Lock,
-  FileImage,
-  FileText,
   CalendarPlus,
   Minus,
   Plus,
@@ -39,7 +37,6 @@ import {
 import type { ActiveView } from "./Sidebar";
 import type { ChecklistItem, PortalBudget } from "./types";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
-import { coupleDisplayName } from "@/lib/couple-display-name";
 
 // Povlači i „Listu zvanica" sa sobom (deli birač i dijalog odgovora), pa se
 // učitava tek kad par klikne prečicu — Pregled se ne debljа zbog nje.
@@ -155,9 +152,6 @@ export default function OverviewCard({
   const [extending, setExtending] = useState(false);
   const [paidForRaspored, setPaidForRaspored] = useState(false);
   const [paidForGallery, setPaidForGallery] = useState(false);
-  const [printSheet, setPrintSheet] = useState<"potvrde" | "gdesedim" | null>(
-    null,
-  );
   const [pdfModal, setPdfModal] = useState<{
     weddingData: WeddingData;
     slug: string;
@@ -192,6 +186,41 @@ export default function OverviewCard({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [coupleInfo.slug, coupleInfo.premium]);
+
+  const [printChoice, setPrintChoice] = useState<
+    "potvrde" | "pozivnica" | "galerija" | "audio" | null
+  >(null);
+
+  const downloadQrPng = useCallback(async (url: string, file: string) => {
+    const QRCode = await import("qrcode");
+    const dataUrl = await QRCode.toDataURL(url, {
+      width: 1400, margin: 2, color: { dark: "#232323", light: "#ffffff" },
+    });
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = file;
+    a.click();
+  }, []);
+
+  const handleDownloadSeatQR = useCallback(async () => {
+    const QRCode = await import("qrcode");
+    const url = `https://halouspomene.rs/pozivnica/${coupleInfo.slug}/gde-sedim`;
+    const dataUrl = await QRCode.toDataURL(url, { width: 512, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `gde-sedim-${coupleInfo.slug}.png`;
+    a.click();
+  }, [coupleInfo.slug]);
+
+  const handleDownloadRsvpQR = useCallback(async () => {
+    const QRCode = await import("qrcode");
+    const url = `https://halouspomene.rs/rsvp/pozivnica-${coupleInfo.slug}`;
+    const dataUrl = await QRCode.toDataURL(url, { width: 512, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `rsvp-${coupleInfo.slug}.png`;
+    a.click();
+  }, [coupleInfo.slug]);
 
   const handleDownloadPDF = useCallback(async () => {
     const result = await getWeddingDataForPDF();
@@ -235,97 +264,9 @@ export default function OverviewCard({
     }
   }, [pdfModal, pdfIncludeQR, pdfIncludePhones]);
 
-  const handleDownloadFlyer = useCallback(async () => {
-    const { generateAudioFlyerPDF } =
-      await import("@/lib/audio-utils/generateAudioFlyerPDF");
-    await generateAudioFlyerPDF(
-      coupleInfo.slug,
-      coupleDisplayName(coupleInfo),
-      "#AE343F",
-      false,
-    );
-  }, [coupleInfo]);
 
-  const handleDownloadSeatQR = useCallback(async () => {
-    const QRCode = await import("qrcode");
-    const url = `https://halouspomene.rs/pozivnica/${coupleInfo.slug}/gde-sedim`;
-    const dataUrl = await QRCode.toDataURL(url, { width: 512, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = `gde-sedim-${coupleInfo.slug}.png`;
-    a.click();
-  }, [coupleInfo.slug]);
 
-  const handleDownloadRsvpQR = useCallback(async () => {
-    const QRCode = await import("qrcode");
-    const url = `https://halouspomene.rs/rsvp/pozivnica-${coupleInfo.slug}`;
-    const dataUrl = await QRCode.toDataURL(url, { width: 512, margin: 2, color: { dark: "#232323", light: "#ffffff" } });
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = `rsvp-${coupleInfo.slug}.png`;
-    a.click();
-  }, [coupleInfo.slug]);
 
-  // A6 print-flyer variants (shared generator). Event name = couple names.
-  const eventNameStr = coupleDisplayName(coupleInfo);
-  const SITE = "https://halouspomene.rs";
-  const runFlyer = useCallback(
-    async (cfg: {
-      url: string;
-      title: string;
-      lines: string[];
-      thankYou?: string;
-      bottom?: string;
-      filename: string;
-    }) => {
-      const { generateQrFlyerPDF } = await import("@/lib/qr-flyer");
-      await generateQrFlyerPDF({ eventName: eventNameStr, ...cfg });
-    },
-    [eventNameStr],
-  );
-
-  const potvrdeFlyer = useCallback(
-    () =>
-      runFlyer({
-        url: `${SITE}/rsvp/pozivnica-${coupleInfo.slug}`,
-        title: "Potvrdite dolazak",
-        lines: [
-          "Skenirajte QR kod i potvrdite",
-          "svoj dolazak — online, za par sekundi.",
-        ],
-        filename: `flajer-potvrde-${coupleInfo.slug}.pdf`,
-      }),
-    [runFlyer, coupleInfo.slug],
-  );
-
-  const gdeSedimFlyer = useCallback(
-    () =>
-      runFlyer({
-        url: `${SITE}/pozivnica/${coupleInfo.slug}/gde-sedim/`,
-        title: "Gde sedim?",
-        lines: ["Skenirajte QR kod i pronađite", "svoje mesto u sali."],
-        filename: `flajer-gde-sedim-${coupleInfo.slug}.pdf`,
-      }),
-    [runFlyer, coupleInfo.slug],
-  );
-
-  const galleryFlyer = useCallback(
-    () =>
-      runFlyer({
-        url: `${SITE}/pozivnica/${coupleInfo.slug}/gde-sedim/?tab=gallery`,
-        title: "Podelite fotografije",
-        lines: [
-          "Skenirajte QR kod i dodajte",
-          "svoje fotografije sa venčanja —",
-          "direktno sa telefona, bez aplikacije.",
-        ],
-        thankYou:
-          "Hvala što ste svojim prisustvom ulepšali naš poseban dan.",
-        bottom: "Vaše fotografije, zajednička uspomena",
-        filename: `flajer-galerija-${coupleInfo.slug}.pdf`,
-      }),
-    [runFlyer, coupleInfo.slug],
-  );
 
   /* ── Rok za potvrde dolaska ─────────────────────────────────
    *  The couple only ever sees this on the last day of the deadline or after
@@ -608,6 +549,66 @@ export default function OverviewCard({
             </div>
           )}
         </div>
+      {printChoice && (
+        <PrintChoiceModal
+          title={
+            printChoice === "potvrde"
+              ? "QR za potvrde dolaska"
+              : printChoice === "galerija"
+                ? "QR za galeriju"
+                : printChoice === "audio"
+                  ? "QR za audio knjigu"
+                  : "Dizajn pozivnice za štampu"
+          }
+          fileLabel={
+            printChoice === "pozivnica" ? "Preuzmi dizajn — PDF" : "Samo QR kod — PNG"
+          }
+          fileIcon={printChoice === "pozivnica" ? "doc" : "image"}
+          fileHint={
+            printChoice === "pozivnica"
+              ? "Spreman za štampu u bilo kojoj štampariji."
+              : "Za ubacivanje u vaš dizajn ili samostalnu štampu."
+          }
+          offerText={
+            printChoice === "potvrde"
+              ? "Štampane pozivnice sa QR kodom za potvrde dolaska, izrađene po vašoj želji."
+              : printChoice === "galerija"
+                ? "Štampane zahvalnice sa QR kodom galerije — gosti skeniranjem ostavljaju svoje fotografije."
+                : printChoice === "audio"
+                  ? "Štampane kartice sa QR kodom — gosti skeniranjem snimaju audio poruke."
+                  : "Gotove, odštampane pozivnice po vašem dizajnu — mi ih izrađujemo i štampamo."
+          }
+          order={{
+            product:
+              printChoice === "potvrde"
+                ? "Pozivnice sa QR kodom za potvrde dolaska"
+                : printChoice === "galerija"
+                  ? "Zahvalnice sa QR kodom galerije"
+                  : printChoice === "audio"
+                    ? "Kartice sa QR kodom za audio knjigu"
+                    : "Odštampane pozivnice po dizajnu",
+            slug: coupleInfo.slug,
+            displayName: `${coupleInfo.bride} & ${coupleInfo.groom}`.trim(),
+            eventDate: coupleInfo.eventDate,
+          }}
+          onDownload={() => {
+            if (printChoice === "potvrde") handleDownloadRsvpQR();
+            else if (printChoice === "galerija")
+              downloadQrPng(
+                `https://halouspomene.rs/pozivnica/${coupleInfo.slug}/galerija/`,
+                `qr-galerija-${coupleInfo.slug}.png`,
+              );
+            else if (printChoice === "audio")
+              downloadQrPng(
+                `https://halouspomene.rs/pozivnica/${coupleInfo.slug}/audio-knjiga/`,
+                `qr-audio-${coupleInfo.slug}.png`,
+              );
+            else handleDownloadPDF();
+          }}
+          onClose={() => setPrintChoice(null)}
+        />
+      )}
+
       </motion.div>
 
       {/* Lista zvanica CTA — svakom paru koji je još nije započeo. Parovima sa
@@ -948,53 +949,58 @@ export default function OverviewCard({
               featured
               title="QR za potvrde dolaska"
               sub="Dodajte na štampane pozivnice — gosti skeniraju i potvrđuju online."
-              formats={["PNG", "PDF A6"]}
-              onClick={() => setPrintSheet("potvrde")}
+              formats={["PNG"]}
+              offerPill="štampamo za vas"
+              onClick={() => setPrintChoice("potvrde")}
             />
             <div className="grid grid-cols-2 gap-2.5">
               <PrintCard
                 title="QR — Gde sedim"
                 sub="Gosti pronalaze svoje mesto."
-                formats={["PNG", "PDF A6"]}
+                formats={["PNG"]}
                 locked={!paidForRaspored}
                 lockLabel="Uz raspored sedenja"
                 onClick={() =>
                   paidForRaspored
-                    ? setPrintSheet("gdesedim")
+                    ? handleDownloadSeatQR()
                     : toast("Raspored sedenja nije aktiviran")
                 }
               />
               <PrintCard
-                title="PDF pozivnica"
-                sub="Verzija za štampu ili slanje."
-                formats={["PDF"]}
-                onClick={handleDownloadPDF}
-              />
-              <PrintCard
-                title="Flajer za audio knjigu"
-                sub="Uputstvo za goste kraj telefona."
-                formats={["PDF A6"]}
-                locked={!audioStats?.paidForAudio}
-                lockLabel="Uz audio knjigu"
-                onClick={() =>
-                  audioStats?.paidForAudio
-                    ? handleDownloadFlyer()
-                    : toast("Audio knjiga nije aktivirana")
-                }
-              />
-              <PrintCard
-                title="Flajer za galeriju"
+                title="QR za galeriju"
                 sub="Gosti šalju svoje fotografije."
-                formats={["PDF A6"]}
+                formats={["PNG"]}
+                offerPill="štampamo za vas"
                 locked={!paidForGallery}
                 lockLabel="Uz galeriju fotografija"
                 onClick={() =>
                   paidForGallery
-                    ? galleryFlyer()
+                    ? setPrintChoice("galerija")
                     : toast("Galerija fotografija nije aktivirana")
                 }
               />
+              <PrintCard
+                title="QR za audio knjigu"
+                sub="Gosti ostavljaju glasovnu poruku."
+                formats={["PNG"]}
+                offerPill="štampamo za vas"
+                locked={!audioStats?.paidForAudio}
+                lockLabel="Uz audio knjigu"
+                onClick={() =>
+                  audioStats?.paidForAudio
+                    ? setPrintChoice("audio")
+                    : toast("Audio knjiga nije aktivirana")
+                }
+              />
+              <PrintCard
+                title="Dizajn pozivnice za štampu"
+                sub="Preuzmite dizajn svoje pozivnice, spreman za štampu."
+                formats={["PDF"]}
+                offerPill="štampamo za vas"
+                onClick={() => setPrintChoice("pozivnica")}
+              />
             </div>
+
           </div>
         </div>
       </motion.div>
@@ -1056,69 +1062,6 @@ export default function OverviewCard({
         </motion.div>
       )}
       {/* Print format sheet — PNG vs A6 flyer (potvrde / gde-sedim) */}
-      {printSheet && (
-        <div
-          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-[2px] p-4"
-          onClick={() => setPrintSheet(null)}
-        >
-          <div
-            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setPrintSheet(null)}
-              className="absolute top-4 right-4 text-[#232323]/60 hover:text-[#232323] transition-colors cursor-pointer"
-              aria-label="Zatvori"
-            >
-              <X size={18} />
-            </button>
-            <h3 className="font-serif text-xl text-[#232323] mb-1">
-              {printSheet === "potvrde" ? "QR za potvrde dolaska" : "QR — Gde sedim"}
-            </h3>
-            <p className="text-xs text-[#232323]/55 mb-5">
-              Kako želite da preuzmete kod za goste?
-            </p>
-            <div className="space-y-2.5">
-              <button
-                onClick={() => {
-                  if (printSheet === "potvrde") handleDownloadRsvpQR();
-                  else handleDownloadSeatQR();
-                  setPrintSheet(null);
-                }}
-                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-[#232323]/12 text-left hover:border-[#AE343F]/40 hover:bg-[#F5F4DC]/40 transition-colors cursor-pointer"
-              >
-                <FileImage size={20} className="text-[#AE343F] shrink-0" />
-                <span>
-                  <span className="block text-sm font-semibold text-[#232323]">
-                    Samo QR kod — PNG
-                  </span>
-                  <span className="block text-[11px] text-[#232323]/55">
-                    Za ubacivanje u vaš dizajn
-                  </span>
-                </span>
-              </button>
-              <button
-                onClick={() => {
-                  if (printSheet === "potvrde") potvrdeFlyer();
-                  else gdeSedimFlyer();
-                  setPrintSheet(null);
-                }}
-                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-[#232323]/12 text-left hover:border-[#AE343F]/40 hover:bg-[#F5F4DC]/40 transition-colors cursor-pointer"
-              >
-                <FileText size={20} className="text-[#AE343F] shrink-0" />
-                <span>
-                  <span className="block text-sm font-semibold text-[#232323]">
-                    Gotova A6 kartica — PDF
-                  </span>
-                  <span className="block text-[11px] text-[#232323]/55">
-                    Ime slavlja + QR + uputstvo, spremno za štampu
-                  </span>
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* PDF download options modal */}
       {pdfModal && (
@@ -1140,7 +1083,7 @@ export default function OverviewCard({
             </button>
 
             <h3 className="font-serif text-xl text-[#232323] mb-1">
-              Preuzmi PDF pozivnicu
+              Preuzmi dizajn za štampu
             </h3>
             <p className="text-xs text-[#232323]/55 mb-5">
               Izaberi šta da uključimo u pozivnicu.
@@ -1203,78 +1146,3 @@ export default function OverviewCard({
 /** A "print product" card for the Materijali za štampu shelf. White paper look,
  *  tight radius, accent top edge; gated (unpaid) variant desaturates + shows a
  *  gold lock chip but stays visible to upsell. */
-function PrintCard({
-  title,
-  sub,
-  formats,
-  locked = false,
-  lockLabel,
-  featured = false,
-  onClick,
-}: {
-  title: string;
-  sub: string;
-  formats: string[];
-  locked?: boolean;
-  lockLabel?: string;
-  featured?: boolean;
-  onClick: () => void;
-}) {
-  const accent = featured ? "#d4af37" : locked ? "rgba(35,35,35,0.18)" : "#AE343F";
-  return (
-    <button
-      onClick={onClick}
-      className={`relative w-full bg-white rounded-lg shadow-[0_1px_3px_rgba(35,35,35,0.08)] overflow-hidden text-left cursor-pointer hover:shadow-[0_8px_20px_-8px_rgba(174,52,63,0.28)] transition-shadow ${
-        featured ? "flex items-center gap-4 p-4" : "p-3.5"
-      }`}
-    >
-      <div
-        className="absolute inset-x-0 top-0 h-[3px]"
-        style={{ backgroundColor: accent }}
-      />
-      <div
-        className={`rounded border flex items-center justify-center shrink-0 ${featured ? "" : "mb-2.5"}`}
-        style={{
-          width: featured ? 60 : 48,
-          height: featured ? 76 : 60,
-          backgroundColor: "#F5F4DC",
-          borderColor: "rgba(35,35,35,0.12)",
-          filter: locked ? "grayscale(1)" : "none",
-        }}
-      >
-        <QrCode size={featured ? 26 : 20} className="text-[#232323]/70" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p
-          className={`font-serif font-semibold text-[#232323] ${featured ? "text-xl" : "text-base"}`}
-        >
-          {title}
-        </p>
-        <p className="text-[12px] text-[#232323]/60 mt-0.5 leading-snug">{sub}</p>
-        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-          {locked ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#d4af37]">
-              <Lock size={11} /> {lockLabel}
-            </span>
-          ) : (
-            <>
-              {formats.map((f) => (
-                <span
-                  key={f}
-                  className="text-[10px] font-semibold uppercase tracking-[0.06em] px-1.5 py-0.5 rounded border border-[#232323]/15 text-[#232323]/55"
-                >
-                  {f}
-                </span>
-              ))}
-              {featured && (
-                <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.08em] text-[#d4af37]">
-                  Preporučujemo
-                </span>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </button>
-  );
-}
