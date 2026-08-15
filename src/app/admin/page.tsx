@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, ArrowUpDown, ChevronDown, Globe, Eye, Search, QrCode, CalendarPlus, Wallet, Images, Ticket } from "lucide-react";
+import { Plus, Trash2, Pencil, Users, Armchair, Mic, Receipt, Copy, Check, Heart, Cake, Star, Phone, X, Globe, Eye, Search, QrCode, CalendarPlus, Wallet, Images, Ticket } from "lucide-react";
 import { encodeToBase64 } from "@/lib/encoding";
 import { downloadGalleryQR } from "@/lib/gallery-qr";
 import { isGalleryOnlyCouple } from "@/lib/gallery-only";
@@ -28,8 +28,18 @@ import FocusNotice from "./FocusNotice";
 import { issueReceiptRef } from "@/lib/issue-receipt-ref";
 import BypassLinkModal from "./BypassLinkModal";
 import ShareLinkButton from "./ShareLinkButton";
+import SortMenu, { type AdminSortMode } from "./SortMenu";
 import DatePicker from "@/components/ui/DatePicker";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
+import {
+  galleryDayOffset,
+  GALLERY_PURGE_DAY,
+} from "@/lib/gallery-lifecycle";
+import {
+  startOfToday,
+  sortByEventTimeline,
+  firstPastIndex,
+} from "@/lib/event-timeline";
 
 type AdminTab =
   | "pozivnice"
@@ -94,7 +104,7 @@ interface Couple {
   created_at?: string;
 }
 
-type SortMode = "newest" | "event_proximity";
+type SortMode = AdminSortMode;
 
 /** Target of the "Označi kao plaćeno" modal — either a couple's receipt or a
  *  custom receipt with no couple behind it. */
@@ -186,18 +196,25 @@ function receiptTotalFor(c: Couple): number {
 
 /** Closest event to today first; on a tie the future one wins. Module scope so
  *  the `Date.now()` reference point never runs during render. */
-function sortByEventProximity(couples: Couple[]): Couple[] {
-  const now = Date.now();
-  const diff = (c: Couple) =>
-    c.event_date ? new Date(c.event_date).getTime() - now : Number.POSITIVE_INFINITY;
-  return [...couples].sort((a, b) => {
-    const da = diff(a);
-    const db = diff(b);
-    const absCmp = Math.abs(da) - Math.abs(db);
-    if (absCmp !== 0) return absCmp;
-    return db - da; // tie: future before past
-  });
+
+/**
+ * Days left before the guest photos are purged, or null when there is nothing
+ * to warn about (no gallery, already purged, or the window hasn't closed yet).
+ *
+ * This deadline is the reason just-finished weddings must stay visible: photos
+ * are gone at d6 and the only other warning is an SMS to the couple. Shown as a
+ * row badge rather than encoded in sort position, so it survives every sort
+ * mode and the collapsed-history toggle.
+ */
+function galleryPurgeCountdown(c: Couple): number | null {
+  if (!c.paid_for_gallery || c.gallery_purged_at) return null;
+  const d = galleryDayOffset(c.event_date);
+  if (d === null || d < 0) return null;
+  const purgeDay = GALLERY_PURGE_DAY + (c.gallery_extra_days ?? 0);
+  const left = purgeDay - d;
+  return left >= 0 ? left : null;
 }
+
 
 interface CoupleStats {
   rsvp: { attending: number; declined: number; totalGuests: number } | null;
@@ -222,22 +239,10 @@ export default function AdminPage() {
    *  je uplata zavedena a mi smo vec na tabu Uplate. */
   const [uplateReload, setUplateReload] = useState(0);
   const [showBypassLink, setShowBypassLink] = useState(false);
-  const [sortMode, setSortMode] = useState<SortMode>("newest");
-  const [sortMenuOpen, setSortMenuOpen] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>("event_proximity");
   const [search, setSearch] = useState("");
   const [uplateCount, setUplateCount] = useState(0);
-  const sortMenuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!sortMenuOpen) return;
-    const onClick = (e: MouseEvent) => {
-      if (sortMenuRef.current && !sortMenuRef.current.contains(e.target as Node)) {
-        setSortMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, [sortMenuOpen]);
 
   // Standalone gallery clients live on the Galerija tab. Filtered by the derived
   // predicate, not the raw marker, so one who later buys an invitation comes
@@ -249,7 +254,7 @@ export default function AdminPage() {
 
   const sortedCouples = useMemo(() => {
     if (sortMode === "newest") return invitationCouples; // API already returns created_at desc
-    return sortByEventProximity(invitationCouples);
+    return sortByEventTimeline(invitationCouples, (c) => c.event_date, startOfToday());
   }, [invitationCouples, sortMode]);
 
   // Diacritic-insensitive search over name, slug and theme.
@@ -273,6 +278,57 @@ export default function AdminPage() {
       ).includes(nq),
     );
   }, [sortedCouples, search]);
+
+  /* ── Prošla venčanja: razdelnik + sklapanje ──────────────────────────
+   * Half the list is permanent history the admin scrolls past daily, so it
+   * collapses by default. Two rules keep the collapse honest:
+   *   - events inside the 7-day HOT window stay visible even when collapsed —
+   *     that is the gallery-purge (d6) and audio-download week, and hiding a
+   *     purge countdown behind a click is exactly the failure we rejected when
+   *     we dropped the two-mode sort split;
+   *   - an active search overrides the collapse, so a query never silently
+   *     misses a match.
+   */
+  const [showOlderPast, setShowOlderPast] = useState(false);
+
+  const agendaMode = sortMode === "event_proximity";
+  const searching = search.trim().length > 0;
+
+  const { visibleCouples, dividerAt, hiddenOlderCount, pastCount } = useMemo(() => {
+    const boundary = startOfToday();
+    const hotCutoff = boundary - 7 * 86_400_000;
+
+    const isPastRow = (c: Couple) =>
+      !!c.event_date && new Date(c.event_date).getTime() < boundary;
+    const total = filteredCouples.filter(isPastRow).length;
+
+    // Divider only in agenda mode — any other order scatters past rows, so a
+    // divider there would be a lie.
+    if (!agendaMode) {
+      return {
+        visibleCouples: filteredCouples,
+        dividerAt: -1,
+        hiddenOlderCount: 0,
+        pastCount: total,
+      };
+    }
+
+    const keep =
+      searching || showOlderPast
+        ? filteredCouples
+        : filteredCouples.filter(
+            (c) =>
+              !isPastRow(c) ||
+              new Date(c.event_date!).getTime() >= hotCutoff,
+          );
+
+    return {
+      visibleCouples: keep,
+      dividerAt: firstPastIndex(keep, (c) => c.event_date, boundary),
+      hiddenOlderCount: filteredCouples.length - keep.length,
+      pastCount: total,
+    };
+  }, [filteredCouples, agendaMode, searching, showOlderPast]);
   /** Postavlja se pretragom po pozivu na broj: vodi na tab te stavke i suzi
    *  njegovu listu na nju. Čisti se ručnim klikom na bilo koji tab. */
   const [focus, setFocus] = useState<{
@@ -931,51 +987,11 @@ export default function AdminPage() {
               : invitationCouples.length}
             )
           </h2>
-          <div className="relative" ref={sortMenuRef}>
-            {(() => {
-              const SORT_OPTIONS = [
-                { id: "newest" as const, label: "Najnovije" },
-                { id: "event_proximity" as const, label: "Po datumu" },
-              ];
-              const current = SORT_OPTIONS.find((o) => o.id === sortMode)?.label ?? "Najnovije";
-              return (
-                <>
-                  <button
-                    onClick={() => setSortMenuOpen((v) => !v)}
-                    className="flex items-center gap-1.5 text-xs text-white/45 hover:text-white/80 transition-colors cursor-pointer"
-                  >
-                    <ArrowUpDown size={11} />
-                    <span>{current}</span>
-                    <ChevronDown
-                      size={11}
-                      className={`transition-transform ${sortMenuOpen ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {sortMenuOpen && (
-                    <div className="absolute top-full left-0 mt-1.5 z-20 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl py-1 min-w-[150px]">
-                      {SORT_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.id}
-                          onClick={() => {
-                            setSortMode(opt.id);
-                            setSortMenuOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-white/80 hover:bg-white/5 transition-colors cursor-pointer"
-                        >
-                          {sortMode === opt.id ? (
-                            <Check size={12} className="text-[#AE343F]" />
-                          ) : (
-                            <span className="w-3" />
-                          )}
-                          <span>{opt.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </>
-              );
-            })()}
-          </div>
+          <SortMenu
+            value={sortMode}
+            onChange={setSortMode}
+            dateLabel="Po datumu venčanja"
+          />
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
@@ -1017,7 +1033,7 @@ export default function AdminPage() {
             Nema pozivnica za: {search.trim()}
           </p>
         )}
-        {filteredCouples.map((c) => {
+        {visibleCouples.map((c, idx) => {
           const s = stats[c.slug];
           const eventDate = c.event_date ? new Date(c.event_date) : null;
           const today = new Date();
@@ -1028,10 +1044,20 @@ export default function AdminPage() {
             : 0;
           const isExpired = daysSince > 5;
           const isQuickStart = !c.theme;
+          const purgeIn = galleryPurgeCountdown(c);
 
           return (
+            <React.Fragment key={c.slug}>
+            {idx === dividerAt && (
+              <div className="flex items-center gap-3 pt-3 pb-1">
+                <span className="h-px flex-1 bg-white/10" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">
+                  Prošla venčanja ({pastCount})
+                </span>
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
+            )}
             <div
-              key={c.slug}
               className={`rounded-xl px-4 py-4 sm:px-5 ${
                 isQuickStart
                   ? "bg-indigo-950/30 border border-dashed border-indigo-400/30"
@@ -1061,6 +1087,16 @@ export default function AdminPage() {
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 shrink-0">
                         {c.theme || "—"}
                       </span>
+                      {purgeIn !== null && (
+                        <span
+                          className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 shrink-0"
+                          title="Fotografije gostiju se trajno brišu po isteku ovog roka"
+                        >
+                          {purgeIn === 0
+                            ? "Galerija: brisanje danas"
+                            : `Galerija: brisanje za ${purgeIn} d`}
+                        </span>
+                      )}
                       {c.standalone_gallery && (
                         <span
                           className="text-[10px] px-2 py-0.5 rounded-full bg-[#7c3aed]/20 text-violet-300 shrink-0"
@@ -1323,8 +1359,19 @@ export default function AdminPage() {
                 onDiscount={(amount) => handleSetDiscount(c.slug, amount)}
               />
             </div>
+            </React.Fragment>
           );
         })}
+        {agendaMode && !searching && (hiddenOlderCount > 0 || showOlderPast) && (
+          <button
+            onClick={() => setShowOlderPast((v) => !v)}
+            className="w-full mt-1 py-2.5 rounded-xl text-xs font-medium text-white/50 hover:text-white/80 border border-dashed border-white/12 hover:border-white/25 transition-colors cursor-pointer"
+          >
+            {showOlderPast
+              ? "Sakrij starija venčanja"
+              : `Prikaži starija venčanja (${hiddenOlderCount})`}
+          </button>
+        )}
       </div>
 
       </>

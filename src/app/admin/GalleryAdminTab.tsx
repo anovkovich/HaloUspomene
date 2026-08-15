@@ -29,6 +29,11 @@ import ShareLinkButton from "./ShareLinkButton";
 import { downloadGalleryQR, galleryShareUrl } from "@/lib/gallery-qr";
 import { galleryPhase, type GalleryPhase } from "@/lib/gallery-lifecycle";
 import { isGalleryOnlyCouple } from "@/lib/gallery-only";
+import {
+  startOfToday,
+  sortByEventTimeline,
+} from "@/lib/event-timeline";
+import SortMenu, { type AdminSortMode } from "./SortMenu";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 const ACCENT = "#7c3aed";
@@ -210,6 +215,7 @@ export default function GalleryAdminTab({
   focusLabel,
   onClearFocus,
 }: Props) {
+  const [sortMode, setSortMode] = useState<AdminSortMode>("event_proximity");
   const [showCreate, setShowCreate] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState<string | null>(null);
@@ -292,6 +298,7 @@ export default function GalleryAdminTab({
           <span className="hidden sm:inline">Samostalne QR galerije</span>
           <span className="sm:hidden">QR galerije</span> ({galleries.length})
         </h2>
+        <SortMenu value={sortMode} onChange={setSortMode} dateLabel="Po datumu događaja" />
         <button
           onClick={() => {
             resetCreateForm();
@@ -326,8 +333,13 @@ export default function GalleryAdminTab({
             onClear={() => onClearFocus?.()}
           />
         )}
-        {galleries
-          .filter((c) => !focusSlug || c.slug === focusSlug)
+        {(sortMode === "newest"
+          ? galleries.filter((c) => !focusSlug || c.slug === focusSlug)
+          : sortByEventTimeline(
+              galleries.filter((c) => !focusSlug || c.slug === focusSlug),
+              (c) => c.event_date,
+              startOfToday(),
+            ))
           .map((c) => {
           const isRevealed = revealed.has(c.slug);
           const extraDays = c.gallery_extra_days ?? 0;

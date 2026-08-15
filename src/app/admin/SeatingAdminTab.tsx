@@ -37,6 +37,11 @@ import DatePicker from "@/components/ui/DatePicker";
 import ShareLinkButton from "./ShareLinkButton";
 import SeatingInvitationModal from "./SeatingInvitationModal";
 import HallSchemesSection from "./HallSchemesSection";
+import {
+  startOfToday,
+  sortByEventTimeline,
+} from "@/lib/event-timeline";
+import SortMenu, { type AdminSortMode } from "./SortMenu";
 
 interface Props {
   onNeedsLogin: () => void;
@@ -64,6 +69,7 @@ export default function SeatingAdminTab({
   onClearFocus,
 }: Props) {
   const [seatings, setSeatings] = useState<AdminSeating[]>([]);
+  const [sortMode, setSortMode] = useState<AdminSortMode>("event_proximity");
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
@@ -401,6 +407,7 @@ export default function SeatingAdminTab({
           <span className="sm:hidden">Raspored sedenja</span>
           {" "}({seatings.length})
         </h2>
+        <SortMenu value={sortMode} onChange={setSortMode} dateLabel="Po datumu događaja" />
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-lg px-3 sm:px-4 py-2 text-sm font-medium transition-colors cursor-pointer shrink-0"
@@ -430,8 +437,13 @@ export default function SeatingAdminTab({
             onClear={() => onClearFocus?.()}
           />
         )}
-        {seatings
-          .filter((s) => !focusSlug || s.slug === focusSlug)
+        {(sortMode === "newest"
+          ? seatings.filter((s) => !focusSlug || s.slug === focusSlug)
+          : sortByEventTimeline(
+              seatings.filter((s) => !focusSlug || s.slug === focusSlug),
+              (s) => s.eventDate,
+              startOfToday(),
+            ))
           .map((s) => {
           const isRevealed = revealed.has(s.slug);
           const url = urlFor(s.slug);

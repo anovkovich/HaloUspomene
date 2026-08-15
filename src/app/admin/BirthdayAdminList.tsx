@@ -15,6 +15,11 @@ import {
 import type { MarkPaidTarget } from "@/lib/admin-mark-paid";
 import ShareLinkButton from "./ShareLinkButton";
 import FocusNotice from "./FocusNotice";
+import {
+  startOfToday,
+  sortByEventTimeline,
+} from "@/lib/event-timeline";
+import SortMenu, { type AdminSortMode } from "./SortMenu";
 
 interface Birthday {
   slug: string;
@@ -106,6 +111,7 @@ export default function BirthdayAdminList({
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
   const [stats, setStats] = useState<Record<string, BirthdayStats>>({});
   const [shareStats, setShareStats] = useState<Record<string, { visit_count: number; last_visited_at?: string }>>({});
+  const [sortMode, setSortMode] = useState<AdminSortMode>("event_proximity");
   const [loading, setLoading] = useState(true);
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState("");
@@ -332,6 +338,7 @@ export default function BirthdayAdminList({
         <h2 className="text-xl sm:text-2xl font-semibold text-white">
           Rođendani ({birthdays.length})
         </h2>
+        <SortMenu value={sortMode} onChange={setSortMode} dateLabel="Po datumu proslave" />
         <button
           onClick={() => router.push("/admin/novi-rodjendan")}
           className="flex items-center gap-2 bg-[#FF6B6B] hover:bg-[#E55A5A] text-white rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors cursor-pointer shrink-0"
@@ -348,8 +355,13 @@ export default function BirthdayAdminList({
             onClear={() => onClearFocus?.()}
           />
         )}
-        {birthdays
-          .filter((b) => !focusSlug || b.slug === focusSlug)
+        {(sortMode === "newest"
+          ? birthdays.filter((b) => !focusSlug || b.slug === focusSlug)
+          : sortByEventTimeline(
+              birthdays.filter((b) => !focusSlug || b.slug === focusSlug),
+              (b) => b.event_date,
+              startOfToday(),
+            ))
           .map((b) => {
           const s = stats[b.slug];
           const eventDate = new Date(b.event_date);

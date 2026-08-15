@@ -355,8 +355,15 @@ export default function PhoneAdminTab({
   const visibleRentals = focusSlug
     ? rentals.filter((r) => r.id === focusSlug)
     : rentals;
+  // The API returns rental_date ASCENDING, which is right for the dispatch
+  // queue but leaves history oldest-first — a rental from a year ago sitting
+  // above last week's. Past is flipped so the just-returned phone (collect the
+  // unit, deliver the recordings, fulfil the USB souvenir) is on top.
   const upcoming = visibleRentals.filter((r) => r.rental_date >= today);
-  const past = visibleRentals.filter((r) => r.rental_date < today);
+  const past = visibleRentals
+    .filter((r) => r.rental_date < today)
+    .slice()
+    .reverse();
 
   return (
     <div>
