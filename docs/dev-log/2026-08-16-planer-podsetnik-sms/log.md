@@ -66,3 +66,54 @@ je tačno u oba slučaja.
 
 Prvi test je bio najvažniji: da Mongo odbija `$set` pored `$setOnInsert`,
 **svako otvaranje portala bi padalo**, uključujući plaćene parove.
+
+## 2026-08-16 — ISPRAVKA: nalaz "planer koristi jedan par" je bio pogresan
+
+- **Sta je uradjeno:** premereno na SVIM parovima, ne na uzorku. Nijedna izmena
+  koda; SMS tok i pragovi ostaju netaknuti jer se oslanjaju na `draft`, ne na
+  ovu brojku.
+- **Commit / PR:** vidi commit uz ovaj unos.
+- **Na sta utice dalje:** svaki predlog za unapredjenje planera mora da krene od
+  ispravljenih brojki. Prethodni nalaz je vec bio prosledjen kao ulaz u analizu
+  proizvoda, pa je i ta analiza delom stajala na pogresnoj osnovi.
+- **Posledice:** samo dokumentacija.
+- **Status:** done → done (bez promene)
+
+### Sta je tacno
+
+|  | ceklista | budzet | lista zvanica |
+|---|---|---|---|
+| **Buduca vencanja (15)** | **8/15 (53%)** | 3/15 (20%) | 3/15 (20%) |
+| Prosla vencanja (18) | 5/18 (28%) | 4/18 (22%) | 0/18 |
+
+Bilo sta dirali: **placeni parovi 13/26 (50%)**, draft/quick-register **1/7 (14%)**.
+
+### Kako je greska nastala
+
+Prvo merenje je gledalo `createdAt` naspram `updatedAt` na **uzorku od 8 slugova**
+koje sam vec bio izvukao za SMS analizu — dakle na skupu **odabranom po tome sto
+izgleda neaktivno** (draft nalozi i parovi bez telefona). U tom uzorku je zaista
+samo `katarina-marko` imao upis, i taj odnos 1/8 sam preneo na svih 15 kao
+"1/15". Klasicno zakljucivanje sa pristrasnog uzorka.
+
+Nikad nisu ni pogledani `teodora-uros` (40 zavrsenih stavki, 16 kategorija
+budzeta, 53 zvanice), `tamara-aleksandar` (31 / 16 / 10), `emilija-aleksa`
+(21 stavka, 160 zvanica), `andjela-milos`, `ljiljana-pavle`, `milenija-milan`,
+`anastasija-jovan`. Medju proslim vencanjima `dragana-uros` ima **45/45
+zavrsenih** stavki.
+
+Drugi doprinos gresci: oslonac na `updatedAt != createdAt` kao jedini signal.
+Ispravno merenje gleda i **sadrzaj** — zavrsene stavke, popunjene kategorije,
+unete zvanice.
+
+### Sta ostaje tacno iz prvobitnog nalaza
+
+- **Budzet je stvarno slab** — 20% na buducim vencanjima, i najcesce samo
+  nekoliko kategorija.
+- **Draft nalozi zaista bezaju** — 14% naspram 50% kod placenih. Ljudi koji su
+  dosli bas zbog planera koriste ga najmanje. To je pravi problem, i poklapa se
+  sa grupom koju SMS podsetnik gadja.
+- Duzina cekliste se razlikuje po parovima (26–65 stavki) jer je podrazumevani
+  spisak skracen sa 63 na 38 tokom vremena, a stare kopije su vec materijalizovane
+  u `wedding_portal`. To je i razlog zasto ceklista ne sme da se poredi po id-u
+  stavke izmedju parova.

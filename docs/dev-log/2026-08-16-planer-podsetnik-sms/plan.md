@@ -24,8 +24,14 @@ Merenje 16.08.2026, svih 15 predstojećih venčanja:
 | `milica-veljko` | **ne** | 85 | 0/63 | 0 | 0 |
 | `katarina-marko` | ne | 82 | **30/63** | 3 | 0 |
 
-**Od 15 parova, tačno jedan koristi planer.** To je nalaz sam po sebi i vredi ga
-zabeležiti nezavisno od ovog taska.
+> ⚠️ **Tabela iznad je uzorak od 8 slugova odabranih po tome što izgledaju
+> neaktivno, i iz nje je izveden pogrešan zaključak „planer koristi jedan par".
+> Ispravno merenje na svim parovima: čeklistu koristi 8/15 predstojećih (53%),
+> budžet 3/15, listu zvanica 3/15; plaćeni parovi 50%, draft nalozi 14%.
+> Vidi unos u `log.md` od 2026-08-16 („ISPRAVKA").**
+
+Ono što od prvobitnog nalaza ostaje tačno: **budžet je slab**, a **draft nalozi
+zaista beže** — 14% naspram 50% kod plaćenih. To je grupa koju ovaj SMS gađa.
 
 ## Rupa u merenju koja je zatečena
 
