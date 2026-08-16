@@ -1,7 +1,7 @@
 # Backfill telefona iz Web3Forms mejlova
 
 - **ID:** 2026-08-16-telefoni-backfill
-- **Status:** planned
+- **Status:** done
 - **Created:** 2026-08-16
 - **Owner:** Aleksa
 
@@ -38,16 +38,22 @@ izvor.
 - Demo zapisi (`example: true`): `ana-dejan`, `milica-nikola`, `ana-marko`,
   `teodora-bojan` — nemaju stvarnog vlasnika.
 
-## Prioritet: venčanje još predstoji
+## Ishod (2026-08-16)
 
-| Slug | Venčanje | Zapis napravljen | Napomena |
-|---|---|---|---|
-| `tamara-aleksandar` | 2026-08-22 | 26.04. | **za 6 dana** |
-| `anastasija-jovan` | 2026-09-13 | — | |
-| `jovana-aleksandar` | 2026-09-26 | 31.03. | |
-| `aleksandra-miljan` | 2027-08-07 | 26.04. | draft |
+`milenija-milan` vraćen iz mejla i odmah ušao u SMS tok. Preostala četiri
+„prioritetna" para ispala su iz obima kad se pogledalo **čemu bi im broj
+služio**, a ne samo da li ga imaju:
 
-Ostalih 13 su prošla venčanja — vredi samo radi urednosti evidencije.
+| Slug | Stanje | Treba li broj |
+|---|---|---|
+| `tamara-aleksandar` | raspored **već plaćen** | ne — ponuda je bespredmetna |
+| `anastasija-jovan` | raspored + audio plaćeni | ne |
+| `jovana-aleksandar` | ništa plaćeno | mejl nije pronađen u inboksu |
+| `aleksandra-miljan` | draft, ima samo `@aleksandra.vsc` | bez hitnosti |
+
+Nijedan nema galeriju, pa ne propuštaju ni d4/d5 upozorenja. Ostalih 13 su
+prošla venčanja. **Backfill je time iscrpljen** — ostatak je urednost, ne
+potreba.
 
 ## Kako pronaći broj
 
@@ -85,12 +91,13 @@ Efekat je da par ulazi u SMS tokove; ako mu je venčanje u prozoru 7–14 dana,
 
 ## Koraci
 
-- [ ] **Prioritetna četiri** — naći brojeve u mejlu za parove čije venčanje
-      predstoji. _Acceptance:_ sva četiri imaju `contact_phone` u E.164.
-- [ ] **Upis** — kroz admin JSON, ili skriptom `slug → telefon` sa suvim
-      prolazom. _Acceptance:_ `findSeatingSmsCandidates()` ih vidi kad uđu u
-      prozor.
-- [ ] **Ostalih 13 (prošla venčanja)** — po prilici, radi urednosti.
+- [x] **Uzrok utvrđen** — stara create ruta je primala `contact_phone` i nije
+      ga upisivala. (log: 2026-08-16)
+- [x] **`milenija-milan` vraćen** iz Web3Forms mejla, drugi broj normalizovan u
+      E.164. _Acceptance:_ `findSeatingSmsCandidates()` ga vraća. (log: 2026-08-16)
+- [x] **Obim revidiran** — preostali parovi ili već imaju plaćen alat, ili nemaju
+      mejl, ili su draft bez hitnosti. (log: 2026-08-16)
+- [ ] **Ostalih 13 (prošla venčanja)** — po prilici, radi urednosti. Bez roka.
 
 ## Verifikacija
 

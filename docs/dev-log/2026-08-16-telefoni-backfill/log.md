@@ -44,3 +44,43 @@ tvrdi da je unet, tražiti **gde je otišao**, a ne dokazivati da nije ni traže
   poklapa sa `7736fec` (28.04.2026, Infobip 2FA), koji je polje uveo u zapis.
 - Bez broja: **21 zapis**, od toga **4 demo** (`example: true`) i **17 pravih**;
   od tih 17 samo **4** imaju venčanje koje tek predstoji.
+
+## 2026-08-16 — Backfill iscrpljen; quick-register je vec pokriven
+
+- **Sta je uradjeno:** provereno stanje sva cetiri "prioritetna" para i
+  revidiran obim. Nista nije menjano u kodu.
+- **Commit / PR:** —
+- **Na sta utice dalje:** task je prakticno zatvoren; ostaje samo jedan draft
+  bez broja, bez hitnosti.
+- **Blokade / sledeci korak:** nema. Zatvoriti kad vlasnik potvrdi.
+
+### Nalaz: prioritetna lista je bila pogresno postavljena
+
+Filtrirao sam po "nema telefon", ne po "cemu bi mu telefon zapravo sluzio".
+Stvarno stanje:
+
+| Par | Stanje | Treba li broj |
+|---|---|---|
+| `tamara-aleksandar` | raspored VEC placen | ne — ponuda je bespredmetna |
+| `anastasija-jovan` | raspored + audio placeni | ne |
+| `jovana-aleksandar` | nista placeno | mejl nije pronadjen u inboksu |
+| `aleksandra-miljan` | draft, nista placeno | ima samo Instagram `@aleksandra.vsc` |
+
+Nijedan od njih nema galeriju, pa ne propustaju ni d4/d5 upozorenja. Backfill
+je time bez stvarnog dobitka — ostaje kao urednost, ne kao potreba.
+
+### Quick-register vec trazi i VERIFIKUJE telefon
+
+Vlasnik je predlozio da se to isplanira kao posao. Provereno — postoji:
+
+- `QuickStartForm.tsx:99,103` — forma odbija prazan broj i prazan trust token
+- `planiranje-vencanja/actions.ts:59` — server odbija prazan broj
+- `:64` — format srpskog mobilnog (`^0?6\d{7,8}$`)
+- `:78` — **`ensurePhoneVerified(trustToken, phoneE164)`**, tj. Infobip
+  potvrda vezana za bas taj broj; greska vraca "Verifikujte broj telefona pre
+  kreiranja naloga."
+- `:40` — reCAPTCHA `quickstart`
+
+Provera je serverska, ne samo u pregledacu, pa se ne moze zaobici. Zapisi bez
+broja poticu iskljucivo od pre uvodjenja te verifikacije (`aleksandra-miljan`,
+26.04.). Nov posao nije potreban.
