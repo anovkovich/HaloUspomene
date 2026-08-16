@@ -6,6 +6,7 @@ import { Loader2, CheckCircle2, Minus, Plus } from "lucide-react";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
 import AddToCalendar from "@/components/ui/AddToCalendar";
 import InvitationOfferCTA from "@/components/marketing/InvitationOfferCTA";
+import { formatDatumGenitiv } from "@/lib/datum";
 import {
   type CalendarEvent,
   type CalendarLabels,
@@ -53,16 +54,9 @@ export function BirthdayRSVPForm({
   const isPastDeadline = new Date() > deadline;
 
   // Human-readable deadline for the guest (only when a valid date is set).
-  const deadlineLabel = (() => {
-    if (!submitUntil) return null;
-    const d = new Date(submitUntil);
-    if (isNaN(d.getTime())) return null;
-    return d.toLocaleDateString("sr-Latn-RS", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  })();
+  // Genitiv preko `formatDatumGenitiv` — `toLocaleDateString` vraća nominativ
+  // ("1. februar") i sam dodaje tačku iza godine, pa je ispadalo "2027..".
+  const deadlineLabel = formatDatumGenitiv(submitUntil);
 
   if (isPastDeadline) {
     return (
@@ -193,11 +187,11 @@ export function BirthdayRSVPForm({
           className="text-center text-xs sm:text-sm"
           style={{ color: "var(--theme-text-light)" }}
         >
+          {/* `deadlineLabel` već nosi tačku na kraju (redni broj godine). */}
           Molimo potvrdite do{" "}
           <strong style={{ color: "var(--theme-primary)" }}>
             {deadlineLabel}
           </strong>
-          .
         </p>
       )}
 
