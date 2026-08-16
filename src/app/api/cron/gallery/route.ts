@@ -16,6 +16,10 @@ import {
   seatingOfferSms,
 } from "@/lib/seating/nudge-sms";
 import {
+  findPlannerReminderCandidates,
+  plannerReminderSms,
+} from "@/lib/planer/reminder-sms";
+import {
   galleryDayOffset,
   shouldPurgeGallery,
   GALLERY_ACCESS_LAST_DAY,
@@ -265,6 +269,27 @@ export async function GET(req: NextRequest) {
     } catch (err) {
       result.errors.push(
         `seating-sms: ${err instanceof Error ? err.message : "unknown"}`,
+      );
+    }
+
+    // ── Planner reminder SMS ─────────────────────────────────────────────────
+    // Unpaid quick-register signups only, and only while the wedding is still
+    // far off — see `planer/reminder-sms.ts` for why paid couples are excluded.
+    try {
+      for (const cand of await findPlannerReminderCandidates()) {
+        try {
+          await sendSms(cand.phone, plannerReminderSms());
+          await patchCouple(cand.slug, { planner_reminder_sent: true });
+          result.sms++;
+        } catch (err) {
+          result.errors.push(
+            `planner-sms ${cand.slug}: ${err instanceof Error ? err.message : "unknown"}`,
+          );
+        }
+      }
+    } catch (err) {
+      result.errors.push(
+        `planner-sms: ${err instanceof Error ? err.message : "unknown"}`,
       );
     }
   }

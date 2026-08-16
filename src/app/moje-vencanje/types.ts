@@ -93,6 +93,10 @@ export interface PortalData {
    *  serveru, a ne u localStorage-u: portal je PWA koji se otvara sa telefona
    *  i laptopa, pa bi klijentski dismiss vaskrsavao traku na svakom uređaju. */
   seatingNudge?: SeatingNudgeDismiss;
+  /** Poslednje autentikovano otvaranje planera. Za razliku od `updatedAt`, koji
+   *  se pomera samo na snimanje, ovo hvata i par koji portal samo pregleda.
+   *  Nedostaje na svim zapisima starijim od 16.08.2026. */
+  lastSeenAt?: Date;
   updatedAt: Date;
   createdAt: Date;
 }

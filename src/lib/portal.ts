@@ -9,7 +9,19 @@ async function col() {
   return client.db("halouspomene").collection<PortalData>("wedding_portal");
 }
 
-export async function loadPortalData(slug: string): Promise<PortalData> {
+/**
+ * @param opts.touch Stamp `lastSeenAt`. Pass ONLY from an authenticated portal
+ *   entry point. `updatedAt` moves on writes alone, so a couple who opens the
+ *   planner weekly and never ticks anything is indistinguishable from one who
+ *   vanished months ago — `lastSeenAt` is what tells them apart.
+ *
+ *   Off by default because `/api/portal/[slug]` is a public GET with no auth
+ *   whatsoever: anyone, crawlers included, could otherwise forge activity.
+ */
+export async function loadPortalData(
+  slug: string,
+  opts?: { touch?: boolean }
+): Promise<PortalData> {
   const c = await col();
   const now = new Date();
   const doc = await c.findOneAndUpdate(
@@ -24,6 +36,9 @@ export async function loadPortalData(slug: string): Promise<PortalData> {
         createdAt: now,
         updatedAt: now,
       },
+      // Rides the upsert that already runs — no extra round trip. Safe to sit
+      // beside `$setOnInsert`: the two never name the same field.
+      ...(opts?.touch ? { $set: { lastSeenAt: now } } : {}),
     },
     { upsert: true, returnDocument: "after" }
   );

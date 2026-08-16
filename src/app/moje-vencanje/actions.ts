@@ -91,7 +91,9 @@ export async function loadPortalDataAction() {
   const slug = await getAuthSlug();
   if (!slug) return null;
 
-  const data = await dbLoadPortal(slug);
+  // The one place that may stamp `lastSeenAt`: the slug comes from a verified
+  // JWT claim, so this is provably the couple opening their own planner.
+  const data = await dbLoadPortal(slug, { touch: true });
   return {
     checklist: data.checklist,
     budget: data.budget,
