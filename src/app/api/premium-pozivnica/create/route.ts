@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { upsertCouple } from "@/lib/couples";
 import { generateUniqueSlug, InvalidSlugInputError } from "@/lib/slug";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
-import { verifyBypassToken, type BypassCountry } from "@/lib/bypass-token";
+import {
+  resolvePhoneAuthorization,
+  PhoneAuthError,
+} from "@/lib/phone-verification";
 
 // Simple IP-based rate limiting
 const ipMap = new Map<string, { count: number; resetAt: number }>();
@@ -40,21 +43,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Optional foreign-customer bypass token — same shape as classic create.
-    let bypassCountry: BypassCountry | null = null;
-    let bypassTokenId: string | null = null;
-    if (body.bypass_token) {
-      try {
-        const payload = await verifyBypassToken(body.bypass_token);
-        bypassCountry = payload.country;
-        bypassTokenId = payload.tokenId;
-      } catch {
-        return NextResponse.json(
-          { error: "Bypass link nije važeći ili je istekao." },
-          { status: 403 },
-        );
+    // Phone authorization — the SAME gate the classic create endpoint uses, and
+    // it subsumes the foreign-customer bypass token this route used to handle on
+    // its own. Until 2026-08-16 only the wizard enforced a verified phone here,
+    // so a direct POST could create a premium couple with `contact_phone: ""` —
+    // a record invisible to every SMS flow we run (seating offer, gallery purge
+    // warnings). Client-side validation is not a gate.
+    let phoneAuth;
+    try {
+      phoneAuth = await resolvePhoneAuthorization({
+        rawPhone: body.contact_phone,
+        bypassToken: body.bypass_token,
+        phoneTrustToken: body.phone_trust_token,
+      });
+    } catch (err) {
+      if (err instanceof PhoneAuthError) {
+        return NextResponse.json({ error: err.message }, { status: err.status });
       }
+      throw err;
     }
+    const { phoneCountry, phoneVerified, bypassTokenId } = phoneAuth;
 
     // Generate unique slug
     let slug: string;
@@ -146,8 +154,8 @@ export async function POST(request: NextRequest) {
         ),
       },
       draft: true,
-      phone_country: bypassCountry || "RS",
-      phone_verified: !bypassTokenId,
+      phone_country: phoneCountry,
+      phone_verified: phoneVerified,
       ...(bypassTokenId ? { bypass_token_id: bypassTokenId } : {}),
     };
 

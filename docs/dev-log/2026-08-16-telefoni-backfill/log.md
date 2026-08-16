@@ -127,3 +127,45 @@ predstojecim vencanjima.
 Prethodni unos je sve zapise bez broja pripisao create-ruti. Tacnije je: dva
 odvojena uzroka, oba zatvorena istog dana istim commit-om — ruta koja je broj
 odbacivala, i forma koja ga nije trazila.
+
+## 2026-08-16 — Zatvorena poslednja ruta koja je mogla da napravi par bez broja
+
+- **Sta je uradjeno:** `/api/premium-pozivnica/create` sada koristi
+  `resolvePhoneAuthorization` iz `src/lib/phone-verification.ts` — istu kapiju
+  koju klasicna create ruta vec ima. Rucni blok za bypass token je obrisan; nova
+  kapija ga obuhvata, pa je ponasanje za inostrane kupce netaknuto.
+- **Na sta utice dalje:** sve cetiri rute za kreiranje para su sada pokrivene.
+  Jedini put koji jos dozvoljava prazan telefon je `/admin/nova`, gde je to
+  namerno — vlasnik unosi rucno.
+- **Posledice:** premium kreiranje bez verifikovanog broja vraca 400/403 umesto
+  200. U praksi nista ne menja, jer carobnjak je i ranije blokirao slanje.
+  Povratak: `git revert`.
+- **Blokade / sledeci korak:** nema.
+
+### Zasto je bilo bitno
+
+Do danas je premium ruta telefon samo **cuvala ako je poslat**, bez ijedne
+provere. Kapiju je drzao iskljucivo carobnjak
+(`QuestionnaireForm.tsx:2854`) — dakle klijentska validacija, koja nije kapija.
+Direktan POST je mogao da napravi premium par sa `contact_phone: ""`, tj. zapis
+nevidljiv za svaki SMS tok koji vrtimo: ponudu za raspored i d4/d5 upozorenja
+pred brisanje galerije. Tacno ona rupa zbog koje je ovaj task i nastao.
+
+### Provera
+
+Cetiri POST-a na sveze pokrenut produkcioni build:
+
+| Scenario | Ishod |
+|---|---|
+| bez telefona | 400 „Unesite vazeci kontakt telefon." |
+| telefon bez verifikacije | 403 „Verifikujte broj telefona pre slanja." |
+| lazan trust token | 403 isto |
+| lazan bypass token | 403 „Bypass link nije vazeci ili je istekao." |
+
+Nijedan zapis nije upisan.
+
+**Zamka usput:** prvi prolaz je pokazao 200 na sva tri slucaja i upisao tri
+zapisa. Uzrok nije bio kod nego **stari `next start` koji je jos drzao port
+3000**, pa je `curl` gadjao prethodni build. Test zapisi su obrisani, server
+ugasen, provera ponovljena. Pouka: pre ovakvog testa proveriti da port nije
+zauzet, inace se meri stara verzija.
