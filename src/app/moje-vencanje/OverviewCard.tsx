@@ -28,6 +28,9 @@ import {
   Plus,
   ClipboardList,
   UserCheck,
+  FileImage,
+  FileText,
+  Loader2,
 } from "lucide-react";
 import {
   loadOverviewAction,
@@ -220,8 +223,8 @@ export default function OverviewCard({
   /**
    * „Gde sedim" materijali imaju smisla tek kad u alatu za raspored postoji
    * bar jedan sto — inače QR vodi gosta na stranicu koja nikoga ne nalazi.
-   * Zato oba formata (PNG i pano) prolaze kroz istu proveru; kada rasporeda
-   * nema, umesto preuzimanja se otvara ekran koji šalje par u alat.
+   * Zato birač formata (PNG i dva panoa) prolazi kroz ovu proveru; kada
+   * rasporeda nema, umesto njega se otvara ekran koji šalje par u alat.
    */
   const withSeatingLayout = useCallback(
     (run: () => void) => {
@@ -1024,14 +1027,9 @@ export default function OverviewCard({
                 title="QR — Gde sedim"
                 sub="Gosti pronalaze svoje mesto."
                 formats={["PNG", "Pano dizajn"]}
-                formatActions={{
-                  PNG: () => withSeatingLayout(handleDownloadSeatQR),
-                  "Pano dizajn": () =>
-                    withSeatingLayout(() => setSeatingSheet("pano")),
-                }}
                 locked={!paidForRaspored}
                 lockLabel="Uz raspored sedenja"
-                onClick={() => withSeatingLayout(handleDownloadSeatQR)}
+                onClick={() => withSeatingLayout(() => setSeatingSheet("pano"))}
               />
               <PrintCard
                 title="QR za galeriju"
@@ -1206,15 +1204,15 @@ export default function OverviewCard({
         </div>
       )}
 
-      {/* „Gde sedim" materijali — birač dizajna panoa, ili poruka da rasporeda
-          još nema. Isti okvir kao dijalog iznad, samo drugi sadržaj. */}
+      {/* „Gde sedim" materijali — birač (QR PNG ili jedan od dva panoa), ili
+          poruka da rasporeda još nema. Isti okvir kao dijalog iznad. */}
       {seatingSheet && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4"
           onClick={() => !panoBusy && setSeatingSheet(null)}
         >
           <div
-            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 overflow-hidden"
+            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
@@ -1247,28 +1245,67 @@ export default function OverviewCard({
             ) : (
               <>
                 <h3 className="font-serif text-xl text-[#232323] mb-1">
-                  Pano dobrodošlice
+                  QR — Gde sedim
                 </h3>
                 <p className="text-xs text-[#232323]/55 mb-5">
-                  Format B1, sa vašim imenima i QR kodom za „Gde sedim&ldquo;.
-                  Izaberite dizajn.
+                  Sam QR kod za vaš dizajn, ili gotov pano dobrodošlice.
                 </p>
-                <div className="space-y-2">
+
+                <div className="space-y-2.5">
+                  <button
+                    onClick={() => {
+                      handleDownloadSeatQR();
+                      setSeatingSheet(null);
+                    }}
+                    disabled={!!panoBusy}
+                    className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-[#232323]/12 text-left hover:border-[#AE343F]/40 hover:bg-[#F5F4DC]/40 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <FileImage size={20} className="text-[#AE343F] shrink-0" />
+                    <span>
+                      <span className="block text-sm font-semibold text-[#232323]">
+                        Samo QR kod — PNG
+                      </span>
+                      <span className="block text-[11px] text-[#232323]/55">
+                        Za ubacivanje u vaš dizajn ili samostalnu štampu.
+                      </span>
+                    </span>
+                  </button>
+
                   {[
-                    { variant: "poster" as const, label: "Dizajn 1 — klasik" },
-                    { variant: "arch" as const, label: "Dizajn 2 — sa lukom" },
-                  ].map(({ variant, label }) => (
+                    {
+                      variant: "poster" as const,
+                      label: "Pano dobrodošlice — standard",
+                      hint: "Klasičan raspored, imena pa QR kod.",
+                    },
+                    {
+                      variant: "arch" as const,
+                      label: "Pano dobrodošlice — sa lukom",
+                      hint: "Isti sadržaj, u dekorativnom luku.",
+                    },
+                  ].map(({ variant, label, hint }) => (
                     <button
                       key={variant}
                       onClick={() => handleDownloadPano(variant)}
                       disabled={!!panoBusy}
-                      className="flex items-center justify-between gap-3 w-full px-4 py-3 rounded-xl border border-[#232323]/15 text-left hover:border-[#AE343F]/50 hover:bg-[#AE343F]/[0.04] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+                      className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-[#232323]/12 text-left hover:border-[#AE343F]/40 hover:bg-[#F5F4DC]/40 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
                     >
-                      <span className="text-sm font-medium text-[#232323]">
-                        {label}
-                      </span>
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#232323]/55 shrink-0">
-                        {panoBusy === variant ? "Pripremam..." : "PDF"}
+                      {panoBusy === variant ? (
+                        <Loader2
+                          size={20}
+                          className="text-[#AE343F] shrink-0 animate-spin"
+                        />
+                      ) : (
+                        <FileText size={20} className="text-[#AE343F] shrink-0" />
+                      )}
+                      <span>
+                        <span className="block text-sm font-semibold text-[#232323]">
+                          {label}
+                        </span>
+                        <span className="block text-[11px] text-[#232323]/55">
+                          {panoBusy === variant
+                            ? "Pripremam PDF..."
+                            : `${hint} B1 format, PDF.`}
+                        </span>
                       </span>
                     </button>
                   ))}

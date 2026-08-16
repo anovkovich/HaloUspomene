@@ -31,6 +31,8 @@ export default function PrintCard({
 }: {
   title: string;
   sub: string;
+  /** Plain labels, never buttons — a card with more than one file opens a
+   *  chooser sheet on click, so the pills only say what is on offer. */
   formats: string[];
   locked?: boolean;
   /** Names the add-on that unlocks this — shown instead of the formats. */
