@@ -84,6 +84,8 @@ interface Couple {
   paid_for_audio?: boolean;
   paid_for_gallery?: boolean;
   gallery_extra_days?: number;
+  /** Demo/primer pozivnica — nas materijal, ne klijent. */
+  example?: boolean;
   gallery_purged_at?: string;
   standalone_gallery?: boolean;
   potvrde_password?: string;
@@ -206,6 +208,23 @@ function receiptTotalFor(c: Couple): number {
  * row badge rather than encoded in sort position, so it survives every sort
  * mode and the collapsed-history toggle.
  */
+/**
+ * Names the premium themes carry in the customer wizard
+ * (`napravi-pozivnicu/steps/PremiumStepAIPhoto.tsx`).
+ *
+ * A premium couple's `theme` always says `luxury_gold` — the classic palette
+ * they never see — so the pill showed the same useless word on every premium
+ * row. The premium theme is what actually differs, and naming it exactly as the
+ * wizard does keeps admin and customer speaking one language. `disney_pixar` is
+ * retired, kept only so old records still render a name.
+ */
+const PREMIUM_THEME_LABEL: Record<string, string> = {
+  watercolor: "Luxury Romance",
+  line_art: "Modern Parallax",
+  fountain: "Royal Fountain",
+  disney_pixar: "Disney (povučena)",
+};
+
 function galleryPurgeCountdown(c: Couple): number | null {
   if (!c.paid_for_gallery || c.gallery_purged_at) return null;
   const d = galleryDayOffset(c.event_date);
@@ -290,45 +309,66 @@ export default function AdminPage() {
    *     misses a match.
    */
   const [showOlderPast, setShowOlderPast] = useState(false);
+  /* Demo pozivnice (`example: true`) su nas materijal, ne klijenti — stoje na
+   * dnu i sklopljene su, da svakodnevni pregled ne bi pocinjao tudjim imenima
+   * koja nikad nista ne traze. Pretraga ih i dalje nalazi. */
+  const [showDemo, setShowDemo] = useState(false);
 
   const agendaMode = sortMode === "event_proximity";
   const searching = search.trim().length > 0;
 
-  const { visibleCouples, dividerAt, hiddenOlderCount, pastCount } = useMemo(() => {
+  const {
+    visibleCouples,
+    dividerAt,
+    hiddenOlderCount,
+    pastCount,
+    demoCount,
+    demoDividerIndex,
+  } = useMemo(() => {
     const boundary = startOfToday();
     const hotCutoff = boundary - 7 * 86_400_000;
 
+    // Demo rows leave the main list entirely and come back appended at the end.
+    const demos = filteredCouples.filter((c) => c.example);
+    const real = filteredCouples.filter((c) => !c.example);
+    const withDemos = <T,>(rows: T[]) =>
+      showDemo || searching ? [...rows, ...(demos as unknown as T[])] : rows;
+
     const isPastRow = (c: Couple) =>
       !!c.event_date && new Date(c.event_date).getTime() < boundary;
-    const total = filteredCouples.filter(isPastRow).length;
+    const total = real.filter(isPastRow).length;
 
     // Divider only in agenda mode — any other order scatters past rows, so a
     // divider there would be a lie.
     if (!agendaMode) {
       return {
-        visibleCouples: filteredCouples,
+        visibleCouples: withDemos(real),
         dividerAt: -1,
         hiddenOlderCount: 0,
         pastCount: total,
+        demoCount: demos.length,
+        demoDividerIndex: showDemo || searching ? real.length : -1,
       };
     }
 
     const keep =
       searching || showOlderPast
-        ? filteredCouples
-        : filteredCouples.filter(
+        ? real
+        : real.filter(
             (c) =>
               !isPastRow(c) ||
               new Date(c.event_date!).getTime() >= hotCutoff,
           );
 
     return {
-      visibleCouples: keep,
+      visibleCouples: withDemos(keep),
       dividerAt: firstPastIndex(keep, (c) => c.event_date, boundary),
-      hiddenOlderCount: filteredCouples.length - keep.length,
+      hiddenOlderCount: real.length - keep.length,
       pastCount: total,
+      demoCount: demos.length,
+      demoDividerIndex: showDemo || searching ? keep.length : -1,
     };
-  }, [filteredCouples, agendaMode, searching, showOlderPast]);
+  }, [filteredCouples, agendaMode, searching, showOlderPast, showDemo]);
   /** Postavlja se pretragom po pozivu na broj: vodi na tab te stavke i suzi
    *  njegovu listu na nju. Čisti se ručnim klikom na bilo koji tab. */
   const [focus, setFocus] = useState<{
@@ -1048,6 +1088,15 @@ export default function AdminPage() {
 
           return (
             <React.Fragment key={c.slug}>
+            {idx === demoDividerIndex && demoCount > 0 && (
+              <div className="flex items-center gap-3 pt-3 pb-1">
+                <span className="h-px flex-1 bg-white/10" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">
+                  Demo pozivnice ({demoCount})
+                </span>
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
+            )}
             {idx === dividerAt && (
               <div className="flex items-center gap-3 pt-3 pb-1">
                 <span className="h-px flex-1 bg-white/10" />
@@ -1085,7 +1134,10 @@ export default function AdminPage() {
                         {c.couple_names?.full_display || c.slug}
                       </span>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 shrink-0">
-                        {c.theme || "—"}
+                        {(c.premium && c.premium_theme
+                          ? PREMIUM_THEME_LABEL[c.premium_theme] ??
+                            c.premium_theme
+                          : c.theme) || "—"}
                       </span>
                       {purgeIn !== null && (
                         <span
@@ -1370,6 +1422,16 @@ export default function AdminPage() {
             {showOlderPast
               ? "Sakrij starija venčanja"
               : `Prikaži starija venčanja (${hiddenOlderCount})`}
+          </button>
+        )}
+        {!searching && demoCount > 0 && (
+          <button
+            onClick={() => setShowDemo((v) => !v)}
+            className="w-full mt-1 py-2.5 rounded-xl text-xs font-medium text-white/50 hover:text-white/80 border border-dashed border-white/12 hover:border-white/25 transition-colors cursor-pointer"
+          >
+            {showDemo
+              ? "Sakrij demo pozivnice"
+              : `Prikaži demo pozivnice (${demoCount})`}
           </button>
         )}
       </div>

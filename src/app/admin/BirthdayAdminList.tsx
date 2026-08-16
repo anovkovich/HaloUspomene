@@ -37,6 +37,8 @@ interface Birthday {
   receipt_valid?: boolean;
   receipt_created?: string;
   custom_discount?: number;
+  /** Demo/primer zapis — nas materijal, ne klijent. */
+  example?: boolean;
 }
 
 interface BirthdayStats {
@@ -112,6 +114,9 @@ export default function BirthdayAdminList({
   const [stats, setStats] = useState<Record<string, BirthdayStats>>({});
   const [shareStats, setShareStats] = useState<Record<string, { visit_count: number; last_visited_at?: string }>>({});
   const [sortMode, setSortMode] = useState<AdminSortMode>("event_proximity");
+  /* Demo zapisi stoje na dnu i sklopljeni su — pregled ne treba da pocinje
+   * primerima. Pretraga/fokus ih i dalje nalazi. */
+  const [showDemo, setShowDemo] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState("");
@@ -355,13 +360,18 @@ export default function BirthdayAdminList({
             onClear={() => onClearFocus?.()}
           />
         )}
-        {(sortMode === "newest"
-          ? birthdays.filter((b) => !focusSlug || b.slug === focusSlug)
-          : sortByEventTimeline(
-              birthdays.filter((b) => !focusSlug || b.slug === focusSlug),
-              (b) => b.event_date,
-              startOfToday(),
-            ))
+        {(() => {
+          const base = birthdays.filter(
+            (b) => !focusSlug || b.slug === focusSlug,
+          );
+          const demos = base.filter((b) => b.example);
+          const real = base.filter((b) => !b.example);
+          const ordered =
+            sortMode === "newest"
+              ? real
+              : sortByEventTimeline(real, (b) => b.event_date, startOfToday());
+          return showDemo || focusSlug ? [...ordered, ...demos] : ordered;
+        })()
           .map((b) => {
           const s = stats[b.slug];
           const eventDate = new Date(b.event_date);
@@ -548,6 +558,16 @@ export default function BirthdayAdminList({
             </div>
           );
         })}
+        {!focusSlug && birthdays.some((b) => b.example) && (
+          <button
+            onClick={() => setShowDemo((v) => !v)}
+            className="w-full mt-1 py-2.5 rounded-xl text-xs font-medium text-white/50 hover:text-white/80 border border-dashed border-white/12 hover:border-white/25 transition-colors cursor-pointer"
+          >
+            {showDemo
+              ? "Sakrij demo rođendane"
+              : `Prikaži demo rođendane (${birthdays.filter((b) => b.example).length})`}
+          </button>
+        )}
       </div>
 
       {/* Delete modal */}
