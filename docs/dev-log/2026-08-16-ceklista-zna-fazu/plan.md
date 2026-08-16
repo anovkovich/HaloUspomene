@@ -1,7 +1,7 @@
 # Čeklista koja zna fazu, sama se popunjava — i budžet iz sidebara
 
 - **ID:** 2026-08-16-ceklista-zna-fazu
-- **Status:** planned
+- **Status:** done
 - **Created:** 2026-08-16
 - **Owner:** Aleksa
 
@@ -163,21 +163,21 @@ tek 4+ nedelje posle deploya.
 
 ## Steps
 
-- [ ] **Faza kao čista funkcija** — `phase.ts` sa `currentPhase(eventDate)` i
+- [x] **Faza kao čista funkcija** — `phase.ts` sa `currentPhase(eventDate)` i
       redom faza; pokriva i prošlo venčanje i prazan datum. _Acceptance:_ tabela
       ulaz→faza prolazi za 12+, 9–12, 6–9, 3–6, 1–3, 2 nedelje, dan pre, dan
       venčanja, prošlo, prazno.
-- [ ] **Čeklista otvara tekuću fazu** — `eventDate` prop; prošle faze sklopljene
+- [x] **Čeklista otvara tekuću fazu** — `eventDate` prop; prošle faze sklopljene
       i prigušene, tekuća otvorena i istaknuta, napredak i za fazu i ukupno.
       _Acceptance:_ par sa venčanjem za 3 meseca otvara „1–3 meseca pre", ne „12+".
-- [ ] **Propušteno + prebacivanje** — nezavršene stavke u prošlim fazama u
+- [x] **Propušteno + prebacivanje** — nezavršene stavke u prošlim fazama u
       prigušenoj crvenkasto-roze; dugme na grupi i na stavci; `movedFrom` upisan.
       _Acceptance:_ klik prebacuje stavku u tekuću fazu, snima, i posle osvežavanja
       stoji tamo sa oznakom porekla.
-- [ ] **Automatsko štikliranje** — `autoKey` na 4 stavke, `autoDone` iz Pregleda,
+- [x] **Automatsko štikliranje** — `autoKey` na 4 stavke, `autoDone` iz Pregleda,
       oznaka „automatski". _Acceptance:_ par sa unetim zvanicama vidi „Napraviti
       okvirnu listu gostiju" kao završeno, a `checklist` u bazi je nepromenjen.
-- [ ] **Budžet iz sidebara + greške pri snimanju** — `budget` van `NAV_ITEMS`,
+- [x] **Budžet iz sidebara + greške pri snimanju** — `budget` van `NAV_ITEMS`,
       ulaz preko Pregleda, `?tab=budget` i dalje radi; `onSave` se čeka i greška
       ide u toast. _Acceptance:_ sidebar ima 6 stavki, `?tab=budget` otvara
       budžet, prekinuta veza pri snimanju daje vidljivu poruku.
