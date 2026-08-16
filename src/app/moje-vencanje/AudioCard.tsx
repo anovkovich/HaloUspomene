@@ -20,7 +20,6 @@ import {
   Lock,
   ExternalLink,
   Phone,
-  Gift,
   X,
   Check,
 } from "lucide-react";

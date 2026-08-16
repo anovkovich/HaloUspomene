@@ -78,11 +78,16 @@ export default function VendorDetailModal({
   const [faviconLoaded, setFaviconLoaded] = useState(false);
   const [faviconError, setFaviconError] = useState(false);
 
-  // Reset favicon state when vendor changes
-  useEffect(() => {
+  // Reset favicon state when the vendor changes. Done during render rather than
+  // in an effect — React's documented way to adjust state on a changed prop.
+  // As an effect it fired after paint, so the new vendor briefly showed the
+  // previous one's favicon state, and it triggered a cascading render.
+  const [prevVendorId, setPrevVendorId] = useState(vendor?.id);
+  if (vendor?.id !== prevVendorId) {
+    setPrevVendorId(vendor?.id);
     setFaviconLoaded(false);
     setFaviconError(false);
-  }, [vendor?.id]);
+  }
 
   // Track a "view" each time the modal opens for a new vendor.
   useEffect(() => {

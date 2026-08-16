@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -79,20 +79,27 @@ export default function VendorDirectory({
     : null;
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Shuffle order: set once, stable across vendor data updates
-  const shuffleOrderRef = useRef<string[] | null>(null);
-  if (shuffleOrderRef.current === null && vendors.length > 0) {
-    shuffleOrderRef.current = shuffle(vendors.map((v) => v.id));
-  }
-  // When new vendors are added (not in shuffle order), append them
-  useEffect(() => {
-    if (!shuffleOrderRef.current || vendors.length === 0) return;
-    const existing = new Set(shuffleOrderRef.current);
-    const newIds = vendors.filter((v) => !existing.has(v.id)).map((v) => v.id);
-    if (newIds.length > 0) {
-      shuffleOrderRef.current = [...shuffleOrderRef.current, ...shuffle(newIds)];
+  // Shuffle order: set once from the first non-empty vendor list, then stable
+  // across data updates so the catalogue never reshuffles under the reader.
+  //
+  // Held in state and seeded during render, not in a ref. A ref written while
+  // rendering is invisible to React, so nothing guarantees a re-render once it
+  // is filled; setting state during render is React's documented escape hatch
+  // for exactly this and re-runs the component before anything is painted, so
+  // there is no flash of unshuffled order.
+  const [shuffleOrder, setShuffleOrder] = useState<string[] | null>(null);
+  if (vendors.length > 0) {
+    if (shuffleOrder === null) {
+      setShuffleOrder(shuffle(vendors.map((v) => v.id)));
+    } else {
+      // Vendors that appeared after the order was fixed go to the end, so the
+      // part already on screen keeps its positions. Converges immediately: the
+      // next render finds nothing new.
+      const known = new Set(shuffleOrder);
+      const fresh = vendors.filter((v) => !known.has(v.id)).map((v) => v.id);
+      if (fresh.length > 0) setShuffleOrder([...shuffleOrder, ...shuffle(fresh)]);
     }
-  }, [vendors]);
+  }
 
   // Map vendors by ID for fast lookup, apply stable shuffle order
   const vendorMap = useMemo(() => {
@@ -102,11 +109,11 @@ export default function VendorDirectory({
   }, [vendors]);
 
   const shuffledVendors = useMemo(() => {
-    if (!shuffleOrderRef.current) return vendors;
-    return shuffleOrderRef.current
+    if (!shuffleOrder) return vendors;
+    return shuffleOrder
       .map((id) => vendorMap.get(id))
       .filter(Boolean) as Vendor[];
-  }, [vendorMap]);
+  }, [vendorMap, shuffleOrder, vendors]);
 
   const debouncedSave = useCallback((updated: string[]) => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -135,9 +142,11 @@ export default function VendorDirectory({
     [myEndorsements],
   );
 
-  // Sort order: computed once from initial data, stable across endorsement changes
-  const sortedOrderRef = useRef<string[] | null>(null);
-  if (sortedOrderRef.current === null && shuffledVendors.length > 0) {
+  // Sort order: computed once from initial data, then frozen — endorsing a
+  // vendor must not make the list jump under the finger that just tapped it.
+  // Same state-during-render pattern as the shuffle above.
+  const [sortedOrder, setSortedOrder] = useState<string[] | null>(null);
+  if (sortedOrder === null && shuffledVendors.length > 0) {
     const hl = shuffledVendors.filter((v) => highlightedSet.has(v.id));
     const rest = shuffledVendors.filter((v) => !highlightedSet.has(v.id));
     const endorsed = rest
@@ -145,11 +154,11 @@ export default function VendorDirectory({
       .sort((a, b) => (b.endorsementCount ?? 0) - (a.endorsementCount ?? 0));
     const withBio = rest.filter((v) => (v.endorsementCount ?? 0) === 0 && v.bio);
     const noBio = rest.filter((v) => (v.endorsementCount ?? 0) === 0 && !v.bio);
-    sortedOrderRef.current = [...hl, ...endorsed, ...withBio, ...noBio].map((v) => v.id);
+    setSortedOrder([...hl, ...endorsed, ...withBio, ...noBio].map((v) => v.id));
   }
 
   const filtered = useMemo(() => {
-    if (!sortedOrderRef.current) return [];
+    if (!sortedOrder) return [];
 
     // Apply filters to the stable sorted order
     const categoryMatch = selectedCategory
@@ -165,13 +174,13 @@ export default function VendorDirectory({
         })()
       : () => true;
 
-    return sortedOrderRef.current
+    return sortedOrder
       .map((id) => vendorMap.get(id))
       .filter(
         (v): v is Vendor =>
           !!v && categoryMatch(v) && cityMatch(v) && searchMatch(v),
       );
-  }, [selectedCategory, selectedCity, search, vendorMap]);
+  }, [selectedCategory, selectedCity, search, vendorMap, sortedOrder]);
 
   const favoriteVendors = useMemo(
     () =>

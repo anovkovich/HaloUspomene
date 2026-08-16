@@ -173,6 +173,7 @@ export default function OverviewCard({
         setAudioStats(result.audioStats);
         setPaidForRaspored(result.paidForRaspored);
         setPaidForGallery(result.paidForGallery);
+        setHasSeatingLayout(result.hasSeatingLayout);
       }
       setLoading(false);
     });
@@ -215,6 +216,67 @@ export default function OverviewCard({
     a.download = `gde-sedim-${coupleInfo.slug}.png`;
     a.click();
   }, [coupleInfo.slug]);
+
+  /**
+   * „Gde sedim" materijali imaju smisla tek kad u alatu za raspored postoji
+   * bar jedan sto — inače QR vodi gosta na stranicu koja nikoga ne nalazi.
+   * Zato oba formata (PNG i pano) prolaze kroz istu proveru; kada rasporeda
+   * nema, umesto preuzimanja se otvara ekran koji šalje par u alat.
+   */
+  const withSeatingLayout = useCallback(
+    (run: () => void) => {
+      if (!paidForRaspored) {
+        toast("Raspored sedenja nije aktiviran");
+        return;
+      }
+      if (!hasSeatingLayout) {
+        setSeatingSheet("empty");
+        return;
+      }
+      run();
+    },
+    [paidForRaspored, hasSeatingLayout],
+  );
+
+  /** Jedan B1 pano — isti fajl koji nudi i alat za raspored, samo bez ulaska
+   *  u njega. Podaci se čitaju serverski, da klijent ne diktira imena i temu. */
+  const handleDownloadPano = useCallback(
+    async (variant: "poster" | "arch") => {
+      if (panoBusy) return;
+      setPanoBusy(variant);
+      try {
+        const result = await getWeddingDataForPDF();
+        if (!result) {
+          toast.error("Greška pri učitavanju podataka. Pokušajte ponovo.");
+          return;
+        }
+        const { weddingData: w, slug } = result;
+        const { generateWelcomePDF } = await import(
+          "@/app/pozivnica/[slug]/raspored-sedenja/generateWelcomePDF"
+        );
+        await generateWelcomePDF({
+          slug,
+          coupleDisplay: w.couple_names.full_display,
+          theme: w.theme,
+          scriptFont: w.scriptFont,
+          useCyrillic: w.useCyrillic ?? false,
+          brideName: w.couple_names.bride,
+          groomName: w.couple_names.groom,
+          panoCyrillic: w.pano_cyrillic ?? false,
+          panoScriptFont: w.pano_script_font,
+          panoBrideName: w.pano_bride_name,
+          panoGroomName: w.pano_groom_name,
+          variant,
+        });
+        setSeatingSheet(null);
+      } catch {
+        toast.error("Greška pri pravljenju panoa. Pokušajte ponovo.");
+      } finally {
+        setPanoBusy(null);
+      }
+    },
+    [panoBusy],
+  );
 
   const handleDownloadRsvpQR = useCallback(async () => {
     const QRCode = await import("qrcode");
@@ -961,14 +1023,15 @@ export default function OverviewCard({
               <PrintCard
                 title="QR — Gde sedim"
                 sub="Gosti pronalaze svoje mesto."
-                formats={["PNG"]}
+                formats={["PNG", "Pano dizajn"]}
+                formatActions={{
+                  PNG: () => withSeatingLayout(handleDownloadSeatQR),
+                  "Pano dizajn": () =>
+                    withSeatingLayout(() => setSeatingSheet("pano")),
+                }}
                 locked={!paidForRaspored}
                 lockLabel="Uz raspored sedenja"
-                onClick={() =>
-                  paidForRaspored
-                    ? handleDownloadSeatQR()
-                    : toast("Raspored sedenja nije aktiviran")
-                }
+                onClick={() => withSeatingLayout(handleDownloadSeatQR)}
               />
               <PrintCard
                 title="QR za galeriju"
@@ -1139,6 +1202,79 @@ export default function OverviewCard({
               <Download size={15} />
               {pdfDownloading ? "Generisanje..." : "Preuzmi PDF"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* „Gde sedim" materijali — birač dizajna panoa, ili poruka da rasporeda
+          još nema. Isti okvir kao dijalog iznad, samo drugi sadržaj. */}
+      {seatingSheet && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4"
+          onClick={() => !panoBusy && setSeatingSheet(null)}
+        >
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
+            <button
+              onClick={() => setSeatingSheet(null)}
+              disabled={!!panoBusy}
+              className="absolute top-4 right-4 text-[#232323]/60 hover:text-[#232323] transition-colors cursor-pointer disabled:opacity-40"
+            >
+              <X size={18} />
+            </button>
+
+            {seatingSheet === "empty" ? (
+              <>
+                <h3 className="font-serif text-xl text-[#232323] mb-1">
+                  Prvo napravite raspored sedenja
+                </h3>
+                <p className="text-sm text-[#232323]/65 mb-5 leading-relaxed">
+                  U alatu za raspored još nema nijednog sačuvanog stola. Dok ga
+                  ne bude, gost koji skenira QR kod otvara praznu stranicu —
+                  nema gde da pronađe svoje mesto.
+                </p>
+                <Link
+                  href={`/pozivnica/${coupleInfo.slug}/raspored-sedenja`}
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#AE343F] text-white text-sm font-semibold shadow-[0_6px_16px_-6px_rgba(174,52,63,0.5)] hover:bg-[#962d36] transition-colors"
+                >
+                  Otvori raspored sedenja
+                  <ArrowRight size={15} />
+                </Link>
+              </>
+            ) : (
+              <>
+                <h3 className="font-serif text-xl text-[#232323] mb-1">
+                  Pano dobrodošlice
+                </h3>
+                <p className="text-xs text-[#232323]/55 mb-5">
+                  Format B1, sa vašim imenima i QR kodom za „Gde sedim&ldquo;.
+                  Izaberite dizajn.
+                </p>
+                <div className="space-y-2">
+                  {[
+                    { variant: "poster" as const, label: "Dizajn 1 — klasik" },
+                    { variant: "arch" as const, label: "Dizajn 2 — sa lukom" },
+                  ].map(({ variant, label }) => (
+                    <button
+                      key={variant}
+                      onClick={() => handleDownloadPano(variant)}
+                      disabled={!!panoBusy}
+                      className="flex items-center justify-between gap-3 w-full px-4 py-3 rounded-xl border border-[#232323]/15 text-left hover:border-[#AE343F]/50 hover:bg-[#AE343F]/[0.04] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+                    >
+                      <span className="text-sm font-medium text-[#232323]">
+                        {label}
+                      </span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#232323]/55 shrink-0">
+                        {panoBusy === variant ? "Pripremam..." : "PDF"}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

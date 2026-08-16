@@ -110,7 +110,7 @@ export default function GalleryCard({
     }
     setLoadingMore(false);
     loadingRef.current = false;
-  }, [photos.length, total]);
+  }, [photos.length, total, loadAction]);
 
   // Auto-load next batch when the sentinel scrolls into view.
   const sentinelRef = useRef<HTMLDivElement | null>(null);
