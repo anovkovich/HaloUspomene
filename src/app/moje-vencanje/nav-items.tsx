@@ -1,6 +1,5 @@
 import {
   CheckCircle2,
-  Wallet,
   Star,
   Users,
   Mic,
@@ -25,10 +24,19 @@ export interface NavItem {
   icon: React.ReactNode;
 }
 
+/**
+ * Sidebar entries.
+ *
+ * `budget` is deliberately absent. Measured 2026-08-16: of 15 upcoming weddings
+ * the checklist is used by 8 (53%) but the budget by 3 (20%), usually a couple
+ * of categories. A dead entry in a short sidebar spends attention that the live
+ * features need. The view itself is untouched — the Pregled tile opens it and
+ * `?tab=budget` still resolves, so existing links keep working. Restoring it is
+ * one line.
+ */
 export const NAV_ITEMS: NavItem[] = [
   { view: "overview", label: "Pregled", icon: <Home size={18} /> },
   { view: "checklist", label: "Checklista", icon: <CheckCircle2 size={18} /> },
-  { view: "budget", label: "Budžet", icon: <Wallet size={18} /> },
   { view: "vendors", label: "Vendori", icon: <Star size={18} /> },
   { view: "audio", label: "Audio knjiga", icon: <Mic size={18} /> },
   { view: "galerija", label: "Galerija", icon: <Images size={18} /> },

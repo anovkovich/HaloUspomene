@@ -94,10 +94,32 @@ export async function loadPortalDataAction() {
   // The one place that may stamp `lastSeenAt`: the slug comes from a verified
   // JWT claim, so this is provably the couple opening their own planner.
   const data = await dbLoadPortal(slug, { touch: true });
+
+  // Checklist items the platform can vouch for, so the couple opens a list that
+  // is already partly alive instead of a blank form. Returned here rather than
+  // fetched separately because this action is the one the shell always calls —
+  // including on a `?tab=checklist` deep link, where Overview never mounts.
+  const autoDone: Record<string, boolean> = {};
+  try {
+    autoDone.guest_list = (data.guestList?.invitees ?? []).length > 0;
+    const [couple, responses] = await Promise.all([
+      getWeddingData(slug),
+      getRSVPResponses(slug),
+    ]);
+    autoDone.rsvp = responses.length > 0;
+    autoDone.audio = couple?.paid_for_audio === true;
+    // A proxy: owning the tool, not having finished a layout. Good enough —
+    // a couple who bought it has dealt with that line on their list.
+    autoDone.seating = couple?.paid_for_raspored === true;
+  } catch {
+    // Signals are a nicety; the planner must load without them.
+  }
+
   return {
     checklist: data.checklist,
     budget: data.budget,
     vendorFavorites: data.vendorFavorites ?? [],
+    autoDone,
   };
 }
 
@@ -564,6 +586,10 @@ export async function loadOverviewAction(): Promise<{
   audioStats: { count: number; totalDurationMs: number; paidForAudio: boolean };
   paidForRaspored: boolean;
   paidForGallery: boolean;
+  /** Je li u alatu za raspored išta sačuvano — bez toga „Gde sedim" materijali
+   *  vode gosta na praznu stranicu, pa ih Pregled nudi tek kad ima šta da nađe.
+   *  Čita se samo za par koji je raspored i platio. */
+  hasSeatingLayout: boolean;
 } | null> {
   const slug = await getAuthSlug();
   if (!slug) return null;
@@ -610,12 +636,23 @@ export async function loadOverviewAction(): Promise<{
     } catch { /* ignore */ }
   }
 
+  // Seating — samo postojanje sačuvanih stolova, ne i raspored gostiju.
+  let hasSeatingLayout = false;
+  if (data.paid_for_raspored) {
+    try {
+      const { loadSeatingLayout } = await import("@/lib/seating");
+      const tables = await loadSeatingLayout(slug);
+      hasSeatingLayout = !!tables && tables.length > 0;
+    } catch { /* ignore */ }
+  }
+
   return {
     slug,
     guestStats,
     audioStats,
     paidForRaspored: data.paid_for_raspored ?? false,
     paidForGallery: data.paid_for_gallery ?? false,
+    hasSeatingLayout,
   };
 }
 

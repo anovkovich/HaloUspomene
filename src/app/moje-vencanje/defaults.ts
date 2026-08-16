@@ -5,6 +5,23 @@ function id() {
   return `default-${++counter}`;
 }
 
+/**
+ * Default items the platform can tick on the couple's behalf, keyed by their
+ * exact text.
+ *
+ * The text IS the key on purpose: saved checklists in the wild range from 26 to
+ * 65 items because the default list was trimmed over time (63 items on 26
+ * couples, 38 on 6), so `default-7` means different things to different
+ * couples. Text is the only stable identity across those generations, and it
+ * also lets records saved before `autoKey` existed be matched with no migration.
+ */
+export const AUTO_KEY_BY_TEXT: Record<string, string> = {
+  "Napraviti okvirnu listu gostiju": "guest_list",
+  "Pratiti potvrde dolaska": "rsvp",
+  "Rezervisati Audio Guest Book (halouspomene.rs)": "audio",
+  "Napraviti raspored sedenja": "seating",
+};
+
 function items(
   group: ChecklistGroup,
   texts: string[]
@@ -15,6 +32,7 @@ function items(
     completed: false,
     isCustom: false,
     group,
+    ...(AUTO_KEY_BY_TEXT[text] ? { autoKey: AUTO_KEY_BY_TEXT[text] } : {}),
   }));
 }
 

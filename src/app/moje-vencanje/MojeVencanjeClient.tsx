@@ -19,6 +19,7 @@ import {
   X,
   Store,
   Lock,
+  ChevronLeft,
 } from "lucide-react";
 import {
   verifyAuth,
@@ -131,6 +132,8 @@ export default function MojeVencanjeClient() {
 
   // Portal data
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+  /** Checklist items the platform can tick for the couple, keyed by `autoKey`. */
+  const [autoDone, setAutoDone] = useState<Record<string, boolean>>({});
   const [budget, setBudget] = useState<PortalBudget>({
     totalBudget: 0,
     categories: [],
@@ -198,6 +201,7 @@ export default function MojeVencanjeClient() {
             setChecklist(data.checklist);
             setBudget(data.budget);
             setVendorFavorites(data.vendorFavorites ?? []);
+            setAutoDone(data.autoDone ?? {});
           }
           setHighlightedVendors(highlighted);
           setDbVendors(vendorData.vendors);
@@ -314,6 +318,7 @@ export default function MojeVencanjeClient() {
           setChecklist(data.checklist);
           setBudget(data.budget);
           setVendorFavorites(data.vendorFavorites ?? []);
+          setAutoDone(data.autoDone ?? {});
         }
         setHighlightedVendors(highlighted);
         setDbVendors(vendorData2.vendors);
@@ -689,6 +694,8 @@ export default function MojeVencanjeClient() {
                       <ChecklistCard
                         checklist={checklist}
                         setChecklist={setChecklist}
+                        eventDate={coupleInfo.eventDate}
+                        autoDone={autoDone}
                       />
                     )}
                     {pwaSubView === "budget" && (
@@ -733,11 +740,24 @@ export default function MojeVencanjeClient() {
                   <ChecklistCard
                     checklist={checklist}
                     setChecklist={setChecklist}
+                    eventDate={coupleInfo?.eventDate}
+                    autoDone={autoDone}
                   />
                 )}
               {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
                 activeView === "budget" && (
-                  <BudgetCard budget={budget} setBudget={setBudget} />
+                  <>
+                    {/* Budget left the sidebar; without a way back the couple
+                        would be stranded on a view nothing links to. */}
+                    <button
+                      onClick={() => setActiveView("overview")}
+                      className="mb-3 flex items-center gap-1.5 text-sm text-[#232323]/60 hover:text-[#AE343F] transition-colors cursor-pointer"
+                    >
+                      <ChevronLeft size={15} />
+                      Nazad na pregled
+                    </button>
+                    <BudgetCard budget={budget} setBudget={setBudget} />
+                  </>
                 )}
               {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
                 activeView === "vendors" && (

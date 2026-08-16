@@ -73,6 +73,31 @@ crta se kao završena, sa oznakom „automatski". `checklist` u bazi se **ne
 menja** — inače bi par koji odveže listu zvanica „izgubio" štikliranu stavku, a
 mi bismo prepisali njegov unos.
 
+### Odluke vlasnika iz upitnika (16.08.2026)
+
+**Prošla faza sa propuštenim se otvara sama, ali prikazuje SAMO nezavršene
+stavke.** Delimično otvoreno stanje — bolje od obe ponuđene mogućnosti:
+propušteno se ne može prevideti, a ekran ne postaje spisak grehova. Završene
+stavke u toj fazi ostaju skrivene iza „Prikaži sve (5)". Prošla faza **bez**
+propuštenog ostaje sklopljena.
+
+**Klik na automatski štikliranu stavku je odjavljuje i predaje paru.** Upisuje
+se `completed: false` **i `autoDismissed: true`**; oznaka „automatski" nestaje i
+sistem tu stavku **više nikad ne dira**, čak i dok signal traje. Bez trajne
+oznake automatika bi je vratila na sledećem učitavanju i par ne bi mogao da je
+ospori — a poslednja reč nad sopstvenom listom mora da ostane njegova.
+
+**Sažetak propuštenog stoji iznad trake napretka**, jedan red: „3 propuštene
+stavke iz ranijih faza" + dugme „Prebaci sve u trenutnu fazu". Vidi se pre nego
+što se bilo šta skroluje.
+
+**Budžet sa Pregleda vodi na zaseban ekran**, ne razvija se u mestu. Pločica
+„Budžet →" prelazi na `?tab=budget`, gde stoji „← Nazad na pregled". Puna
+stranica ostaje puna stranica; menja se samo odakle se do nje stiže.
+
+**Grupno prebacivanje traži potvrdu** (`ConfirmDialog`) — odobreno; grupna
+izmena podataka ne sme da se desi na jedan klik.
+
 **Vezivanje ide preko novog `autoKey`, nikad preko `id`.** Podrazumevani id-ovi
 su `default-1..N` iz brojača koji se resetuje, a u bazi postoje čekliste od 26
 do 65 stavki (63 kod 26 parova, 38 kod 6, ostalo ručno menjano). Isti `id`

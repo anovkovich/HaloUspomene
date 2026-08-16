@@ -117,6 +117,17 @@ export function inviteeHasAnswer(inv: Invitee): boolean {
   return inv.status === "confirmed" || !!inv.linkedRsvpId;
 }
 
+/**
+ * Da li je odgovor zvanice već poznat paru — šire od `inviteeHasAnswer`.
+ * „Otkazao" upisan tačkicom statusa je planski status: ne pravi red u
+ * potvrdama, pa `inviteeHasAnswer` s pravom vraća `false` (tačkica sme dalje
+ * da se cikliše, dugme „Odgovor gosta" ostaje). Ali par takvu zvanicu smatra
+ * odgovorenom, pa ne sme da stoji među onima od kojih se odgovor tek čeka.
+ */
+function inviteeAnswerKnown(inv: Invitee): boolean {
+  return inviteeHasAnswer(inv) || inv.status === "declined";
+}
+
 // Normalize for fuzzy name matching: lowercase, strip diacritics, collapse spaces.
 function normalizeName(s: string): string {
   return s
@@ -608,8 +619,10 @@ function RolePickerModal({
  * "Ko vam se javio?" — search the whole guest list and jump straight into the
  * answer dialog for that zvanica. Opened by the Pregled shortcut so a couple
  * that just got a phone call doesn't have to hunt the person down in the list.
- * Zvanice bez odgovora idu prve; one koje su već odgovorile ostaju dostupne
- * (predomislile su se), samo prigušene i sa oznakom šta je upisano.
+ * Zvanice bez odgovora idu prve; one čiji je odgovor već poznat ostaju
+ * dostupne (predomislile su se), samo prigušene i sa oznakom šta je upisano.
+ * „Poznat odgovor" uključuje i „Otkazao" upisan tačkicom statusa, koji nema
+ * svoj red u potvrdama — v. `inviteeAnswerKnown`.
  */
 export function AnswerPickerModal({
   invitees,
@@ -639,8 +652,8 @@ export function AnswerPickerModal({
       // Stable sort: unanswered first, original order preserved within groups.
       .sort(
         (a, b) =>
-          Number(inviteeHasAnswer(a.inv)) - Number(inviteeHasAnswer(b.inv)) ||
-          a.i - b.i,
+          Number(inviteeAnswerKnown(a.inv)) -
+            Number(inviteeAnswerKnown(b.inv)) || a.i - b.i,
       )
       .map((e) => e.inv)
       .slice(0, 60);
@@ -696,7 +709,7 @@ export function AnswerPickerModal({
             </p>
           )}
           {matches.map((inv) => {
-            const answered = inviteeHasAnswer(inv);
+            const answered = inviteeAnswerKnown(inv);
             return (
               <button
                 key={inv.id}

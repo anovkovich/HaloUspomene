@@ -20,10 +20,14 @@ function uid(prefix: string): string {
  * skakanja u tab Gosti. Namerno NE dira „Listu zvanica": ona se otvara samo
  * kad par tamo ode sam.
  *
- * Nudi samo zvanice BEZ odgovora (plus dodavanje one koju su zaboravili da
- * upišu). Izmena već upisanog odgovora ostaje u Listi zvanica, gde stoje i
+ * Nudi samo zvanice bez prave potvrde (plus dodavanje one koju su zaboravili
+ * da upišu). Izmena već upisanog odgovora ostaje u Listi zvanica, gde stoje i
  * prave potvrde koje su za to potrebne — tako ovaj ekran ne mora da učitava
  * `rsvp_responses`.
+ *
+ * Zvanica označena kao „otkazao" tačkicom statusa nema red u potvrdama, pa
+ * prolazi kroz filter — ali je picker prigušuje i spušta na dno, da ne stoji
+ * među onima od kojih se odgovor tek čeka.
  */
 export default function QuickAnswerModal({
   draft,

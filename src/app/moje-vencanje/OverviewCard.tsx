@@ -152,6 +152,10 @@ export default function OverviewCard({
   const [extending, setExtending] = useState(false);
   const [paidForRaspored, setPaidForRaspored] = useState(false);
   const [paidForGallery, setPaidForGallery] = useState(false);
+  const [hasSeatingLayout, setHasSeatingLayout] = useState(false);
+  /** Otvoren birač dizajna panoa, ili prazan ekran „prvo napravite raspored". */
+  const [seatingSheet, setSeatingSheet] = useState<"pano" | "empty" | null>(null);
+  const [panoBusy, setPanoBusy] = useState<string | null>(null);
   const [pdfModal, setPdfModal] = useState<{
     weddingData: WeddingData;
     slug: string;

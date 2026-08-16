@@ -17,6 +17,19 @@ export interface ChecklistItem {
   completed: boolean;
   isCustom: boolean;
   group: ChecklistGroup;
+  /** Ties a default item to a platform signal that can tick it automatically.
+   *  Never match on `id`: defaults are numbered `default-N` by a counter that
+   *  resets, and saved checklists in the wild range from 26 to 65 items, so the
+   *  same id on two couples is NOT the same task. Older records have no
+   *  `autoKey` at all and are matched by exact text instead. */
+  autoKey?: string;
+  /** Set when the couple unticks an automatically-ticked item. From then on the
+   *  item is theirs and the signal never touches it again — without this the
+   *  auto-tick would return on the next load and they could never overrule it. */
+  autoDismissed?: boolean;
+  /** Original phase of an item the couple moved into their current one, so the
+   *  move stays legible and reversible. */
+  movedFrom?: ChecklistGroup;
 }
 
 export interface BudgetCategory {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from "react";
+import { toast } from "sonner";
 import { Plus, Trash2, Banknote, Euro } from "lucide-react";
 import { saveBudgetAction } from "./actions";
 import type { PortalBudget, BudgetCategory } from "./types";
@@ -40,7 +41,16 @@ export default function BudgetCard({
     (updated: PortalBudget) => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(() => {
-        onSave(updated);
+        // `{ error }` from a dead session used to be discarded silently, so an
+        // expired login threw away edits without a word.
+        Promise.resolve(onSave(updated))
+          .then((res) => {
+            const err = (res as { error?: string } | undefined)?.error;
+            if (err) toast.error(err);
+          })
+          .catch(() =>
+            toast.error("Izmena nije sačuvana. Proverite internet vezu."),
+          );
       }, 300);
     },
     [onSave],
