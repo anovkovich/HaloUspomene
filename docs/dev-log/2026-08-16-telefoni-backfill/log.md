@@ -84,3 +84,46 @@ Vlasnik je predlozio da se to isplanira kao posao. Provereno — postoji:
 Provera je serverska, ne samo u pregledacu, pa se ne moze zaobici. Zapisi bez
 broja poticu iskljucivo od pre uvodjenja te verifikacije (`aleksandra-miljan`,
 26.04.). Nov posao nije potreban.
+
+## 2026-08-16 — Ispravka: `aleksandra-miljan` nije zrtva bag-a, broj nikad nije ni unet
+
+- **Sta je uradjeno:** utvrdjen tacan uzrok za jedini preostali draft bez broja.
+  Nista nije menjano.
+- **Commit / PR:** —
+- **Na sta utice dalje:** zatvara nadu da se njihov broj moze naci u inboksu.
+  Jedini kanal ka njima je Instagram DM na `@aleksandra.vsc`, rucno.
+- **Blokade / sledeci korak:** vlasnikova odluka da li da im pise. Vencanje je
+  07.08.2027, dakle bez hitnosti.
+
+### Nalaz
+
+Ovaj par NIJE prosao kroz `/api/pozivnica/create` (ruta koja je gubila telefon),
+nego kroz **quick-register** na `/planiranje-vencanja` — dokaz je polje
+`contact_instagram`, koje upisuje iskljucivo `planiranje-vencanja/actions.ts:125`.
+
+Ta ruta je `contact_phone` upisivala **ispravno od prvog dana** (`fc64d74`,
+24.03.2026). Bug iz `/api/pozivnica/create` je nikad nije doticao.
+
+Pravi uzrok je u verziji pre `7736fec`, linija 65:
+
+```js
+if (!phone && !instagram)   // trazilo je JEDNO OD DVA, ne oba
+```
+
+Forma je prihvatala **telefon ILI Instagram**. Oni su dali Instagram i ostavili
+telefon prazan, pa u zapisu stoji `contact_phone: ""` — nije izgubljen, nego
+nikad nije ni postojao. Web3Forms mejl ga zato takodje nema.
+
+Kontrolna grupa potvrdjuje: `milica-uros` (31.03) i `natasa-zlatko-2` (06.04) su
+prosli kroz **istu formu u istom periodu** i imaju i Instagram i broj — jer su
+broj otkucali.
+
+Od `7736fec` (28.04.2026) telefon je obavezan i Infobip-verifikovan, pa se ovo
+vise ne moze ponoviti. `aleksandra-miljan` je jedini takav zapis medju
+predstojecim vencanjima.
+
+### Ranija formulacija koju ovo precizira
+
+Prethodni unos je sve zapise bez broja pripisao create-ruti. Tacnije je: dva
+odvojena uzroka, oba zatvorena istog dana istim commit-om — ruta koja je broj
+odbacivala, i forma koja ga nije trazila.
