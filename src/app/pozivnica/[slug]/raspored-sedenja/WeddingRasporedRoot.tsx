@@ -1,6 +1,7 @@
 "use client";
 
 import type { RSVPEntry } from "@/lib/rsvp";
+import type { GuestGroup } from "@/lib/seating/guest-groups";
 import type { ScriptFontType, ThemeType } from "../types";
 import RasporedClient from "@/lib/seating/editor/RasporedClient";
 import { saveRaspored, loadRaspored, checkPaidStatus } from "./actions";
@@ -8,6 +9,9 @@ import { generateWelcomePDF } from "./generateWelcomePDF";
 
 interface Props {
   attending: RSVPEntry[];
+  /** Celine iz Liste zvanica — dodatni filter u bočnoj traci sa gostima. */
+  guestGroups?: GuestGroup[];
+  guestGroupByGuestId?: Record<string, string>;
   slug: string;
   coupleNames: string;
   paidForRaspored: boolean;
@@ -28,6 +32,8 @@ interface Props {
 
 export default function WeddingRasporedRoot({
   attending,
+  guestGroups,
+  guestGroupByGuestId,
   slug,
   coupleNames,
   paidForRaspored,
@@ -44,6 +50,8 @@ export default function WeddingRasporedRoot({
   return (
     <RasporedClient
       attending={attending}
+      guestGroups={guestGroups}
+      guestGroupByGuestId={guestGroupByGuestId}
       slug={slug}
       coupleNames={coupleNames}
       paidForRaspored={paidForRaspored}

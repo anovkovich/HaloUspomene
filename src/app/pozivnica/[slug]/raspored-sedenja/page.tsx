@@ -4,6 +4,8 @@ export const dynamicParams = true;
 import { notFound } from "next/navigation";
 import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import { getRSVPResponses } from "@/lib/rsvp";
+import { getGuestList } from "@/lib/portal";
+import { buildGuestGroups } from "@/lib/seating/guest-groups";
 import { getThemeCSSVariables } from "../constants";
 import WeddingRasporedRoot from "./WeddingRasporedRoot";
 
@@ -45,6 +47,20 @@ export default async function RasporedSedenja({ params }: PageProps) {
   }
 
   const attending = responses.filter((r) => r.attending === "Da");
+
+  // Celine iz Liste zvanica postaju dodatni filter u bočnoj traci. Ako par
+  // nema listu (ili nijedna celina nema potvrđenog gosta) — prazno, pa se u
+  // dropdownu ne pojavljuje ništa novo.
+  let guestGroups: import("@/lib/seating/guest-groups").GuestGroupIndex = {
+    groups: [],
+    groupByGuestId: {},
+  };
+  try {
+    guestGroups = buildGuestGroups(await getGuestList(slug), attending);
+  } catch {
+    // planer nije obavezan za raspored — tiho preskoči
+  }
+
   const cssVars = getThemeCSSVariables(weddingData.theme, weddingData.scriptFont);
 
   const editorVars: React.CSSProperties = {
@@ -59,6 +75,8 @@ export default async function RasporedSedenja({ params }: PageProps) {
     <div style={editorVars}>
       <WeddingRasporedRoot
         attending={attending}
+        guestGroups={guestGroups.groups}
+        guestGroupByGuestId={guestGroups.groupByGuestId}
         slug={slug}
         coupleNames={weddingData.couple_names.full_display}
         paidForRaspored={weddingData.paid_for_raspored ?? false}

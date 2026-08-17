@@ -38,8 +38,10 @@ import {
   Sparkles,
   Pencil,
   LayoutDashboard,
+  Monitor,
 } from "lucide-react";
 import GuestSidebar, { guestMatchesFilter } from "./GuestSidebar";
+import type { GuestGroup } from "@/lib/seating/guest-groups";
 import MemberNamesModal from "./MemberNamesModal";
 import TableNode from "./TableNode";
 import Toolbar from "./Toolbar";
@@ -115,6 +117,11 @@ interface Props {
   /** When true, the add panel offers "Učitaj šemu sale" — the venue scheme
    *  library. Desktop only; the mobile card list has no entry point. */
   enableHallSchemes?: boolean;
+  /** Celine from the couple's Lista zvanica, offered as extra guest filters
+   *  below the category options. Only the wedding flow has an invitee list. */
+  guestGroups?: GuestGroup[];
+  /** rsvp id -> celina id, for those same celine. */
+  guestGroupByGuestId?: Record<string, string>;
 }
 
 function createTable(
@@ -153,6 +160,8 @@ export default function RasporedClient({
   onDownloadRsvpQR,
   templateMode = false,
   enableHallSchemes = false,
+  guestGroups,
+  guestGroupByGuestId,
 }: Props) {
   const saveRaspored = actions.save;
   const loadRaspored = actions.load;
@@ -642,7 +651,10 @@ export default function RasporedClient({
         // Advance only within the currently visible (filtered/searched) list.
         const next = attending.find((g) => {
           if (g.id === selectedGuest.id) return false;
-          if (!guestMatchesFilter(g, guestFilter, guestSearch)) return false;
+          if (
+            !guestMatchesFilter(g, guestFilter, guestSearch, guestGroupByGuestId)
+          )
+            return false;
           const gTotal = parseInt(g.guestCount) || 1;
           return (assignedCounts[g.id] || 0) < gTotal;
         });
@@ -1124,6 +1136,38 @@ export default function RasporedClient({
           </div>
         </div>
 
+        {/* ── "Prva pomoć" traka ──
+            Telefon nema bočnu traku, filtere ni platno — služi za sitne popravke
+            na licu mesta. Traka stoji uvek (nema zatvaranja), da par ne pomisli
+            da je ovo ceo alat i ne odustane od rasporeda na pola. */}
+        <div
+          className="shrink-0 flex items-start gap-2 px-4 py-2"
+          style={{
+            backgroundColor: "color-mix(in srgb, var(--theme-primary) 12%, var(--theme-surface))",
+            borderBottom: "1px solid var(--theme-border-light)",
+          }}
+        >
+          <Monitor
+            size={14}
+            className="shrink-0 mt-0.5"
+            style={{ color: "var(--theme-primary)" }}
+          />
+          <p
+            className="font-raleway text-[11px] leading-snug"
+            style={{ color: "var(--theme-text)" }}
+          >
+            <span className="font-bold uppercase tracking-wide">
+              Verzija za prvu pomoć
+            </span>
+            <br />
+            <span style={{ color: "var(--theme-text-light)" }}>
+              Na telefonu menjate stolove i mesta u hodu. Za pun alat — crtanje
+              sale, pomeranje stolova i pregled cele šeme — otvorite raspored na
+              računaru.
+            </span>
+          </p>
+        </div>
+
         {/* ── Scrollable table cards ── */}
         <div
           className="flex-1 overflow-y-auto px-4 py-4"
@@ -1442,6 +1486,8 @@ export default function RasporedClient({
           onFilterChange={setGuestFilter}
           search={guestSearch}
           onSearchChange={setGuestSearch}
+          groups={guestGroups}
+          groupByGuestId={guestGroupByGuestId}
         />
       )}
 
@@ -1809,6 +1855,8 @@ export default function RasporedClient({
                   onFilterChange={setGuestFilter}
                   search={guestSearch}
                   onSearchChange={setGuestSearch}
+                  groups={guestGroups}
+                  groupByGuestId={guestGroupByGuestId}
                 />
               </div>
             </div>

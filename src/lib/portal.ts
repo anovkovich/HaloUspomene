@@ -45,6 +45,17 @@ export async function loadPortalData(
   return doc!;
 }
 
+/**
+ * Guest list alone, read-only. Unlike `loadPortalData` this does NOT upsert —
+ * surfaces that only *read* the list (seating editor) must not create a portal
+ * document for a couple who never opened the planner.
+ */
+export async function getGuestList(slug: string): Promise<GuestList | null> {
+  const c = await col();
+  const doc = await c.findOne({ slug }, { projection: { guestList: 1 } });
+  return doc?.guestList ?? null;
+}
+
 export async function saveChecklist(
   slug: string,
   checklist: ChecklistItem[]

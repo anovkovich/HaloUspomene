@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, X, RotateCcw, Pencil, Users, LayoutDashboard } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
+import type { GuestGroup } from "@/lib/seating/guest-groups";
 
 // Wedding category values are stored without diacritics in the DB ("Mladozenjini"),
 // but displayed with them ("Mladoženjini"). This map only enriches labels for the
@@ -14,14 +15,24 @@ const WEDDING_CATEGORY_LABELS: Record<string, string> = {
   Zajednicki: "Zajednički",
 };
 
+/** Filter values that select a celina from the couple's Lista zvanica carry
+ *  this prefix, so they can never collide with a free-text category value.
+ *  The bare prefix means "Bez celine". */
+export const GROUP_FILTER_PREFIX = "celina:";
+
 /** Whether a guest passes the sidebar's category + search filter. Exported so
  *  the editor's auto-advance picks the next guest from the *visible* list. */
 export function guestMatchesFilter(
   g: RSVPEntry,
   filter: string,
   search: string,
+  groupByGuestId?: Record<string, string>,
 ): boolean {
-  if (filter === "Nekategorisani") {
+  if (filter.startsWith(GROUP_FILTER_PREFIX)) {
+    const wanted = filter.slice(GROUP_FILTER_PREFIX.length);
+    const actual = groupByGuestId?.[g.id] ?? "";
+    if (actual !== wanted) return false;
+  } else if (filter === "Nekategorisani") {
     if (g.category) return false;
   } else if (filter) {
     if (g.category !== filter) return false;
@@ -56,6 +67,11 @@ interface Props {
   /** Name search — controlled by the parent for the same reason. */
   search: string;
   onSearchChange: (v: string) => void;
+  /** Celine from the couple's Lista zvanica, appended to the filter dropdown
+   *  below a divider. Empty for products that have no invitee list. */
+  groups?: GuestGroup[];
+  /** rsvp id -> celina id, for those same celine. */
+  groupByGuestId?: Record<string, string>;
 }
 
 export default function GuestSidebar({
@@ -72,6 +88,8 @@ export default function GuestSidebar({
   onFilterChange,
   search,
   onSearchChange,
+  groups,
+  groupByGuestId,
 }: Props) {
   const [confirmReset, setConfirmReset] = useState(false);
 
@@ -103,8 +121,15 @@ export default function GuestSidebar({
       : []),
   ];
 
+  // Celine from the Lista zvanica live in their own <optgroup> — a native
+  // divider that keeps them visually apart from the category options above.
+  const groupOptions = groups ?? [];
+  const hasUngrouped =
+    groupOptions.length > 0 &&
+    attending.some((g) => !groupByGuestId?.[g.id]);
+
   const filtered = attending.filter((g) =>
-    guestMatchesFilter(g, filter, search),
+    guestMatchesFilter(g, filter, search, groupByGuestId),
   );
 
   // Unassigned / partially assigned first, fully assigned at bottom
@@ -192,7 +217,7 @@ export default function GuestSidebar({
         className="px-3 py-2 border-b flex flex-col gap-1.5"
         style={{ borderColor: "var(--theme-border-light)" }}
       >
-        {hasCategorizedGuests && (
+        {(hasCategorizedGuests || groupOptions.length > 0) && (
           <select
             value={filter}
             onChange={(e) => onFilterChange(e.target.value)}
@@ -208,6 +233,21 @@ export default function GuestSidebar({
                 {o.label}
               </option>
             ))}
+            {groupOptions.length > 0 && (
+              <optgroup label="── Celine iz liste zvanica ──">
+                {groupOptions.map((s) => (
+                  <option
+                    key={s.id}
+                    value={`${GROUP_FILTER_PREFIX}${s.id}`}
+                  >
+                    {s.name}
+                  </option>
+                ))}
+                {hasUngrouped && (
+                  <option value={GROUP_FILTER_PREFIX}>Bez celine</option>
+                )}
+              </optgroup>
+            )}
           </select>
         )}
         <div className="relative">
