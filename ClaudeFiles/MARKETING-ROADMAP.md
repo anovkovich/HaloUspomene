@@ -17,7 +17,7 @@
 ### Fix placeholder data in code
 - Replace `+381601234567` with real phone in layout.tsx schema + ContactForm.tsx buttons
 - Replace `info@halouspomene.rs` with real email in layout.tsx schema
-- Audit `aggregateRating.reviewCount: "47"` — remove or set to real number
+- ~~Audit `aggregateRating.reviewCount: "47"` — remove or set to real number~~ — DONE 2026-08-17: removed from all five pages (`/telefon-uspomena`, `/pozivnice`, `/planiranje-vencanja`, `/raspored-sedenja`, `/qr-pano-dobrodoslice`). Removed rather than corrected — self-serving ratings never render as stars anyway. Real reviews now display as page content instead.
 
 ### Performance quick wins
 - Convert Hero phone.png to WebP

@@ -19,7 +19,6 @@ import {
   MapPin,
   ChevronDown,
   Smartphone,
-  ScanLine,
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
@@ -244,61 +243,6 @@ function MiniHallMap() {
       ))}
       <circle cx={152} cy={34} r={3.2} fill="#AE343F" />
     </svg>
-  );
-}
-
-const DOT = {
-  confirmed: "#4a8a5c",
-  invited: "#d4af37",
-  none: "#c9c7bc",
-} as const;
-
-function GuestRow({
-  name,
-  count,
-  status,
-}: {
-  name: string;
-  count: string;
-  status: keyof typeof DOT;
-}) {
-  return (
-    <div className="flex items-center justify-between py-2 border-b border-stone-200/70 last:border-0">
-      <div className="flex items-center gap-2.5 min-w-0">
-        <span
-          className="w-2 h-2 rounded-full shrink-0"
-          style={{ background: DOT[status] }}
-        />
-        <span className="text-[13px] text-[#232323]/85 truncate">{name}</span>
-      </div>
-      <span className="text-[11px] font-semibold text-[#232323]/45 tabular-nums">
-        {count}
-      </span>
-    </div>
-  );
-}
-
-function GuestListMock() {
-  return (
-    <div>
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <span className="font-serif text-lg text-[#232323]">Lista zvanica</span>
-        <span className="text-[11px] font-bold text-[#AE343F] whitespace-nowrap">
-          81 zvanica · 196 gostiju
-        </span>
-      </div>
-      <p className="text-[10px] uppercase tracking-[0.15em] text-[#232323]/40 mb-1">
-        Familija — Mladina strana
-      </p>
-      <GuestRow name="Marko Jovanović i Marina" count="2" status="confirmed" />
-      <GuestRow name="Jelena Krstić" count="3" status="confirmed" />
-      <GuestRow name="Sanja Đukić" count="1" status="invited" />
-      <p className="text-[10px] uppercase tracking-[0.15em] text-[#232323]/40 mb-1 mt-4">
-        Kolege s posla
-      </p>
-      <GuestRow name="Nikola Stanković" count="2" status="confirmed" />
-      <GuestRow name="Ana Petrović" count="1" status="none" />
-    </div>
   );
 }
 
@@ -576,12 +520,7 @@ export default async function RasporedSedenjaLanding({
       name: "HALO Uspomene",
       url: siteUrl,
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "5.0",
-      reviewCount: "20",
-      bestRating: "5",
-    },
+    // Namerno bez `aggregateRating` — v. src/data/testimonials.ts.
   };
 
   const faqSchema = {

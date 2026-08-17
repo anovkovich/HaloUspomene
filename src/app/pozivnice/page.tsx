@@ -323,11 +323,7 @@ export default function PozivnicePage() {
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
       },
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "5",
-      reviewCount: "3",
-    },
+    // Namerno bez `aggregateRating` — v. src/data/testimonials.ts.
   };
 
   const faqSchema = {

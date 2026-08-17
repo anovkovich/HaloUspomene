@@ -547,12 +547,7 @@ export default function QRPanoLandingPage() {
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
       },
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "5.0",
-      reviewCount: "20",
-      bestRating: "5",
-    },
+    // Namerno bez `aggregateRating` — v. src/data/testimonials.ts.
   };
 
   const faqSchema = {

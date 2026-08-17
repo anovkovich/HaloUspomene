@@ -217,11 +217,7 @@ export default function TelefonUspomenaPage() {
         merchantReturnDays: 5,
       },
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "5",
-      reviewCount: "3",
-    },
+    // Namerno bez `aggregateRating` — v. src/data/testimonials.ts.
   };
 
   const faqSchema = {
