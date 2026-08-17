@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
+// Sekcija sa utiscima čita Google recenzije iz baze. Bez ovoga stranica bi se
+// statički generisala jednom i nova recenzija se ne bi pojavila do sledećeg
+// deploy-a; sync ide mesečno, pa je dnevno osvežavanje i više nego dovoljno.
+export const revalidate = 86400;
+
 // Izvedeno iz istih pitanja koja se prikazuju, da se tekst i schema ne raziđu.
 const faqSchema = {
   "@context": "https://schema.org",

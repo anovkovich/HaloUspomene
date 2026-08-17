@@ -1,13 +1,15 @@
 /**
- * Serbian Latin → Cyrillic transliteration.
+ * Serbian Latin ↔ Cyrillic transliteration, exact in both directions.
  *
- * The reverse direction already exists in @/lib/seating/lookup.ts, but that one
- * folds names for SEARCH — it is deliberately lossy (ћ and ч both become "c").
- * This one has to be exact, because what it produces gets printed on a B1 board
- * in a wedding foyer.
+ * A lossy variant already exists in @/lib/seating/lookup.ts, but that one folds
+ * names for SEARCH (ћ and ч both become "c"). These two have to be exact: one
+ * output gets printed on a B1 board in a wedding foyer, the other is a real
+ * person's review shown under their name.
  *
- * Used by the QR pano dobrodošlice when a couple keeps their invitation in
- * Latin but wants the printed sign in Cyrillic (`pano_cyrillic`).
+ * `latinToCyrillic` — QR pano dobrodošlice, when a couple keeps their invitation
+ * in Latin but wants the printed sign in Cyrillic (`pano_cyrillic`).
+ * `cyrillicToLatin` — Google reviews, so a Cyrillic one does not sit alone among
+ * Latin cards on an otherwise Latin site.
  */
 
 /**
@@ -53,6 +55,60 @@ export function latinToCyrillic(text: string): string {
     }
     out += LETTERS[text[i]] ?? text[i];
     i += 1;
+  }
+  return out;
+}
+
+/**
+ * Cyrillic → Latin.
+ *
+ * This direction is the easy one: every Cyrillic letter has exactly one Latin
+ * counterpart, so unlike the reverse there is nothing to guess and nothing is
+ * lost. Text that is already Latin passes through untouched.
+ */
+const FROM_CYRILLIC: Record<string, string> = {
+  а: "a", б: "b", в: "v", г: "g", д: "d", ђ: "đ", е: "e", ж: "ž", з: "z",
+  и: "i", ј: "j", к: "k", л: "l", љ: "lj", м: "m", н: "n", њ: "nj", о: "o",
+  п: "p", р: "r", с: "s", т: "t", ћ: "ć", у: "u", ф: "f", х: "h", ц: "c",
+  ч: "č", џ: "dž", ш: "š",
+};
+
+/** Џ/Љ/Њ have no single-letter Latin form, so their case depends on context. */
+const CYRILLIC_DIGRAPH_CAPS: Record<string, [string, string]> = {
+  Љ: ["Lj", "LJ"],
+  Њ: ["Nj", "NJ"],
+  Џ: ["Dž", "DŽ"],
+};
+
+function isUpperCyrillic(ch: string | undefined): boolean {
+  return ch !== undefined && ch !== ch.toLowerCase() && ch === ch.toUpperCase();
+}
+
+export function cyrillicToLatin(text: string): string {
+  let out = "";
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+
+    const caps = CYRILLIC_DIGRAPH_CAPS[ch];
+    if (caps) {
+      // „ЉУБАВ" mora dati „LJUBAV", a „Љубав" → „Ljubav".
+      out += isUpperCyrillic(text[i + 1]) ? caps[1] : caps[0];
+      continue;
+    }
+
+    const lower = FROM_CYRILLIC[ch];
+    if (lower !== undefined) {
+      out += lower;
+      continue;
+    }
+
+    const upper = FROM_CYRILLIC[ch.toLowerCase()];
+    if (upper !== undefined) {
+      out += upper.charAt(0).toUpperCase() + upper.slice(1);
+      continue;
+    }
+
+    out += ch;
   }
   return out;
 }

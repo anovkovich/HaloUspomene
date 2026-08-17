@@ -102,3 +102,6 @@ ch.html
 
 # Lokalni pregledi (npr. scripts/preview-welcome-sign.mjs)
 tmp/
+
+# Sirov ispis Apify sync-a (scripts/sync-google-reviews.mjs --raw)
+apify-raw.json

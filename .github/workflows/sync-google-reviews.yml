@@ -1,0 +1,84 @@
+# Monthly Google reviews sync for HaloUspomene
+#
+# Pulls every review from the Google Business Profile (CID 12090923469823668258)
+# via Apify and upserts them into the `google_reviews` collection. The site
+# renders from that collection, so a failed run changes nothing on the site —
+# the previous reviews stay visible. The script never deletes.
+#
+# Why not Google's own API: the profile is UNVERIFIED. Business Profile API
+# `reviews.list` only works for a verified location, and applying for API access
+# requires a verified profile 60+ days old. Places API works without
+# verification but caps at 5 of the 16 reviews. See src/lib/google-reviews.ts.
+#
+# Why Apify and not Outscraper: Outscraper's free tier covers only their web UI —
+# API access starts at the paid tier. Apify's Free plan is $0/month with no card
+# and includes API access plus $5 of monthly platform credit; this job costs
+# about $0.005 a run, so the free credit is ~1000x more than needed.
+#
+# Runs at 05:00 UTC on the 1st — deliberately clear of the 01:00 UTC db-backup.
+#
+# ── REQUIRED REPO SECRETS ──
+#   APIFY_TOKEN                 apify.com → Settings → API & Integrations
+#   MONGODB_URI                 already present for db-backup.yml; same value
+#
+# ── OPTIONAL ──
+#   GOOGLE_REVIEWS_PLACE_URL    overrides the /maps/place/ URL the script builds
+#                               from the profile CID. Only needed if the actor
+#                               ever stops accepting that form; paste the full
+#                               URL from the address bar of the open profile.
+#
+# ── FAILURE ALERTS ──
+#   Same as the other workflows: GitHub emails the account on a failed run
+#   (Settings → Notifications → Actions → "Send notifications for failed
+#   workflows only"). The script exits non-zero when Outscraper returns zero
+#   usable reviews, so a silently emptied section fails loudly instead.
+#
+# ── MANUAL TRIGGER ──
+#   Actions tab → "Sync Google Reviews" → "Run workflow". Leave "dry run"
+#   checked to print what would be written without touching the database.
+#
+# NOTE: scheduled workflows only run from the repository's DEFAULT branch, which
+# for this repo is `deploy`. This file must be pushed there for the cron to fire.
+
+name: Sync Google Reviews
+
+on:
+  schedule:
+    - cron: "0 5 1 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print what would be written, without writing"
+        type: boolean
+        default: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      # The script only needs the `mongodb` driver, but installing from the
+      # lockfile is the only way to guarantee the same version the app runs.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync reviews
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          GOOGLE_REVIEWS_PLACE_URL: ${{ secrets.GOOGLE_REVIEWS_PLACE_URL }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        run: |
+          set -e
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            node scripts/sync-google-reviews.mjs
+          else
+            node scripts/sync-google-reviews.mjs --apply
+          fi

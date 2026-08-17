@@ -1,46 +1,38 @@
 /**
- * Recenzije.
+ * Google Business Profile — linkovi i rezervni brojevi.
  *
- * Prave recenzije žive na Google Business Profilu, ne kod nas — tamo su ih
- * ostavili stvarni parovi i tamo su proverljive. Zato sajt ne prepisuje tuđi
- * sadržaj nego vodi na izvor.
+ * Same recenzije više ne žive ovde. Dovlači ih `scripts/sync-google-reviews.mjs`
+ * jednom mesečno u kolekciju `google_reviews`, a sajt ih čita preko
+ * `src/lib/google-reviews.ts`. Ovde ostaje samo ono što mora biti statično:
+ * `layout.tsx` koristi `profileUrl` u `sameAs` JSON-LD-u, gde se ne može čekati
+ * asinhroni upit ka bazi.
  *
- * Ranije su ovde stajala tri izmišljena utiska, renderovana u `sr-only` bloku
- * (dakle vidljiva samo crawler-ima) i emitovana kao `Review` + `AggregateRating`
- * strukturirani podaci. Uklonjeno: izmišljene recenzije u schema markup-u su
- * tvrdnja Google-u koja se ne može potkrepiti, a skriveni tekst za robote je
- * zaseban prekršaj smernica.
+ * Ranija odluka „ne prepisujemo recenzije, samo linkujemo na Google" pala je
+ * kada se ispostavilo da profil, dok je neverifikovan, nije siguran kanal —
+ * link vodi na stranicu koju Google može da skloni. Recenzije se sada
+ * prikazuju i kod nas, doslovno i sa atribucijom, a link i dalje stoji za
+ * proveru.
  *
- * ─── AKO IKAD BUDEMO PRIKAZIVALI RECENZIJE NA SAJTU ─────────────────────────
- * Popuni `testimonials` SAMO stvarnim recenzijama, prepisanim doslovno, sa
- * imenom kako stoji na Google-u. Tip i mesta prikaza (početna, /lokacije/[city])
- * su spremna i sama se popune. Ne vraćaj `AggregateRating` u layout — ocene koje
- * biznis sam prikuplja i objavljuje o sebi Google tretira kao self-serving i ne
- * prikazuje ih kao zvezdice u rezultatima.
+ * ─── NIKAKAV `AggregateRating` NI `Review` MARKUP, NIGDE ────────────────────
+ * Ocenu koju biznis sam objavljuje o sebi Google tretira kao self-serving i ne
+ * prikazuje je kao zvezdice u rezultatima — dakle ni u najboljem slučaju ne
+ * donosi ništa. Nepotkrepljena tvrdnja u markup-u je uz to prekršaj smernica i
+ * rizik od ručne kazne, koja gasi rich results za CEO sajt.
+ *
+ * Pravilo važi i za proizvodne stranice, ne samo za ovaj fajl. Do 2026-08-17
+ * pet njih je emitovalo izmišljene ocene u `Product`/`SoftwareApplication`
+ * šemama — `/telefon-uspomena`, `/pozivnice` i `/planiranje-vencanja` po „5,0
+ * od 3 recenzije", `/raspored-sedenja` i `/qr-pano-dobrodoslice` po „5,0 od 20
+ * recenzija" — nijedan broj nije odgovarao ničemu. Uklonjeno; sve pet i dalje
+ * imaju `offers`, pa su šeme ostale validne. Ne vraćati, ni sa „pravim"
+ * brojevima: 16 recenzija sa Google profila govori o biznisu u celini i ne
+ * može se pripisati pojedinačnom proizvodu.
  * ────────────────────────────────────────────────────────────────────────────
  */
 
-export interface Testimonial {
-  id: number;
-  initials: string;
-  coupleName: string;
-  city: string;
-  date: string;
-  rating: number;
-  service: string;
-  quote: string;
-}
-
-/** Namerno prazno — v. napomenu iznad. Gradske stranice ovo već tolerišu. */
-export const testimonials: Testimonial[] = [];
-
 /**
- * Google Business Profile.
- *
- * `ratingValue` i `reviewCount` su ono što stoji na profilu — ažurirati kad se
- * broj osetnije promeni. Prikazuju se kao običan tekst uz link ka izvoru i
- * NAMERNO nisu u schema markup-u: sami bismo tvrdili sopstvenu ocenu, a zvezdice
- * u rezultatima ionako dolaze iz Google-ovog profila, ne iz našeg markup-a.
+ * Rezervne vrednosti — koriste se dok prvi sync ne popuni bazu, i ako upit ka
+ * bazi padne. Ažurirati kad se broj na profilu osetnije promeni.
  */
 export const googleReviews = {
   ratingValue: 5.0,

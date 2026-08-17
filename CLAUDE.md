@@ -166,9 +166,40 @@ postaje netačan.
 - **NOT a static export** — `output: 'export'` removed from `next.config.ts`
 - Server Actions, SSR, ISR, and streaming are all available
 - Domain: `halouspomene.rs` (custom domain on Vercel, A record → `216.198.79.1`)
-- Production branch: `deploy` (Vercel handles CI/CD; no GitHub Actions)
+- Production branch: `deploy` — also the repo's **default** branch, which is what makes the GitHub Actions `schedule` triggers fire (Vercel handles CI/CD; Actions only run the cron jobs listed under "Scheduled Jobs")
 - `next.config.ts` is wrapped with `withSentryConfig` and sets per-route cache headers
 - `trailingSlash: true`
+
+### Scheduled Jobs (`.github/workflows/`)
+
+Three cron workflows. All fire only from the default branch (`deploy`) and alert
+via GitHub's native failed-run email — there is no custom notification step
+(Web3Forms blocks server-side POST on the free plan).
+
+| Workflow | When | What |
+|---|---|---|
+| `db-backup.yml` | daily 01:00 UTC | `mongodump` → GitHub Release asset. Atlas is M0 (no Atlas snapshots), so **this is the project's only backup** |
+| `gallery-lifecycle.yml` | daily 08:00 + 00:00 UTC | calls `/api/cron/gallery` for photo-gallery reminder SMS and purge |
+| `sync-google-reviews.yml` | monthly, 1st at 05:00 UTC | `scripts/sync-google-reviews.mjs --apply` → `google_reviews` collection |
+
+**Google reviews sync.** The GBP profile is unverified, which closes both
+official routes: Business Profile API `reviews.list` needs a *verified* location
+(and API access itself requires a verified profile 60+ days old), while Places
+API works but caps at 5 of the 16 reviews. So reviews come from Apify's
+`compass/google-maps-reviews-scraper` (Free plan: $0/month, no card, API access,
+$5 monthly credit against a ~$0.005 run) via the `APIFY_TOKEN` and
+`GOOGLE_REVIEWS_PLACE_URL` repo secrets. Outscraper was the first pick until it
+turned out its free tier covers only the web UI, not the API — worth knowing
+before reaching for it elsewhere. The actor needs the full `/maps/place/...`
+URL; it rejects the `?cid=` short form. Rules baked into the script: never
+delete, upsert by `review_id`,
+exit non-zero on zero results so an empty section fails loudly instead of
+silently blanking the homepage. Reviews are stored and displayed **verbatim in
+their original language** — never Google's auto-translation — and still carry no
+`AggregateRating`/`Review` markup (self-serving ratings don't earn stars).
+`hidden: true` on a review hides it from the site while surviving the next sync.
+**If verification ever succeeds, revisit this**: the GBP API becomes free,
+legitimate, and unlimited, and only the script's data source needs swapping.
 
 ## Tech Stack
 
@@ -376,7 +407,8 @@ src/
   - `wedding_portal` — per-couple checklist, budget, vendor favorites
   - `vendors` — vendor directory entries
   - `endorsements` — couple↔vendor endorsement pairs (unique compound index)
-  - `site_config` — admin globals (e.g. highlighted vendor IDs)
+  - `site_config` — admin globals (e.g. highlighted vendor IDs, Google reviews summary)
+  - `google_reviews` — Google Business Profile reviews, synced monthly by GitHub Actions (see below)
   - `promo_redemptions` — promo-code redemption ledger (guest + vendor), counted per code
   - `vendor_promo_codes` — per-vendor referral codes (fixed 5%/10%, commission tracking); admin-managed on the Uplate tab
   - `hall_venues` — venue hall scheme library (see below); halls embedded per venue
@@ -665,7 +697,8 @@ Configured per-route in `next.config.ts`:
 ## SEO
 
 - **Sitemap** (`force-static`): homepage, all main marketing pages, all blog posts, all city pages (~32 indexed routes)
-- **JSON-LD schemas** in root layout: LocalBusiness, Organization, WebSite (SearchAction), Review (from testimonials)
+- **JSON-LD schemas** in root layout: LocalBusiness, Organization, WebSite (SearchAction). The Google profile is linked via `sameAs` — that is the *only* sanctioned way to point search at our reviews.
+- **No `Review` / `AggregateRating` markup anywhere, on any page.** Google treats a rating a business publishes about itself as self-serving and won't render stars for it, so the best case is zero gain; the worst case is a manual action that kills rich results site-wide. Five product pages carried invented ratings until 2026-08-17 (see `src/data/testimonials.ts` for the specifics) — do not reintroduce them, not even with real numbers.
 - **Per-page metadata** via Next.js Metadata API (Open Graph, Twitter cards, canonical URLs, multi-city Serbian keywords)
 - `robots.ts` disallows `/api`, `/admin`, and all per-couple management routes. **AI bots are deliberately ALLOWED** on marketing pages (GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-User, Claude-SearchBot, PerplexityBot, Google-Extended, …) — blocking the search-index and live-fetch crawlers would remove us from AI recommendations, which is the opposite of what we want. Do not "restore" blocking.
 - Invitation *designs* are protected by a different mechanism, not by robots.txt: per-couple pages set `robots: { index: false, follow: false }` at the page level, `next.config.ts` sends `X-Robots-Tag: noai, noimageai` on invitation routes, and `<AiCopyrightNotice />` sits in the DOM. That combination is what stops design cloning — see "Invitation Design Copyright Protection" above.

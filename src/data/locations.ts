@@ -8,7 +8,6 @@ export interface Location {
   shortDescription: string;
   popularVenues: string[];
   localFaq: { question: string; answer: string }[];
-  testimonialIds: number[];
 }
 
 export const locations: Location[] = [
@@ -46,7 +45,6 @@ export const locations: Location[] = [
           "Trenutno ličnu dostavu i montažu nudimo samo u Novom Sadu. Za Beograd telefon stiže kurirskom dostavom sa detaljnim uputstvom za jednostavno postavljanje.",
       },
     ],
-    testimonialIds: [],
   },
   {
     slug: "novi-sad",
@@ -82,7 +80,6 @@ export const locations: Location[] = [
           "Da! Ličnu dostavu nudimo u Novom Sadu i okolini do 20km — uključujući Sremske Karlovce, Futog, Veternik i okolne salaše.",
       },
     ],
-    testimonialIds: [1, 2],
   },
   {
     slug: "subotica",
@@ -117,7 +114,6 @@ export const locations: Location[] = [
           "Apsolutno! Palić, Subotica i sva okolna mesta su pokrivena kurirskom dostavom, telefon stiže direktno na Vašu adresu.",
       },
     ],
-    testimonialIds: [],
   },
   {
     slug: "cacak",
@@ -153,7 +149,6 @@ export const locations: Location[] = [
           "Da! Kurirska dostava pokriva celu Srbiju, uključujući sva manja mesta i u okolini Čačka.",
       },
     ],
-    testimonialIds: [],
   },
   {
     slug: "kragujevac",
@@ -189,7 +184,6 @@ export const locations: Location[] = [
           "Da! Kurirska dostava pokriva celu Srbiju, uključujući sva manja mesta u okolini Kragujevca.",
       },
     ],
-    testimonialIds: [3],
   },
   {
     slug: "nis",
@@ -224,7 +218,6 @@ export const locations: Location[] = [
           "Telefon šaljete nazad u istoj kutiji kurirskom službom — mi pokrivamo troškove povratne dostave. Rok za povratak je 2 radna dana nakon venčanja.",
       },
     ],
-    testimonialIds: [4],
   },
 ];
 

@@ -1,24 +1,54 @@
 import React from "react";
-import { Star, ExternalLink } from "lucide-react";
-import { googleReviews, testimonials } from "@/data/testimonials";
+import { Star } from "lucide-react";
+import { googleReviews } from "@/data/testimonials";
+import {
+  getGoogleReviews,
+  getRatingOnlyGoogleReviews,
+  getGoogleReviewsSummary,
+  type GoogleReview,
+} from "@/lib/google-reviews";
+import ReviewsGrid from "./ReviewsGrid";
 
 /**
  * Sekcija sa utiscima.
  *
- * Ne prikazuje recenzije prepisane na sajt nego vodi na Google Business Profile,
- * gde su ih ostavili stvarni parovi. Recenzija na tuđoj platformi, koju mi ne
- * možemo da uredimo, vredi znatno više — i posetiocu i pretraživaču — od citata
- * na sopstvenom sajtu.
+ * Recenzije su prave, sa našeg Google Business Profila, prepisane doslovno i
+ * poređane od najnovije. Atribucija stoji na svakoj kartici („recenzija sa
+ * Google-a"); odluka vlasnika je da javnog linka ka profilu nema.
  *
  * Namerno NEMA dugmeta za ostavljanje recenzije: javni poziv bi pozvao i
- * konkurenciju da obori ocenu. Link za ostavljanje recenzije šalje se ciljano
- * zadovoljnim parovima, preko /recenzija stranice.
+ * konkurenciju da obori ocenu. Link za ostavljanje šalje se ciljano zadovoljnim
+ * parovima, preko /recenzija stranice.
  *
- * Ako `testimonials` ikad bude popunjen stvarnim recenzijama, kartice se
- * prikazuju ispod ovog bloka; do tada blok stoji sam.
+ * Ako baza zakaže, ostaje samo kartica sa ocenom umesto da padne cela početna.
  */
-const Testimonials: React.FC = () => {
-  const { ratingValue, reviewCount, profileUrl } = googleReviews;
+
+/** Vidljivo pre klika na „Prikaži još"; ostatak je jedan klik daleko. */
+const PRIKAZANO = 9;
+
+const Testimonials = async () => {
+  let reviews: GoogleReview[] = [];
+  let rating = googleReviews.ratingValue;
+  let count = googleReviews.reviewCount;
+
+  try {
+    // Sve odjednom, pa „Prikaži još" samo otkriva ostatak bez novog upita —
+    // reč je o šesnaest kratkih zapisa, ne o listi koju vredi paginirati.
+    const [saTekstom, bezTeksta, summary] = await Promise.all([
+      getGoogleReviews(),
+      getRatingOnlyGoogleReviews(),
+      getGoogleReviewsSummary(),
+    ]);
+    // Ocene bez komentara idu na kraj, a ne po datumu među ostale: nose istu
+    // karticu, ali ništa ne govore pa bi razbijale niz onih koje govore.
+    reviews = [...saTekstom, ...bezTeksta];
+    if (summary) {
+      rating = summary.rating;
+      count = summary.count;
+    }
+  } catch {
+    // Baza nedostupna — ostaju rezervne vrednosti i prazna lista.
+  }
 
   return (
     <section
@@ -34,8 +64,8 @@ const Testimonials: React.FC = () => {
             Glasovi koji govore za nas
           </h2>
           <p className="text-lg text-[#232323]/50 max-w-2xl mx-auto">
-            Recenzije ne prepisujemo na svoj sajt — pročitajte ih tamo gde su ih
-            parovi zaista ostavili, na našem Google profilu.
+            Recenzije su prenete sa našeg Google profila, onako kako su ih
+            parovi napisali — od najnovije ka starijima.
           </p>
         </div>
 
@@ -54,64 +84,15 @@ const Testimonials: React.FC = () => {
           </div>
 
           <p className="font-serif text-5xl sm:text-6xl text-[#232323] mb-2">
-            {ratingValue.toFixed(1)}
+            {rating.toFixed(1)}
           </p>
-          <p className="text-[#232323]/55 mb-8">
-            Prosečna ocena na osnovu {reviewCount} recenzija na Google-u
+          <p className="text-[#232323]/55">
+            Prosečna ocena na osnovu {count} recenzija na Google-u
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a
-              href={profileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] rounded-full px-8 border-none"
-              data-track="cta_click"
-              data-track-cta-name="google_recenzije"
-              data-track-cta-location="utisci"
-            >
-              Pročitaj recenzije na Google-u
-              <ExternalLink size={16} />
-            </a>
-          </div>
         </div>
 
-        {/* Prikazuje se tek kada u testimonials.ts uđu stvarne recenzije. */}
-        {testimonials.length > 0 && (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {testimonials.map((t) => (
-              <div
-                key={t.id}
-                className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-100 flex flex-col"
-              >
-                <div className="flex gap-1 mb-3">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      className="text-[#d4af37] fill-[#d4af37]"
-                    />
-                  ))}
-                </div>
-                <p className="text-[#232323]/70 leading-relaxed mb-4 italic flex-1">
-                  {t.quote}
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#AE343F]/10 rounded-xl flex items-center justify-center text-[#AE343F] font-bold text-xs">
-                    {t.initials}
-                  </div>
-                  <div>
-                    <p className="font-serif font-semibold text-[#232323] text-sm">
-                      {t.coupleName}
-                    </p>
-                    <p className="text-xs text-[#232323]/40">
-                      {t.city} · {t.date}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        {reviews.length > 0 && (
+          <ReviewsGrid reviews={reviews} initial={PRIKAZANO} />
         )}
       </div>
     </section>
