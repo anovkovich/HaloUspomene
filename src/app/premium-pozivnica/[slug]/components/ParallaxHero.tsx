@@ -67,16 +67,17 @@ export default function ParallaxHero({
     };
 
     // Try requesting permission on iOS 13+
-    if (
-      typeof DeviceOrientationEvent !== "undefined" &&
-      typeof (DeviceOrientationEvent as any).requestPermission === "function"
-    ) {
+    // `requestPermission` postoji samo na iOS-u i nema ga u TS lib.dom, pa se
+    // tip proširuje ovde umesto da se ceo konstruktor obori na `any`.
+    const DOE = DeviceOrientationEvent as typeof DeviceOrientationEvent & {
+      requestPermission?: () => Promise<PermissionState>;
+    };
+
+    if (typeof DeviceOrientationEvent !== "undefined" && DOE.requestPermission) {
       // Permission will be requested on first user interaction
       const requestPermission = async () => {
         try {
-          const response = await (
-            DeviceOrientationEvent as any
-          ).requestPermission();
+          const response = await DOE.requestPermission!();
           if (response === "granted") {
             window.addEventListener("deviceorientation", handleOrientation);
           }

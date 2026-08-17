@@ -24,6 +24,8 @@ export default function BlogPage() {
   const categories = [...new Set(publishedPosts.map((p) => p.category))];
 
   // Strip content to keep client bundle small
+  // `content` se namerno odbacuje — u listing ide sve osim tela teksta.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const posts = publishedPosts.map(({ content: _, ...rest }) => rest);
 
   return (

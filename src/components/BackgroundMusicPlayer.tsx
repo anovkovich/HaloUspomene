@@ -102,6 +102,10 @@ function BackgroundMusicPlayerInner(
           .catch(() => setIsPlaying(false));
       },
     }),
+    // `fadeIn` se namerno ne navodi. Dodiruje samo refove i konstante, pa je
+    // stabilan po konstrukciji; navođenje bi ga povuklo u zavisnosti i
+    // rekreiralo imperativni handle na svaki render, bez ikakve koristi.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
@@ -141,6 +145,11 @@ function BackgroundMusicPlayerInner(
   useEffect(() => {
     return () => {
       clearFade();
+      // Čita se u cleanup-u namerno: treba zaustaviti onaj <audio> element
+      // koji stvarno svira u trenutku demontiranja. Kopija uzeta pri
+      // postavljanju efekta bila bi null, jer element tada još nije montiran,
+      // pa muzika ne bi bila zaustavljena.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       const a = audioRef.current;
       if (a) {
         a.pause();

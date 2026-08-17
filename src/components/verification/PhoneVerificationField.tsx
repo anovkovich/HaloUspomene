@@ -61,6 +61,12 @@ export function PhoneVerificationField({
       value !== lastVerifiedValue.current
     ) {
       lastVerifiedValue.current = null;
+      // Ne može u render-fazu: `onUnverified` je poziv ka roditelju, a
+      // side-effect se ne sme zvati tokom rendera. Ne može ni u input handler:
+      // `value` je kontrolisan prop koji roditelj ume da promeni i mimo unosa
+      // (npr. čišćenje forme posle slanja), a i taj slučaj mora da poništi
+      // verifikaciju.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPhase({ kind: "idle" });
       setCode("");
       onUnverified?.();

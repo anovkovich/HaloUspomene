@@ -7,7 +7,6 @@ import type { PremiumThemeType } from "@/app/pozivnica/[slug]/types";
 import { MultilineText } from "@/lib/multiline";
 import {
   getPremiumVisualTheme,
-  type PremiumVisualTheme,
 } from "../premiumThemeConfig";
 interface HeroSectionProps {
   bride: string;
@@ -38,15 +37,9 @@ export default function HeroSection({
 
   // Each layer transforms at different rates as the section scrolls out
   // Negative = moves up slower (stays behind = far), Positive = moves up faster (foreground)
-  const yBg = useTransform(scrollYProgress, [0, 1], [0, -50]);
-  const yArch = useTransform(scrollYProgress, [0, 1], [0, -100]);
-  const yGarlandTop = useTransform(scrollYProgress, [0, 1], [0, -150]);
-  const yFlowers = useTransform(scrollYProgress, [0, 1], [0, -200]);
   const yContent = useTransform(scrollYProgress, [0, 1], [0, -80]);
-  const yGarlandBottom = useTransform(scrollYProgress, [0, 1], [0, 50]);
   const yForeground = useTransform(scrollYProgress, [0, 1], [0, 100]);
   const yRoses = useTransform(scrollYProgress, [0, 1], [0, -250]);
-  const opacityFade = useTransform(scrollYProgress, [0, 0.8, 1], [1, 1, 0]);
   const namesFade = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
   return (

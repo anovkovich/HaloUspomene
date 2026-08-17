@@ -18,7 +18,7 @@ import {
   MapPin,
   Check,
 } from "lucide-react";
-import { CITIES, CATEGORY_META } from "@/app/moje-vencanje/vendor-constants";
+import { CITIES } from "@/app/moje-vencanje/vendor-constants";
 import {
   loadHighlightedVendorsAction,
   setHighlightedVendorsAction,

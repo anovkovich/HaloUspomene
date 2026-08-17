@@ -123,6 +123,7 @@ export default async function OGImage() {
           }}
         >
           <img
+            alt=""
             src={heroSrc}
             width={860}
             height={350}

@@ -36,6 +36,9 @@ export default function CursorGuestBadge({
   useEffect(() => {
     if (!selectedGuest) {
       prevIdRef.current = null;
+      // Flash je vremenski efekat (setTimeout + cleanup) i nema render-fazu;
+      // gašenje mora da živi uz paljenje, inače bi tražilo drugi efekat za isto.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFlash(false);
       return;
     }
@@ -59,6 +62,13 @@ export default function CursorGuestBadge({
   useEffect(() => {
     const el = containerRef.current;
     if (!el || !hasContent) {
+      // Ovaj reset je nosiv, ne suvišan. Badge se demontira čim `hasContent`
+      // padne (`return null` ispod), a pozicionira se direktnim upisom u
+      // `style.left/top`. Na ponovnom montiranju stil kreće od 0,0 — pa da
+      // `visible` nije vraćen na false, badge bi bljesnuo u gornjem levom uglu
+      // pre prvog `mousemove`-a. To se dešava na svakom prelasku sa mesta na
+      // mesto. Zato ne izvedena vrednost `visible && hasContent`, nego reset.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVisible(false);
       return;
     }

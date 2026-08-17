@@ -41,7 +41,6 @@ export default function PlannerStatsSection({
 }: PlannerStatsSectionProps) {
   const [portalData, setPortalData] = useState<PortalData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [expandedSection, setExpandedSection] = useState<"checklist" | "budget" | "vendors" | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Partial<Record<ChecklistGroup, boolean>>>({
     "12+": true,
@@ -71,8 +70,8 @@ export default function PlannerStatsSection({
         const data: PortalData = await response.json();
         setPortalData(data);
       } catch (err) {
+        // Gostima se greška namerno ne prikazuje — sekcija se prosto preskoči.
         console.error("Failed to fetch portal data:", err);
-        setError(null); // Don't show error to guests, just skip the section
       } finally {
         setLoading(false);
       }
@@ -415,7 +414,6 @@ export default function PlannerStatsSection({
                 const spent = cat.spent || 0;
                 const planned = cat.planned || 0;
                 const progress = planned > 0 ? (spent / planned) * 100 : 0;
-                const remaining = planned - spent;
 
                 return (
                   <div

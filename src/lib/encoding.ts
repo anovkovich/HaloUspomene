@@ -9,7 +9,7 @@
  * Properly handles UTF-8 multi-byte characters (Cyrillic, emoji, etc.)
  * Removes padding to avoid URL encoding issues with = characters
  */
-export function encodeToBase64(data: Record<string, any>): string {
+export function encodeToBase64(data: unknown): string {
   const json = JSON.stringify(data);
 
   // Use TextEncoder to properly encode UTF-8

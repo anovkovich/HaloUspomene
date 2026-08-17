@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Check,
@@ -185,16 +185,6 @@ export default function PricingClient({
     });
   };
 
-  const selectAll = () => {
-    setSelected({
-      website: true,
-      pdf: true,
-      raspored: true,
-      audio: true,
-      galerija: true,
-    });
-  };
-
   const toggleSub = (id: string) => {
     setSelectedSubs((prev) => {
       const turning = !prev[id];
@@ -209,7 +199,12 @@ export default function PricingClient({
 
   // Switching mode resets to the base selection — no add-ons forced. This is
   // "sastavi svoj paket": the user picks. Only the invitation type differs.
-  useEffect(() => {
+  //
+  // Reset stoji u handleru, a ne u efektu na `[mode]`: `mode` se menja isključivo
+  // klikom na ova dva dugmeta, pa je događaj pravo mesto za posledicu. Efekat je
+  // uz to radio i na mount, resetujući na vrednosti koje su ionako početne.
+  const switchMode = (m: "classic" | "premium") => {
+    setMode(m);
     setSelected({
       website: true,
       pdf: true,
@@ -218,7 +213,7 @@ export default function PricingClient({
       galerija: false,
     });
     setSelectedSubs({ usb_kaseta: false, usb_bocica: false });
-  }, [mode]);
+  };
 
   // Mode-reactive feature list: Premium swaps the Website row into a
   // "Premium pozivnica" row with promo + strikethrough price, and rewrites
@@ -245,7 +240,7 @@ export default function PricingClient({
     });
   }, [mode]);
 
-  const { subtotal, total, bundleDiscount, isBundle, subitemsTotal } = useMemo(() => {
+  const { subtotal, total, bundleDiscount, isBundle } = useMemo(() => {
     let subtotal = 0;
     for (const f of features) {
       if (selected[f.id] && !f.included) subtotal += f.price;
@@ -292,10 +287,6 @@ export default function PricingClient({
       subitemsTotal,
     };
   }, [features, selected, selectedSubs, mode]);
-
-  const uncheckedCount = [selected.raspored, selected.audio].filter(
-    (v) => !v,
-  ).length;
 
   return (
     <>
@@ -353,7 +344,7 @@ export default function PricingClient({
             <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white/70 border border-[#232323]/10 shadow-sm">
               <button
                 type="button"
-                onClick={() => setMode("classic")}
+                onClick={() => switchMode("classic")}
                 className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                   mode === "classic"
                     ? "bg-[var(--cene-accent)] text-white shadow-md shadow-[rgba(var(--cene-accent-rgb),0.25)]"
@@ -364,7 +355,7 @@ export default function PricingClient({
               </button>
               <button
                 type="button"
-                onClick={() => setMode("premium")}
+                onClick={() => switchMode("premium")}
                 className={`inline-flex items-center gap-1.5 px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                   mode === "premium"
                     ? "bg-gradient-to-r from-[#d4af37] to-[#c5a028] text-white shadow-md shadow-[#d4af37]/25"

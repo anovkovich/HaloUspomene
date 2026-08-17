@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
-import { Mic, Square, Send, RotateCcw, Heart, Play, Pause } from "lucide-react";
+import { Mic, Square, Send, RotateCcw, Heart } from "lucide-react";
 import { getTranslations } from "../translations";
 import { drawWaveform } from "./waveform";
 
@@ -97,6 +97,12 @@ export default function AudioKnjigaClient({
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      // Ref se namerno čita u samom cleanup-u. Preporuka pravila — prepisati
+      // `ref.current` u lokalnu promenljivu pri postavljanju efekta — ovde bi
+      // bila štetna: u tom trenutku su svi null, jer se timer, animacija i
+      // AudioContext kreiraju tek kad posetilac počne da snima. Kopija bi
+      // uhvatila null i cleanup ne bi zaustavio ništa.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
       if (audioContextRef.current) audioContextRef.current.close();
       if (audioUrl) URL.revokeObjectURL(audioUrl);
@@ -237,7 +243,9 @@ export default function AudioKnjigaClient({
       setState("recorded");
       setError(err instanceof Error ? err.message : "Greška pri slanju");
     }
-  }, [guestName, slug]);
+    // `base`, a ne `slug`: endpoint može doći i iz `apiBase` propa (standalone
+    // raspored ga koristi), pa bi vezivanje za `slug` slalo na pogrešnu rutu.
+  }, [guestName, base]);
 
   const resetRecording = useCallback(() => {
     if (audioUrl) URL.revokeObjectURL(audioUrl);

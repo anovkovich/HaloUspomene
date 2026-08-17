@@ -32,6 +32,12 @@ export default function ErrorPage({
           >
             Pokušaj ponovo
           </button>
+          {/* Namerno `<a>` a ne `<Link>`: ovo je granica greške, i jedino
+              puno osvežavanje garantuje čist React tree i čisto klijentsko
+              stanje. Klijentska navigacija bi zadržala isti proces koji je
+              upravo pukao — a ova stranica se prikazuje baš zato što nešto
+              nije u redu. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/"
             className="px-6 py-2.5 border border-[#d4d0c8] text-[#78716c] text-sm font-medium rounded-lg hover:bg-white/50 transition-colors"

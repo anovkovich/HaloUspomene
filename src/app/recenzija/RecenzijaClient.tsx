@@ -36,6 +36,9 @@ export default function RecenzijaClient() {
 
   useEffect(() => {
     const insta = isInstagramBrowser();
+    // `navigator.userAgent` ne postoji na serveru, pa bi lazy `useState(() =>
+    // ...)` pukao u prerender-u. Efekat je jedini korektan način.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsInstagram(insta);
     setAndroid(isAndroid());
 

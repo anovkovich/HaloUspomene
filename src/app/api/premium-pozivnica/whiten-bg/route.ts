@@ -47,7 +47,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Poll for result
-    let result: any = null;
+    // Od celog birefnet odgovora koristimo samo `image.url`; sve ostalo nas se
+    // ne tiče, pa je i tip sužen na to.
+    let result: { image?: { url?: string } } | null = null;
     for (let i = 0; i < 30; i++) {
       await new Promise((r) => setTimeout(r, 2000));
       const statusRes = await fetch(

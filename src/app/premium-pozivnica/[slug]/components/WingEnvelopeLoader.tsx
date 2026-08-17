@@ -95,6 +95,10 @@ export default function WingEnvelopeLoader({
   const t = getLoaderTheme(theme);
 
   useEffect(() => {
+    // Isto kao u PremiumEnvelopeLoader: širina prozora se čita tek na
+    // klijentu, a offseti se koriste tek pri burst animaciji, sekundama
+    // kasnije — prvi paint sa desktop vrednostima se ne vidi.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMobile(window.innerWidth < 640);
   }, []);
 

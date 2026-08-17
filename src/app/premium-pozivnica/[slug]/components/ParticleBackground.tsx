@@ -55,7 +55,7 @@ export default function ParticleBackground({
   }, [count, theme]);
 
   const drawParticle = useCallback(
-    (ctx: CanvasRenderingContext2D, p: Particle, w: number, h: number) => {
+    (ctx: CanvasRenderingContext2D, p: Particle) => {
       ctx.save();
       ctx.globalAlpha = p.opacity;
 
@@ -141,7 +141,7 @@ export default function ParticleBackground({
         if (p.x > canvas.width + 20) p.x = -20;
         if (p.x < -20) p.x = canvas.width + 20;
 
-        drawParticle(ctx, p, canvas.width, canvas.height);
+        drawParticle(ctx, p);
       }
 
       rafRef.current = requestAnimationFrame(animate);

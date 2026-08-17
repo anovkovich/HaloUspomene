@@ -100,6 +100,11 @@ export default function PremiumEnvelopeLoader({
   const t = getLoaderTheme(theme);
 
   useEffect(() => {
+    // Širina prozora postoji tek na klijentu, pa efekat nema alternativu.
+    // Cena je nula: `BURST_OFFSETS` se koristi tek kad koverat pukne, nekoliko
+    // sekundi posle montiranja, tako da prvi paint sa desktop offsetima niko
+    // nikad ne vidi.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMobile(window.innerWidth < 640);
   }, []);
 

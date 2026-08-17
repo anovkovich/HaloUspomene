@@ -40,6 +40,28 @@ export default function MobileSeatSheet({
 }: Props) {
   const [search, setSearch] = useState("");
 
+  // Lista gostiju za prazno mesto — nesmešteni prvi.
+  //
+  // Stoji iznad ranog `return`-a namerno: ispod njega bi se, na render-ima gde
+  // je mesto zauzeto, hook uopšte ne bi pozvao. React broji hook-ove po
+  // instanci, pa bi promena `target`-a sa zauzetog na prazno bez demontiranja
+  // srušila komponentu („Rendered more hooks than during the previous render").
+  // Danas se sheet demontira na zatvaranje pa do toga ne dolazi, ali to je
+  // slučajnost trenutnog rasporeda koda, ne garancija.
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    const list = attending.filter((g) => {
+      if (q && !g.name.toLowerCase().includes(q)) return false;
+      return true;
+    });
+    // Sort: unseated (has remaining seats) first, fully assigned last
+    return list.sort((a, b) => {
+      const aFull = (assignedCounts[a.id] || 0) >= (parseInt(a.guestCount) || 1) ? 1 : 0;
+      const bFull = (assignedCounts[b.id] || 0) >= (parseInt(b.guestCount) || 1) ? 1 : 0;
+      return aFull - bFull;
+    });
+  }, [attending, search, assignedCounts]);
+
   // If seat is assigned, show the assigned guest info
   if (target.assignment) {
     const guest = attending.find(
@@ -161,21 +183,7 @@ export default function MobileSeatSheet({
     );
   }
 
-  // Empty seat — show guest picker, unseated first
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    const list = attending.filter((g) => {
-      if (q && !g.name.toLowerCase().includes(q)) return false;
-      return true;
-    });
-    // Sort: unseated (has remaining seats) first, fully assigned last
-    return list.sort((a, b) => {
-      const aFull = (assignedCounts[a.id] || 0) >= (parseInt(a.guestCount) || 1) ? 1 : 0;
-      const bFull = (assignedCounts[b.id] || 0) >= (parseInt(b.guestCount) || 1) ? 1 : 0;
-      return aFull - bFull;
-    });
-  }, [attending, search, assignedCounts]);
-
+  // Empty seat — show guest picker, unseated first (v. `filtered` iznad)
   return (
     <div
       className="fixed inset-0 z-[60] flex items-end justify-center"

@@ -183,6 +183,9 @@ export function SceneDecorations({
   // and the fade-in + scale-up plays from the identical starting state.
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    // Kanonska dvofazna SSR kapija: razlika između serverskog i klijentskog
+    // rendera JESTE svrha ovog stanja, pa verzija bez efekta ne postoji.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
