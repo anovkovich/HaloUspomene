@@ -209,7 +209,14 @@ export default function GuestSidebar({
           className="font-raleway text-sm"
           style={{ color: "var(--theme-text)" }}
         >
-          <span style={{ color: "var(--theme-primary)", fontWeight: 600 }}>
+          <span
+            className="tabular-nums"
+            style={{
+              color: "var(--theme-primary)",
+              fontWeight: 700,
+              fontSize: "1.05rem",
+            }}
+          >
             {totalAssigned}
           </span>
           <span style={{ color: "var(--theme-text-muted)" }}>
@@ -217,6 +224,22 @@ export default function GuestSidebar({
             / {totalPersons} raspoređeno
           </span>
         </p>
+        {/* How far along the whole job is — the one number worth a glance. */}
+        <div
+          className="mt-2 h-1 w-full rounded-full overflow-hidden"
+          style={{
+            backgroundColor:
+              "color-mix(in srgb, var(--theme-primary) 15%, transparent)",
+          }}
+        >
+          <div
+            className="h-full rounded-full transition-[width] duration-500"
+            style={{
+              width: `${totalPersons ? Math.min(100, (totalAssigned / totalPersons) * 100) : 0}%`,
+              backgroundColor: "var(--theme-primary)",
+            }}
+          />
+        </div>
       </div>
 
       {/* Filters */}
@@ -314,7 +337,21 @@ export default function GuestSidebar({
                   ? "var(--theme-primary)"
                   : "transparent",
                 color: isSelected ? "white" : "var(--theme-text)",
-                opacity: isFullyAssigned && !isSelected ? 0.45 : 1,
+                // A seated party stays legible but recedes; the ones still
+                // waiting are what the eye should land on.
+                opacity: isFullyAssigned && !isSelected ? 0.5 : 1,
+                boxShadow: isSelected
+                  ? "0 4px 12px -4px color-mix(in srgb, var(--theme-primary) 60%, transparent)"
+                  : "none",
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected)
+                  e.currentTarget.style.backgroundColor =
+                    "color-mix(in srgb, var(--theme-primary) 10%, transparent)";
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected)
+                  e.currentTarget.style.backgroundColor = "transparent";
               }}
             >
               <div className="flex items-center justify-between gap-2">

@@ -30,6 +30,22 @@ import type {
 import { WALL_DEFAULT_W, WALL_DEFAULT_H } from "../geometry";
 import { consumeDragClick, type SeatRef } from "./seatDrag";
 
+// ── Shared surface treatment ─────────────────────────────────────────────────
+// Everything below is expressed through --theme-primary rather than a literal
+// gold, because the standalone routes drive the same editor with the burgundy
+// brand palette. Tables read as warm white cards on the cream ground; the
+// accent stays a hairline, never a fill, so occupied seats are the only
+// saturated thing on the canvas and the eye goes straight to them.
+const TABLE_SURFACE: React.CSSProperties = {
+  backgroundImage:
+    "linear-gradient(180deg, #ffffff 0%, color-mix(in srgb, var(--theme-primary) 6%, #ffffff) 100%)",
+  border: "2px solid color-mix(in srgb, var(--theme-primary) 32%, transparent)",
+  boxShadow:
+    "0 1px 2px rgba(35,35,35,0.07), 0 6px 16px -8px rgba(35,35,35,0.18)",
+};
+/** Wash used when the pointer is over a table card. */
+const CARD_HOVER_BG = "color-mix(in srgb, var(--theme-primary) 9%, transparent)";
+
 const SEAT_SIZE = 30;
 const CIRCLE_TABLE_R = 52;
 const SEAT_ORBIT_R = CIRCLE_TABLE_R + 16;
@@ -169,22 +185,32 @@ function Seat({
         width: SEAT_SIZE,
         height: SEAT_SIZE,
         flexShrink: 0,
+        // An empty seat is a quiet placeholder and an occupied one is the only
+        // saturated mark on the canvas — that contrast is what lets you read a
+        // hall of 220 seats at a glance.
         backgroundColor: assignment
           ? "var(--theme-primary)"
           : isSelecting
-            ? "color-mix(in srgb, var(--theme-primary) 22%, transparent)"
+            ? "color-mix(in srgb, var(--theme-primary) 20%, #ffffff)"
             : "#FFFFFF",
+        backgroundImage: assignment
+          ? "linear-gradient(160deg, color-mix(in srgb, #ffffff 18%, var(--theme-primary)) 0%, var(--theme-primary) 70%)"
+          : undefined,
         border: assignment
-          ? "2px solid var(--theme-primary)"
+          ? "2px solid color-mix(in srgb, var(--theme-text) 12%, var(--theme-primary))"
           : isSelecting
             ? "2px dashed var(--theme-primary)"
-            : "2px solid color-mix(in srgb, var(--theme-primary) 60%, transparent)",
+            : "1.5px solid color-mix(in srgb, var(--theme-primary) 34%, transparent)",
         color: assignment ? "white" : "var(--theme-text-light)",
         // Search hit: a ring outside the seat, so it reads even at low zoom
         // where the seat itself is only a few pixels across.
         outline: highlighted ? "3px solid #16a34a" : undefined,
         outlineOffset: highlighted ? 2 : undefined,
-        boxShadow: highlighted ? "0 0 0 6px rgba(22,163,74,0.25)" : undefined,
+        boxShadow: highlighted
+          ? "0 0 0 6px rgba(22,163,74,0.25)"
+          : assignment
+            ? "0 1px 3px rgba(35,35,35,0.22)"
+            : undefined,
         cursor: assignment
           ? onDragStart
             ? "grab"
@@ -1158,8 +1184,9 @@ export default function TableNode({
     <span
       className="font-raleway font-semibold truncate text-center px-1"
       style={{
-        color: "rgba(35,35,35,0.6)",
+        color: "color-mix(in srgb, var(--theme-text) 72%, transparent)",
         fontSize: 12,
+        letterSpacing: "0.015em",
         maxWidth: "92%",
         pointerEvents: "none",
       }}
@@ -1175,7 +1202,11 @@ export default function TableNode({
     table.type === "rectangular" || table.type === "single-sided" ? (
       <div
         className="drag-handle rounded-t-lg cursor-grab active:cursor-grabbing table-header transition-opacity duration-150"
-        style={{ backgroundColor: "#8a8a8a", color: "white", opacity: 0 }}
+        style={{
+          backgroundColor: "var(--theme-primary)",
+          color: "white",
+          opacity: 0,
+        }}
       >
         {isRotated ? (
           // Portrait: two rows
@@ -1212,7 +1243,11 @@ export default function TableNode({
       // Circle: count first, then name
       <div
         className="drag-handle flex items-center gap-1.5 px-2 py-1 rounded-t-lg cursor-grab active:cursor-grabbing table-header transition-opacity duration-150"
-        style={{ backgroundColor: "#8a8a8a", color: "white", opacity: 0 }}
+        style={{
+          backgroundColor: "var(--theme-primary)",
+          color: "white",
+          opacity: 0,
+        }}
       >
         {grabHandle}
         {seatControls}
@@ -1255,7 +1290,7 @@ export default function TableNode({
         }
         onClick={readOnly && onTap ? () => onTap(table) : undefined}
         onMouseEnter={readOnly ? undefined : (e) => {
-          e.currentTarget.style.backgroundColor = "rgba(35,35,35,0.09)";
+          e.currentTarget.style.backgroundColor = CARD_HOVER_BG;
           e.currentTarget.querySelectorAll<HTMLElement>(".table-header").forEach(el => el.style.opacity = "1");
           // Pointing at a table raises it above the others — so a table buried
           // under another pops to the top (header + frame) the moment you hover
@@ -1270,7 +1305,10 @@ export default function TableNode({
         {readOnly ? (
           <div
             className="flex items-center gap-1.5 px-2 py-1 rounded-t-lg"
-            style={{ backgroundColor: "#8a8a8a", color: "white" }}
+            style={{
+              backgroundColor: "color-mix(in srgb, var(--theme-primary) 55%, #8a8a8a)",
+              color: "white",
+            }}
           >
             <span className="text-xs font-raleway font-medium truncate flex-1">{table.label}</span>
             <span className="text-[10px] font-raleway opacity-70">{table.assignments.filter(Boolean).length}/{table.seats}</span>
@@ -1288,9 +1326,7 @@ export default function TableNode({
             <div
               className="h-15 rounded flex items-center justify-center overflow-hidden"
               style={{
-                backgroundColor:
-                  "rgba(35,35,35,0.09)",
-                border: "3px solid rgba(35,35,35,0.45)",
+                ...TABLE_SURFACE,
               }}
             >
               {centerName}
@@ -1322,15 +1358,13 @@ export default function TableNode({
               style={{
                 width: 60,
                 minHeight: seatsPerRow * (SEAT_SIZE + 6) - 6,
-                backgroundColor:
-                  "rgba(35,35,35,0.09)",
-                border: "3px solid rgba(35,35,35,0.45)",
+                ...TABLE_SURFACE,
               }}
             >
               <span
                 className="font-raleway font-semibold text-center px-1"
                 style={{
-                  color: "rgba(35,35,35,0.6)",
+                  color: "color-mix(in srgb, var(--theme-text) 72%, transparent)",
                   fontSize: 11,
                   pointerEvents: "none",
                   writingMode: "vertical-rl",
@@ -1374,9 +1408,7 @@ export default function TableNode({
             <div
               className="h-15 rounded"
               style={{
-                backgroundColor:
-                  "rgba(35,35,35,0.09)",
-                border: "3px solid rgba(35,35,35,0.45)",
+                ...TABLE_SURFACE,
               }}
             />
           </div>
@@ -1399,8 +1431,7 @@ export default function TableNode({
               style={{
                 width: 60,
                 minHeight: table.seats * (SEAT_SIZE + 6) - 6,
-                backgroundColor: "rgba(35,35,35,0.09)",
-                border: "3px solid rgba(35,35,35,0.45)",
+                ...TABLE_SURFACE,
               }}
             />
           </div>
@@ -1420,9 +1451,7 @@ export default function TableNode({
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                backgroundColor:
-                  "rgba(35,35,35,0.09)",
-                border: "3px solid rgba(35,35,35,0.45)",
+                ...TABLE_SURFACE,
               }}
             >
               {centerName}

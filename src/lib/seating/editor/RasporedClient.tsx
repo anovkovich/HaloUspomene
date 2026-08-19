@@ -1548,7 +1548,7 @@ export default function RasporedClient({
           style={{
             paddingBottom: "calc(5rem + env(safe-area-inset-bottom, 0px))",
             backgroundImage:
-              "radial-gradient(circle, rgba(35,35,35,0.26) 0.9px, transparent 0.9px)",
+              "radial-gradient(circle, rgba(35,35,35,0.12) 0.9px, transparent 0.9px)",
             backgroundSize: "24px 24px",
           }}
         >
@@ -1939,7 +1939,7 @@ export default function RasporedClient({
               ...(isPWADesktop
                 ? {
                     backgroundImage:
-                      "radial-gradient(circle, rgba(35,35,35,0.3) 1px, transparent 1px)",
+                      "radial-gradient(circle, rgba(35,35,35,0.13) 1px, transparent 1px)",
                     backgroundSize: "28px 28px",
                   }
                 : {
@@ -1948,7 +1948,7 @@ export default function RasporedClient({
                     // zooms in lock-step with the world.
                     backgroundColor: "var(--theme-background)",
                     backgroundImage:
-                      "radial-gradient(circle, rgba(35,35,35,0.3) 1px, transparent 1px)",
+                      "radial-gradient(circle, rgba(35,35,35,0.13) 1px, transparent 1px)",
                     backgroundSize: `${28 * canvasZoom}px ${28 * canvasZoom}px`,
                     backgroundPosition: `${pan.x}px ${pan.y}px`,
                   }),

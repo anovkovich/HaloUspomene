@@ -75,9 +75,21 @@ export default function AddTablePanel({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const btnStyle = {
-    backgroundColor: "var(--theme-primary)",
-    color: "white",
+  // One floating bar instead of a row of loose blocks, and the accent lives in
+  // the icons rather than in five solid fills — with everything gold nothing
+  // reads as more important than anything else.
+  const btnClass =
+    "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-raleway font-medium transition-colors cursor-pointer";
+  const btnStyle = { color: "var(--theme-text)" } as React.CSSProperties;
+  const iconStyle = { color: "var(--theme-primary)" } as React.CSSProperties;
+  const hoverProps = {
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+      e.currentTarget.style.backgroundColor =
+        "color-mix(in srgb, var(--theme-primary) 12%, transparent)";
+    },
+    onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+      e.currentTarget.style.backgroundColor = "transparent";
+    },
   };
 
   const weddingOnly = hideWeddingOnlyElements
@@ -153,44 +165,61 @@ export default function AddTablePanel({
 
   return (
     <div
-      className="absolute z-10 flex flex-row gap-1.5"
-      style={{ top: 12, left: 12 }}
+      className="absolute z-10 flex flex-row items-stretch gap-0.5 p-1 rounded-xl"
+      style={{
+        top: 12,
+        left: 12,
+        backgroundColor: "color-mix(in srgb, var(--theme-surface) 88%, #ffffff)",
+        border: "1px solid color-mix(in srgb, var(--theme-primary) 22%, transparent)",
+        boxShadow:
+          "0 1px 2px rgba(35,35,35,0.06), 0 10px 24px -12px rgba(35,35,35,0.3)",
+        backdropFilter: "blur(8px)",
+      }}
     >
       <button
         onClick={() => onAddTable("rectangular")}
-        className="flex items-center gap-2 px-3 py-2 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 shadow-sm"
+        className={btnClass}
         style={btnStyle}
+        {...hoverProps}
       >
-        <RectangleHorizontal size={13} />
+        <RectangleHorizontal size={13} style={iconStyle} />
         Pravougaoni sto
       </button>
 
       <button
         onClick={() => onAddTable("circle")}
-        className="flex items-center gap-2 px-3 py-2 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 shadow-sm"
+        className={btnClass}
         style={btnStyle}
+        {...hoverProps}
       >
-        <Circle size={13} />
+        <Circle size={13} style={iconStyle} />
         Okrugli sto
       </button>
 
       {hideDecorations ? (
         <button
           onClick={() => onAddTable("single-sided", undefined, 6)}
-          className="flex items-center gap-2 px-3 py-2 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 shadow-sm"
+          className={btnClass}
           style={btnStyle}
+          {...hoverProps}
         >
-          <Minus size={13} />
+          <Minus size={13} style={iconStyle} />
           Jednostran sto
         </button>
       ) : (
         <div ref={specialRef} className="relative">
           <button
             onClick={() => setSpecialOpen((v) => !v)}
-            className="flex items-center gap-2 px-3 py-2 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 shadow-sm"
-            style={btnStyle}
+            className={`${btnClass} w-full`}
+            style={{
+              ...btnStyle,
+              backgroundColor: specialOpen
+                ? "color-mix(in srgb, var(--theme-primary) 14%, transparent)"
+                : "transparent",
+            }}
+            {...(specialOpen ? {} : hoverProps)}
           >
-            <Sparkles size={13} />
+            <Sparkles size={13} style={iconStyle} />
             Specijalni elementi
             <ChevronDown
               size={11}
@@ -235,14 +264,11 @@ export default function AddTablePanel({
       {onLoadHallScheme && (
         <button
           onClick={onLoadHallScheme}
-          className="flex items-center gap-2 px-3 py-2 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 shadow-sm"
-          style={{
-            backgroundColor: "var(--theme-surface)",
-            border: "1px solid var(--theme-primary)",
-            color: "var(--theme-primary)",
-          }}
+          className={btnClass}
+          style={btnStyle}
+          {...hoverProps}
         >
-          <Building2 size={13} />
+          <Building2 size={13} style={iconStyle} />
           Učitaj šemu sale
         </button>
       )}
@@ -251,17 +277,21 @@ export default function AddTablePanel({
           already reports table and seat totals there. */}
       {totalSeats > 0 && !templateMode && (
         <div
-          className="flex items-center px-3 rounded text-xs font-raleway shadow-sm self-stretch"
+          className="flex items-center pl-3 pr-3 ml-1 text-xs font-raleway self-stretch"
           style={{
-            backgroundColor: "var(--theme-surface)",
-            border: "1px solid var(--theme-border-light)",
+            borderLeft:
+              "1px solid color-mix(in srgb, var(--theme-primary) 22%, transparent)",
             color: "var(--theme-text-light)",
           }}
         >
           Slobodnih mesta:&nbsp;
-          <span style={{ color: "var(--theme-text)", fontWeight: 500 }}>
-            {totalSeats - occupiedSeats}&nbsp;/&nbsp;{totalSeats}
+          <span
+            className="tabular-nums"
+            style={{ color: "var(--theme-primary)", fontWeight: 700 }}
+          >
+            {totalSeats - occupiedSeats}
           </span>
+          <span style={{ opacity: 0.55 }}>&nbsp;/&nbsp;{totalSeats}</span>
         </div>
       )}
 

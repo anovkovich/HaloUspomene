@@ -51,11 +51,14 @@ export default function SeatSearchButton({
         onClick={() => onOpenChange(true)}
         title="Pronađi gosta u rasporedu"
         aria-label="Pronađi gosta u rasporedu"
-        className="flex items-center justify-center px-2.5 rounded shadow-sm transition-opacity hover:opacity-80 self-stretch cursor-pointer"
-        style={{
-          backgroundColor: "var(--theme-surface)",
-          border: "1px solid var(--theme-border-light)",
-          color: "var(--theme-text-light)",
+        className="flex items-center justify-center px-2.5 rounded-lg transition-colors self-stretch cursor-pointer"
+        style={{ color: "var(--theme-primary)" }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor =
+            "color-mix(in srgb, var(--theme-primary) 12%, transparent)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "transparent";
         }}
       >
         <Search size={14} />
@@ -67,13 +70,13 @@ export default function SeatSearchButton({
 
   return (
     <div
-      className="flex items-center gap-1.5 pl-2.5 pr-1.5 rounded shadow-sm self-stretch"
+      className="flex items-center gap-1.5 pl-2.5 pr-1.5 rounded-lg self-stretch"
       style={{
-        backgroundColor: "var(--theme-surface)",
+        backgroundColor: "var(--theme-background)",
         border: `1px solid ${
           hasQuery && matchCount === 0
             ? "#ef4444"
-            : "var(--theme-border-light)"
+            : "color-mix(in srgb, var(--theme-primary) 35%, transparent)"
         }`,
       }}
     >
