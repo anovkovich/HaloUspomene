@@ -67,13 +67,18 @@ export default function ParallaxHero({
     };
 
     // Try requesting permission on iOS 13+
+    // `typeof` provera MORA da ostane prva: u pregledačima bez ovog globala
+    // (npr. Safari na macOS-u) golo pominjanje imena baca ReferenceError, pa
+    // bi cela pozivnica pala na error boundary.
+    if (typeof DeviceOrientationEvent === "undefined") return;
+
     // `requestPermission` postoji samo na iOS-u i nema ga u TS lib.dom, pa se
     // tip proširuje ovde umesto da se ceo konstruktor obori na `any`.
     const DOE = DeviceOrientationEvent as typeof DeviceOrientationEvent & {
       requestPermission?: () => Promise<PermissionState>;
     };
 
-    if (typeof DeviceOrientationEvent !== "undefined" && DOE.requestPermission) {
+    if (DOE.requestPermission) {
       // Permission will be requested on first user interaction
       const requestPermission = async () => {
         try {

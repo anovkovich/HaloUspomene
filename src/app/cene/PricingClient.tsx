@@ -204,6 +204,12 @@ export default function PricingClient({
   // klikom na ova dva dugmeta, pa je događaj pravo mesto za posledicu. Efekat je
   // uz to radio i na mount, resetujući na vrednosti koje su ionako početne.
   const switchMode = (m: "classic" | "premium") => {
+    // Klik na vec aktivan tab ne sme nista da resetuje. Dok je reset stajao u
+    // efektu na `[mode]`, to se resavalo samo od sebe: `setMode` sa istom
+    // vrednoscu React odbacuje, pa se efekat nije ni pokretao. U handleru ta
+    // zastita mora eksplicitno, inace bi promasen klik obrisao sve sto je
+    // korisnik izabrao u konfiguratoru.
+    if (m === mode) return;
     setMode(m);
     setSelected({
       website: true,
