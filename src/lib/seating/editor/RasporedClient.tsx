@@ -48,12 +48,25 @@ import Toolbar from "./Toolbar";
 import AddTablePanel from "./AddTablePanel";
 import UpgradeModal from "./UpgradeModal";
 import CursorGuestBadge from "./CursorGuestBadge";
+import SeatGuestPicker, { type SeatAnchor } from "./SeatGuestPicker";
 import MobileTableCard from "./MobileTableCard";
 import MobileSeatSheet from "./MobileSeatSheet";
 import MobileLayoutScreen from "./MobileLayoutScreen";
 import { generateAndDownloadPDF } from "../pdf/generatePDF";
 
 // Desktop infinite-canvas constants (module scope so effects need no deps).
+/** Marks the one-time explainer about per-person names as already shown. Kept
+ *  in localStorage, so it is per browser rather than per event — the same host
+ *  usually arranges one wedding and does not need the lesson twice. */
+const MEMBER_NAMES_HINT_KEY = "halo_seating_member_names_hint";
+
+/** Srpska paukalna promena uz broj: 2-4 osobe, inace osoba (5, 11-14, 25...). */
+function osobaLabel(n: number): string {
+  const d = n % 10;
+  const dd = n % 100;
+  return d >= 2 && d <= 4 && (dd < 12 || dd > 14) ? "osobe" : "osoba";
+}
+
 const WORLD_W = 12000;
 const WORLD_H = 9000;
 const MIN_ZOOM = 0.2;
@@ -183,6 +196,48 @@ export default function RasporedClient({
   const [guestSearch, setGuestSearch] = useState("");
   const [hoverSeat, setHoverSeat] = useState<SeatAssignment | null>(null);
   const [hoverHint, setHoverHint] = useState<string | null>(null);
+  // Hover guest-picker over a free seat (desktop, and only while no guest is
+  // picked up in the sidebar).
+  const [seatPicker, setSeatPicker] = useState<{
+    tableId: string;
+    seatIndex: number;
+    tableLabel: string;
+    anchor: SeatAnchor;
+  } | null>(null);
+  const seatPickerCloseTimer = useRef<number | null>(null);
+  const seatPickerOpenTimer = useRef<number | null>(null);
+
+  // ── Hover guest-picker timers ─────────────────────────────────────────────
+  // The pointer has to cross a few px of canvas to reach the panel, so leaving
+  // the seat only schedules a close; entering the panel cancels it. Declared
+  // this early because the canvas wheel/pan effects below list them as deps.
+  const clearSeatPickerTimers = useCallback(() => {
+    for (const t of [seatPickerCloseTimer, seatPickerOpenTimer]) {
+      if (t.current !== null) {
+        window.clearTimeout(t.current);
+        t.current = null;
+      }
+    }
+  }, []);
+
+  const closeSeatPicker = useCallback(() => {
+    clearSeatPickerTimers();
+    setSeatPicker(null);
+  }, [clearSeatPickerTimers]);
+
+  const scheduleSeatPickerClose = useCallback(() => {
+    clearSeatPickerTimers();
+    seatPickerCloseTimer.current = window.setTimeout(
+      () => setSeatPicker(null),
+      260,
+    );
+  }, [clearSeatPickerTimers]);
+
+  useEffect(() => clearSeatPickerTimers, [clearSeatPickerTimers]);
+  /** One-shot guard for the per-person-names explainer (see MEMBER_NAMES_HINT_KEY). */
+  const memberNamesHintDone = useRef(false);
+  /** Selection seen by the auto-advance effect on its previous run. */
+  const lastSelectedGuestId = useRef<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -320,6 +375,9 @@ export default function RasporedClient({
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      // The picker is anchored to a viewport rect that panning/zooming
+      // invalidates — and a pending open would land at the stale spot.
+      closeSeatPicker();
       const rect = el.getBoundingClientRect();
       const cx = e.clientX - rect.left;
       const cy = e.clientY - rect.top;
@@ -344,7 +402,13 @@ export default function RasporedClient({
 
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [isMobile, isPWADesktop, setPanSynced, setCanvasZoomSynced]);
+  }, [
+    isMobile,
+    isPWADesktop,
+    setPanSynced,
+    setCanvasZoomSynced,
+    closeSeatPicker,
+  ]);
 
   // Hold Space to pan the canvas with a grab cursor (desktop only).
   useEffect(() => {
@@ -397,6 +461,7 @@ export default function RasporedClient({
   const handleCanvasPanStart = (e: React.MouseEvent) => {
     if (!spaceHeld) return;
     e.preventDefault();
+    closeSeatPicker();
     panStart.current = {
       mouseX: e.clientX,
       mouseY: e.clientY,
@@ -469,12 +534,70 @@ export default function RasporedClient({
     return counts;
   }, [tables]);
 
+  // Auto-advance: the moment a party runs out of seats to fill, hop to the next
+  // guest who still has some, so a whole table gets seated without a trip back
+  // to the sidebar. Lives in an effect rather than in the seat-click handler so
+  // every route into a full party (click, hover picker, seat removal elsewhere)
+  // advances the same way.
   useEffect(() => {
-    if (!selectedGuest) return;
+    if (!selectedGuest) {
+      lastSelectedGuestId.current = null;
+      return;
+    }
+    // Only a party that filled up *while selected* hands over to the next one.
+    // Clicking an already-full party in the sidebar just clears, as before —
+    // jumping to somebody else there would look like the click missed.
+    const filledUpWhileSelected =
+      lastSelectedGuestId.current === selectedGuest.id;
+    lastSelectedGuestId.current = selectedGuest.id;
+
     const total = parseInt(selectedGuest.guestCount) || 1;
-    if ((assignedCounts[selectedGuest.id] || 0) >= total)
+    if ((assignedCounts[selectedGuest.id] || 0) < total) return;
+    if (!filledUpWhileSelected) {
       setSelectedGuest(null);
-  }, [assignedCounts, selectedGuest]);
+      return;
+    }
+
+    const hasFreeSeats = (g: RSVPEntry) =>
+      g.id !== selectedGuest.id &&
+      (assignedCounts[g.id] || 0) < (parseInt(g.guestCount) || 1);
+
+    // Prefer the next guest visible in the sidebar right now — advancing to
+    // somebody the active filter hides would look like the selection vanished.
+    const inView = attending.find(
+      (g) =>
+        hasFreeSeats(g) &&
+        guestMatchesFilter(g, guestFilter, guestSearch, guestGroupByGuestId),
+    );
+    if (inView) {
+      setSelectedGuest(inView);
+      return;
+    }
+
+    // The search box usually still holds the name of the party just seated,
+    // which hides everyone else. Clear it before giving up on the selection.
+    if (guestSearch.trim()) {
+      const afterSearch = attending.find(
+        (g) =>
+          hasFreeSeats(g) &&
+          guestMatchesFilter(g, guestFilter, "", guestGroupByGuestId),
+      );
+      if (afterSearch) {
+        setGuestSearch("");
+        setSelectedGuest(afterSearch);
+        return;
+      }
+    }
+
+    setSelectedGuest(null);
+  }, [
+    assignedCounts,
+    selectedGuest,
+    attending,
+    guestFilter,
+    guestSearch,
+    guestGroupByGuestId,
+  ]);
 
   const totalAssigned = useMemo(
     () => Object.values(assignedCounts).reduce((s, n) => s + n, 0),
@@ -603,6 +726,9 @@ export default function RasporedClient({
   const handleSeatClick = async (tableId: string, seatIndex: number) => {
     const targetTable = tables.find((t) => t.id === tableId);
     const isRemoving = !!targetTable?.assignments[seatIndex];
+    // Free seat with nobody picked up: the click only opens the hover picker
+    // (handled in TableNode), so there is nothing to assign here.
+    if (!isRemoving && !selectedGuest) return;
     if (
       !isRemoving &&
       selectedGuest &&
@@ -620,12 +746,17 @@ export default function RasporedClient({
       const memberName = selectedGuest
         ? pickMemberName(prev, selectedGuest.id, selectedGuest.name)
         : "";
-      return prev.map((t) => {
+      // A click that changes nothing must hand back the very same array — the
+      // dirty-tracking effect watches `tables` by identity, and a fresh array
+      // would arm Sačuvaj and the leave-page warning over a no-op.
+      let changed = false;
+      const next = prev.map((t) => {
         if (t.id !== tableId) return t;
         const seat = t.assignments[seatIndex];
         if (seat) {
           const a = [...t.assignments];
           a[seatIndex] = null;
+          changed = true;
           return { ...t, assignments: a };
         }
         if (!selectedGuest) return t;
@@ -637,30 +768,132 @@ export default function RasporedClient({
           guestName: memberName,
         };
         a[seatIndex] = assignment;
+        changed = true;
         return { ...t, assignments: a };
       });
+      return changed ? next : prev;
     });
+    // Auto-advance to the next guest with free seats is handled by the effect
+    // above, which watches `assignedCounts`.
+  };
 
-    // Auto-advance to the next partially-seated guest when this click
-    // just maxed out the current selection (e.g. after 3rd seat of 3/3).
-    if (!isRemoving && selectedGuest) {
-      const total = parseInt(selectedGuest.guestCount) || 1;
-      const willBeFull =
-        (assignedCounts[selectedGuest.id] || 0) + 1 >= total;
-      if (willBeFull) {
-        // Advance only within the currently visible (filtered/searched) list.
-        const next = attending.find((g) => {
-          if (g.id === selectedGuest.id) return false;
-          if (
-            !guestMatchesFilter(g, guestFilter, guestSearch, guestGroupByGuestId)
-          )
-            return false;
-          const gTotal = parseInt(g.guestCount) || 1;
-          return (assignedCounts[g.id] || 0) < gTotal;
-        });
-        setSelectedGuest(next ?? null);
+  /**
+   * Seats one specific guest on one specific free seat — the hover picker's
+   * path, where no guest is picked up in the sidebar. Same paid gate and same
+   * member-name resolution as a normal seat click.
+   */
+  const assignGuestToSeat = async (
+    tableId: string,
+    seatIndex: number,
+    guest: RSVPEntry,
+  ) => {
+    const target = tables.find((t) => t.id === tableId);
+    if (!target || target.assignments[seatIndex]) return;
+    const total = parseInt(guest.guestCount) || 1;
+    const already = assignedCounts[guest.id] || 0;
+    if (already >= total) return;
+
+    if (!paidForRaspored && totalAssigned >= 1) {
+      const paid = await recheckPaid();
+      if (!paid) {
+        setShowUpgradeModal(true);
+        return;
       }
     }
+
+    setTables((prev) => {
+      const memberName = pickMemberName(prev, guest.id, guest.name);
+      let changed = false;
+      const next = prev.map((t) => {
+        if (t.id !== tableId) return t;
+        if (t.assignments[seatIndex]) return t;
+        const a = [...t.assignments];
+        a[seatIndex] = { guestId: guest.id, guestName: memberName };
+        changed = true;
+        return { ...t, assignments: a };
+      });
+      return changed ? next : prev;
+    });
+
+    // A party with people left to seat becomes the active selection, so the
+    // remaining seats are one click each from here on.
+    if (already + 1 < total) setSelectedGuest(guest);
+  };
+
+  const handleEmptySeatHover = useCallback(
+    (
+      tableId: string,
+      seatIndex: number,
+      el: HTMLElement | null,
+      immediate?: boolean,
+    ) => {
+      if (el === null) {
+        scheduleSeatPickerClose();
+        return;
+      }
+      const table = tables.find((t) => t.id === tableId);
+      if (!table) return;
+      clearSeatPickerTimers();
+      const open = () => {
+        if (!el.isConnected) return;
+        const r = el.getBoundingClientRect();
+        setSeatPicker({
+          tableId,
+          seatIndex,
+          tableLabel: table.label,
+          anchor: { left: r.left, right: r.right, top: r.top, bottom: r.bottom },
+        });
+      };
+      if (immediate) {
+        open();
+        return;
+      }
+      // Hover intent: merely sweeping the cursor across a table must not throw
+      // a panel over the seats you were aiming for.
+      seatPickerOpenTimer.current = window.setTimeout(open, 280);
+    },
+    [tables, clearSeatPickerTimers, scheduleSeatPickerClose],
+  );
+
+  /**
+   * Sidebar selection. The first time the host picks a party that covers more
+   * than one person, explain that each seat can carry its own name — otherwise
+   * all of that party's seats read the same and nobody discovers the feature.
+   */
+  const handleSelectGuest = (guest: RSVPEntry | null) => {
+    closeSeatPicker();
+    setSelectedGuest(guest);
+    if (!guest) return;
+    const count = parseInt(guest.guestCount) || 1;
+    if (count <= 1) return;
+    if ((members[guest.id] ?? []).some((n) => n.trim())) return;
+    // A party already seated in full loses its selection right away (see the
+    // auto-advance effect), so an invitation to name its people reads as noise.
+    if ((assignedCounts[guest.id] || 0) >= count) return;
+    if (memberNamesHintDone.current) return;
+    memberNamesHintDone.current = true;
+    try {
+      if (localStorage.getItem(MEMBER_NAMES_HINT_KEY)) return;
+      localStorage.setItem(MEMBER_NAMES_HINT_KEY, "1");
+    } catch {
+      // Private mode / blocked storage: show the hint once this session only.
+    }
+    void (async () => {
+      const open = await confirm({
+        title: "Više osoba na jednoj zvanici",
+        message: `Zvanica ${guest.name} pokriva ${count} ${osobaLabel(count)}, pa sva njena mesta nose isti naziv.\n\nAko želiš da svako mesto ima svoje ime, klikni na ikonicu sa dve figure levo od naziva zvanice i upiši imena. Posle toga se pri raspoređivanju popunjava ime po ime, a ta imena idu i u PDF i u pretragu Gde sedim.`,
+        confirmLabel: "Unesi imena sada",
+        cancelLabel: "Kasnije",
+      });
+      if (open) setMemberModalGuest(guest);
+    })();
+  };
+
+  const handlePickSeatGuest = async (guest: RSVPEntry) => {
+    if (!seatPicker) return;
+    const { tableId, seatIndex } = seatPicker;
+    closeSeatPicker();
+    await assignGuestToSeat(tableId, seatIndex, guest);
   };
 
   const handleStartOver = () => {
@@ -1475,7 +1708,7 @@ export default function RasporedClient({
         <GuestSidebar
           attending={attending}
           selectedGuest={selectedGuest}
-          onSelectGuest={setSelectedGuest}
+          onSelectGuest={handleSelectGuest}
           assignedCounts={assignedCounts}
           onStartOver={handleStartOver}
           topAction={sidebarTopAction}
@@ -1632,6 +1865,13 @@ export default function RasporedClient({
                       selectedGuest={selectedGuest}
                       onSeatClick={handleSeatClick}
                       onSeatHover={setHoverSeat}
+                      onEmptySeatHover={
+                        // Only when nothing is picked up — with a guest in hand
+                        // a free seat is a one-click drop, not a menu.
+                        !templateMode && !selectedGuest && attending.length > 0
+                          ? handleEmptySeatHover
+                          : undefined
+                      }
                       onElementHover={setHoverHint}
                       onUpdate={updateTable}
                       onDelete={deleteTable}
@@ -1949,6 +2189,19 @@ export default function RasporedClient({
               : null
           }
           containerRef={canvasRef}
+        />
+      )}
+
+      {!isPWADesktop && !selectedGuest && seatPicker && (
+        <SeatGuestPicker
+          anchor={seatPicker.anchor}
+          seatLabel={`${seatPicker.tableLabel} · mesto ${seatPicker.seatIndex + 1}`}
+          attending={attending}
+          assignedCounts={assignedCounts}
+          members={members}
+          onPick={handlePickSeatGuest}
+          onKeepOpen={clearSeatPickerTimers}
+          onClose={closeSeatPicker}
         />
       )}
 

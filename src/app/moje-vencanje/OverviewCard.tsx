@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import PrintChoiceModal from "@/components/portal/PrintChoiceModal";
+import { galleryQrDataUrl } from "@/lib/gallery-qr";
 import PrintCard from "@/components/portal/PrintCard";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -199,16 +200,27 @@ export default function OverviewCard({
     "potvrde" | "pozivnica" | "galerija" | "audio" | null
   >(null);
 
-  const downloadQrPng = useCallback(async (url: string, file: string) => {
-    const QRCode = await import("qrcode");
-    const dataUrl = await QRCode.toDataURL(url, {
-      width: 1400, margin: 2, color: { dark: "#232323", light: "#ffffff" },
-    });
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = file;
-    a.click();
-  }, []);
+  /** `camera` bira verziju sa foto-značkom iz `gallery-qr.ts` — isti kod koji
+   *  admin i portal proslave preuzimaju, da odštampani QR za galeriju svuda
+   *  izgleda isto. */
+  const downloadQrPng = useCallback(
+    async (url: string, file: string, camera = false) => {
+      let dataUrl: string;
+      if (camera) {
+        dataUrl = await galleryQrDataUrl(url, 1400);
+      } else {
+        const QRCode = await import("qrcode");
+        dataUrl = await QRCode.toDataURL(url, {
+          width: 1400, margin: 2, color: { dark: "#232323", light: "#ffffff" },
+        });
+      }
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = file;
+      a.click();
+    },
+    [],
+  );
 
   const handleDownloadSeatQR = useCallback(async () => {
     const QRCode = await import("qrcode");
@@ -666,6 +678,7 @@ export default function OverviewCard({
               downloadQrPng(
                 `https://halouspomene.rs/pozivnica/${coupleInfo.slug}/galerija/`,
                 `qr-galerija-${coupleInfo.slug}.png`,
+                true,
               );
             else if (printChoice === "audio")
               downloadQrPng(

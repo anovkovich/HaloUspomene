@@ -114,17 +114,34 @@ function Seat({
   onClick,
   onHover,
   isSelecting,
+  onEmptyHover,
 }: {
   assignment: SeatAssignment | null;
   onClick: () => void;
   onHover?: (a: SeatAssignment | null) => void;
   isSelecting: boolean;
+  /** Fires only for a FREE seat: the seat button on enter, null on leave, and
+   *  with `immediate` on click. The editor uses it to anchor the hover
+   *  guest-picker. Undefined when the picker is unavailable (read-only,
+   *  template mode, a guest already picked up). */
+  onEmptyHover?: (el: HTMLElement | null, immediate?: boolean) => void;
 }) {
   return (
     <button
-      onClick={onClick}
-      onMouseEnter={() => onHover?.(assignment)}
-      onMouseLeave={() => onHover?.(null)}
+      onClick={(e) => {
+        // Clicking a free seat with nobody picked up opens the picker at once,
+        // instead of waiting out the hover-intent delay.
+        if (!assignment && onEmptyHover) onEmptyHover(e.currentTarget, true);
+        onClick();
+      }}
+      onMouseEnter={(e) => {
+        onHover?.(assignment);
+        if (!assignment) onEmptyHover?.(e.currentTarget);
+      }}
+      onMouseLeave={() => {
+        onHover?.(null);
+        if (!assignment) onEmptyHover?.(null);
+      }}
       className="rounded-full flex items-center justify-center transition-all"
       style={{
         width: SEAT_SIZE,
@@ -141,7 +158,8 @@ function Seat({
             ? "2px dashed var(--theme-primary)"
             : "2px solid color-mix(in srgb, var(--theme-primary) 60%, transparent)",
         color: assignment ? "white" : "var(--theme-text-light)",
-        cursor: assignment || isSelecting ? "pointer" : "default",
+        cursor:
+          assignment || isSelecting || onEmptyHover ? "pointer" : "default",
         fontSize: 9,
         fontFamily: "var(--font-raleway, sans-serif)",
         fontWeight: 700,
@@ -803,6 +821,14 @@ interface Props {
   selectedGuest: RSVPEntry | null;
   onSeatClick: (tableId: string, seatIndex: number) => void;
   onSeatHover?: (assignment: SeatAssignment | null) => void;
+  /** Pointer entered (`el`) or left (`null`) a FREE seat. Anchors the hover
+   *  guest-picker; the editor passes it only while no guest is picked up. */
+  onEmptySeatHover?: (
+    tableId: string,
+    seatIndex: number,
+    el: HTMLElement | null,
+    immediate?: boolean,
+  ) => void;
   /** Replaces the cursor badge primary line with the given hint while hovering
    *  non-seat interactive elements (grab handle, rotate, label, entrance arrow). */
   onElementHover?: (hint: string | null) => void;
@@ -819,6 +845,7 @@ export default function TableNode({
   selectedGuest,
   onSeatClick,
   onSeatHover,
+  onEmptySeatHover,
   onElementHover,
   onUpdate,
   onDelete,
@@ -838,7 +865,18 @@ export default function TableNode({
   const isSelecting = readOnly ? false : !!selectedGuest;
   const seatClick = readOnly ? () => {} : onSeatClick;
   const seatHover = readOnly ? undefined : onSeatHover;
+  const emptySeatHover = readOnly ? undefined : onEmptySeatHover;
   const elementHover = readOnly ? undefined : onElementHover;
+  /** Every seat layout below repeats the same four props; only the index moves. */
+  const seatProps = (i: number) => ({
+    onClick: () => seatClick(table.id, i),
+    onHover: seatHover,
+    isSelecting,
+    onEmptyHover: emptySeatHover
+      ? (el: HTMLElement | null, immediate?: boolean) =>
+          emptySeatHover(table.id, i, el, immediate)
+      : undefined,
+  });
   const labelHintProps = elementHover
     ? {
         onMouseEnter: () => elementHover("Dupli klik za preimenovanje"),
@@ -1190,13 +1228,7 @@ export default function TableNode({
           <div className="px-3 pt-2 pb-3">
             <div className="flex gap-1.5 justify-center mb-2">
               {table.assignments.slice(0, seatsPerRow).map((a, i) => (
-                <Seat
-                  key={i}
-                  assignment={a}
-                  onClick={() => seatClick(table.id, i)}
-                  onHover={seatHover}
-                  isSelecting={isSelecting}
-                />
+                <Seat key={i} assignment={a} {...seatProps(i)} />
               ))}
             </div>
             <div
@@ -1214,9 +1246,7 @@ export default function TableNode({
                 <Seat
                   key={seatsPerRow + i}
                   assignment={a}
-                  onClick={() => seatClick(table.id, seatsPerRow + i)}
-                  onHover={seatHover}
-                  isSelecting={isSelecting}
+                  {...seatProps(seatsPerRow + i)}
                 />
               ))}
             </div>
@@ -1229,13 +1259,7 @@ export default function TableNode({
             {/* Left column */}
             <div className="flex flex-col gap-1.5">
               {table.assignments.slice(0, seatsPerRow).map((a, i) => (
-                <Seat
-                  key={i}
-                  assignment={a}
-                  onClick={() => seatClick(table.id, i)}
-                  onHover={seatHover}
-                  isSelecting={isSelecting}
-                />
+                <Seat key={i} assignment={a} {...seatProps(i)} />
               ))}
             </div>
             {/* Table surface — fixed 40px wide, matching landscape h-10 thickness */}
@@ -1270,9 +1294,7 @@ export default function TableNode({
                 <Seat
                   key={seatsPerRow + i}
                   assignment={a}
-                  onClick={() => seatClick(table.id, seatsPerRow + i)}
-                  onHover={seatHover}
-                  isSelecting={isSelecting}
+                  {...seatProps(seatsPerRow + i)}
                 />
               ))}
             </div>
@@ -1292,13 +1314,7 @@ export default function TableNode({
               }`}
             >
               {table.assignments.map((a, i) => (
-                <Seat
-                  key={i}
-                  assignment={a}
-                  onClick={() => seatClick(table.id, i)}
-                  onHover={seatHover}
-                  isSelecting={isSelecting}
-                />
+                <Seat key={i} assignment={a} {...seatProps(i)} />
               ))}
             </div>
             <div
@@ -1321,13 +1337,7 @@ export default function TableNode({
           >
             <div className="flex flex-col gap-1.5">
               {table.assignments.map((a, i) => (
-                <Seat
-                  key={i}
-                  assignment={a}
-                  onClick={() => seatClick(table.id, i)}
-                  onHover={seatHover}
-                  isSelecting={isSelecting}
-                />
+                <Seat key={i} assignment={a} {...seatProps(i)} />
               ))}
             </div>
             <div
@@ -1376,12 +1386,7 @@ export default function TableNode({
                     top: cy + SEAT_ORBIT_R * Math.sin(angle) - SEAT_SIZE / 2,
                   }}
                 >
-                  <Seat
-                    assignment={a}
-                    onClick={() => seatClick(table.id, i)}
-                    onHover={seatHover}
-                    isSelecting={isSelecting}
-                  />
+                  <Seat assignment={a} {...seatProps(i)} />
                 </div>
               );
             })}
