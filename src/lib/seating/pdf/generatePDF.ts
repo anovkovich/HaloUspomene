@@ -135,7 +135,15 @@ export async function generateAndDownloadPDF(
                 : "↑";
         return `<rect x="${fx(r.x)}" y="${fy(r.y)}" width="${fs(r.w)}" height="${fs(r.h)}" rx="4" fill="#f0f0f0" stroke="#888" stroke-width="1.5" stroke-dasharray="5,4"/>\n<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${sz}" font-family="Arial" fill="#333">${arrow} ${t.label}</text>`;
       }
-      const icon = t.decorationType === "music" ? "♪" : "♫";
+      // Glyphs only — the PDF text layer has no icon font to fall back on.
+      const icon =
+        t.decorationType === "sweets"
+          ? "❦"
+          : t.decorationType === "buffet"
+            ? "▤"
+            : t.decorationType === "music"
+              ? "♪"
+              : "♫";
       return `<rect x="${fx(r.x)}" y="${fy(r.y)}" width="${fs(r.w)}" height="${fs(r.h)}" rx="4" fill="#f0f0f0" stroke="#888" stroke-width="1.5" stroke-dasharray="5,4"/>\n<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${sz}" font-family="Arial" fill="#333">${icon} ${t.label}</text>`;
     }
 

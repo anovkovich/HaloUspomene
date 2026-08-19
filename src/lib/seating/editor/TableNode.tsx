@@ -17,6 +17,8 @@ import {
   ArrowLeft,
   ArrowRight,
   GripVertical,
+  CakeSlice,
+  UtensilsCrossed,
 } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
 import type {
@@ -26,6 +28,7 @@ import type {
   EntranceDirection,
 } from "../types";
 import { WALL_DEFAULT_W, WALL_DEFAULT_H } from "../geometry";
+import { consumeDragClick, type SeatRef } from "./seatDrag";
 
 const SEAT_SIZE = 30;
 const CIRCLE_TABLE_R = 52;
@@ -114,12 +117,23 @@ function Seat({
   onClick,
   onHover,
   isSelecting,
+  highlighted,
+  tableId,
+  seatIndex,
+  onDragStart,
   onEmptyHover,
 }: {
   assignment: SeatAssignment | null;
   onClick: () => void;
   onHover?: (a: SeatAssignment | null) => void;
   isSelecting: boolean;
+  /** Lit up by the seat-search: this seat holds somebody the query matched. */
+  highlighted?: boolean;
+  /** Identity written to the DOM so the drag hit-test can find this seat. */
+  tableId: string;
+  seatIndex: number;
+  /** Starts a move-drag. Only provided for seats that hold somebody. */
+  onDragStart?: (e: React.PointerEvent) => void;
   /** Fires only for a FREE seat: the seat button on enter, null on leave, and
    *  with `immediate` on click. The editor uses it to anchor the hover
    *  guest-picker. Undefined when the picker is unavailable (read-only,
@@ -129,7 +143,14 @@ function Seat({
   return (
     <button
       data-seat
+      data-table-id={tableId}
+      data-seat-index={seatIndex}
+      data-seat-occupied={assignment ? "1" : "0"}
+      onPointerDown={assignment && onDragStart ? onDragStart : undefined}
       onClick={(e) => {
+        // A drag ends with a click on the seat it started from; that click must
+        // not fall through to the remove path.
+        if (consumeDragClick()) return;
         // Clicking a free seat with nobody picked up opens the picker at once,
         // instead of waiting out the hover-intent delay.
         if (!assignment && onEmptyHover) onEmptyHover(e.currentTarget, true);
@@ -159,8 +180,18 @@ function Seat({
             ? "2px dashed var(--theme-primary)"
             : "2px solid color-mix(in srgb, var(--theme-primary) 60%, transparent)",
         color: assignment ? "white" : "var(--theme-text-light)",
-        cursor:
-          assignment || isSelecting || onEmptyHover ? "pointer" : "default",
+        // Search hit: a ring outside the seat, so it reads even at low zoom
+        // where the seat itself is only a few pixels across.
+        outline: highlighted ? "3px solid #16a34a" : undefined,
+        outlineOffset: highlighted ? 2 : undefined,
+        boxShadow: highlighted ? "0 0 0 6px rgba(22,163,74,0.25)" : undefined,
+        cursor: assignment
+          ? onDragStart
+            ? "grab"
+            : "pointer"
+          : isSelecting || onEmptyHover
+            ? "pointer"
+            : "default",
         fontSize: 9,
         fontFamily: "var(--font-raleway, sans-serif)",
         fontWeight: 700,
@@ -179,6 +210,8 @@ function DecoIcon({ type }: { type?: DecorationType }) {
   if (type === "music") return <Music {...s} />;
   if (type === "dancing") return <Disc3 {...s} />;
   if (type === "entrance") return <DoorOpen {...s} />;
+  if (type === "sweets") return <CakeSlice {...s} />;
+  if (type === "buffet") return <UtensilsCrossed {...s} />;
   return <Crown {...s} />;
 }
 
@@ -822,6 +855,14 @@ interface Props {
   selectedGuest: RSVPEntry | null;
   onSeatClick: (tableId: string, seatIndex: number) => void;
   onSeatHover?: (assignment: SeatAssignment | null) => void;
+  /** `"{tableId}:{seatIndex}"` keys the seat-search is currently highlighting. */
+  highlightedSeats?: ReadonlySet<string>;
+  /** Starts a move-drag from an occupied seat. Omitted where dragging is off. */
+  onSeatDragStart?: (
+    e: React.PointerEvent,
+    source: SeatRef,
+    assignment: SeatAssignment,
+  ) => void;
   /** Pointer entered (`el`) or left (`null`) a FREE seat. Anchors the hover
    *  guest-picker; the editor passes it only while no guest is picked up. */
   onEmptySeatHover?: (
@@ -846,6 +887,8 @@ export default function TableNode({
   selectedGuest,
   onSeatClick,
   onSeatHover,
+  highlightedSeats,
+  onSeatDragStart,
   onEmptySeatHover,
   onElementHover,
   onUpdate,
@@ -869,10 +912,20 @@ export default function TableNode({
   const emptySeatHover = readOnly ? undefined : onEmptySeatHover;
   const elementHover = readOnly ? undefined : onElementHover;
   /** Every seat layout below repeats the same four props; only the index moves. */
+  const seatDragStart = readOnly ? undefined : onSeatDragStart;
   const seatProps = (i: number) => ({
+    tableId: table.id,
+    seatIndex: i,
     onClick: () => seatClick(table.id, i),
     onHover: seatHover,
     isSelecting,
+    highlighted: highlightedSeats?.has(`${table.id}:${i}`),
+    onDragStart: seatDragStart
+      ? (e: React.PointerEvent) => {
+          const a = table.assignments[i];
+          if (a) seatDragStart(e, { tableId: table.id, seatIndex: i }, a);
+        }
+      : undefined,
     onEmptyHover: emptySeatHover
       ? (el: HTMLElement | null, immediate?: boolean) =>
           emptySeatHover(table.id, i, el, immediate)

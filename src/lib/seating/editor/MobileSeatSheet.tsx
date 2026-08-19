@@ -165,18 +165,30 @@ export default function MobileSeatSheet({
               </p>
             )}
 
-            {/* Remove button */}
-            <button
-              onClick={() => {
-                onRemove(target.tableId, target.seatIndex);
-                onClose();
-              }}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-raleway font-medium text-white active:opacity-80"
-              style={{ backgroundColor: "#ef4444" }}
-            >
-              <UserMinus size={16} />
-              Ukloni sa mesta
-            </button>
+            {/* Remove button — the couple stays put on their own table. */}
+            {target.assignment.locked ? (
+              <p
+                className="text-xs font-raleway text-center py-3 rounded-xl"
+                style={{
+                  backgroundColor: "var(--theme-background)",
+                  color: "var(--theme-text-light)",
+                }}
+              >
+                Mladenci ostaju za svojim stolom.
+              </p>
+            ) : (
+              <button
+                onClick={() => {
+                  onRemove(target.tableId, target.seatIndex);
+                  onClose();
+                }}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-raleway font-medium text-white active:opacity-80"
+                style={{ backgroundColor: "#ef4444" }}
+              >
+                <UserMinus size={16} />
+                Ukloni sa mesta
+              </button>
+            )}
           </div>
         </div>
       </div>

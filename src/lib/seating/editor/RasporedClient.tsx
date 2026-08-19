@@ -11,13 +11,16 @@ import {
 import { toast } from "sonner";
 import type { RSVPEntry } from "@/lib/rsvp";
 import type { TableData, TableType, SeatAssignment } from "../types";
+import { BRIDE_GUEST_ID, GROOM_GUEST_ID } from "../types";
 import {
   computeBoundingBox,
   computeLayoutStats,
   normalizeTablesToOrigin,
+  rectFor,
   WALL_DEFAULT_W,
   WALL_DEFAULT_H,
 } from "../geometry";
+import { nameMatchesQuery } from "../lookup";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import LoadHallSchemeModal from "./LoadHallSchemeModal";
 import {
@@ -49,6 +52,8 @@ import AddTablePanel from "./AddTablePanel";
 import UpgradeModal from "./UpgradeModal";
 import CursorGuestBadge from "./CursorGuestBadge";
 import SeatGuestPicker, { type SeatAnchor } from "./SeatGuestPicker";
+import SeatSearchButton from "./SeatSearchButton";
+import { beginSeatDrag, type SeatRef } from "./seatDrag";
 import MobileTableCard from "./MobileTableCard";
 import MobileSeatSheet from "./MobileSeatSheet";
 import MobileLayoutScreen from "./MobileLayoutScreen";
@@ -145,7 +150,26 @@ function createTable(
   label: string,
   seats: number,
   pos: { x: number; y: number },
+  bridal?: boolean,
 ): TableData {
+  const assignments: (SeatAssignment | null)[] = Array(seats).fill(null);
+  if (bridal) {
+    // The couple sits in the middle of their own table, already placed — that
+    // is the whole point of picking Mladenački sto over a plain head table.
+    // Even seat counts have no true centre, so the pair straddles it.
+    const mid = Math.floor(seats / 2);
+    const left = Math.max(0, mid - 1);
+    assignments[left] = {
+      guestId: BRIDE_GUEST_ID,
+      guestName: "Mlada",
+      locked: true,
+    };
+    assignments[Math.min(seats - 1, left + 1)] = {
+      guestId: GROOM_GUEST_ID,
+      guestName: "Mladoženja",
+      locked: true,
+    };
+  }
   return {
     id: `table-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     type,
@@ -153,7 +177,8 @@ function createTable(
     x: pos.x,
     y: pos.y,
     label,
-    assignments: Array(seats).fill(null),
+    assignments,
+    ...(bridal ? { bridal: true } : {}),
   };
 }
 
@@ -209,6 +234,27 @@ export default function RasporedClient({
   // Declared this early because the canvas wheel/pan effects below list it as
   // a dependency — a panned canvas invalidates the panel's viewport anchor.
   const closeSeatPicker = useCallback(() => setSeatPicker(null), []);
+
+  // "Where did I seat them?" search over the canvas — distinct from the sidebar
+  // search, which picks somebody to place.
+  const [seatSearchOpen, setSeatSearchOpen] = useState(false);
+  const [seatQuery, setSeatQuery] = useState("");
+  const [seatMatchIndex, setSeatMatchIndex] = useState(0);
+  // A seat drag silences the cursor badge: every seat the ghost passes over
+  // would otherwise fire mouseenter and put "Skloni: X" back on screen, which
+  // is both wrong (you are moving, not removing) and a render per seat crossed.
+  const [seatDragging, setSeatDragging] = useState(false);
+  const seatDraggingRef = useRef(false);
+
+  const handleSeatHover = useCallback((a: SeatAssignment | null) => {
+    if (seatDraggingRef.current) return;
+    setHoverSeat(a);
+  }, []);
+
+  const handleElementHover = useCallback((hint: string | null) => {
+    if (seatDraggingRef.current) return;
+    setHoverHint(hint);
+  }, []);
   /** One-shot guard for the per-person-names explainer (see MEMBER_NAMES_HINT_KEY). */
   const memberNamesHintDone = useRef(false);
   const [hydrated, setHydrated] = useState(false);
@@ -499,11 +545,15 @@ export default function RasporedClient({
     return () => window.removeEventListener("beforeunload", handler);
   }, [isDirty]);
 
+  // Seats the editor placed itself (the couple on a bridal table) are skipped:
+  // they answer to no RSVP, and counting them would eat the free tier's single
+  // allowed assignment and skew the sidebar's raspoređeno tally.
   const assignedCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const table of tables)
       for (const seat of table.assignments)
-        if (seat) counts[seat.guestId] = (counts[seat.guestId] || 0) + 1;
+        if (seat && !seat.locked)
+          counts[seat.guestId] = (counts[seat.guestId] || 0) + 1;
     return counts;
   }, [tables]);
 
@@ -549,7 +599,12 @@ export default function RasporedClient({
     return { x: baseX + step, y: baseY + step };
   }, [tables.length]);
 
-  const addTable = async (type: TableType, label?: string, seats?: number) => {
+  const addTable = async (
+    type: TableType,
+    label?: string,
+    seats?: number,
+    bridal?: boolean,
+  ) => {
     if (
       (type === "rectangular" || type === "circle") &&
       tables.filter((t) => t.type === type).length >= 2
@@ -577,7 +632,13 @@ export default function RasporedClient({
     const pos = findSpawnPosition();
     setTables((prev) => [
       ...prev,
-      createTable(type, label ?? defaultLabel, seats ?? defaultSeats, pos),
+      createTable(
+        type,
+        label ?? defaultLabel,
+        seats ?? defaultSeats,
+        pos,
+        bridal,
+      ),
     ]);
   };
 
@@ -643,7 +704,10 @@ export default function RasporedClient({
 
   const handleSeatClick = async (tableId: string, seatIndex: number) => {
     const targetTable = tables.find((t) => t.id === tableId);
-    const isRemoving = !!targetTable?.assignments[seatIndex];
+    const existing = targetTable?.assignments[seatIndex] ?? null;
+    // The couple cannot be cleared off their own table — only moved.
+    if (existing?.locked) return;
+    const isRemoving = !!existing;
     // Free seat with nobody picked up: the click only opens the guest picker
     // (routed through `handleEmptySeatHover`), so there is nothing to assign.
     if (!isRemoving && !selectedGuest) return;
@@ -755,7 +819,7 @@ export default function RasporedClient({
         return;
       }
       if (!immediate) {
-        setHoverHint(EMPTY_SEAT_CTA);
+        if (!seatDraggingRef.current) setHoverHint(EMPTY_SEAT_CTA);
         return;
       }
       const table = tables.find((t) => t.id === tableId);
@@ -988,6 +1052,7 @@ export default function RasporedClient({
       const memberName = pickMemberName(prev, guest.id, guest.name);
       return prev.map((t) => {
         if (t.id !== tableId) return t;
+        if (t.assignments[seatIndex]?.locked) return t;
         const a = [...t.assignments];
         a[seatIndex] = { guestId: guest.id, guestName: memberName };
         return { ...t, assignments: a };
@@ -1000,6 +1065,7 @@ export default function RasporedClient({
     setTables((prev) =>
       prev.map((t) => {
         if (t.id !== tableId) return t;
+        if (t.assignments[seatIndex]?.locked) return t;
         const a = [...t.assignments];
         a[seatIndex] = null;
         return { ...t, assignments: a };
@@ -1052,6 +1118,154 @@ export default function RasporedClient({
   /** Hall outlines are painted first so tables always sit on top of them.
    *  Both are `position: absolute` with no z-index of their own, so DOM order
    *  is what decides — sorting here rather than styling keeps it simple. */
+  /**
+   * Drop of a dragged seat. A free target moves the occupant, an occupied one
+   * swaps the two — nobody is ever left standing, and a swap is the only way to
+   * rearrange a table that is already full.
+   *
+   * The whole `SeatAssignment` object travels, so per-person names and the
+   * locked flag follow their owner. Nothing about a move changes who is seated,
+   * only where, so `assignedCounts` is untouched and the paid gate does not
+   * apply — the server still re-verifies `paid_for_raspored` on save.
+   */
+  const moveSeatAssignment = useCallback((src: SeatRef, dst: SeatRef) => {
+    setTables((prev) => {
+      if (src.tableId === dst.tableId && src.seatIndex === dst.seatIndex)
+        return prev;
+      const srcTable = prev.find((t) => t.id === src.tableId);
+      const dstTable = prev.find((t) => t.id === dst.tableId);
+      if (!srcTable || !dstTable) return prev;
+      const moving = srcTable.assignments[src.seatIndex];
+      if (!moving) return prev;
+      const displaced = dstTable.assignments[dst.seatIndex] ?? null;
+      // A locked occupant may be rearranged but never pushed off its table.
+      if (displaced?.locked && dst.tableId !== src.tableId) return prev;
+      return prev.map((t) => {
+        if (t.id !== src.tableId && t.id !== dst.tableId) return t;
+        const a = [...t.assignments];
+        // Same-table moves need both writes to land in the one clone.
+        if (t.id === src.tableId) a[src.seatIndex] = displaced;
+        if (t.id === dst.tableId) a[dst.seatIndex] = moving;
+        return { ...t, assignments: a };
+      });
+    });
+  }, []);
+
+  const handleSeatDragStart = useCallback(
+    (e: React.PointerEvent, source: SeatRef, assignment: SeatAssignment) => {
+      const canvasEl = canvasRef.current;
+      if (!canvasEl) return;
+      beginSeatDrag(e, {
+        seatEl: e.currentTarget as HTMLElement,
+        source,
+        assignment,
+        canvasEl,
+        zoomRef,
+        panRef,
+        // The couple stay at their own table. Both directions are refused up
+        // front rather than at drop time, so the ghost never promises a swap
+        // the mutation would then decline: dragging a locked occupant offers
+        // only its own table, and dragging anybody else offers a locked seat
+        // only when the swap keeps that occupant on the same table.
+        canDropOn: (t) => {
+          if (assignment.locked) return t.tableId === source.tableId;
+          if (t.tableId === source.tableId) return true;
+          const occupant = tables.find((x) => x.id === t.tableId)?.assignments[
+            t.seatIndex
+          ];
+          return !occupant?.locked;
+        },
+        onDragStart: () => {
+          seatDraggingRef.current = true;
+          setSeatDragging(true);
+          setHoverSeat(null);
+          setHoverHint(null);
+          closeSeatPicker();
+        },
+        onDragEnd: () => {
+          seatDraggingRef.current = false;
+          setSeatDragging(false);
+          setHoverSeat(null);
+          setHoverHint(null);
+        },
+        onDrop: moveSeatAssignment,
+      });
+    },
+    [tables, closeSeatPicker, moveSeatAssignment],
+  );
+
+  // ── Seat search: find an already-seated guest and light up their seat ──────
+  // A seat carries either the party label or the individual member name, so the
+  // query is tried against both that and the party it belongs to — otherwise
+  // searching the zvanica holder would miss seats labelled with member names.
+  const seatMatches = useMemo(() => {
+    const q = seatQuery.trim();
+    if (!q) return [] as { tableId: string; seatIndex: number; cx: number; cy: number }[];
+    const partyName = new Map(attending.map((g) => [g.id, g.name]));
+    const out: { tableId: string; seatIndex: number; cx: number; cy: number }[] = [];
+    for (const t of tables) {
+      const r = rectFor(t);
+      t.assignments.forEach((a, i) => {
+        if (!a) return;
+        const party = partyName.get(a.guestId);
+        if (
+          nameMatchesQuery(a.guestName, q) ||
+          (party && nameMatchesQuery(party, q))
+        )
+          out.push({
+            tableId: t.id,
+            seatIndex: i,
+            cx: r.x + r.w / 2,
+            cy: r.y + r.h / 2,
+          });
+      });
+    }
+    return out;
+  }, [seatQuery, tables, attending]);
+
+  const highlightedSeats = useMemo(
+    () => new Set(seatMatches.map((m) => `${m.tableId}:${m.seatIndex}`)),
+    [seatMatches],
+  );
+  /** Stable signature, so dragging a table around does not re-frame the canvas. */
+  const seatMatchKey = highlightedSeats.size
+    ? [...highlightedSeats].join("|")
+    : "";
+  const lastFramedMatchKey = useRef("");
+
+  /** Centres the canvas on a match without zooming further out than readable. */
+  const frameSeatMatch = useCallback(
+    (match: { cx: number; cy: number } | undefined) => {
+      const el = canvasRef.current;
+      if (!el || !match) return;
+      const z = Math.min(MAX_ZOOM, Math.max(0.6, zoomRef.current));
+      setCanvasZoomSynced(z);
+      setPanSynced({
+        x: el.clientWidth / 2 - match.cx * z,
+        y: el.clientHeight / 2 - match.cy * z,
+      });
+    },
+    [setPanSynced, setCanvasZoomSynced],
+  );
+
+  useEffect(() => {
+    if (!seatMatchKey) {
+      lastFramedMatchKey.current = "";
+      return;
+    }
+    if (seatMatchKey === lastFramedMatchKey.current) return;
+    lastFramedMatchKey.current = seatMatchKey;
+    setSeatMatchIndex(0);
+    frameSeatMatch(seatMatches[0]);
+  }, [seatMatchKey, seatMatches, frameSeatMatch]);
+
+  const focusNextSeatMatch = () => {
+    if (seatMatches.length === 0) return;
+    const next = (seatMatchIndex + 1) % seatMatches.length;
+    setSeatMatchIndex(next);
+    frameSeatMatch(seatMatches[next]);
+  };
+
   const canvasTables = useMemo(() => {
     const isWall = (t: TableData) =>
       t.type === "decoration" && t.decorationType === "wall";
@@ -1699,6 +1913,19 @@ export default function RasporedClient({
               onLoadHallScheme={
                 enableHallSchemes ? () => setShowHallSchemes(true) : undefined
               }
+              trailing={
+                templateMode ? undefined : (
+                  <SeatSearchButton
+                    value={seatQuery}
+                    onChange={setSeatQuery}
+                    matchCount={seatMatches.length}
+                    matchIndex={seatMatchIndex}
+                    onNext={focusNextSeatMatch}
+                    open={seatSearchOpen}
+                    onOpenChange={setSeatSearchOpen}
+                  />
+                )
+              }
             />
           )}
 
@@ -1791,7 +2018,11 @@ export default function RasporedClient({
                       table={table}
                       selectedGuest={selectedGuest}
                       onSeatClick={handleSeatClick}
-                      onSeatHover={setHoverSeat}
+                      onSeatHover={handleSeatHover}
+                      highlightedSeats={highlightedSeats}
+                      onSeatDragStart={
+                        templateMode ? undefined : handleSeatDragStart
+                      }
                       onEmptySeatHover={
                         // Only when nothing is picked up — with a guest in hand
                         // a free seat is a one-click drop, not a menu.
@@ -1799,7 +2030,7 @@ export default function RasporedClient({
                           ? handleEmptySeatHover
                           : undefined
                       }
-                      onElementHover={setHoverHint}
+                      onElementHover={handleElementHover}
                       onUpdate={updateTable}
                       onDelete={deleteTable}
                       scale={canvasZoom}
@@ -2105,7 +2336,7 @@ export default function RasporedClient({
         </>
       )}
 
-      {!isPWADesktop && (
+      {!isPWADesktop && !seatDragging && (
         <CursorGuestBadge
           selectedGuest={selectedGuest}
           hoverSeat={hoverSeat}

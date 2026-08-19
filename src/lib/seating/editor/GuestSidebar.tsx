@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check, X, RotateCcw, Pencil, Users, LayoutDashboard } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
 import type { GuestGroup } from "@/lib/seating/guest-groups";
+import { nameMatchesQuery } from "@/lib/seating/lookup";
 
 // Wedding category values are stored without diacritics in the DB ("Mladozenjini"),
 // but displayed with them ("Mladoženjini"). This map only enriches labels for the
@@ -20,12 +21,18 @@ const WEDDING_CATEGORY_LABELS: Record<string, string> = {
  *  The bare prefix means "Bez celine". */
 export const GROUP_FILTER_PREFIX = "celina:";
 
-/** Whether a guest passes the sidebar's category + search filter. */
+/** Whether a guest passes the sidebar's category + search filter.
+ *
+ *  The search half also looks at the individual names entered for that party,
+ *  so typing a family member's name finds the zvanica they belong to even when
+ *  the zvanica itself is filed under somebody else's name. Matching goes
+ *  through `nameMatchesQuery`, which folds Cyrillic and ignores word order. */
 function guestMatchesFilter(
   g: RSVPEntry,
   filter: string,
   search: string,
   groupByGuestId?: Record<string, string>,
+  members?: Record<string, string[]>,
 ): boolean {
   if (filter.startsWith(GROUP_FILTER_PREFIX)) {
     const wanted = filter.slice(GROUP_FILTER_PREFIX.length);
@@ -38,9 +45,10 @@ function guestMatchesFilter(
   }
   const q = search.trim();
   if (q) {
-    const norm = (s: string) =>
-      s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-    if (!norm(g.name).includes(norm(q))) return false;
+    if (nameMatchesQuery(g.name, q)) return true;
+    return (members?.[g.id] ?? []).some(
+      (n) => n.trim() && nameMatchesQuery(n, q),
+    );
   }
   return true;
 }
@@ -128,7 +136,7 @@ export default function GuestSidebar({
     attending.some((g) => !groupByGuestId?.[g.id]);
 
   const filtered = attending.filter((g) =>
-    guestMatchesFilter(g, filter, search, groupByGuestId),
+    guestMatchesFilter(g, filter, search, groupByGuestId, members),
   );
 
   // Unassigned / partially assigned first, fully assigned at bottom

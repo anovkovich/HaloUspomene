@@ -13,11 +13,19 @@ import {
   Minus,
   Frame,
   Building2,
+  CakeSlice,
+  UtensilsCrossed,
 } from "lucide-react";
 import type { TableType, TableData } from "../types";
 
 interface Props {
-  onAddTable: (type: TableType, label?: string, seats?: number) => void;
+  onAddTable: (
+    type: TableType,
+    label?: string,
+    seats?: number,
+    /** Marks the wedding party's own table, which seats the couple by itself. */
+    bridal?: boolean,
+  ) => void;
   onAddDecoration: (
     label: string,
     decorationType: TableData["decorationType"],
@@ -35,6 +43,9 @@ interface Props {
   /** When provided, shows the "Učitaj šemu sale" button that opens the venue
    *  scheme picker. Omitted in the admin template editor. */
   onLoadHallScheme?: () => void;
+  /** Rendered at the end of the strip. The editor puts the seat-search button
+   *  there, which needs editor state this panel has no business holding. */
+  trailing?: React.ReactNode;
 }
 
 export default function AddTablePanel({
@@ -46,6 +57,7 @@ export default function AddTablePanel({
   hideDecorations,
   templateMode,
   onLoadHallScheme,
+  trailing,
 }: Props) {
   const [specialOpen, setSpecialOpen] = useState(false);
   const specialRef = useRef<HTMLDivElement>(null);
@@ -75,7 +87,7 @@ export default function AddTablePanel({
           icon: <Crown size={13} />,
           label: "Mladenački sto",
           action: () => {
-            onAddTable("single-sided", "Mladenački sto", 6);
+            onAddTable("single-sided", "Mladenački sto", 6, true);
             setSpecialOpen(false);
           },
         },
@@ -110,6 +122,22 @@ export default function AddTablePanel({
       label: "Plesni podijum",
       action: () => {
         onAddDecoration("Plesni podijum", "dancing");
+        setSpecialOpen(false);
+      },
+    },
+    {
+      icon: <CakeSlice size={13} />,
+      label: "Slatki sto",
+      action: () => {
+        onAddDecoration("Slatki sto", "sweets");
+        setSpecialOpen(false);
+      },
+    },
+    {
+      icon: <UtensilsCrossed size={13} />,
+      label: "Švedski sto",
+      action: () => {
+        onAddDecoration("Švedski sto", "buffet");
         setSpecialOpen(false);
       },
     },
@@ -236,6 +264,8 @@ export default function AddTablePanel({
           </span>
         </div>
       )}
+
+      {trailing}
     </div>
   );
 }

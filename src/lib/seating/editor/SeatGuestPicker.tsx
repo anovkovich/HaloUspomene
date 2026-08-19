@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, Users } from "lucide-react";
 import type { RSVPEntry } from "@/lib/rsvp";
+import { nameMatchesQuery } from "@/lib/seating/lookup";
 
 /** Viewport rect of the hovered seat — the panel hangs off it. */
 export interface SeatAnchor {
@@ -26,13 +27,6 @@ interface Props {
 
 const PANEL_W = 268;
 const PANEL_MAX_H = 300;
-
-function norm(s: string) {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
-}
 
 /**
  * Guest picker for a free seat, opened by clicking one while no guest is
@@ -83,13 +77,18 @@ export default function SeatGuestPicker({
   }, [onClose]);
 
   const guests = useMemo(() => {
-    const q = norm(search.trim());
+    const q = search.trim();
     const free = (g: RSVPEntry) =>
       (assignedCounts[g.id] || 0) < (parseInt(g.guestCount) || 1);
+    // Same matcher as the sidebar: Cyrillic-folded, word order free, and it
+    // also looks at the individual names entered for the party.
+    const hit = (g: RSVPEntry) =>
+      nameMatchesQuery(g.name, q) ||
+      (members[g.id] ?? []).some((n) => n.trim() && nameMatchesQuery(n, q));
     return attending
-      .filter((g) => !q || norm(g.name).includes(q))
+      .filter((g) => !q || hit(g))
       .sort((a, b) => Number(free(b)) - Number(free(a)));
-  }, [attending, assignedCounts, search]);
+  }, [attending, assignedCounts, members, search]);
 
   // Hang below the seat when there is room, above it otherwise. Anchoring the
   // flipped case to `bottom` lets the panel keep its natural height.

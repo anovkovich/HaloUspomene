@@ -9,13 +9,29 @@ export type DecorationType =
   | "dancing"
   | "entrance"
   | "custom"
-  | "wall";
+  | "wall"
+  | "sweets"
+  | "buffet";
 
 export type EntranceDirection = "up" | "down" | "left" | "right";
+
+/** Reserved `guestId`s for the two occupants a bridal table seats by itself.
+ *  They are not RSVP entries, so anything that counts real guests must skip
+ *  them — see `isLockedSeat`. */
+export const BRIDE_GUEST_ID = "__mlada__";
+export const GROOM_GUEST_ID = "__mladozenja__";
 
 export interface SeatAssignment {
   guestId: string;
   guestName: string;
+  /** Auto-placed and undeletable (the bride and groom on a bridal table).
+   *  Such a seat can be rearranged but never cleared. */
+  locked?: boolean;
+}
+
+/** True for an occupant the editor placed itself, not a guest off the list. */
+export function isLockedSeat(a: SeatAssignment | null): boolean {
+  return !!a?.locked;
 }
 
 export interface TableData {
@@ -38,4 +54,9 @@ export interface TableData {
   /** Single-sided only: put seats on the opposite side of the table surface
    *  (bottom instead of top in landscape; right instead of left when rotated). */
   flipped?: boolean;
+  /** The wedding party's own table, added from Specijalni elementi. Seats the
+   *  bride and groom by itself and keeps them put. A plain single-sided table
+   *  (the same shape, used as a head table at other events) never carries it,
+   *  and layouts saved before this existed never do either. */
+  bridal?: boolean;
 }
