@@ -21,8 +21,6 @@ interface Props {
   /** Per-party member names, to flag parties whose seats will carry real names. */
   members: Record<string, string[]>;
   onPick: (guest: RSVPEntry) => void;
-  /** Pointer entered the panel — the editor cancels its pending close. */
-  onKeepOpen: () => void;
   onClose: () => void;
 }
 
@@ -37,13 +35,12 @@ function norm(s: string) {
 }
 
 /**
- * Hover picker for a free seat, shown when no guest is currently picked up in
- * the sidebar. Lets the host search the guest list and drop somebody straight
- * onto that seat, instead of the select-then-click round trip.
+ * Guest picker for a free seat, opened by clicking one while no guest is
+ * picked up in the sidebar. Lets the host search the guest list and drop
+ * somebody straight onto that seat, instead of the select-then-click round trip.
  *
  * Positioned `fixed` from the seat's viewport rect, so the canvas zoom never
- * scales the panel. The 8px approach gap is part of the panel's own hover area,
- * otherwise the pointer would leave the seat and close it before arriving.
+ * scales the panel.
  */
 export default function SeatGuestPicker({
   anchor,
@@ -52,20 +49,15 @@ export default function SeatGuestPicker({
   assignedCounts,
   members,
   onPick,
-  onKeepOpen,
   onClose,
 }: Props) {
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
-  // Focus the search box so the panel is usable straight from the keyboard —
-  // but never yank the caret out of a field the host is already typing in
-  // (e.g. the sidebar search) just because the cursor drifted over a seat.
+  // The panel only ever opens on a deliberate click, so taking focus is what
+  // the host asked for — they can type a name straight away.
   useEffect(() => {
-    const active = document.activeElement as HTMLElement | null;
-    const tag = active?.tagName;
-    if (tag === "INPUT" || tag === "TEXTAREA" || active?.isContentEditable)
-      return;
     inputRef.current?.focus();
   }, []);
 
@@ -73,8 +65,21 @@ export default function SeatGuestPicker({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+    // Clicking away dismisses. Seats are exempt: the seat's own click handler
+    // decides whether to re-anchor the panel or clear a seat, and closing here
+    // first would just make it flicker.
+    const onPointerDown = (e: PointerEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (panelRef.current?.contains(t)) return;
+      if (t?.closest("[data-seat]")) return;
+      onClose();
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
   }, [onClose]);
 
   const guests = useMemo(() => {
@@ -98,18 +103,16 @@ export default function SeatGuestPicker({
 
   return (
     <div
+      ref={panelRef}
       style={{
         position: "fixed",
         left,
         ...(below ? { top: anchor.bottom } : { bottom: vh - anchor.top }),
         width: PANEL_W,
         zIndex: 9998,
-        // Transparent bridge over the gap between seat and panel.
         paddingTop: below ? 8 : 0,
         paddingBottom: below ? 0 : 8,
       }}
-      onMouseEnter={onKeepOpen}
-      onMouseLeave={onClose}
     >
       <div
         className="rounded-xl shadow-xl overflow-hidden"

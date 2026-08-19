@@ -128,6 +128,7 @@ function Seat({
 }) {
   return (
     <button
+      data-seat
       onClick={(e) => {
         // Clicking a free seat with nobody picked up opens the picker at once,
         // instead of waiting out the hover-intent delay.

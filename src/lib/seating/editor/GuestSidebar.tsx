@@ -20,9 +20,8 @@ const WEDDING_CATEGORY_LABELS: Record<string, string> = {
  *  The bare prefix means "Bez celine". */
 export const GROUP_FILTER_PREFIX = "celina:";
 
-/** Whether a guest passes the sidebar's category + search filter. Exported so
- *  the editor's auto-advance picks the next guest from the *visible* list. */
-export function guestMatchesFilter(
+/** Whether a guest passes the sidebar's category + search filter. */
+function guestMatchesFilter(
   g: RSVPEntry,
   filter: string,
   search: string,

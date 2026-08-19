@@ -40,7 +40,7 @@ import {
   LayoutDashboard,
   Monitor,
 } from "lucide-react";
-import GuestSidebar, { guestMatchesFilter } from "./GuestSidebar";
+import GuestSidebar from "./GuestSidebar";
 import type { GuestGroup } from "@/lib/seating/guest-groups";
 import MemberNamesModal from "./MemberNamesModal";
 import TableNode from "./TableNode";
@@ -59,6 +59,9 @@ import { generateAndDownloadPDF } from "../pdf/generatePDF";
  *  in localStorage, so it is per browser rather than per event — the same host
  *  usually arranges one wedding and does not need the lesson twice. */
 const MEMBER_NAMES_HINT_KEY = "halo_seating_member_names_hint";
+
+/** Cursor-badge invitation shown over a free seat when nobody is picked up. */
+const EMPTY_SEAT_CTA = "Klikni da postaviš gosta na ovo mesto";
 
 /** Srpska paukalna promena uz broj: 2-4 osobe, inace osoba (5, 11-14, 25...). */
 function osobaLabel(n: number): string {
@@ -189,55 +192,25 @@ export default function RasporedClient({
     null,
   );
   const [selectedGuest, setSelectedGuest] = useState<RSVPEntry | null>(null);
-  // Guest-list category filter + name search (lifted from GuestSidebar so the
-  // auto-advance after seating a party picks the next guest from the *visible*
-  // filtered list, not the whole roster).
+  // Guest-list category filter + name search, held here rather than inside
+  // GuestSidebar so the editor can read and reset them.
   const [guestFilter, setGuestFilter] = useState("");
   const [guestSearch, setGuestSearch] = useState("");
   const [hoverSeat, setHoverSeat] = useState<SeatAssignment | null>(null);
   const [hoverHint, setHoverHint] = useState<string | null>(null);
-  // Hover guest-picker over a free seat (desktop, and only while no guest is
-  // picked up in the sidebar).
+  // Guest picker over a free seat: opened by CLICKING one while no guest is
+  // picked up in the sidebar (hovering only shows the CTA badge).
   const [seatPicker, setSeatPicker] = useState<{
     tableId: string;
     seatIndex: number;
     tableLabel: string;
     anchor: SeatAnchor;
   } | null>(null);
-  const seatPickerCloseTimer = useRef<number | null>(null);
-  const seatPickerOpenTimer = useRef<number | null>(null);
-
-  // ── Hover guest-picker timers ─────────────────────────────────────────────
-  // The pointer has to cross a few px of canvas to reach the panel, so leaving
-  // the seat only schedules a close; entering the panel cancels it. Declared
-  // this early because the canvas wheel/pan effects below list them as deps.
-  const clearSeatPickerTimers = useCallback(() => {
-    for (const t of [seatPickerCloseTimer, seatPickerOpenTimer]) {
-      if (t.current !== null) {
-        window.clearTimeout(t.current);
-        t.current = null;
-      }
-    }
-  }, []);
-
-  const closeSeatPicker = useCallback(() => {
-    clearSeatPickerTimers();
-    setSeatPicker(null);
-  }, [clearSeatPickerTimers]);
-
-  const scheduleSeatPickerClose = useCallback(() => {
-    clearSeatPickerTimers();
-    seatPickerCloseTimer.current = window.setTimeout(
-      () => setSeatPicker(null),
-      260,
-    );
-  }, [clearSeatPickerTimers]);
-
-  useEffect(() => clearSeatPickerTimers, [clearSeatPickerTimers]);
+  // Declared this early because the canvas wheel/pan effects below list it as
+  // a dependency — a panned canvas invalidates the panel's viewport anchor.
+  const closeSeatPicker = useCallback(() => setSeatPicker(null), []);
   /** One-shot guard for the per-person-names explainer (see MEMBER_NAMES_HINT_KEY). */
   const memberNamesHintDone = useRef(false);
-  /** Selection seen by the auto-advance effect on its previous run. */
-  const lastSelectedGuestId = useRef<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -534,70 +507,15 @@ export default function RasporedClient({
     return counts;
   }, [tables]);
 
-  // Auto-advance: the moment a party runs out of seats to fill, hop to the next
-  // guest who still has some, so a whole table gets seated without a trip back
-  // to the sidebar. Lives in an effect rather than in the seat-click handler so
-  // every route into a full party (click, hover picker, seat removal elsewhere)
-  // advances the same way.
+  // A party whose seats are all taken simply drops out of hand. Deliberately
+  // NOT auto-advancing to the next guest: jumping the selection on its own is
+  // disorienting mid-table, and the owner asked for it to stay off.
   useEffect(() => {
-    if (!selectedGuest) {
-      lastSelectedGuestId.current = null;
-      return;
-    }
-    // Only a party that filled up *while selected* hands over to the next one.
-    // Clicking an already-full party in the sidebar just clears, as before —
-    // jumping to somebody else there would look like the click missed.
-    const filledUpWhileSelected =
-      lastSelectedGuestId.current === selectedGuest.id;
-    lastSelectedGuestId.current = selectedGuest.id;
-
+    if (!selectedGuest) return;
     const total = parseInt(selectedGuest.guestCount) || 1;
-    if ((assignedCounts[selectedGuest.id] || 0) < total) return;
-    if (!filledUpWhileSelected) {
+    if ((assignedCounts[selectedGuest.id] || 0) >= total)
       setSelectedGuest(null);
-      return;
-    }
-
-    const hasFreeSeats = (g: RSVPEntry) =>
-      g.id !== selectedGuest.id &&
-      (assignedCounts[g.id] || 0) < (parseInt(g.guestCount) || 1);
-
-    // Prefer the next guest visible in the sidebar right now — advancing to
-    // somebody the active filter hides would look like the selection vanished.
-    const inView = attending.find(
-      (g) =>
-        hasFreeSeats(g) &&
-        guestMatchesFilter(g, guestFilter, guestSearch, guestGroupByGuestId),
-    );
-    if (inView) {
-      setSelectedGuest(inView);
-      return;
-    }
-
-    // The search box usually still holds the name of the party just seated,
-    // which hides everyone else. Clear it before giving up on the selection.
-    if (guestSearch.trim()) {
-      const afterSearch = attending.find(
-        (g) =>
-          hasFreeSeats(g) &&
-          guestMatchesFilter(g, guestFilter, "", guestGroupByGuestId),
-      );
-      if (afterSearch) {
-        setGuestSearch("");
-        setSelectedGuest(afterSearch);
-        return;
-      }
-    }
-
-    setSelectedGuest(null);
-  }, [
-    assignedCounts,
-    selectedGuest,
-    attending,
-    guestFilter,
-    guestSearch,
-    guestGroupByGuestId,
-  ]);
+  }, [assignedCounts, selectedGuest]);
 
   const totalAssigned = useMemo(
     () => Object.values(assignedCounts).reduce((s, n) => s + n, 0),
@@ -726,9 +644,10 @@ export default function RasporedClient({
   const handleSeatClick = async (tableId: string, seatIndex: number) => {
     const targetTable = tables.find((t) => t.id === tableId);
     const isRemoving = !!targetTable?.assignments[seatIndex];
-    // Free seat with nobody picked up: the click only opens the hover picker
-    // (handled in TableNode), so there is nothing to assign here.
+    // Free seat with nobody picked up: the click only opens the guest picker
+    // (routed through `handleEmptySeatHover`), so there is nothing to assign.
     if (!isRemoving && !selectedGuest) return;
+    if (isRemoving) closeSeatPicker();
     if (
       !isRemoving &&
       selectedGuest &&
@@ -773,8 +692,6 @@ export default function RasporedClient({
       });
       return changed ? next : prev;
     });
-    // Auto-advance to the next guest with free seats is handled by the effect
-    // above, which watches `assignedCounts`.
   };
 
   /**
@@ -820,6 +737,12 @@ export default function RasporedClient({
     if (already + 1 < total) setSelectedGuest(guest);
   };
 
+  /**
+   * Free seat, nobody picked up in the sidebar. Hovering only invites — the
+   * cursor badge says what a click would do — because a full panel thrown up
+   * on hover covers the very seats you were aiming for. The click itself
+   * (`immediate`) is what opens the picker.
+   */
   const handleEmptySeatHover = useCallback(
     (
       tableId: string,
@@ -828,31 +751,35 @@ export default function RasporedClient({
       immediate?: boolean,
     ) => {
       if (el === null) {
-        scheduleSeatPickerClose();
+        setHoverHint(null);
+        return;
+      }
+      if (!immediate) {
+        setHoverHint(EMPTY_SEAT_CTA);
         return;
       }
       const table = tables.find((t) => t.id === tableId);
       if (!table) return;
-      clearSeatPickerTimers();
-      const open = () => {
-        if (!el.isConnected) return;
-        const r = el.getBoundingClientRect();
-        setSeatPicker({
-          tableId,
-          seatIndex,
-          tableLabel: table.label,
-          anchor: { left: r.left, right: r.right, top: r.top, bottom: r.bottom },
-        });
-      };
-      if (immediate) {
-        open();
-        return;
-      }
-      // Hover intent: merely sweeping the cursor across a table must not throw
-      // a panel over the seats you were aiming for.
-      seatPickerOpenTimer.current = window.setTimeout(open, 280);
+      const r = el.getBoundingClientRect();
+      setHoverHint(null);
+      // Clicking the seat the panel already belongs to closes it again.
+      setSeatPicker((prev) =>
+        prev && prev.tableId === tableId && prev.seatIndex === seatIndex
+          ? null
+          : {
+              tableId,
+              seatIndex,
+              tableLabel: table.label,
+              anchor: {
+                left: r.left,
+                right: r.right,
+                top: r.top,
+                bottom: r.bottom,
+              },
+            },
+      );
     },
-    [tables, clearSeatPickerTimers, scheduleSeatPickerClose],
+    [tables],
   );
 
   /**
@@ -2200,7 +2127,6 @@ export default function RasporedClient({
           assignedCounts={assignedCounts}
           members={members}
           onPick={handlePickSeatGuest}
-          onKeepOpen={clearSeatPickerTimers}
           onClose={closeSeatPicker}
         />
       )}
