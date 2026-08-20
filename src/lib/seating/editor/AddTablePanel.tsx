@@ -30,8 +30,6 @@ interface Props {
     label: string,
     decorationType: TableData["decorationType"],
   ) => void;
-  totalSeats: number;
-  occupiedSeats: number;
   /** When true, hide wedding-only items (e.g. "Mladenački sto"). */
   hideWeddingOnlyElements?: boolean;
   /** When true, hide the entire "Specijalni elementi" dropdown and instead expose
@@ -43,16 +41,14 @@ interface Props {
   /** When provided, shows the "Učitaj šemu sale" button that opens the venue
    *  scheme picker. Omitted in the admin template editor. */
   onLoadHallScheme?: () => void;
-  /** Rendered at the end of the strip. The editor puts the seat-search button
-   *  there, which needs editor state this panel has no business holding. */
+  /** Rendered at the end of the strip. Free for future controls; the seat
+   *  counters now live in the header and the search in the canvas toolbar. */
   trailing?: React.ReactNode;
 }
 
 export default function AddTablePanel({
   onAddTable,
   onAddDecoration,
-  totalSeats,
-  occupiedSeats,
   hideWeddingOnlyElements,
   hideDecorations,
   templateMode,
@@ -271,28 +267,6 @@ export default function AddTablePanel({
           <Building2 size={13} style={iconStyle} />
           Učitaj šemu sale
         </button>
-      )}
-
-      {/* Free-seat counter is meaningless for a hall template — the toolbar
-          already reports table and seat totals there. */}
-      {totalSeats > 0 && !templateMode && (
-        <div
-          className="flex items-center pl-3 pr-3 ml-1 text-xs font-raleway self-stretch"
-          style={{
-            borderLeft:
-              "1px solid color-mix(in srgb, var(--theme-primary) 22%, transparent)",
-            color: "var(--theme-text-light)",
-          }}
-        >
-          Slobodnih mesta:&nbsp;
-          <span
-            className="tabular-nums"
-            style={{ color: "var(--theme-primary)", fontWeight: 700 }}
-          >
-            {totalSeats - occupiedSeats}
-          </span>
-          <span style={{ opacity: 0.55 }}>&nbsp;/&nbsp;{totalSeats}</span>
-        </div>
       )}
 
       {trailing}

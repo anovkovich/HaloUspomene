@@ -1,51 +1,26 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Download,
-  Save,
-  Check,
-  ChevronDown,
-  FileDown,
-  QrCode,
-  Link2,
-  Heart,
-  Sparkles,
-} from "lucide-react";
-import type { TableData } from "../types";
+import { ArrowLeft } from "lucide-react";
 import { seatsLabel, tablesLabel } from "../labels";
 
 interface Props {
-  slug: string;
   coupleNames: string;
-  tables: TableData[];
-  isDirty: boolean;
-  isSaving: boolean;
-  saveSuccess: boolean;
-  saveError: string;
-  paidForRaspored: boolean;
-  onSave: () => void;
-  onDownloadPDF: () => void | Promise<unknown>;
+  /** Live figures for the header read-out. Undefined in template mode, which
+   *  shows its own scheme statistics instead. */
+  stats?: {
+    tableCount: number;
+    totalSeats: number;
+    occupiedSeats: number;
+    /** Parties from the guest list that still have somebody without a seat. */
+    unassignedGuests: number;
+  };
   /** Back-link target. Each consumer route supplies its own. */
   backHref?: string;
   /** When true, hide the "← Nazad" link entirely. Used by standalone routes
    *  where there's no parent portal to return to. */
   hideBackButton?: boolean;
-  /** One menu entry per welcome-sign design this product offers. Weddings and
-   *  events list two; birthdays list one. Each entry downloads a single file,
-   *  so a click never trips the browser's multiple-download prompt. */
-  welcomeSigns: { label: string; run: () => void | Promise<unknown> }[];
-  /** Full URL of the seat-lookup page used for QR + copy link. */
-  guestLookupUrl?: string;
-  /** When provided, the download dropdown shows an extra "Zatraži dizajn QR panoa" item. */
-  onRequestPanoDesign?: () => void;
-  /** When provided, the download dropdown shows an extra "Preuzmi QR za RSVP" item.
-   *  Used to share an online RSVP link guests can scan from a printed invitation. */
-  onDownloadRsvpQR?: () => void;
-  /** Admin hall-scheme mode: drops the whole download menu (nothing here is
-   *  meant for a venue template) and reports table/seat totals instead. */
+  /** Admin hall-scheme mode: swaps the guest figures for scheme statistics. */
   templateMode?: boolean;
   /** Table + seat counters shown in template mode, plus the scheme's overall
    *  size so the admin can see whether it fits the mobile canvas. */
@@ -58,87 +33,56 @@ interface Props {
   };
 }
 
-async function downloadQR(slug: string, guestLookupUrl: string) {
-  const QRCode = (await import("qrcode")).default;
-  const dataUrl = await QRCode.toDataURL(guestLookupUrl, {
-    width: 1200,
-    margin: 2,
-    color: { dark: "#232323", light: "#ffffff" },
-  });
-  const a = document.createElement("a");
-  a.href = dataUrl;
-  a.download = `gde-sedim-qr-${slug}.png`;
-  a.click();
-}
-
-function copyGdeSedimLink(guestLookupUrl: string, onCopied: () => void) {
-  navigator.clipboard.writeText(guestLookupUrl).then(onCopied);
+/** One figure in the header read-out: quiet label, loud number. */
+function Stat({
+  label,
+  value,
+  hint,
+  muted,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  muted?: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center text-center leading-none">
+      <span
+        className="font-raleway text-[9px] font-semibold uppercase tracking-wider"
+        style={{ color: "var(--theme-text-light)" }}
+      >
+        {label}
+      </span>
+      <span className="mt-1 flex items-baseline justify-center gap-1">
+        <span
+          className="font-raleway text-sm font-bold tabular-nums"
+          style={{
+            color: muted ? "var(--theme-text-light)" : "var(--theme-primary)",
+          }}
+        >
+          {value}
+        </span>
+        {hint && (
+          <span
+            className="font-raleway text-[10px]"
+            style={{ color: "var(--theme-text-light)" }}
+          >
+            {hint}
+          </span>
+        )}
+      </span>
+    </div>
+  );
 }
 
 export default function Toolbar({
-  slug,
   coupleNames,
-  tables,
-  isDirty,
-  isSaving,
-  saveSuccess,
-  saveError,
-  paidForRaspored,
-  onSave,
-  onDownloadPDF,
+  stats,
   backHref = "/moje-vencanje?tab=guests",
   hideBackButton = false,
-  welcomeSigns,
-  guestLookupUrl,
-  onRequestPanoDesign,
-  onDownloadRsvpQR,
   templateMode = false,
   templateStats,
 }: Props) {
-  const lookupUrl =
-    guestLookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
-  const [downloadOpen, setDownloadOpen] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  /**
-   * Which slow download is running. Rendering two B1 signs with four embedded
-   * fonts each takes seconds, so the menu stays open and reports progress
-   * instead of closing on click and leaving the couple staring at nothing.
-   */
-  const [busy, setBusy] = useState<string | null>(null);
-
-  const runDownload = async (
-    key: string,
-    fn: () => void | Promise<unknown>,
-    errorMessage: string,
-  ) => {
-    if (busy) return;
-    setBusy(key);
-    try {
-      await fn();
-      setDownloadOpen(false);
-    } catch (err) {
-      console.error(errorMessage, err);
-      alert(errorMessage);
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setDownloadOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
   return (
     <div
       className="flex items-center gap-3 px-4 py-2.5 border-b shrink-0"
@@ -181,6 +125,30 @@ export default function Toolbar({
 
       <div className="flex-1" />
 
+      {/* Where Preuzmi/Sačuvaj used to sit. The actions moved down to the
+          canvas edge, and the space went to the numbers that actually answer
+          "how far along am I" — free seats alone never did. */}
+      {stats && !templateMode && (
+        <div className="flex items-stretch gap-5 pr-1">
+          <Stat label="Stolova" value={String(stats.tableCount)} />
+          <Stat
+            label="Raspoređeno"
+            value={`${stats.occupiedSeats} / ${stats.totalSeats}`}
+            hint={
+              stats.totalSeats
+                ? `${Math.round((stats.occupiedSeats / stats.totalSeats) * 100)}%`
+                : undefined
+            }
+          />
+          <Stat
+            label="Preostalo"
+            value={String(stats.unassignedGuests)}
+            hint={stats.unassignedGuests === 0 ? "sve raspoređeno" : "zvanica"}
+            muted={stats.unassignedGuests === 0}
+          />
+        </div>
+      )}
+
       {templateMode && templateStats && (
         <p
           className="font-raleway text-xs hidden sm:block"
@@ -210,193 +178,6 @@ export default function Toolbar({
         </p>
       )}
 
-      {/* Download dropdown — nothing in it applies to a hall template */}
-      {!templateMode && (
-      <div ref={dropdownRef} className="relative">
-        <button
-          onClick={() => setDownloadOpen((v) => !v)}
-          disabled={tables.length === 0}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-raleway font-medium transition-opacity hover:opacity-80 disabled:opacity-30"
-          style={{
-            backgroundColor: "var(--theme-surface)",
-            border: "1px solid var(--theme-border-light)",
-            color: "var(--theme-text)",
-          }}
-        >
-          <Download size={13} />
-          Preuzmi
-          <ChevronDown
-            size={11}
-            className="transition-transform"
-            style={{ transform: downloadOpen ? "rotate(180deg)" : "none" }}
-          />
-        </button>
-
-        {downloadOpen && (
-          <div
-            className="absolute top-full right-0 mt-1 rounded-lg overflow-hidden shadow-lg z-20"
-            style={{
-              backgroundColor: "var(--theme-surface)",
-              border: "1px solid var(--theme-border-light)",
-              minWidth: 230,
-            }}
-          >
-            <button
-              onClick={() =>
-                runDownload(
-                  "pdf",
-                  onDownloadPDF,
-                  "Greška pri generisanju PDF-a rasporeda. Pokušajte ponovo.",
-                )
-              }
-              disabled={busy !== null}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer disabled:opacity-50 disabled:cursor-default"
-              style={{ color: "var(--theme-text)" }}
-            >
-              {busy === "pdf" ? (
-                <span
-                  className="loading loading-spinner loading-xs"
-                  style={{ color: "var(--theme-primary)" }}
-                />
-              ) : (
-                <FileDown size={14} style={{ color: "var(--theme-primary)" }} />
-              )}
-              {busy === "pdf" ? "Pripremam PDF..." : "Preuzmi PDF raspored"}
-            </button>
-            <div
-              className="h-px"
-              style={{ backgroundColor: "var(--theme-border-light)" }}
-            />
-            {welcomeSigns.map((sign, i) => (
-              <button
-                key={sign.label}
-                onClick={() =>
-                  runDownload(
-                    `pano-${i}`,
-                    sign.run,
-                    "Greška pri generisanju QR pano PDF-a. Pokušajte ponovo.",
-                  )
-                }
-                disabled={busy !== null}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer disabled:opacity-50 disabled:cursor-default"
-                style={{ color: "var(--theme-text)" }}
-              >
-                {busy === `pano-${i}` ? (
-                  <span
-                    className="loading loading-spinner loading-xs"
-                    style={{ color: "var(--theme-primary)" }}
-                  />
-                ) : (
-                  <Heart size={14} style={{ color: "var(--theme-primary)" }} />
-                )}
-                {busy === `pano-${i}` ? "Pripremam..." : sign.label}
-              </button>
-            ))}
-            {/* Pano group: QR pano PDF + samo QR + Zatraži dizajn — no internal dividers */}
-            <button
-              onClick={() => {
-                downloadQR(slug, lookupUrl);
-                setDownloadOpen(false);
-              }}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
-              style={{ color: "var(--theme-text)" }}
-            >
-              <QrCode size={14} style={{ color: "var(--theme-primary)" }} />
-              Preuzmi samo QR za pano
-            </button>
-            {onRequestPanoDesign && (
-              <button
-                onClick={() => {
-                  onRequestPanoDesign();
-                  setDownloadOpen(false);
-                }}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
-                style={{ color: "var(--theme-text)" }}
-              >
-                <Sparkles size={14} style={{ color: "var(--theme-primary)" }} />
-                Zatraži dizajn QR panoa
-              </button>
-            )}
-            {onDownloadRsvpQR && (
-              <>
-                <div
-                  className="h-px"
-                  style={{ backgroundColor: "var(--theme-border-light)" }}
-                />
-                <button
-                  onClick={() => {
-                    onDownloadRsvpQR();
-                    setDownloadOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
-                  style={{ color: "var(--theme-text)" }}
-                >
-                  <QrCode size={14} style={{ color: "var(--theme-primary)" }} />
-                  QR za potvrdu dolaska
-                </button>
-              </>
-            )}
-            <div
-              className="h-px"
-              style={{ backgroundColor: "var(--theme-border-light)" }}
-            />
-            <button
-              onClick={() => {
-                copyGdeSedimLink(lookupUrl, () => {
-                  setLinkCopied(true);
-                  setTimeout(() => setLinkCopied(false), 2000);
-                });
-                setDownloadOpen(false);
-              }}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-raleway font-medium transition-colors hover:bg-black/5 cursor-pointer"
-              style={{ color: "var(--theme-text)" }}
-            >
-              {linkCopied ? (
-                <Check size={14} style={{ color: "var(--theme-primary)" }} />
-              ) : (
-                <Link2 size={14} style={{ color: "var(--theme-primary)" }} />
-              )}
-              {linkCopied ? "Link kopiran!" : "Kopiraj link Gde sedim"}
-            </button>
-          </div>
-        )}
-      </div>
-      )}
-
-      <button
-        onClick={onSave}
-        disabled={isSaving || tables.length === 0 || !paidForRaspored}
-        title={
-          !paidForRaspored
-            ? "Potrebna je aktivacija za čuvanje rasporeda"
-            : undefined
-        }
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-raleway font-medium transition-all hover:opacity-80 disabled:opacity-30${isDirty && !saveSuccess ? " animate-pulse" : ""}`}
-        style={{
-          backgroundColor: saveSuccess
-            ? "#4caf50"
-            : isDirty
-              ? "var(--theme-primary)"
-              : "var(--theme-surface)",
-          border: `1px solid ${saveSuccess ? "#4caf50" : isDirty ? "var(--theme-primary)" : "var(--theme-border-light)"}`,
-          color: saveSuccess || isDirty ? "white" : "var(--theme-text)",
-        }}
-      >
-        {saveSuccess ? <Check size={13} /> : <Save size={13} />}
-        {isSaving
-          ? "Čuvam..."
-          : saveSuccess
-            ? "Sačuvano"
-            : templateMode
-              ? "Sačuvaj šemu"
-              : "Sačuvaj"}
-      </button>
-
-      {saveError && (
-        <p className="text-[10px] font-raleway" style={{ color: "#c0392b" }}>
-          {saveError}
-        </p>
-      )}
     </div>
   );
 }

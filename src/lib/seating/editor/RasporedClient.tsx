@@ -46,13 +46,17 @@ import {
 import GuestSidebar from "./GuestSidebar";
 import type { GuestGroup } from "@/lib/seating/guest-groups";
 import MemberNamesModal from "./MemberNamesModal";
-import TableNode from "./TableNode";
+import TableNode, { isNodeDragActive } from "./TableNode";
 import Toolbar from "./Toolbar";
+import EditorActionsBar from "./EditorActionsBar";
 import AddTablePanel from "./AddTablePanel";
 import UpgradeModal from "./UpgradeModal";
 import CursorGuestBadge from "./CursorGuestBadge";
 import SeatGuestPicker, { type SeatAnchor } from "./SeatGuestPicker";
 import SeatSearchButton from "./SeatSearchButton";
+import CanvasControls from "./CanvasControls";
+import CanvasHintNote from "./CanvasHintNote";
+import { useLayoutHistory, type LayoutSnapshot } from "./useLayoutHistory";
 import { beginSeatDrag, type SeatRef } from "./seatDrag";
 import MobileTableCard from "./MobileTableCard";
 import MobileSeatSheet from "./MobileSeatSheet";
@@ -73,6 +77,13 @@ function osobaLabel(n: number): string {
   const d = n % 10;
   const dd = n % 100;
   return d >= 2 && d <= 4 && (dd < 12 || dd > 14) ? "osobe" : "osoba";
+}
+
+/** Keyboard shortcuts must never fire while the user is typing into a field. */
+function isTypingTarget(t: EventTarget | null) {
+  const el = t as HTMLElement | null;
+  const tag = el?.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || !!el?.isContentEditable;
 }
 
 const WORLD_W = 12000;
@@ -264,6 +275,13 @@ export default function RasporedClient({
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, startSave] = useTransition();
   const initialLoadDone = useRef(false);
+  const { canUndo, canRedo, record, undo, redo } = useLayoutHistory();
+  /** True for the single commit produced by an undo/redo, so it is not recorded. */
+  const restoringRef = useRef(false);
+  /** The layout as of the previous commit — history stores pre-edit state. */
+  const prevSnapRef = useRef<LayoutSnapshot | null>(null);
+  /** What is currently persisted, compared by identity to derive `isDirty`. */
+  const lastSavedRef = useRef<LayoutSnapshot | null>(null);
   const [paidForRaspored, setPaidForRaspored] = useState(initialPaid);
 
   // Mobile mode (null = not yet detected)
@@ -302,6 +320,8 @@ export default function RasporedClient({
   const [canvasZoom, setCanvasZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [spaceHeld, setSpaceHeld] = useState(false);
+  /** Sticky pan mode from the canvas toolbar — the Space shortcut, latched. */
+  const [panMode, setPanMode] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   // Refs mirror the live values so the native (non-passive) wheel listener and
   // window pan listeners read fresh state without re-subscribing each render.
@@ -432,11 +452,6 @@ export default function RasporedClient({
   // Hold Space to pan the canvas with a grab cursor (desktop only).
   useEffect(() => {
     if (isMobile !== false || isPWADesktop) return;
-    const isTypingTarget = (t: EventTarget | null) => {
-      const el = t as HTMLElement | null;
-      const tag = el?.tagName;
-      return tag === "INPUT" || tag === "TEXTAREA" || el?.isContentEditable;
-    };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Space" && !isTypingTarget(e.target)) {
         e.preventDefault();
@@ -478,7 +493,7 @@ export default function RasporedClient({
   }, [isPanning, setPanSynced]);
 
   const handleCanvasPanStart = (e: React.MouseEvent) => {
-    if (!spaceHeld) return;
+    if (!spaceHeld && !panMode) return;
     e.preventDefault();
     closeSeatPicker();
     panStart.current = {
@@ -525,15 +540,45 @@ export default function RasporedClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Mark dirty when tables change after initial load
+  // Dirty is derived by comparing identity against the last saved snapshot
+  // rather than latched on any change. Undo restores the very same array
+  // references that were live at save time, so undoing back to the saved state
+  // correctly disarms Sačuvaj and the leave-page warning.
   useEffect(() => {
     if (!hydrated) return;
     if (!initialLoadDone.current) {
       initialLoadDone.current = true;
+      // What was loaded IS what is saved.
+      lastSavedRef.current = { tables, members };
       return;
     }
-    setIsDirty(true);
+    const saved = lastSavedRef.current;
+    setIsDirty(!(saved && saved.tables === tables && saved.members === members));
   }, [tables, members, hydrated]);
+
+  // ── Undo / redo ───────────────────────────────────────────────────────────
+  // History is recorded from an effect rather than from each mutator, so not a
+  // single mutation call site changes. That works because every mutator returns
+  // `prev` untouched when nothing changed: React then bails out and this effect
+  // never runs, which makes "the effect fired" mean exactly "the layout really
+  // changed" — the same contract the dirty flag above relies on.
+  useEffect(() => {
+    if (!hydrated) return;
+    // Captured and cleared FIRST: an early return below must not leave the flag
+    // set into the next commit, or the following real edit would go unrecorded.
+    const restoring = restoringRef.current;
+    restoringRef.current = false;
+
+    const previous = prevSnapRef.current;
+    prevSnapRef.current = { tables, members };
+
+    if (previous === null) return; // first run after load: prime only
+    // Identity guard, which also absorbs StrictMode's development double-run.
+    if (previous.tables === tables && previous.members === members) return;
+    if (restoring) return; // this commit IS the undo landing
+
+    record(previous);
+  }, [tables, members, hydrated, record]);
 
   // Block tab close when unsaved
   useEffect(() => {
@@ -887,13 +932,77 @@ export default function RasporedClient({
     await assignGuestToSeat(tableId, seatIndex, guest);
   };
 
+  /** Puts a remembered layout back on the canvas. Overlays anchored to a seat
+   *  or table that the snapshot may not contain are dismissed first. */
+  const applySnapshot = (snap: LayoutSnapshot) => {
+    restoringRef.current = true;
+    setTables(snap.tables);
+    setMembers(snap.members);
+    closeSeatPicker();
+    setHoverSeat(null);
+    setHoverHint(null);
+  };
+
+  const doUndo = () => {
+    const snap = undo({ tables, members });
+    if (snap) applySnapshot(snap);
+  };
+
+  const doRedo = () => {
+    const snap = redo({ tables, members });
+    if (snap) applySnapshot(snap);
+  };
+
+  // The keyboard listener is registered once, so it reads the current handlers
+  // and the current "is something in progress" answer through refs.
+  const undoRedoRef = useRef({ doUndo, doRedo });
+  undoRedoRef.current = { doUndo, doRedo };
+
+  /** True while some gesture or modal owns the moment and undo must stand down. */
+  const busyForUndo = () =>
+    seatDraggingRef.current ||
+    isNodeDragActive() ||
+    isPanning ||
+    !!memberModalGuest ||
+    showHallSchemes ||
+    showUpgradeModal;
+  const busyForUndoRef = useRef(busyForUndo);
+  busyForUndoRef.current = busyForUndo;
+
+  useEffect(() => {
+    if (isMobile !== false || isPWADesktop) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const k = e.key.toLowerCase();
+      const isUndo = k === "z" && !e.shiftKey;
+      // Ctrl+Y as well: it is the other half of the muscle memory on the
+      // QWERTZ layouts most of our couples type on.
+      const isRedo = (k === "z" && e.shiftKey) || k === "y";
+      if (!isUndo && !isRedo) return;
+      // Inside a rename field or a search box the browser's own undo wins.
+      if (isTypingTarget(e.target)) return;
+      e.preventDefault();
+      if (busyForUndoRef.current()) return;
+      if (isUndo) undoRedoRef.current.doUndo();
+      else undoRedoRef.current.doRedo();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isMobile, isPWADesktop]);
+
   const handleStartOver = () => {
-    setTables([]);
-    setMembers({});
+    // The very same references go to the canvas and into `lastSavedRef`, so the
+    // identity-based dirty check sees a clean slate. (The old `setIsDirty(false)`
+    // here lost to the dirty effect in the same commit and left the editor
+    // looking unsaved right after it had saved.)
+    const emptyTables: TableData[] = [];
+    const emptyMembers: Record<string, string[]> = {};
+    lastSavedRef.current = { tables: emptyTables, members: emptyMembers };
+    setTables(emptyTables);
+    setMembers(emptyMembers);
     setSelectedGuest(null);
     setHoverHint(null);
     setHoverSeat(null);
-    setIsDirty(false);
     startSave(async () => {
       await saveRaspored(slug, JSON.stringify({ tables: [], members: {} }));
     });
@@ -979,6 +1088,9 @@ export default function RasporedClient({
       );
       if (result.success) {
         if (tablesToSave) setTables(tablesToSave);
+        // Remember exactly what went to the database, by reference, so an undo
+        // that lands back here disarms Sačuvaj instead of pretending otherwise.
+        lastSavedRef.current = { tables: data, members };
         setIsDirty(false);
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 2500);
@@ -1232,6 +1344,47 @@ export default function RasporedClient({
     ? [...highlightedSeats].join("|")
     : "";
   const lastFramedMatchKey = useRef("");
+
+  /** Zoom from the toolbar, anchored to the middle of the viewport — the wheel
+   *  anchors to the cursor, but a slider has no cursor to anchor to. */
+  const setZoomFromToolbar = useCallback(
+    (next: number) => {
+      const el = canvasRef.current;
+      const z = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, next));
+      const prev = zoomRef.current || 1;
+      if (el) {
+        const cx = el.clientWidth / 2;
+        const cy = el.clientHeight / 2;
+        const worldX = (cx - panRef.current.x) / prev;
+        const worldY = (cy - panRef.current.y) / prev;
+        setPanSynced({ x: cx - worldX * z, y: cy - worldY * z });
+      }
+      setCanvasZoomSynced(z);
+    },
+    [setPanSynced, setCanvasZoomSynced],
+  );
+
+  /** Fits every table on screen at once — the way back after wandering off. */
+  const zoomToFit = useCallback(() => {
+    const el = canvasRef.current;
+    if (!el || tables.length === 0) return;
+    const bbox = computeBoundingBox(tables);
+    const PAD = 80;
+    const vw = el.clientWidth || 1200;
+    const vh = el.clientHeight || 800;
+    const z = Math.max(
+      MIN_ZOOM,
+      Math.min(
+        MAX_ZOOM,
+        Math.min(vw / (bbox.width + PAD * 2), vh / (bbox.height + PAD * 2)),
+      ),
+    );
+    setCanvasZoomSynced(z);
+    setPanSynced({
+      x: vw / 2 - (bbox.minX + bbox.width / 2) * z,
+      y: vh / 2 - (bbox.minY + bbox.height / 2) * z,
+    });
+  }, [tables, setPanSynced, setCanvasZoomSynced]);
 
   /** Centres the canvas on a match without zooming further out than readable. */
   const frameSeatMatch = useCallback(
@@ -1877,24 +2030,19 @@ export default function RasporedClient({
       <div className="flex flex-col flex-1 min-w-0">
         {!isPWADesktop && (
           <Toolbar
-            slug={slug}
             coupleNames={coupleNames}
-            tables={tables}
-            isDirty={isDirty}
-            isSaving={isSaving}
-            saveSuccess={saveSuccess}
-            saveError={saveError}
-            paidForRaspored={paidForRaspored}
+            stats={
+              templateMode
+                ? undefined
+                : {
+                    tableCount: layoutStats.tableCount,
+                    totalSeats,
+                    occupiedSeats,
+                    unassignedGuests,
+                  }
+            }
             backHref={backHref}
             hideBackButton={hideBackButton}
-            welcomeSigns={welcomeSigns}
-            guestLookupUrl={resolvedLookupUrl}
-            onSave={() => handleSave()}
-            onDownloadPDF={() =>
-              generateAndDownloadPDF(tables, attending, coupleNames, slug, resolvedLookupUrl)
-            }
-            onRequestPanoDesign={onRequestPanoDesign}
-            onDownloadRsvpQR={onDownloadRsvpQR}
             templateMode={templateMode}
             templateStats={templateMode ? layoutStats : undefined}
           />
@@ -1905,26 +2053,11 @@ export default function RasporedClient({
             <AddTablePanel
               onAddTable={addTable}
               onAddDecoration={addDecoration}
-              totalSeats={totalSeats}
-              occupiedSeats={occupiedSeats}
               hideWeddingOnlyElements={hideWeddingOnlyElements}
               hideDecorations={hideDecorations}
               templateMode={templateMode}
               onLoadHallScheme={
                 enableHallSchemes ? () => setShowHallSchemes(true) : undefined
-              }
-              trailing={
-                templateMode ? undefined : (
-                  <SeatSearchButton
-                    value={seatQuery}
-                    onChange={setSeatQuery}
-                    matchCount={seatMatches.length}
-                    matchIndex={seatMatchIndex}
-                    onNext={focusNextSeatMatch}
-                    open={seatSearchOpen}
-                    onOpenChange={setSeatSearchOpen}
-                  />
-                )
               }
             />
           )}
@@ -1953,7 +2086,7 @@ export default function RasporedClient({
                     backgroundPosition: `${pan.x}px ${pan.y}px`,
                   }),
               touchAction: isPWADesktop ? "pan-x pan-y" : undefined,
-              cursor: !isPWADesktop && spaceHeld
+              cursor: !isPWADesktop && (spaceHeld || panMode)
                 ? isPanning
                   ? "grabbing"
                   : "grab"
@@ -2008,7 +2141,7 @@ export default function RasporedClient({
                   transformOrigin: "0 0",
                   transform: `translate(${pan.x}px, ${pan.y}px) scale(${canvasZoom})`,
                   // While space-panning, let the viewport capture the drag.
-                  pointerEvents: spaceHeld ? "none" : "auto",
+                  pointerEvents: spaceHeld || panMode ? "none" : "auto",
                 }}
               >
                 {hydrated &&
@@ -2039,7 +2172,69 @@ export default function RasporedClient({
 
               </div>
             )}
+
           </div>
+
+          {/* Canvas tools, bottom-left. Desktop only: the PWA canvas is
+              read-only and the phone layout has no free canvas at all. */}
+          {!isPWADesktop && (
+            <CanvasControls
+              zoom={canvasZoom}
+              minZoom={MIN_ZOOM}
+              maxZoom={MAX_ZOOM}
+              onZoomChange={setZoomFromToolbar}
+              onZoomToFit={zoomToFit}
+              canFit={tables.length > 0}
+              panMode={panMode}
+              onPanModeChange={setPanMode}
+              searchSlot={
+                templateMode ? undefined : (
+                  <SeatSearchButton
+                    value={seatQuery}
+                    onChange={setSeatQuery}
+                    matchCount={seatMatches.length}
+                    matchIndex={seatMatchIndex}
+                    onNext={focusNextSeatMatch}
+                    open={seatSearchOpen}
+                    onOpenChange={setSeatSearchOpen}
+                  />
+                )
+              }
+            />
+          )}
+
+          {!isPWADesktop && (
+            <EditorActionsBar
+              slug={slug}
+              tables={tables}
+              isDirty={isDirty}
+              isSaving={isSaving}
+              saveSuccess={saveSuccess}
+              saveError={saveError}
+              paidForRaspored={paidForRaspored}
+              onSave={() => handleSave()}
+              onDownloadPDF={() =>
+                generateAndDownloadPDF(
+                  tables,
+                  attending,
+                  coupleNames,
+                  slug,
+                  resolvedLookupUrl,
+                )
+              }
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onUndo={doUndo}
+              onRedo={doRedo}
+              welcomeSigns={welcomeSigns}
+              guestLookupUrl={resolvedLookupUrl}
+              onRequestPanoDesign={onRequestPanoDesign}
+              onDownloadRsvpQR={onDownloadRsvpQR}
+              templateMode={templateMode}
+            />
+          )}
+
+          {!isPWADesktop && <CanvasHintNote />}
         </div>
       </div>
 

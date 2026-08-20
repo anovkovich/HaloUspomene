@@ -56,6 +56,13 @@ const SEAT_ORBIT_R = CIRCLE_TABLE_R + 16;
 // there are many tables.
 let TABLE_Z_SEQ = 10;
 
+// True between the moment a table drag passes its move threshold and release.
+// The editor reads it to refuse an undo mid-drag: restoring positions while the
+// pointer keeps writing transforms would commit the drag's end coordinates as a
+// brand-new edit on top of the state that was just restored.
+let nodeDragActive = false;
+export const isNodeDragActive = () => nodeDragActive;
+
 /**
  * Drag a positioned node by writing its `transform` straight to the DOM on each
  * pointer move (no React re-render per frame) and committing the final position
@@ -92,6 +99,7 @@ function beginNodeDrag(
     if (!moved && Math.hypot(ev.clientX - startX, ev.clientY - startY) < 3)
       return;
     moved = true;
+    nodeDragActive = true;
     curX = baseX + (ev.clientX - startX) / s;
     curY = baseY + (ev.clientY - startY) / s;
     if (node) node.style.transform = `translate(${curX}px, ${curY}px)`;
@@ -99,6 +107,7 @@ function beginNodeDrag(
   const onUp = () => {
     window.removeEventListener("pointermove", onMove);
     window.removeEventListener("pointerup", onUp);
+    nodeDragActive = false;
     if (moved) onCommit(curX, curY);
   };
   window.addEventListener("pointermove", onMove);
