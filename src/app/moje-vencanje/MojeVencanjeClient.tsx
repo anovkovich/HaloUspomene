@@ -795,6 +795,7 @@ export default function MojeVencanjeClient() {
                   <AudioCard
                     slug={coupleInfo.slug}
                     coupleNames={coupleDisplayName(coupleInfo)}
+                    draft={coupleInfo.draft}
                   />
                 </React.Suspense>
               )}
@@ -807,7 +808,7 @@ export default function MojeVencanjeClient() {
                 !coupleInfo.galleryOnly && (
                 <GalleryLockedCard
                   slug={coupleInfo.slug}
-                  draft={coupleInfo.draft}
+                  eventDate={coupleInfo.eventDate}
                 />
               )}
               {activeView === "galerija" &&

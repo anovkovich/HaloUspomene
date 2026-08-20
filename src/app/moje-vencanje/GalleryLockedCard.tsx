@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { Images, Lock, QrCode, Mic, Sparkles } from "lucide-react";
+import { Images, Lock, QrCode, Mic } from "lucide-react";
+import ActivateCta from "./ActivateCta";
 
 /**
  * The Galerija view for a couple who hasn't activated it.
@@ -13,21 +13,21 @@ import { Images, Lock, QrCode, Mic, Sparkles } from "lucide-react";
 
 interface Props {
   slug: string;
-  /** Quick-register couples have no invitation to attach an add-on to, so they
-   *  get the packages page instead of a checkout for a single feature. */
-  draft?: boolean;
+  /** Wedding date. The gallery opens on a window around it, so without a date
+   *  the QR would 404 for every guest — we must not sell it in that state. */
+  eventDate?: string;
 }
 
 const STEPS = [
   {
     n: "1",
     title: "Odštampate zahvalnicu sa QR kodom",
-    body: "Stavite je na stolove, uz meni ili uz konfete — gde god gost sedne.",
+    body: "Stavite je na stolove, uz meni.",
   },
   {
     n: "2",
     title: "Gost skenira telefonom",
-    body: "Bez aplikacije, bez registracije, bez naloga. Otvori se odmah u pregledaču.",
+    body: "Bez aplikacije, bez registracije, bez naloga.",
   },
   {
     n: "3",
@@ -36,9 +36,8 @@ const STEPS = [
   },
 ];
 
-export default function GalleryLockedCard({ slug, draft }: Props) {
-  const ctaHref = draft ? "/cene" : `/placanje/galerija/${slug}/`;
-  const ctaLabel = draft ? "Pogledajte pakete" : "Otključajte galeriju";
+export default function GalleryLockedCard({ slug, eventDate }: Props) {
+  const hasDate = !!eventDate && !Number.isNaN(new Date(eventDate).getTime());
 
   return (
     <div className="bg-white rounded-2xl border border-[#232323]/25 p-6 shadow-md">
@@ -99,7 +98,7 @@ export default function GalleryLockedCard({ slug, draft }: Props) {
           <p className="text-xs text-[#232323]/75 leading-relaxed">
             Na istoj zahvalnici mogu da stoje obe uspomene. Gost skenira jednom,
             pa sam bira hoće li poslati fotografiju ili ostaviti glasovnu poruku
-            — a ako koristite i raspored sedenja, tu su i „Gde sedim” i meni.
+            — a tu je i meni hrane i pića koji dodajete na stranici Meni.
           </p>
           <div className="flex items-center gap-1.5 mt-2 text-[11px] text-[#232323]/60">
             <Mic size={11} className="text-[#AE343F]" />
@@ -108,18 +107,16 @@ export default function GalleryLockedCard({ slug, draft }: Props) {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="flex items-center gap-1.5 text-xs text-[#232323]/60">
-          <Sparkles size={13} className="text-[#d4af37]" />
-          Uspomene koje fotograf nije stigao da uslika.
-        </p>
-        <Link
-          href={ctaHref}
-          className="inline-flex items-center gap-2 bg-[#AE343F] hover:bg-[#8A2A32] text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
-        >
-          {ctaLabel}
-        </Link>
-      </div>
+      <ActivateCta
+        checkoutHref={hasDate ? `/placanje/galerija/${slug}/` : undefined}
+        checkoutLabel="Aktivirajte galeriju"
+        whatsappText={`Zdravo! Zanima me QR galerija fotografija za nalog ${slug}.`}
+        note={
+          hasDate
+            ? undefined
+            : "Za galeriju nam prvo treba datum venčanja — unesite ga u Pregledu ili nam pišite, pa je aktiviramo zajedno."
+        }
+      />
     </div>
   );
 }

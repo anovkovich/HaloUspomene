@@ -226,16 +226,13 @@ export default function MeniCard({
                   <span className="mb-2 block font-medium text-[#232323]">
                     Šta je QR pano dobrodošlice
                   </span>
-                  Tabla koju stavite na ulaz u salu. Gost je skenira telefonom i
-                  odmah vidi za kojim stolom sedi, plan cele sale i vaš meni —
-                  bez aplikacije i bez registracije.
+                  Tabla sa QR kodom koju postavljate na ulaz u salu. Gost je
+                  skenira telefonom i odmah vidi šta se te večeri služi — bez
+                  aplikacije i bez registracije.
                   <span className="mt-2 block">
-                    „Gde sedim” radi zato što ste goste rasporedili našim alatom
-                    za raspored sedenja — bez rasporeda pano nema šta da pokaže.
-                  </span>
-                  <span className="mt-2 block">
-                    Isti QR kod ne mora da stoji samo na panou: možete ga
-                    odštampati i na zahvalnicama na stolovima.
+                    Meni ne zavisi samo od panoa. Isti QR kod možete odštampati i
+                    na zahvalnicama na stolovima, pa gosti do jelovnika dolaze i
+                    odatle — dovoljan je jedan kod, ma gde stajao.
                   </span>
                 </InfoTooltip>
                 {". Možete dodati samo piće, samo hranu, ili oboje."}
