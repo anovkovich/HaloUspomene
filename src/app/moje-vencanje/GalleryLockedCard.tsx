@@ -21,8 +21,8 @@ interface Props {
 const STEPS = [
   {
     n: "1",
-    title: "Odštampate zahvalnicu sa QR kodom",
-    body: "Stavite je na stolove, uz meni.",
+    title: "Odštampate zahvalnice sa QR kodom",
+    body: "Stavite ih na stolove ispred svakog gosta, ili po jednu-dve samostojeće na svaki sto.",
   },
   {
     n: "2",

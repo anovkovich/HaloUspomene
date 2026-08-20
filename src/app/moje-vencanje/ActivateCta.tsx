@@ -7,6 +7,10 @@ import { MessageCircle, Sparkles } from "lucide-react";
  * The action pair under a locked feature in the planner: activate this one
  * thing now, or write to us — for details, or to agree several add-ons at once.
  *
+ * Both open in a new tab: the couple is mid-planning, often with unsaved work in
+ * another tab of the portal, and a checkout that replaces the page would throw
+ * that away.
+ *
  * Shared by the Audio knjiga and Galerija locked screens so the two never drift
  * apart. `checkoutHref` is optional because not every feature has a standalone
  * product — audio is only sold inside a package, so for a couple who already
@@ -39,6 +43,8 @@ export default function ActivateCta({
         {checkoutHref && (
           <Link
             href={checkoutHref}
+            target="_blank"
+            rel="noopener"
             className="inline-flex items-center gap-2 rounded-xl bg-[#AE343F] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#8A2A32]"
           >
             <Sparkles size={15} />
