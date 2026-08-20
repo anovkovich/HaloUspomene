@@ -795,7 +795,6 @@ export default function MojeVencanjeClient() {
                   <AudioCard
                     slug={coupleInfo.slug}
                     coupleNames={coupleDisplayName(coupleInfo)}
-                    draft={coupleInfo.draft}
                   />
                 </React.Suspense>
               )}

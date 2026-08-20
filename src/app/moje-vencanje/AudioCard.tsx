@@ -55,11 +55,6 @@ interface Props {
   /** Couple-only extras (QR flyer, USB souvenir upsell) — hidden for standalone. */
   showFlyer?: boolean;
   showUsbPromo?: boolean;
-  /** Nothing bought yet. Audio has no standalone product — it only comes inside
-   *  a package — so the direct checkout is offered ONLY to a couple who has not
-   *  paid for anything. For everyone else that tier is a flat price they would
-   *  be paying a second time, so they are routed to us instead. */
-  draft?: boolean;
 }
 
 function formatDuration(ms: number) {
@@ -94,7 +89,6 @@ export default function AudioCard({
   guestRecordUrl,
   showFlyer = true,
   showUsbPromo = true,
-  draft,
 }: Props) {
   const recordUrl = guestRecordUrl ?? {
     href: `/pozivnica/${slug}/audio-knjiga`,
@@ -348,18 +342,17 @@ export default function AudioCard({
           </div>
         </div>
 
+        {/* Audio has no product of its own — it only ships inside a package, and
+            that package is a flat price, so a couple who already bought one must
+            not be sent to a checkout that would charge them a second time. The
+            pricing page states the terms; the WhatsApp line is where a top-up on
+            an existing package gets agreed. */}
         <div className="mb-4">
           <ActivateCta
-            checkoutHref={
-              draft ? `/placanje/pozivnica/${slug}/?tier=kompletan` : undefined
-            }
-            checkoutLabel="Aktivirajte uz Kompletan paket"
+            checkoutHref="/cene"
+            checkoutLabel="Pogledajte cenovnik"
             whatsappText={`Zdravo! Zanima me audio knjiga utisaka za nalog ${slug}.`}
-            note={
-              draft
-                ? "Audio knjiga dolazi uz Kompletan paket, zajedno sa rasporedom sedenja i galerijom. Plaćanje karticom ili prenosom preko IPS QR koda."
-                : "Audio knjiga se ne prodaje zasebno — javite nam se i dogovorimo doplatu na ono što već imate."
-            }
+            note="Audio knjiga je dostupna u Kompletnom paketu, zajedno sa rasporedom sedenja i galerijom. Ako paket već imate, pišite nam pa dogovorimo doplatu."
           />
         </div>
 

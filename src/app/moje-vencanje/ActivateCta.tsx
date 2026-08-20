@@ -5,7 +5,7 @@ import { MessageCircle, Sparkles } from "lucide-react";
 
 /**
  * The action pair under a locked feature in the planner: activate this one
- * thing now, or agree several add-ons with us at once.
+ * thing now, or write to us — for details, or to agree several add-ons at once.
  *
  * Shared by the Audio knjiga and Galerija locked screens so the two never drift
  * apart. `checkoutHref` is optional because not every feature has a standalone
@@ -52,7 +52,7 @@ export default function ActivateCta({
           className="inline-flex items-center gap-2 rounded-xl border border-[#232323]/20 px-5 py-2.5 text-sm font-medium text-[#232323]/80 transition-colors hover:border-[#232323]/35 hover:bg-white"
         >
           <MessageCircle size={15} className="text-[#AE343F]" />
-          Dogovorite više dodataka odjednom
+          Pišite nam za više detalja i dogovor
         </a>
       </div>
       <p className="mt-2.5 text-[11px] leading-relaxed text-[#232323]/55">
