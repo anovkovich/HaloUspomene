@@ -23,6 +23,9 @@ const APP_ID = process.env.INFOBIP_2FA_APP_ID;
 const MESSAGE_ID = process.env.INFOBIP_2FA_MESSAGE_ID;
 const SMS_SENDER = process.env.INFOBIP_SMS_SENDER || "HaloUspom";
 
+/** Infobip answers in about a second; past this the request is not coming back. */
+const REQUEST_TIMEOUT_MS = 15_000;
+
 export class InfobipError extends Error {
   constructor(
     message: string,
@@ -93,6 +96,10 @@ async function infobipFetch<T>(path: string, init: RequestInit): Promise<T> {
         ...init.headers,
       },
       cache: "no-store",
+      // Some of these calls sit on the critical path of a form submit (OTP send,
+      // credential recovery). Without a deadline a stalled connection would hold
+      // the user on a spinner indefinitely; an abort surfaces as "network".
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch {
     throw new InfobipError("Network error contacting Infobip", "network");

@@ -178,6 +178,9 @@ export interface WeddingData {
   seating_sms_offer_sent?: boolean;
   /** One-off marker: the planner reminder SMS has been sent. Never cleared. */
   planner_reminder_sent?: boolean;
+  /** Last time this account'''s credentials were SMS-ed back to its own phone
+   *  (quick-register recovery). Throttles repeat sends; not a one-off marker. */
+  credentials_sms_at?: Date;
   receipt_valid?: boolean; // Receipt link is active (set false after payment)
   receipt_created?: string; // ISO date when receipt was generated
   custom_discount?: number; // Custom discount in RSD on website pozivnica

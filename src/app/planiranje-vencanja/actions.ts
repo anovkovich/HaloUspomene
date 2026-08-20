@@ -9,9 +9,13 @@ import {
   normalizePhone,
 } from "@/lib/phone-verification";
 import { quickRegisterCouple } from "@/lib/quick-register";
+import { sendExistingAccountCredentials } from "@/lib/planer/credentials-sms";
 
 export type SignupResult =
   | { ok: true; slug: string }
+  /** The verified number already has a planner account. One phone = one
+   *  account, so nothing is created; the credentials go back by SMS instead. */
+  | { ok: false; existing: true; sms: "sent" | "throttled" | "unavailable" }
   | { ok: false; error: string };
 
 export async function signupAction(formData: {
@@ -69,19 +73,27 @@ export async function signupAction(formData: {
   if (!password || password.length < 4)
     return { ok: false, error: "Lozinka mora imati najmanje 4 karaktera" };
 
-  {
-    const phoneE164 = normalizePhone(phone);
-    if (!phoneE164) {
-      return { ok: false, error: "Broj telefona nije ispravan." };
-    }
-    try {
-      await ensurePhoneVerified(formData.phoneTrustToken, phoneE164);
-    } catch {
-      return {
-        ok: false,
-        error: "Verifikujte broj telefona pre kreiranja naloga.",
-      };
-    }
+  const phoneE164 = normalizePhone(phone);
+  if (!phoneE164) {
+    return { ok: false, error: "Broj telefona nije ispravan." };
+  }
+  try {
+    await ensurePhoneVerified(formData.phoneTrustToken, phoneE164);
+  } catch {
+    return {
+      ok: false,
+      error: "Verifikujte broj telefona pre kreiranja naloga.",
+    };
+  }
+
+  // One phone = one planner account. Runs only AFTER the number is verified, so
+  // this can never be used to probe which numbers are registered, and the
+  // credentials can only travel to a number whose owner just proved control of
+  // it. An SMS failure still blocks the duplicate — the account state matters
+  // more than the delivery.
+  const recovery = await sendExistingAccountCredentials(phoneE164);
+  if (recovery.status !== "no-account") {
+    return { ok: false, existing: true, sms: recovery.status };
   }
 
   // Generate unique slug — transliterates Cyrillic, throws if names produce
@@ -121,7 +133,11 @@ export async function signupAction(formData: {
     receipt_valid: false,
     custom_discount: 0,
     // Contact info stored on the document for admin visibility
-    contact_phone: phone ? `+381${phone}` : "",
+    // The E.164 form, not a hand-built "+381" + input: the same string the
+    // one-account-per-phone lookup compares against, so every account created
+    // here stays findable. Hand-concatenating kept a typed leading zero and
+    // produced "+3810...", which no lookup would ever match.
+    contact_phone: phoneE164,
     contact_instagram: instagram ? `@${instagram}` : "",
   } as WeddingData & { contact_phone: string; contact_instagram: string };
 

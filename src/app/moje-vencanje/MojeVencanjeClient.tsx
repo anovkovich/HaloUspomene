@@ -39,6 +39,7 @@ import BudgetCard from "./BudgetCard";
 import Sidebar from "./Sidebar";
 import { type ActiveView, getNavItems } from "./nav-items";
 import LockedFeatureCard from "./LockedFeatureCard";
+import GalleryLockedCard from "./GalleryLockedCard";
 import TeaserVendors from "./TeaserVendors";
 import Footer from "@/components/layout/footer/Footer";
 import {
@@ -797,9 +798,21 @@ export default function MojeVencanjeClient() {
                   />
                 </React.Suspense>
               )}
+              {/* Unpaid gallery explains itself instead of opening an empty
+                  album. Gallery-only buyers are already served by the
+                  LockedFeatureCard above, which points at their checkout. */}
               {activeView === "galerija" &&
                 coupleInfo &&
-                !(coupleInfo.galleryOnly && !coupleInfo.paidForGallery) && (
+                !coupleInfo.paidForGallery &&
+                !coupleInfo.galleryOnly && (
+                <GalleryLockedCard
+                  slug={coupleInfo.slug}
+                  draft={coupleInfo.draft}
+                />
+              )}
+              {activeView === "galerija" &&
+                coupleInfo &&
+                coupleInfo.paidForGallery && (
                 <React.Suspense
                   fallback={
                     <div className="flex justify-center py-12">

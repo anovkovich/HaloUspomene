@@ -28,6 +28,9 @@ const Ctx = createContext<RecaptchaContextValue | null>(null);
 
 const SCRIPT_ID = "halo-recaptcha-v3";
 
+/** A live challenge settles well inside a second; anything past this is stuck. */
+const EXECUTE_TIMEOUT_MS = 15_000;
+
 export function RecaptchaProvider({ children }: { children: ReactNode }) {
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   const loadStarted = useRef(false);
@@ -85,7 +88,21 @@ export function RecaptchaProvider({ children }: { children: ReactNode }) {
       if (!siteKey) throw new Error("recaptcha: site key missing");
       await ensureLoaded();
       if (!window.grecaptcha) throw new Error("recaptcha: not loaded");
-      return window.grecaptcha.execute(siteKey, { action });
+      // grecaptcha.execute can hang forever instead of rejecting — most often
+      // when the page origin is not on the site key's domain list (localhost,
+      // a preview URL), where Google logs the error to the console and simply
+      // never settles the promise. Callers await this before submitting, so a
+      // hang leaves a submit button spinning with nothing to tell the user.
+      // Racing it turns that dead end into an ordinary failure they can act on.
+      return Promise.race([
+        window.grecaptcha.execute(siteKey, { action }),
+        new Promise<string>((_, reject) =>
+          setTimeout(
+            () => reject(new Error("recaptcha: timed out")),
+            EXECUTE_TIMEOUT_MS,
+          ),
+        ),
+      ]);
     },
     [siteKey, ensureLoaded],
   );

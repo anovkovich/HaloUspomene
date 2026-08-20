@@ -63,9 +63,13 @@ export function getNavItems(opts: {
     }));
   }
 
-  return NAV_ITEMS.filter(
-    (item) => item.view !== "galerija" || paidForGallery
-  ).map((item) => ({ ...item, locked: false }));
+  // Galerija stays in the list even unpaid, the way Audio knjiga always has:
+  // the entry is what tells a couple the feature exists at all, and its view
+  // explains the QR-zahvalnica flow instead of opening an empty album. Hiding
+  // it sold nothing — it only made the planner look like it had one feature
+  // fewer than it does. `locked` stays false so it sits with the live entries
+  // rather than in the gallery-only upsell block at the bottom.
+  return NAV_ITEMS.map((item) => ({ ...item, locked: false }));
 }
 
 export const LOCKED_FEATURE_INFO: Record<
@@ -99,7 +103,9 @@ export const LOCKED_FEATURE_INFO: Record<
   },
   galerija: {
     title: "QR Galerija slika",
-    description: "Gosti skeniraju QR kod i dele slike direktno u vašu galeriju.",
+    description:
+      "Stavite QR kod na zahvalnice na stolovima — gosti ga skeniraju i šalju " +
+      "vam fotografije sa svojih telefona, bez aplikacije i registracije.",
   },
   meni: {
     title: "Meni za venčanje",

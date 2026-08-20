@@ -1,6 +1,7 @@
 import clientPromise from "./mongodb";
 import { WeddingData } from "@/app/pozivnica/[slug]/types";
 import { isGalleryOnlyCouple } from "./gallery-only";
+import { normalizePhone } from "./phone-verification";
 
 export type CoupleDocument = WeddingData & { slug: string };
 
@@ -172,4 +173,69 @@ export async function unsetCoupleFields(
   const unset: Record<string, "">  = {};
   for (const f of fields) unset[f as string] = "";
   await c.updateOne({ slug }, { $unset: unset });
+}
+
+/** A couple matched by phone number, trimmed to what credential recovery needs. */
+export interface CouplePhoneMatch {
+  slug: string;
+  password: string;
+  display: string;
+  /** When we last SMS-ed this account's credentials, for throttling. */
+  credentialsSmsAt?: Date;
+}
+
+/**
+ * The couple registered on this phone number, or null.
+ *
+ * `contact_phone` is free text: admin-entered records hold two numbers separated
+ * by a comma (see the `contact_phone_call_cta` doc comment on `WeddingData`) and
+ * older records vary in format, so there is nothing indexable to match on.
+ * With the collection in the low tens of documents a scan-and-normalize is both
+ * exact and cheap — revisit if couples ever reach the thousands.
+ *
+ * When several couples share a number (legacy data, admin duplicates) the newest
+ * one wins: that is the account the person was last using.
+ */
+export async function findCoupleByPhone(
+  phoneE164: string,
+): Promise<CouplePhoneMatch | null> {
+  if (!phoneE164) return null;
+  const c = await col();
+  const docs = await c
+    .find(
+      { contact_phone: { $exists: true, $ne: "" } },
+      {
+        projection: {
+          slug: 1,
+          contact_phone: 1,
+          potvrde_password: 1,
+          couple_names: 1,
+          credentials_sms_at: 1,
+          created_at: 1,
+        },
+        sort: { created_at: -1 },
+      },
+    )
+    .toArray();
+
+  for (const d of docs) {
+    const numbers = String(d.contact_phone ?? "")
+      .split(",")
+      .map((n) => normalizePhone(n))
+      .filter((n): n is string => !!n);
+    if (!numbers.includes(phoneE164)) continue;
+    return {
+      slug: d.slug,
+      password: d.potvrde_password ?? "",
+      display: d.couple_names?.full_display ?? d.slug,
+      credentialsSmsAt: (d as { credentials_sms_at?: Date }).credentials_sms_at,
+    };
+  }
+  return null;
+}
+
+/** Stamps the last credential-SMS send, so the next attempt can be throttled. */
+export async function markCredentialsSmsSent(slug: string): Promise<void> {
+  const c = await col();
+  await c.updateOne({ slug }, { $set: { credentials_sms_at: new Date() } });
 }

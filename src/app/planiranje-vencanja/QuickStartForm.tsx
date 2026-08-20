@@ -81,6 +81,11 @@ export default function QuickStartForm({
     bride: string;
     groom: string;
   } | null>(null);
+  /** Set when the verified number already has an account — carries how the
+   *  credential SMS went, so the message can be honest about it. */
+  const [existing, setExisting] = useState<
+    "sent" | "throttled" | "unavailable" | null
+  >(null);
 
   const [bride, setBride] = useState("");
   const [groom, setGroom] = useState("");
@@ -115,18 +120,34 @@ export default function QuickStartForm({
       return;
     }
 
-    const result = await signupAction({
-      bride,
-      groom,
-      eventDate,
-      phone,
-      instagram,
-      password,
-      recaptchaToken,
-      phoneTrustToken,
-    });
+    // A server action that throws rejects this promise, and without a catch the
+    // rest of handleSubmit never runs — `loading` stays true and the button
+    // spins forever with no message. Always land on something the user can read.
+    let result;
+    try {
+      result = await signupAction({
+        bride,
+        groom,
+        eventDate,
+        phone,
+        instagram,
+        password,
+        recaptchaToken,
+        phoneTrustToken,
+      });
+    } catch (err) {
+      console.error("signup failed:", err);
+      setError("Greška pri kreiranju naloga. Pokušajte ponovo za koji trenutak.");
+      setLoading(false);
+      return;
+    }
 
     if (!result.ok) {
+      if ("existing" in result) {
+        setExisting(result.sms);
+        setLoading(false);
+        return;
+      }
       setError(result.error);
       setLoading(false);
       return;
@@ -175,27 +196,56 @@ export default function QuickStartForm({
     }
   }
 
-  // Already registered — show login link
-  if (savedSlug) {
+  // The verified number already carries an account. One phone = one planner,
+  // so nothing was created — the credentials went back by SMS instead.
+  if (existing) {
+    const prettyPhone = `+381 ${phone.replace(/^0/, "")}`;
     return (
       <div className="text-center py-6">
         <div className="w-16 h-16 bg-[#AE343F]/20 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={28} className="text-[#AE343F]" />
         </div>
-        <p className={`${t.successTitle} font-serif text-lg mb-2`}>
-          Već imate nalog
+        <p className={`${t.successTitle} font-serif text-xl mb-2`}>
+          Na ovaj broj već postoji nalog
         </p>
-        <p className={`text-sm ${t.successSubtitle} mb-6`}>
-          Vaš slug:{" "}
-          <span className={`font-mono ${t.successSlug}`}>{savedSlug}</span>
+        <p className={`text-sm ${t.successSubtitle} mb-6 max-w-sm mx-auto leading-relaxed`}>
+          {existing === "sent" && (
+            <>
+              Poslali smo SMS na <span className={t.successValue}>{prettyPhone}</span>{" "}
+              sa vašim korisničkim imenom i lozinkom. Nov nalog nije napravljen —
+              vaše planiranje vas čeka tamo gde ste stali.
+            </>
+          )}
+          {existing === "throttled" && (
+            <>
+              Podatke smo već poslali SMS-om na{" "}
+              <span className={t.successValue}>{prettyPhone}</span> pre nekoliko
+              minuta — proverite poruke pre nego što zatražite novi.
+            </>
+          )}
+          {existing === "unavailable" && (
+            <>
+              SMS sa podacima trenutno ne možemo da pošaljemo. Pišite nam na
+              halouspomene@gmail.com i vratićemo vam pristup.
+            </>
+          )}
         </p>
+
         <Link
           href="/moje-vencanje"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-xl font-semibold transition-colors"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-[#AE343F] hover:bg-[#8A2A32] text-white rounded-xl font-bold transition-colors text-base"
         >
-          <LogIn size={16} />
-          Uđite u planer
+          <LogIn size={18} />
+          Idite na prijavu
         </Link>
+
+        <button
+          type="button"
+          onClick={() => setExisting(null)}
+          className={`block mx-auto mt-4 text-xs ${t.successFootnote} underline cursor-pointer`}
+        >
+          Registrujte se sa drugim brojem
+        </button>
       </div>
     );
   }
@@ -250,6 +300,28 @@ export default function QuickStartForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
+      {/* A saved session is a shortcut, never a gate. The old build replaced the
+          whole form with this card, which locked out the second couple on a
+          shared laptop while stopping nobody who cleared their cookies. The real
+          duplicate check now lives on the verified phone number, server-side. */}
+      {savedSlug && (
+        <div
+          className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl ${t.successCard}`}
+        >
+          <p className={`text-xs ${t.successSubtitle} min-w-0`}>
+            Već imate nalog{" "}
+            <span className={`font-mono ${t.successSlug}`}>{savedSlug}</span>
+          </p>
+          <Link
+            href="/moje-vencanje"
+            className="inline-flex items-center gap-1.5 shrink-0 text-xs font-semibold text-[#AE343F] hover:underline"
+          >
+            <LogIn size={13} />
+            Uđite u planer
+          </Link>
+        </div>
+      )}
+
       {error && (
         <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
           <AlertCircle size={16} className="shrink-0" />

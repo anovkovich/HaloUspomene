@@ -9,8 +9,10 @@ import {
   Trash2,
   Save,
   Loader2,
+  QrCode,
 } from "lucide-react";
 import { loadMeniAction, saveMeniAction } from "./actions";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 import type { MeniData, MeniItem } from "@/app/pozivnica/[slug]/types";
 
 interface MeniCardProps {
@@ -140,6 +142,10 @@ export default function MeniCard({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  /** Shown after a save: the menu is stored, but guests still need a QR code to
+   *  reach it. Explained here rather than in the toast because it is the one
+   *  thing that decides whether the menu is ever seen. */
+  const [savedNote, setSavedNote] = useState(false);
 
   useEffect(() => {
     loadAction().then((m) => {
@@ -189,6 +195,7 @@ export default function MeniCard({
       setFood(cleanFood);
       setDrinks(cleanDrinks);
       setDirty(false);
+      setSavedNote(true);
       toast.success("Meni je sačuvan");
     } else {
       toast.error((res && "error" in res && res.error) || "Greška pri čuvanju");
@@ -214,8 +221,24 @@ export default function MeniCard({
             {description ?? (
               <>
                 Besplatan dodatak — dodajte jela i/ili pića. Gosti ih vide u
-                „Meni” tabu kada skeniraju QR kod sa panoa dobrodošlice. Možete
-                dodati samo piće, samo hranu, ili oboje.
+                „Meni” tabu kada skeniraju QR kod sa{" "}
+                <InfoTooltip label="panoa dobrodošlice">
+                  <span className="mb-2 block font-medium text-[#232323]">
+                    Šta je QR pano dobrodošlice
+                  </span>
+                  Tabla koju stavite na ulaz u salu. Gost je skenira telefonom i
+                  odmah vidi za kojim stolom sedi, plan cele sale i vaš meni —
+                  bez aplikacije i bez registracije.
+                  <span className="mt-2 block">
+                    „Gde sedim” radi zato što ste goste rasporedili našim alatom
+                    za raspored sedenja — bez rasporeda pano nema šta da pokaže.
+                  </span>
+                  <span className="mt-2 block">
+                    Isti QR kod ne mora da stoji samo na panou: možete ga
+                    odštampati i na zahvalnicama na stolovima.
+                  </span>
+                </InfoTooltip>
+                {". Možete dodati samo piće, samo hranu, ili oboje."}
               </>
             )}
           </p>
@@ -233,6 +256,32 @@ export default function MeniCard({
           {saving ? "Čuvanje…" : dirty ? "Sačuvaj meni" : "Sačuvano"}
         </button>
       </div>
+
+      {savedNote && (
+        <div className="flex items-start gap-3 rounded-2xl border border-[#d4af37]/40 bg-[#F5F4DC]/50 p-4">
+          <QrCode size={16} className="mt-0.5 shrink-0 text-[#d4af37]" />
+          <div className="text-sm text-[#232323]/80">
+            <p className="mb-1 font-medium text-[#232323]">
+              Sačuvano — a evo kako meni stiže do gostiju
+            </p>
+            <p className="leading-relaxed">
+              Do menija se dolazi isključivo skeniranjem QR koda — sa panoa
+              dobrodošlice na ulazu ili sa zahvalnice na stolu. Ako već koristite
+              raspored sedenja, galeriju ili audio knjigu, QR koji delite
+              gostima sam prikazuje i meni, bez ijednog dodatnog koda. Ako
+              nijedno od toga nije aktivirano, meni je sačuvan i čeka vas ovde,
+              ali gosti još nemaju odakle da ga otvore.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSavedNote(false)}
+              className="mt-2 cursor-pointer text-xs text-[#232323]/50 underline transition-colors hover:text-[#232323]/75"
+            >
+              U redu, razumem
+            </button>
+          </div>
+        </div>
+      )}
 
       <Section
         title="Hrana"

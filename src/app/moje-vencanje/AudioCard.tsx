@@ -240,9 +240,11 @@ export default function AudioCard({
           <p className="font-serif text-base text-[#232323] mb-1">
             Audio knjiga utisaka
           </p>
-          <p className="text-sm text-[#232323]/75">
-            Vaši gosti ostavljaju glasovne poruke — vi ih slušate, čuvate i
-            preuzimate. Dostupno uz aktivaciju audio paketa.
+          <p className="text-sm text-[#232323]/75 max-w-lg mx-auto leading-relaxed">
+            Stavite QR kod na zahvalnice na stolovima — gosti ga skeniraju i
+            ostavljaju glasovne poruke, uspomene, želje i čestitke, direktno sa
+            svojih telefona. Vi ih slušate, čuvate i preuzimate. Dostupno uz
+            aktivaciju audio paketa.
           </p>
         </div>
 
@@ -320,6 +322,25 @@ export default function AudioCard({
           </div>
         </div>
 
+        {/* One printed QR carries every activated feature — the guest hub behind
+            it renders a tab per feature, so this is the same link, not a second
+            code. Mirrored in GalleryLockedCard. */}
+        <div className="border border-[#d4af37]/35 rounded-xl overflow-hidden bg-[#F5F4DC]/40 mb-3">
+          <div className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <QrCode size={16} className="text-[#d4af37]" />
+              <p className="text-sm font-medium text-[#232323]">
+                Jedan QR kod — i glasovne poruke i fotografije
+              </p>
+            </div>
+            <p className="text-xs text-[#232323]/75 leading-relaxed">
+              Na istoj zahvalnici mogu da stoje obe uspomene. Gost skenira
+              jednom, pa sam bira hoće li ostaviti glasovnu poruku ili poslati
+              fotografiju sa svog telefona.
+            </p>
+          </div>
+        </div>
+
         {/* USB options */}
         <div className="border border-[#d4af37]/35 rounded-xl overflow-hidden bg-[#F5F4DC]/40 mb-3">
           <div className="p-4 space-y-3">
@@ -367,8 +388,8 @@ export default function AudioCard({
                 Retro telefon uspomena
               </p>
               <p className="text-xs text-[#232323]/75 leading-relaxed">
-                Pun doživljaj — gosti podižu slušalicu i ostavljaju poruku.
-                Atrakcija na venčanju i nezaboravna uspomena.
+                Za pun doživljaj, umesto skeniranja — gosti podižu slušalicu i
+                ostavljaju poruku. Atrakcija na venčanju i nezaboravna uspomena.
               </p>
               <Link
                 href="/telefon-uspomena"
