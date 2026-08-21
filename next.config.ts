@@ -55,6 +55,11 @@ const nextConfig: NextConfig = {
         source: "/pristup/(.*)",
         headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }],
       },
+      // Client photo-upload links — per-customer, token-bearing; never cache
+      {
+        source: "/slike/(.*)",
+        headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }],
+      },
       // Static pages — cache 1 hour, revalidate in background
       {
         source: "/(blog|lokacije|napravi-pozivnicu|napravi-deciju-pozivnicu|telefon-uspomena|planiranje-vencanja|pozivnice|cene|qr-galerija-slika-sa-vencanja|iznajmljivanje-oldtajmera-za-vencanje|iznajmljivanje-automobila-za-vencanje|iznajmljivanje-opreme-za-vencanje|lazni-maticar)(.*)",

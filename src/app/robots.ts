@@ -40,6 +40,7 @@ const AI_BOT_DISALLOW = [
   "/admin/",
   "/racun/",
   "/pristup/",
+  "/slike/",
   "/pozivnica/*/portal",
   "/pozivnica/*/raspored-sedenja",
   "/pozivnica/*/potvrde",
@@ -107,6 +108,7 @@ export default function robots(): MetadataRoute.Robots {
           // itself sets robots: { index: false } via layout.tsx so search
           // engines still won't index per-receipt URLs.
           "/pristup/",
+          "/slike/",
           "/pozivnica/*/portal",
           "/pozivnica/*/raspored-sedenja",
           "/pozivnica/*/potvrde",

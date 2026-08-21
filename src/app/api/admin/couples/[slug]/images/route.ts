@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { put, del } from "@vercel/blob";
 import { getWeddingData, patchCouple } from "@/lib/couples";
+import { optimizeToWebp } from "@/lib/image-optimize";
+
+export const runtime = "nodejs";
 
 
 
@@ -53,12 +56,19 @@ export async function POST(
     );
 
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const optimized = await optimizeToWebp(await file.arrayBuffer(), {
+    contentType: file.type,
+    extension: ext,
+  });
   const timestamp = Date.now();
-  const pathname = `images/${slug}/${timestamp}.${ext}`;
+  const pathname = `images/${slug}/${timestamp}.${optimized.extension}`;
 
   let blob;
   try {
-    blob = await put(pathname, file, { access: "public" });
+    blob = await put(pathname, optimized.buffer, {
+      access: "public",
+      contentType: optimized.contentType,
+    });
   } catch (err) {
     console.error("Vercel Blob upload failed:", err);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });

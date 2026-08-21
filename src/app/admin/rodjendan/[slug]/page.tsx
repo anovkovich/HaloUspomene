@@ -5,6 +5,8 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Trash2, MapPin, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import ClientUploadLinkButton from "@/app/admin/ClientUploadLinkButton";
+import { prepareImageForUpload } from "@/lib/image-utils";
 
 interface BirthdayImage {
   url: string;
@@ -97,8 +99,20 @@ export default function EditBirthdayPage() {
     e.target.value = ""; // allow re-picking the same file after an error
 
     setUploading(true);
+    // HEIC -> JPEG + downscale to 2560px, same as the client upload link.
+    // Gallery photos only — the emblem keeps its original file because this
+    // pipeline flattens transparency into a white JPEG background.
+    let prepared: File;
+    try {
+      prepared = await prepareImageForUpload(file);
+    } catch {
+      setUploading(false);
+      toast.error("Sliku nije moguće obraditi");
+      return;
+    }
+
     const fd = new FormData();
-    fd.append("image", file);
+    fd.append("image", prepared);
     const res = await fetch(`/api/admin/birthdays/${slug}/images`, {
       method: "POST",
       body: fd,
@@ -398,8 +412,8 @@ export default function EditBirthdayPage() {
               aria-label="Uključi galeriju fotografija"
             >
               <span
-                className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                  paidForImages ? "translate-x-5" : "translate-x-0.5"
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                  paidForImages ? "translate-x-5" : ""
                 }`}
               />
             </button>
@@ -430,6 +444,12 @@ export default function EditBirthdayPage() {
                   </label>
                 )}
               </div>
+
+              <ClientUploadLinkButton
+                productKind="birthday"
+                slug={slug}
+                accent="#FF6B6B"
+              />
 
               <div className="flex items-center gap-2">
                 <span className="text-xs text-white/50">Raspored:</span>

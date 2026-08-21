@@ -2,6 +2,7 @@ import clientPromise from "./mongodb";
 import { del } from "@vercel/blob";
 import { BirthdayData } from "@/app/deciji-rodjendan/[slug]/types";
 import { deleteShareLinksForProduct } from "./share-links";
+import { deleteUploadLinksForProduct } from "./upload-links";
 import { deleteAllGalleryPhotos } from "./gallery";
 
 export type BirthdayDocument = BirthdayData & { slug: string };
@@ -62,11 +63,12 @@ export async function deleteBirthday(slug: string): Promise<void> {
   const doc = await c.findOne({ slug });
   await c.deleteOne({ slug });
 
-  // Cascade: RSVP responses + share links + QR gallery metadata.
+  // Cascade: RSVP responses + share/upload links + QR gallery metadata.
   const client = await clientPromise;
   await Promise.all([
     client.db("halouspomene").collection("birthday_rsvp").deleteMany({ slug }),
     deleteShareLinksForProduct("birthday", slug),
+    deleteUploadLinksForProduct("birthday", slug),
     deleteAllGalleryPhotos(slug).catch((err) =>
       console.error(`Gallery metadata cleanup failed for ${slug}:`, err),
     ),

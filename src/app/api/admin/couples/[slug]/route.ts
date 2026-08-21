@@ -9,6 +9,7 @@ import { getAudioMessages, deleteAllAudioMessages } from "@/lib/audio";
 import { deleteAllGalleryPhotos } from "@/lib/gallery";
 import { deleteByPrefix } from "@/lib/r2";
 import { deleteShareLinksForProduct } from "@/lib/share-links";
+import { deleteUploadLinksForProduct } from "@/lib/upload-links";
 import { deleteMoneylessOrders } from "@/lib/orders";
 import { deletePremiumBlobs } from "@/lib/premium-blobs";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
@@ -112,6 +113,7 @@ export async function DELETE(
     deleteAllAudioMessages(slug),
     deleteAllGalleryPhotos(slug),
     deleteShareLinksForProduct("couple", slug),
+    deleteUploadLinksForProduct("couple", slug),
     // `pozivnica` and `galerija` are the two kinds that resolve to a couple.
     // Only moneyless orders go — settled ones stay as an accounting trail.
     deleteMoneylessOrders(["pozivnica", "galerija"], slug),

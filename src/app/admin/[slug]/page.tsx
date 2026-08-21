@@ -6,6 +6,8 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Trash2, MapPin, ChevronDown, Phone, Music } from "lucide-react";
 import Link from "next/link";
 import DeleteModal from "../DeleteModal";
+import ClientUploadLinkButton from "../ClientUploadLinkButton";
+import { prepareImageForUpload } from "@/lib/image-utils";
 import PlannerStatsSection from "@/app/pozivnica/[slug]/PlannerStatsSection";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 
@@ -192,8 +194,20 @@ export default function EditCouplePage() {
     setImageError(null);
     setUploading(true);
 
+    // Same pipeline the client-facing upload link uses: HEIC -> JPEG and a
+    // downscale to 2560px, so a 8MB phone original doesn't land in Blob (or
+    // hit the 5MB route cap) and the invitation loads fast on mobile data.
+    let prepared: File;
+    try {
+      prepared = await prepareImageForUpload(file);
+    } catch {
+      setUploading(false);
+      setImageError("Sliku nije moguće obraditi");
+      return;
+    }
+
     const form = new FormData();
-    form.append("image", file);
+    form.append("image", prepared);
 
     const res = await fetch(`/api/admin/couples/${slug}/images`, {
       method: "POST",
@@ -472,6 +486,8 @@ export default function EditCouplePage() {
             {imageError && (
               <p className="text-red-400 text-xs">{imageError}</p>
             )}
+
+            <ClientUploadLinkButton productKind="couple" slug={slug} />
 
             {/* Layout switcher */}
             <div className="flex items-center gap-2">

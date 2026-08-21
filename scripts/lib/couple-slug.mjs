@@ -11,6 +11,7 @@ export const LINKED_COLLECTIONS = [
   "wedding_portal",
   "gallery_photos",
   "share_links",
+  "upload_links",
   "orders",
   "promo_redemptions",
 ];

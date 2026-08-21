@@ -1,6 +1,6 @@
-import { randomBytes } from "crypto";
 import { ObjectId } from "mongodb";
 import clientPromise from "./mongodb";
+import { generateLinkToken } from "./link-token";
 
 /**
  * Stable category — does NOT distinguish classic vs premium pozivnica or
@@ -26,20 +26,6 @@ interface ShareLinkDoc {
   created_at: Date;
   last_visited_at?: Date;
   visit_count: number;
-}
-
-// No 0/O/o, 1/l/I to keep tokens legible if someone reads one over the phone.
-const TOKEN_CHARS =
-  "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const TOKEN_LEN = 10;
-
-function generateToken(): string {
-  const bytes = randomBytes(TOKEN_LEN);
-  let out = "";
-  for (let i = 0; i < TOKEN_LEN; i++) {
-    out += TOKEN_CHARS[bytes[i] % TOKEN_CHARS.length];
-  }
-  return out;
 }
 
 async function col() {
@@ -72,7 +58,7 @@ export async function createOrGetShareLink(
   if (existing) return toApi(existing);
 
   for (let attempt = 0; attempt < 5; attempt++) {
-    const token = generateToken();
+    const token = generateLinkToken();
     const clash = await c.findOne({ token }, { projection: { _id: 1 } });
     if (clash) continue;
     const doc: ShareLinkDoc = {

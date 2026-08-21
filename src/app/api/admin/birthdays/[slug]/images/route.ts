@@ -3,6 +3,9 @@ import { revalidatePath } from "next/cache";
 import { isAdminRequest as isAdmin } from "@/lib/admin-auth";
 import { put, del } from "@vercel/blob";
 import { getBirthdayData, patchBirthday } from "@/lib/birthday";
+import { optimizeToWebp } from "@/lib/image-optimize";
+
+export const runtime = "nodejs";
 
 // Mirrors /api/admin/couples/[slug]/images for birthday_events records.
 // Blob pathname stays `images/${slug}/…` — the same namespace the wedding
@@ -67,12 +70,22 @@ export async function POST(
     );
 
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  // WebP keeps the alpha channel, so the cut-out emblem survives the re-encode
+  // — it just gets a tighter cap than a gallery photo, since it renders small.
+  const optimized = await optimizeToWebp(
+    await file.arrayBuffer(),
+    { contentType: file.type, extension: ext },
+    slot === "emblem" ? { maxSide: 800, quality: 88 } : undefined,
+  );
   const prefix = slot === "emblem" ? "emblem" : "images";
-  const pathname = `${prefix}/${slug}/${Date.now()}.${ext}`;
+  const pathname = `${prefix}/${slug}/${Date.now()}.${optimized.extension}`;
 
   let blob;
   try {
-    blob = await put(pathname, file, { access: "public" });
+    blob = await put(pathname, optimized.buffer, {
+      access: "public",
+      contentType: optimized.contentType,
+    });
   } catch (err) {
     console.error("Vercel Blob upload failed:", err);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
