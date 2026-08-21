@@ -185,6 +185,7 @@ function LinkModal({
   return (
     <div
       className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+      style={{ margin: 0 }}
       onClick={onClose}
     >
       <div
@@ -309,6 +310,7 @@ export function ConfirmAttendanceModal({
     return (
       <div
         className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+        style={{ margin: 0 }}
         onClick={onClose}
       >
         <div
@@ -370,6 +372,7 @@ export function ConfirmAttendanceModal({
     return (
       <div
         className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+        style={{ margin: 0 }}
         onClick={onClose}
       >
         <div
@@ -411,6 +414,7 @@ export function ConfirmAttendanceModal({
   return (
     <div
       className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+      style={{ margin: 0 }}
       onClick={onClose}
     >
       <div
@@ -521,6 +525,7 @@ function RolePickerModal({
   return (
     <div
       className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+      style={{ margin: 0 }}
       onClick={onClose}
     >
       <div
@@ -662,6 +667,7 @@ export function AnswerPickerModal({
   return (
     <div
       className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+      style={{ margin: 0 }}
       onClick={onClose}
     >
       <div
@@ -822,6 +828,7 @@ function InviteeEditor({
   return (
     <div
       className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+      style={{ margin: 0 }}
       onClick={onClose}
     >
       <div

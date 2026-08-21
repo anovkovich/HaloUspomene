@@ -484,6 +484,11 @@ export default function OverviewCard({
     !!coupleInfo.eventDate && !isNaN(new Date(coupleInfo.eventDate).getTime());
 
   return (
+    // `space-y-8` postavlja `margin-block-end` na svako dete osim poslednjeg —
+    // u Tailwindu v4 i na dete koje je `position: fixed`. Dijalozi montirani
+    // ovde su takva deca, pa im ta margina uz `inset-0` skraćuje zatamnjenje za
+    // 2rem i ostavlja neprekriven pojas na dnu ekrana. Zato svaki od njih nosi
+    // `style={{ margin: 0 }}` — margina na fiksnom sloju nikad nije namerna.
     <div className="space-y-8">
       {/* Countdown hero */}
       <motion.div
@@ -1145,6 +1150,7 @@ export default function OverviewCard({
       {pdfModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4"
+          style={{ margin: 0 }}
           onClick={() => !pdfDownloading && setPdfModal(null)}
         >
           <div
@@ -1222,6 +1228,7 @@ export default function OverviewCard({
       {seatingSheet && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4"
+          style={{ margin: 0 }}
           onClick={() => !panoBusy && setSeatingSheet(null)}
         >
           <div
