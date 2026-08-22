@@ -257,10 +257,6 @@ export default async function NapraviDecijuPozivnicuPage({
                 </Link>
               ))}
             </div>
-            {/* Ovde se NE linkuje `/pozivnica-za-prvi-rodjendan`. Ta stranica
-                postoji samo da bi se indeksirala za taj upit i sama vraća
-                posetioca na ovaj formular — link odavde bi ga samo odveo u krug,
-                dalje od forme. */}
           </div>
         </section>
 

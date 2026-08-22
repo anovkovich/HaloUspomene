@@ -69,7 +69,13 @@ export default async function InvitationPage({ params }: PageProps) {
 
   // Guest-referral promo: a code derived from this couple's event, shown on the
   // RSVP success screen (only surfaces on published couples — drafts lock RSVP).
-  const promo = issuePromo(weddingData.event_date, slug);
+  //
+  // Demo pozivnice su izuzete: one stoje javno na /pozivnice da bi ih posetilac
+  // isprobao, pa bi im posle probne potvrde dolaska iskocio pravi promo kod za
+  // popust — kod koji nije zaradio i koji nema veze sa njegovom proslavom.
+  const promo = weddingData.example
+    ? null
+    : issuePromo(weddingData.event_date, slug);
 
   // Route the "pay & unlock" CTA to the right checkout (full package → fixed
   // tier, partial combo → custom IPS).

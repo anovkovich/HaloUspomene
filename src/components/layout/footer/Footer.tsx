@@ -100,11 +100,7 @@ const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-3">
               {[
-                { name: "Website Pozivnice", href: "/pozivnice" },
-                {
-                  name: "Izrada pozivnica online",
-                  href: "/izrada-pozivnica-online",
-                },
+                { name: "Digitalne pozivnice", href: "/pozivnice" },
                 { name: "QR Pano dobrodošlice", href: "/qr-pano-dobrodoslice" },
                 {
                   name: "QR Foto Galerija",

@@ -107,7 +107,7 @@ export default function InvitationOfferCTA({
   inline = false,
   tone = "theme",
   className = "",
-  ctaBase = "/izrada-pozivnica-online",
+  ctaBase = "/pozivnice",
   promoCode,
   promoValidUntil,
 }: {

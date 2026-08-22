@@ -2,7 +2,8 @@ import { ImageResponse } from "next/og";
 import { readFile } from "fs/promises";
 import { join } from "path";
 
-export const alt = "Website Pozivnica za Venčanje — Digitalna + PDF za Štampu | HALO Uspomene";
+export const alt =
+  "Digitalne pozivnice za venčanje i proslave | HALO Uspomene";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -107,7 +108,7 @@ export default async function OGImage() {
               textAlign: "center",
             }}
           >
-            Website Pozivnica za Venčanje
+            Digitalne pozivnice za proslave
           </span>
 
           <span
@@ -118,7 +119,7 @@ export default async function OGImage() {
               textAlign: "center",
             }}
           >
-            Potvrde dolaska · Odbrojavanje · Mapa · PDF za štampu sa QR kodom
+            Venčanje · Rođendan · Punoletstvo — potvrde dolaska i odbrojavanje
           </span>
 
           <span
@@ -130,7 +131,7 @@ export default async function OGImage() {
               letterSpacing: "0.1em",
             }}
           >
-            od 5.000 din · Gotova odmah
+            od 4.500 din · Gotova odmah
           </span>
 
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>

@@ -71,7 +71,7 @@ const Hero: React.FC = () => {
                 Napravite pozivnicu
               </Link>
               <Link
-                href="/izrada-pozivnica-online"
+                href="/pozivnice#primeri"
                 className="btn btn-outline border-[#232323]/20 text-[#232323] hover:bg-[#232323] hover:text-[#F5F4DC] hover:border-[#232323] btn-lg rounded-full px-12"
                 data-track="cta_click"
                 data-track-cta-name="pogledajte_primere"

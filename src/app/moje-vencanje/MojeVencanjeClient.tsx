@@ -558,7 +558,7 @@ export default function MojeVencanjeClient() {
                   )}
                 </button>
                 <Link
-                  href="/izrada-pozivnica-online#primeri"
+                  href="/pozivnice#primeri"
                   className="text-xs text-[#d4af37] hover:text-[#b8972e] underline underline-offset-2 transition-colors"
                 >
                   Želite pozivnicu - Pogledajte primere

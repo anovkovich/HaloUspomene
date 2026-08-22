@@ -46,7 +46,9 @@ export default async function BirthdayInvitationPage({ params }: PageProps) {
 
   // Freemium (B3): a draft renders a watermarked, RSVP-locked preview.
   const isDraft = !!data.draft;
-  const promo = issuePromo(data.event_date, slug);
+  // Demo primeri (`example`) ne dele promo kod — v. isti izuzetak u
+  // /pozivnica/[slug]/page.tsx.
+  const promo = data.example ? null : issuePromo(data.event_date, slug);
 
   return (
     <InvitationFrame>

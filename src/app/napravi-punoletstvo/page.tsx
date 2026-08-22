@@ -395,7 +395,7 @@ export default async function NapraviPunoletstvoPage({
               </Link>
               , a ako planirate venčanje, pogledajte{" "}
               <Link
-                href="/izrada-pozivnica-online"
+                href="/pozivnice"
                 className="font-medium text-[#AE343F] hover:underline"
               >
                 izradu pozivnica online

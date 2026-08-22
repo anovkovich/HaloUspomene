@@ -14,6 +14,25 @@ const localBuildCpus = process.env.VERCEL
 const nextConfig: NextConfig = {
   trailingSlash: true,
   ...(localBuildCpus ? { experimental: { cpus: localBuildCpus } } : {}),
+  // Obe stranice su spojene u /pozivnice: hvatale su iste upite kao ona, pa je
+  // Google rotirao izmedju tri nase adrese umesto da jednu ojaca. Trajno (301)
+  // da se signali stvarno prenesu. Napomena: hes se ne salje serveru, pa
+  // /izrada-pozivnica-online#primeri stize kao /pozivnice#primeri — sidro tog
+  // imena mora da postoji na /pozivnice.
+  async redirects() {
+    return [
+      {
+        source: "/izrada-pozivnica-online",
+        destination: "/pozivnice",
+        permanent: true,
+      },
+      {
+        source: "/pozivnica-za-prvi-rodjendan",
+        destination: "/pozivnice",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       // API routes and server-rendered pages — always fresh

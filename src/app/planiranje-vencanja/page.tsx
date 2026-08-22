@@ -594,7 +594,7 @@ export default function PlaniranjeVencanjaPage() {
                 dovoljna je registracija od desetak sekundi i ne morate ništa da
                 kupite da biste ga koristili. Ako kasnije uzmete i{" "}
                 <Link
-                  href="/izrada-pozivnica-online"
+                  href="/pozivnice"
                   className="text-[#AE343F] font-medium hover:underline"
                 >
                   digitalnu pozivnicu

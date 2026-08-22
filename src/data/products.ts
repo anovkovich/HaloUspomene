@@ -52,7 +52,7 @@ export const CORE_PRODUCTS: Product[] = [
     name: "Standardna pozivnica",
     blurb:
       "Animirana koverta, odbrojavanje, svi detalji, mapa i potvrde dolaska",
-    href: "/izrada-pozivnica-online",
+    href: "/pozivnice",
     price: () => formatPrice(pricing.pozivnica.website.price),
     icon: Globe,
     badge: "Najčešće u paketu",
@@ -168,7 +168,6 @@ export const PARTNER_SERVICES: Product[] = [
 /** Rođendanske pozivnice — jedan red ispod mreže, ne cela sekcija. */
 export const BIRTHDAY_LINKS = [
   { name: "Dečiji rođendan", href: "/napravi-deciju-pozivnicu" },
-  { name: "Prvi rođendan", href: "/pozivnica-za-prvi-rodjendan" },
   { name: "Punoletstvo", href: "/napravi-punoletstvo" },
 ];
 

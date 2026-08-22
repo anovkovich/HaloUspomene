@@ -104,9 +104,11 @@ presipanje prikaza sa početne na proizvodne stranice **nisu** kvar.
 
 1. `/napravi-pozivnicu` — **320 reči**, 456 prikaza, poz 7,6, nula klikova.
    Isti obrazac kao dve rođendanske forme (već rešene), ali za venčanje.
-2. Odeljak sa cenom na `/pozivnice` — drži „cena digitalne pozivnice" na poz
-   10,6 bez ijedne cene u vidljivom tekstu.
-3. `/vendori/` (445 reči) i `/pozivnica-za-prvi-rodjendan/` (530 reči).
+2. ~~Odeljak sa cenom na `/pozivnice`~~ — urađeno 2026-08-22 uz spajanje
+   `/izrada-pozivnica-online` u `/pozivnice`.
+3. `/vendori/` (445 reči). — *`/pozivnica-za-prvi-rodjendan` je 2026-08-22
+   obrisana i 301 preusmerena na `/pozivnice`; upit hvata blog tekst
+   `pozivnica-za-prvi-rodjendan-ideje`, koji je i rangirao bolje.*
 4. Preostalih 6 tekstova iz plana od 14 (`docs/vodici/pozivnice-i-pr-vodic.pdf`).
 5. `sr-only` čišćenje — **jedna stranica po deployu**. NE dirati oldtajmere i
    automobile: taj blok koristi `{modelNames.join(", ")}`, dakle generisan je iz

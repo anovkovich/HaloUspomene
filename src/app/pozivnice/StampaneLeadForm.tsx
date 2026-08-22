@@ -10,6 +10,7 @@ import {
   Loader2,
   AlertCircle,
   MessageCircle,
+  Instagram,
 } from "lucide-react";
 import { toast } from "sonner";
 import DatePicker from "@/components/ui/DatePicker";
@@ -120,7 +121,7 @@ const StampaneLeadForm: React.FC = () => {
           telefon: `+381${formData.phone}`,
           datum_dogadjaja: formattedDate,
           zeli: zeli || "Nije navedeno",
-          napomena: formData.note || "—",
+          instagram: formData.note || "—",
           paket: "Štampane pozivnice i zahvalnice sa QR kodom",
         }),
       });
@@ -209,7 +210,7 @@ const StampaneLeadForm: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-6">
         {/* Ime */}
         <div className="space-y-3">
           <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
@@ -257,15 +258,15 @@ const StampaneLeadForm: React.FC = () => {
           />
         </div>
 
-        {/* Napomena */}
+        {/* Instagram — brzi put do profila, da vidimo stil pre nego sto se javimo */}
         <div className="space-y-3">
           <label className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest pl-1">
-            <MessageCircle size={14} className="text-[#AE343F]" /> Napomena
+            <Instagram size={14} className="text-[#AE343F]" /> Instagram
             (opciono)
           </label>
           <input
             type="text"
-            placeholder="npr. okvirna količina, stil…"
+            placeholder="@vas_profil"
             className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-[#F5F4DC] text-lg focus:outline-none focus:border-[#AE343F] transition-colors placeholder:text-white/50"
             value={formData.note}
             onChange={(e) => setFormData({ ...formData, note: e.target.value })}
@@ -279,7 +280,7 @@ const StampaneLeadForm: React.FC = () => {
         <p className="text-white text-xs font-bold uppercase tracking-widest pl-1">
           Šta vas zanima?
         </p>
-        <div className="flex flex-wrap gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="flex items-center gap-3 text-[#F5F4DC]/90 text-sm cursor-pointer">
             <input
               type="checkbox"

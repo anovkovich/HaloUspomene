@@ -36,7 +36,7 @@ const ITEMS: ClusterItem[] = [
     key: "prvi-rodjendan",
     label: "Za prvi rođendan",
     desc: "Pozivnica za prvu godinu",
-    href: "/pozivnica-za-prvi-rodjendan",
+    href: "/napravi-deciju-pozivnicu",
     icon: <Cake size={22} />,
   },
   {
@@ -107,7 +107,7 @@ export default function InvitationClusterLinks({
       {showHubLink && (
         <div className="text-center mt-8">
           <Link
-            href="/izrada-pozivnica-online"
+            href="/pozivnice"
             className="inline-flex items-center gap-2 text-sm font-medium text-[#AE343F] hover:underline"
           >
             Sve vrste pozivnica na jednom mestu

@@ -6,6 +6,19 @@ import { CATEGORY_SLUGS } from "@/data/vendori/categories";
 // Required for static export
 export const dynamic = "force-static";
 
+/**
+ * `next.config.ts` sets `trailingSlash: true`, so every page is served at a URL
+ * ending in a slash and the slashless form 308-redirects to it. A sitemap must
+ * list the destination, not the redirect: entries written without the slash
+ * make Google crawl 78 redirects and keep the slashless variants alive in
+ * Search Console, which is how one blog post ended up reported as two URLs
+ * splitting its clicks. Normalising here rather than at 78 call sites means a
+ * newly added entry cannot reintroduce the problem.
+ */
+function withTrailingSlash(url: string): string {
+  return url.endsWith("/") ? url : `${url}/`;
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
   const lastModified = new Date();
@@ -13,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const blogSlugs = getAllBlogSlugs();
   const locationSlugs = getAllLocationSlugs();
 
-  return [
+  const entries: MetadataRoute.Sitemap = [
     {
       url: siteUrl,
       lastModified,
@@ -33,19 +46,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: `${siteUrl}/izrada-pozivnica-online`,
-      lastModified,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
       url: `${siteUrl}/napravi-pozivnicu`,
-      lastModified,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/pozivnica-za-prvi-rodjendan`,
       lastModified,
       changeFrequency: "weekly",
       priority: 0.8,
@@ -157,4 +158,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.85,
     })),
   ];
+
+  return entries.map((entry) => ({
+    ...entry,
+    url: withTrailingSlash(entry.url),
+  }));
 }
