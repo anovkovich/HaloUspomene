@@ -86,7 +86,7 @@ export default function TierCards({
             <Li>Online potvrda dolaska</Li>
             <Li>QR kod za potvrdu na štampanim pozivnicama</Li>
             <Li>Pristup {'„Moje Venčanje"'} portalu</Li>
-            <Li>🎁 Gratis PDF pozivnica za štampu</Li>
+            <Li>🎁 Besplatan dizajn štampanih pozivnica</Li>
           </ul>
           <Link
             href="/napravi-pozivnicu?paket=osnovno"

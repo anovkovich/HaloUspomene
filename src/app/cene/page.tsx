@@ -6,7 +6,7 @@ import PricingClient from "./PricingClient";
 export const metadata: Metadata = {
   title: "Cene Digitalnih Pozivnica i Paketa za Venčanje",
   description:
-    "Tri paketa za venčanje: Osnovno (5.000 din), Kompletno (9.900 din) i Premium. Pozivnica, raspored sedenja, QR galerija i gratis PDF za štampu.",
+    "Tri paketa za venčanje: Osnovno (5.000 din), Kompletno (9.900 din) i Premium. Pozivnica, raspored sedenja, QR galerija i besplatan dizajn štampanih pozivnica.",
   keywords: [
     "pozivnica za venčanje",
     "pozivnice za vencanje",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Cenovnik standardne i premium pozivnice sa dodatnim opcijama",
     description:
-      "Digitalna pozivnica + besplatna PDF za štampu sa QR kodom za potvrdu dolaska. Od 5.000 din.",
+      "Digitalna pozivnica sa QR kodom za potvrdu dolaska. Od 5.000 din, uz besplatan dizajn štampanih ako želite i njih.",
   },
   alternates: {
     canonical: "https://halouspomene.rs/cene",
@@ -98,7 +98,7 @@ function PricingStructuredData() {
     "@type": "Product",
     name: "Website Pozivnica za Venčanje",
     description:
-      "Digitalna pozivnica za venčanje sa besplatnom PDF verzijom za štampu, QR kodom za potvrdu dolaska, rasporedom sedenja i audio knjigom utisaka.",
+      "Digitalna pozivnica za venčanje sa QR kodom za potvrdu dolaska, rasporedom sedenja i audio knjigom utisaka. Dizajn štampanih pozivnica je besplatan.",
     image: "https://halouspomene.rs/cene/opengraph-image",
     brand: {
       "@type": "Brand",
@@ -111,7 +111,7 @@ function PricingStructuredData() {
         name: "Website Pozivnica",
         price: "5000",
         description:
-          "Personalizovana web stranica za venčanje sa formom za potvrdu dolaska, odbrojavanjem i besplatnom PDF pozivnicom za štampu.",
+          "Personalizovana web stranica za venčanje sa formom za potvrdu dolaska, odbrojavanjem i besplatnim dizajnom štampanih pozivnica.",
         ...offerDefaults,
       },
       {
@@ -180,10 +180,10 @@ function FAQStructuredData() {
     mainEntity: [
       {
         "@type": "Question",
-        name: "Da li je PDF pozivnica za štampu besplatna?",
+        name: "Radite li i štampane pozivnice?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Da, PDF pozivnica za štampu u A5 formatu je potpuno besplatna uz svaku website pozivnicu. Sadrži sve detalje venčanja i QR kod za potvrdu dolaska.",
+          text: "Da. Ručno izrađujemo štampane pozivnice sa QR kodom za potvrdu dolaska, kao i zahvalnice sa QR kodom koji vodi na foto galeriju. Dizajniranje je besplatno, plaćate samo štampu — uz 10% popusta ako uz njih uzmete i našu digitalnu pozivnicu.",
         },
       },
       {
@@ -191,7 +191,7 @@ function FAQStructuredData() {
         name: "Koliko košta digitalna pozivnica za venčanje?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Website pozivnica košta 5.000 dinara i uključuje besplatnu PDF pozivnicu za štampu. Kompletno Venčanje (pozivnica + raspored sedenja + audio knjiga utisaka + QR galerija fotografija) košta 9.900 dinara.",
+          text: "Website pozivnica košta 5.000 dinara. Kompletno Venčanje (pozivnica + raspored sedenja + audio knjiga utisaka + QR galerija fotografija) košta 9.900 dinara.",
         },
       },
       {

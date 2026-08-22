@@ -289,7 +289,7 @@ const allBlogPosts: BlogPost[] = [
     slug: "stampane-pozivnice-sa-qr-kodom-za-potvrdu",
     title: "Štampane pozivnice sa QR kodom za potvrdu dolaska — vodič",
     description:
-      "Kako štampane pozivnice sa QR kodom omogućavaju online potvrdu dolaska: gost skenira kod, vi pratite goste uživo. Uz website pozivnicu — gratis PDF za štampu.",
+      "Kako štampane pozivnice sa QR kodom omogućavaju online potvrdu dolaska: gost skenira kod, vi pratite goste uživo. Uz website pozivnicu — besplatan dizajn štampanih pozivnica.",
     category: "Vodič",
     tags: [
       "štampane pozivnice sa QR kodom",
@@ -437,7 +437,7 @@ const allBlogPosts: BlogPost[] = [
     slug: "cena-pozivnica-za-vencanje-srbija",
     title: "Cena pozivnica za venčanje u Srbiji 2026: kompletan vodič",
     description:
-      "Koliko koštaju pozivnice za venčanje u Srbiji 2026? Realne cene papirnih i digitalnih pozivnica, HALO Uspomene paketi od 5.000 din i gratis PDF za štampu.",
+      "Koliko koštaju pozivnice za venčanje u Srbiji 2026? Realne cene papirnih i digitalnih pozivnica, HALO Uspomene paketi od 5.000 din i besplatan dizajn štampanih pozivnica.",
     category: "Vodič",
     tags: [
       "cena pozivnica za venčanje",

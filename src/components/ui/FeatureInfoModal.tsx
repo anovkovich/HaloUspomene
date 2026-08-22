@@ -594,9 +594,10 @@ function PdfContent() {
 
       <SectionTitle>Šta dobijate</SectionTitle>
       <ul className="space-y-3">
-        <Bullet icon={<FileDown size={14} />} title="Besplatna PDF pozivnica">
-          Elegantan dizajn u A5 formatu sa svim detaljima venčanja i QR kodom za
-          potvrdu dolaska — spremna za štampu ili slanje odmah, bez doplate.
+        <Bullet icon={<FileDown size={14} />} title="Besplatan dizajn štampanih">
+          Ako želite i štampane, dizajn radimo mi i ne naplaćujemo ga — A5
+          format sa svim detaljima venčanja i QR kodom za potvrdu dolaska.
+          Plaćate samo štampu.
         </Bullet>
         <Bullet
           icon={<Heart size={14} />}

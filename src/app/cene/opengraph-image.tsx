@@ -391,7 +391,7 @@ export default async function OGImage() {
               }}
             >
               Pozivnica, raspored sedenja, QR galerija i audio knjiga utisaka —
-              u paketu, uz gratis PDF za štampu.
+              u paketu, uz besplatan dizajn štampanih.
             </span>
             <div
               style={{

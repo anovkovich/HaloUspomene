@@ -66,7 +66,7 @@ const HowItWorks: React.FC = () => {
               Website pozivnica za venčanje
             </h3>
             <p className="text-[#F5F4DC]/50 font-serif text-lg sm:text-xl mb-5">
-              + besplatna PDF pozivnica za štampu
+              + besplatan dizajn štampanih pozivnica
             </p>
             <p className="text-[#F5F4DC]/60 text-sm sm:text-base leading-relaxed max-w-lg mb-6">
               Personalizovana web stranica sa formom za potvrdu dolaska,
@@ -81,7 +81,7 @@ const HowItWorks: React.FC = () => {
                 { icon: <Globe size={13} />, label: "5 tema + boja po želji" },
                 {
                   icon: <FileDown size={13} />,
-                  label: "PDF za štampu — besplatno",
+                  label: "Dizajn štampanih — besplatno",
                 },
                 { icon: <Check size={13} />, label: "Potvrda dolaska" },
                 { icon: <Check size={13} />, label: "Latinica i ćirilica" },
@@ -114,7 +114,7 @@ const HowItWorks: React.FC = () => {
               </p>
               <div className="space-y-1.5">
                 {[
-                  "Besplatna PDF pozivnica uključena",
+                  "Besplatan dizajn štampanih pozivnica",
                   "Fiksne cene — bez skrivenih troškova",
                   "Popust za kompletni paket",
                 ].map((item) => (

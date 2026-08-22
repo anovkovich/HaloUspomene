@@ -23,7 +23,7 @@ import { formatPrice, pricing } from "@/data/pricing";
 export const metadata: Metadata = {
   title: "Napravi Pozivnicu za Venčanje Online — Gotova Odmah",
   description:
-    "Popunite kratki upitnik, mi dizajniramo vašu digitalnu pozivnicu za venčanje — gotova odmah. Potvrde dolaska, odbrojavanje i gratis PDF za štampu.",
+    "Popunite kratki upitnik, mi dizajniramo vašu digitalnu pozivnicu za venčanje — gotova odmah. Potvrde dolaska, odbrojavanje i besplatan dizajn štampanih pozivnica.",
   keywords: [
     "website venčana pozivnica",
     "napravi pozivnicu online",

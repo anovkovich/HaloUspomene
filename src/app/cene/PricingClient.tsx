@@ -59,9 +59,9 @@ const FEATURES: Feature[] = [
   },
   {
     id: "pdf",
-    label: "PDF pozivnica + popust na štampu",
+    label: "Dizajn štampanih + popust na štampu",
     description:
-      "Besplatna PDF pozivnica spremna za štampu, sa QR kodom za potvrdu dolaska. Uz to — poseban popust na ručno rađene štampane pozivnice i zahvalnice sa QR kodovima.",
+      "Besplatno dizajniranje štampanih pozivnica, ako želite i njih — sa QR kodom za potvrdu dolaska. Plaćate samo štampu, uz poseban popust na ručno rađene pozivnice i zahvalnice sa QR kodovima.",
     price: pricing.pozivnica.pdf.price,
     included: true,
     icon: <FileDown size={20} />,

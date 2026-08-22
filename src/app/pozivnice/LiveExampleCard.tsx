@@ -151,7 +151,9 @@ export default function LiveExampleCard({
       // blurs repaint on every hover). An inset hairline costs nothing and
       // needs no placeholder border on the inactive state, so the row never
       // reflows.
-      className={`snap-center shrink-0 flex flex-col items-center rounded-[1.75rem] px-3 sm:px-4 pt-4 pb-5 cursor-pointer transition-[background-color,box-shadow] duration-150 ease-out ${
+      // `w-[76vw]` na telefonu ostavlja oko cetvrtine ekrana sledecoj kartici,
+      // pa se vidi da red ide dalje; od `sm` kartica se vraca na prirodnu sirinu.
+      className={`snap-start shrink-0 w-[76vw] sm:w-auto flex flex-col items-center rounded-[1.75rem] px-3 sm:px-4 pt-4 pb-5 cursor-pointer transition-[background-color,box-shadow] duration-150 ease-out ${
         active
           ? "bg-white/[0.06] shadow-[inset_0_0_0_1px_rgba(212,175,55,0.22)]"
           : "bg-transparent"

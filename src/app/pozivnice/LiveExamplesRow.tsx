@@ -99,7 +99,10 @@ export default function LiveExamplesRow({
             </div>
           )}
 
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+          {/* Telefon: red se skroluje vodoravno i sledeca kartica viri, da se
+              vidi da ih ima jos. Od `sm` navise nema skrola — kartice se same
+              prelome i centriraju. */}
+          <div className="flex flex-nowrap overflow-x-auto snap-x snap-mandatory scroll-px-4 scrollbar-none -mx-4 px-4 gap-2 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible sm:justify-center sm:gap-3">
             {group.items.map((ex) => (
               <LiveExampleCard
                 key={ex.label}

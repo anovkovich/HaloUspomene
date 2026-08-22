@@ -11,7 +11,7 @@ const points = [
     ),
     title: "Pozivnica koja oduševljava",
     description:
-      "Personalizovana web stranica sa animacijama, odbrojavanjem i programom dana. Gosti potvrde dolazak jednim klikom — vi sve pratite na portalu. Plus besplatna PDF pozivnica za štampu.",
+      "Personalizovana web stranica sa animacijama, odbrojavanjem i programom dana. Gosti potvrde dolazak jednim klikom — vi sve pratite na portalu. Plus besplatan dizajn štampanih pozivnica, ako želite i njih.",
   },
   {
     icon: (
