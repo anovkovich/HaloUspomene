@@ -41,6 +41,7 @@ import {
   addRSVPResponse,
   updateRSVPCategory,
   updateRSVPGuestCount,
+  updateRSVPAttending,
   deleteRSVPResponse,
   type RSVPEntry,
 } from "@/lib/rsvp";
@@ -666,6 +667,22 @@ export async function updateGuestCountAction(
   if (!slug) return { success: false };
   try {
     await updateRSVPGuestCount(id, guestCount);
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
+}
+
+/** Gost koji je otkazao pa se predomislio — v. `updateRSVPAttending`. */
+export async function updateGuestAttendingAction(
+  id: string,
+  attending: boolean,
+  guestCount = 1,
+): Promise<{ success: boolean }> {
+  const slug = await getAuthSlug();
+  if (!slug) return { success: false };
+  try {
+    await updateRSVPAttending(id, attending, guestCount);
     return { success: true };
   } catch {
     return { success: false };

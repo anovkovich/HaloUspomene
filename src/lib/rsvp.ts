@@ -82,6 +82,30 @@ export async function updateRSVPGuestCount(
   await c.updateOne({ _id: new ObjectId(id) }, { $set: { guestCount } });
 }
 
+/**
+ * Prebacuje potvrdu iz "nece doci" u "dolazi" i nazad.
+ *
+ * Gost koji je otkazao pa se naknadno predomislio je cesta situacija, a jedini
+ * put nazad je do sada bio brisanje potvrde i rucni unos nove — cime se gubi
+ * originalno vreme odgovora i veza sa zvanicom. Otkazivanje nulira broj osoba
+ * i kategoriju, isto kao kad gost sam odgovori da ne dolazi.
+ */
+export async function updateRSVPAttending(
+  id: string,
+  attending: boolean,
+  guestCount = 1,
+): Promise<void> {
+  const c = await col();
+  await c.updateOne(
+    { _id: new ObjectId(id) },
+    {
+      $set: attending
+        ? { attending: "Da", guestCount: Math.max(1, guestCount) }
+        : { attending: "Ne", guestCount: 0, category: "" },
+    },
+  );
+}
+
 export async function deleteRSVPResponse(id: string): Promise<void> {
   const c = await col();
   await c.deleteOne({ _id: new ObjectId(id) });

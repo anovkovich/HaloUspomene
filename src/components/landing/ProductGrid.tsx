@@ -41,7 +41,10 @@ function ProductCard({
       tone={partner ? "krem" : "bela"}
       padding="md"
       badge={product.badge}
-      className="group flex h-full flex-col"
+      // Podizanje na prelaz misem. `motion-reduce` gasi pomeranje, ali ostavlja
+      // boju i senku iz Card-a — ko je iskljucio animacije i dalje vidi da je
+      // kartica aktivna.
+      className="group flex h-full flex-col hover:-translate-y-1 motion-reduce:hover:translate-y-0"
       data-track="cta_click"
       data-track-cta-name={`proizvod_${product.id}`}
       data-track-cta-location="product_grid"
@@ -51,7 +54,7 @@ function ProductCard({
           posredujemo" i dalje nosi ton same kartice (bela naspram krem) i
           naslov iznad grupe, pa se ništa ne gubi. Crvena ostaje na prelaz mišem. */}
       <span
-        className={`mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl transition-colors ${
+        className={`mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-300 ease-out group-hover:scale-110 group-hover:-rotate-3 group-hover:shadow-lg group-hover:shadow-[#AE343F]/15 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0 ${
           partner
             ? "bg-[#232323]/5 text-[#232323]/55 group-hover:bg-[#AE343F]/10 group-hover:text-[#AE343F]"
             : "bg-[#232323]/[0.06] text-[#232323]/70 group-hover:bg-[#AE343F]/10 group-hover:text-[#AE343F]"
@@ -64,7 +67,7 @@ function ProductCard({
         )}
       </span>
 
-      <h3 className="font-serif text-base leading-snug text-[#232323] sm:text-lg">
+      <h3 className="font-serif text-base leading-snug text-[#232323] transition-colors duration-300 group-hover:text-[#AE343F] sm:text-lg">
         {product.name}
       </h3>
 

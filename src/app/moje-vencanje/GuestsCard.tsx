@@ -27,6 +27,7 @@ import {
   refreshGuestsAction,
   addManualGuestAction,
   updateGuestCategoryAction,
+  updateGuestAttendingAction,
   updateGuestCountAction,
   deleteGuestAction,
   loadGuestListAction,
@@ -111,6 +112,7 @@ function ResponseCard({
   category,
   linkedInvitee,
   onCategoryChange,
+  onMarkAttending,
   onEdit,
   onOpenLink,
   onUnlink,
@@ -119,6 +121,8 @@ function ResponseCard({
   category?: string;
   linkedInvitee?: Invitee | null;
   onCategoryChange?: (id: string, cat: string) => void;
+  /** Vraca otkazanog gosta medju one koji dolaze. */
+  onMarkAttending?: (entry: RSVPEntry) => void;
   onEdit?: (entry: RSVPEntry) => void;
   onOpenLink?: (entry: RSVPEntry) => void;
   onUnlink?: (rsvpId: string) => void;
@@ -169,6 +173,19 @@ function ResponseCard({
             </span>
           )}
         </div>
+
+        {/* Isto mesto gde za dolazak stoje kategorije: gost koji je otkazao pa
+            se javio da ipak dolazi vraca se jednim klikom, umesto brisanjem
+            potvrde i rucnim unosom nove. */}
+        {!isAttending && onMarkAttending && (
+          <button
+            onClick={() => onMarkAttending(entry)}
+            className="inline-flex items-center gap-1.5 rounded border border-[#4a8a5c]/40 bg-[#4a8a5c]/[0.07] px-2.5 py-1 text-xs font-medium text-[#3d7a4e] transition-colors hover:bg-[#4a8a5c]/15 cursor-pointer"
+          >
+            <Check size={12} strokeWidth={2.5} />
+            Ipak dolazi
+          </button>
+        )}
 
         {isAttending && (
           <div className="flex gap-1">
@@ -916,6 +933,23 @@ export default function GuestsCard({ draft, initialSubView }: Props) {
     toast("Broj gostiju ažuriran");
   };
 
+  /** "Ipak dolazi": prebacuje potvrdu iz Ne dolaze u Dolaze, sa jednom osobom
+   *  kao polaznom vrednoscu — tacan broj se posle podesi dugim pritiskom na
+   *  pilulu, isto kao kod svake druge potvrde. */
+  const handleMarkAttending = async (entry: RSVPEntry) => {
+    const res = await updateGuestAttendingAction(entry.id, true, 1);
+    if (!res.success) {
+      toast("Greška pri izmeni");
+      return;
+    }
+    const updated: RSVPEntry = { ...entry, attending: "Da", guestCount: "1" };
+    setNotAttending((prev) => prev.filter((e) => e.id !== entry.id));
+    setAttending((prev) => [...prev, updated]);
+    setTotalGuests((prev) => prev + 1);
+    setCategories((prev) => ({ ...prev, [entry.id]: "" }));
+    toast(`${entry.name} je vraćen/a među goste koji dolaze`);
+  };
+
   const handleEditDelete = async (id: string) => {
     await deleteGuestAction(id);
     const entry = attending.find((e) => e.id === id) || notAttending.find((e) => e.id === id);
@@ -1340,6 +1374,9 @@ export default function GuestsCard({ draft, initialSubView }: Props) {
               category={entry.attending === "Da" ? categories[entry.id] ?? "" : undefined}
               linkedInvitee={inviteeByRsvpId.get(entry.id) ?? null}
               onCategoryChange={entry.attending === "Da" ? handleCategoryChange : undefined}
+              onMarkAttending={
+                entry.attending === "Da" ? undefined : handleMarkAttending
+              }
               onEdit={(e) => setEditingEntry(e)}
               onOpenLink={(e) => setLinkingRsvp(e)}
               onUnlink={unlinkByRsvp}
