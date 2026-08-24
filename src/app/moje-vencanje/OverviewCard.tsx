@@ -241,7 +241,19 @@ export default function OverviewCard({
   const withSeatingLayout = useCallback(
     (run: () => void) => {
       if (!paidForRaspored) {
-        toast("Raspored sedenja nije aktiviran");
+        // Dead end until this: the toast said "nije aktiviran" and left the
+        // couple with nowhere to go. On a published invitation the add-on is
+        // self-serve, so the toast carries the checkout with it.
+        toast("Raspored sedenja nije aktiviran", {
+          action: coupleInfo.draft
+            ? undefined
+            : {
+                label: "Aktiviraj",
+                onClick: () => {
+                  window.location.href = `/placanje/pozivnica/${coupleInfo.slug}/?tier=raspored`;
+                },
+              },
+        });
         return;
       }
       if (!hasSeatingLayout) {
@@ -250,7 +262,7 @@ export default function OverviewCard({
       }
       run();
     },
-    [paidForRaspored, hasSeatingLayout],
+    [paidForRaspored, hasSeatingLayout, coupleInfo.draft, coupleInfo.slug],
   );
 
   /** Jedan B1 pano — isti fajl koji nudi i alat za raspored, samo bez ulaska

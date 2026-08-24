@@ -19,6 +19,7 @@ import {
   type GalleryPhase,
 } from "@/lib/gallery-lifecycle";
 import { hasEventSession } from "@/lib/seating/action-auth";
+import { MAX_INVITATION_IMAGES } from "@/lib/proslava/images-upload";
 import { computeExtendedDeadline } from "@/lib/rsvp-deadline";
 import { put, del as blobDel } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
@@ -225,8 +226,6 @@ export async function saveMeniCore(
 }
 
 /* ── Slike na pozivnici (paid_for_images) ────────────────────────────────── */
-
-const MAX_INVITATION_IMAGES = 3;
 
 /** Client-side twin of the admin image upload, so a 600-din purchase actually
  *  fulfils itself instead of queueing manual work for us.

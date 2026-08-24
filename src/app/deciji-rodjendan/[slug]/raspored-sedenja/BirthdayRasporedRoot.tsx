@@ -20,6 +20,9 @@ interface Props {
   type: BirthdayType;
   birthdayTheme: BirthdayThemeType;
   paidForRaspored: boolean;
+  /** Invitation is live. Nothing to sell on top of a draft — the client has to
+   *  buy the invitation itself first. */
+  published: boolean;
   attending: RSVPEntry[];
 }
 
@@ -35,6 +38,7 @@ export default function BirthdayRasporedRoot({
   type,
   birthdayTheme,
   paidForRaspored,
+  published,
   attending,
 }: Props) {
   return (
@@ -43,6 +47,13 @@ export default function BirthdayRasporedRoot({
       slug={slug}
       coupleNames={honoreeDisplay}
       paidForRaspored={paidForRaspored}
+      rasporedPayHref={
+        published
+          ? `/placanje/${
+              type === "eighteenth" ? "punoletstvo" : "rodjendan"
+            }/${slug}/?tier=raspored`
+          : undefined
+      }
       actions={{
         save: saveBirthdayRaspored,
         load: loadBirthdayRaspored,

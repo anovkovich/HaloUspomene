@@ -94,6 +94,7 @@ export default async function BirthdayRasporedSedenja({ params }: PageProps) {
         type={data.type ?? "child"}
         birthdayTheme={data.theme}
         paidForRaspored={data.paid_for_raspored ?? false}
+        published={!data.draft}
         attending={attending}
       />
     </div>

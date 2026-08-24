@@ -150,6 +150,29 @@ export function getRodjendanRasporedPrice(): number {
   return pricing.rodjendan.raspored.price;
 }
 
+/**
+ * Rodjendan / punoletstvo invitation WITH the photo strip (up to 3 polaroids
+ * picked in the builder). Adding photos lifts the invitation to the standard
+ * wedding-invitation price instead of charging a separate add-on.
+ *
+ * It MUST stay equal to the `osnovno` tier price: that tier's LS product
+ * (LS_VARIANT_OSNOVNI) is what the card rail charges for it, and the webhook
+ * money invariant compares the charged total against our frozen amount. If the
+ * two ever need to diverge, this needs its own LS product BEFORE the change.
+ */
+export function getRodjendanSlikePrice(): number {
+  return getTier("osnovno")?.price ?? 5000;
+}
+
+export function getRodjendanSlikePriceEur(): number {
+  return getTier("osnovno")?.priceEur ?? 45;
+}
+
+/** What the photo step costs on top of the plain invitation (e.g. 5000 - 4500). */
+export function getRodjendanSlikeDelta(t18 = false): number {
+  return Math.max(0, getRodjendanSlikePrice() - getRodjendanPozivnicaPrice(t18));
+}
+
 /** Effective price for the standalone seating tool (raspored za organizatore):
  *  promoPrice when promo is active, otherwise the regular price. */
 export function getStandaloneSeatingPrice(): number {

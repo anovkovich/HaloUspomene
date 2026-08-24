@@ -20,7 +20,11 @@ import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import BirthdayQuestionnaireForm from "./BirthdayQuestionnaireForm";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
-import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
+import {
+  getRodjendanPozivnicaPrice,
+  getRodjendanSlikePrice,
+  formatPrice,
+} from "@/data/pricing";
 import { resolveBypassInfo } from "@/lib/bypass-token";
 
 const fredoka = Fredoka({
@@ -93,15 +97,17 @@ export const metadata: Metadata = {
 
 /** Cena se čita jednom i koristi i u tekstu i u schemi, da se ne raziđu. */
 const cena = formatPrice(getRodjendanPozivnicaPrice(false));
+/** Ista pozivnica sa fotografijama (do 3) — standardna cena pozivnice. */
+const cenaSaSlikama = formatPrice(getRodjendanSlikePrice());
 
 const faqItems = [
   {
     q: "Koliko košta pozivnica za dečiji rođendan?",
-    a: `Pozivnica za dečiji rođendan košta ${cena}. U cenu ulazi personalizovana web pozivnica, forma za potvrdu dolaska, odbrojavanje, mapa lokacije i PDF pozivnica za štampu — bez naknadnih doplata.`,
+    a: `Pozivnica za dečiji rođendan košta ${cena}. U cenu ulazi personalizovana web pozivnica, forma za potvrdu dolaska, odbrojavanje, mapa lokacije i PDF pozivnica za štampu. Jedina opcija koja se doplaćuje su fotografije na pozivnici (do 3) — sa njima je cena ${cenaSaSlikama}.`,
   },
   {
     q: "Kada je pozivnica gotova?",
-    a: "Odmah. Popunite upitnik u četiri koraka, izaberete temu i boje, i pozivnica je napravljena — otključavate je nakon uplate i istog trenutka možete da je pošaljete u roditeljsku grupu.",
+    a: "Odmah. Popunite upitnik u pet koraka, izaberete temu i boje, i pozivnica je napravljena — otključavate je nakon uplate i istog trenutka možete da je pošaljete u roditeljsku grupu.",
   },
   {
     q: "Koje teme mogu da izaberem?",
@@ -194,7 +200,7 @@ export default async function NapraviDecijuPozivnicuPage({
               Napravite pozivnicu za rođendan
             </h1>
             <p className="text-[#E55A5A] text-lg max-w-xl mx-auto">
-              Popunite upitnik u 4 koraka — mi ćemo sve ostalo uraditi i Vaša
+              Popunite upitnik u 5 koraka — mi ćemo sve ostalo uraditi i Vaša
               pozivnica će biti gotova odmah
             </p>
             <p className="inline-block mt-4 text-xs tracking-widest uppercase text-stone-400 border border-stone-200 rounded-full px-4 py-1.5">
@@ -300,7 +306,7 @@ export default async function NapraviDecijuPozivnicuPage({
                 {
                   n: "01",
                   t: "Popunite upitnik",
-                  d: "Ime deteta, datum, lokacija i tema — četiri koraka.",
+                  d: "Ime deteta, datum, lokacija, tema i fotografije — pet koraka.",
                 },
                 {
                   n: "02",
@@ -473,7 +479,7 @@ export default async function NapraviDecijuPozivnicuPage({
                   Pozivnica je gotova odmah
                 </p>
                 <p className="mt-1 text-sm text-[#F5F4DC]/50">
-                  Upitnik u četiri koraka. Cena {cena}, bez skrivenih troškova.
+                  Upitnik u pet koraka. Cena {cena}, bez skrivenih troškova.
                 </p>
               </div>
               <Link

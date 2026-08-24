@@ -23,6 +23,7 @@ import {
   getDogadjajPaketPrice,
   getRodjendanPozivnicaPrice,
   getRodjendanPozivnicaLabel,
+  getRodjendanSlikePrice,
   getRodjendanRasporedPrice,
   getKompletnoSavings,
   getPremiumTierSavings,
@@ -47,7 +48,12 @@ export interface ReceiptFlags {
   rp?: number;
   pd?: number;
   cc?: number;
+  /** Polaroid photos on the invitation. */
   ig?: number;
+  /** Rodjendan/punoletstvo only: the photos came from the BUILDER, so they are
+   *  priced as the difference up to the standard invitation price, not as the
+   *  600-din add-on bought later. */
+  igb?: number;
   g?: number;
   mu?: number;
   p?: number;
@@ -89,6 +95,8 @@ export interface PriceTable {
   retroPhoneAudio: number;
   rodjendanPozivnica: number;
   rodjendanPunoletstvo: number;
+  /** Rodjendan/punoletstvo invitation WITH builder photos (standard price). */
+  rodjendanSlike: number;
   rodjendanRaspored: number;
   standaloneSeating: number;
   dogadjajPozivnica: number;
@@ -123,6 +131,7 @@ export function currentPriceTable(): PriceTable {
     retroPhoneAudio: getAudioPrice(),
     rodjendanPozivnica: getRodjendanPozivnicaPrice(false),
     rodjendanPunoletstvo: getRodjendanPozivnicaPrice(true),
+    rodjendanSlike: getRodjendanSlikePrice(),
     rodjendanRaspored: getRodjendanRasporedPrice(),
     standaloneSeating: getStandaloneSeatingPrice(),
     dogadjajPozivnica: getDogadjajPozivnicaPrice(),
@@ -201,10 +210,15 @@ export function buildReceiptItems(
 
   if (isRodjendan) {
     const isPunoletstvo = !!f.t18;
-    items.push({
-      l: getRodjendanPozivnicaLabel(isPunoletstvo),
-      p: isPunoletstvo ? T.rodjendanPunoletstvo : T.rodjendanPozivnica,
-    });
+    const base = isPunoletstvo ? T.rodjendanPunoletstvo : T.rodjendanPozivnica;
+    items.push({ l: getRodjendanPozivnicaLabel(isPunoletstvo), p: base });
+    // Photos picked in the builder lift the invitation to the standard price,
+    // so the line is that difference; bought later, they are the flat add-on.
+    if (f.ig)
+      items.push({
+        l: "Fotografije na pozivnici",
+        p: f.igb ? Math.max(0, (T.rodjendanSlike ?? base) - base) : T.images,
+      });
     if (f.r) items.push({ l: "Raspored sedenja", p: T.rodjendanRaspored });
   }
 

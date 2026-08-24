@@ -17,7 +17,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import type { PremiumThemeType } from "@/app/pozivnica/[slug]/types";
-import { ImagePicker } from "../QuestionnaireForm";
+import { ImagePicker } from "@/components/forms/ImagePicker";
 
 interface PremiumStepAIPhotoProps {
   premiumTheme: PremiumThemeType | "";

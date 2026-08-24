@@ -10,6 +10,7 @@ export type PunoletstvoStepKey =
   | "honoree"
   | "date_location"
   | "design"
+  | "photos"
   | "final";
 
 export type PunoletstvoGender = "male" | "female";
@@ -72,6 +73,9 @@ export const punoletstvoValidators: StepValidatorMap<
     if (isBlank(d.scriptFont)) return "Izaberite font za ime.";
     return null;
   },
+  // Optional paid step — nothing to validate. Zero photos is a valid answer
+  // (it just means the invitation stays at the plain price).
+  photos: () => null,
   final: (d) => {
     if (isTooShort(d.tagline, 3))
       return "Unesite tagline poruku (bar 3 karaktera).";
@@ -83,5 +87,6 @@ export const STEP_KEYS: PunoletstvoStepKey[] = [
   "honoree",
   "date_location",
   "design",
+  "photos",
   "final",
 ];

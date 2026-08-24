@@ -33,6 +33,9 @@ interface Birthday {
   draft?: boolean;
   paid_for_raspored?: boolean;
   paid_for_gallery?: boolean;
+  paid_for_images?: boolean;
+  /** Photos were picked in the builder ⇒ standard invitation price. */
+  builder_images?: boolean;
   contact_phone?: string;
   receipt_valid?: boolean;
   receipt_created?: string;
@@ -68,6 +71,8 @@ function receiptFlags(
     par: b.child_name || b.slug,
     datum: b.event_date,
     r: b.paid_for_raspored ? 1 : 0,
+    ig: b.paid_for_images ? 1 : 0,
+    igb: b.builder_images ? 1 : 0,
     t18: b.type === "eighteenth" ? 1 : 0,
     d: b.custom_discount ?? 0,
     ba: bankAccountIdx,
@@ -250,7 +255,10 @@ export default function BirthdayAdminList({
       name: b.child_name || b.slug,
       premium: false,
       kind: isEighteenth ? "punoletstvo" : "rodjendan",
-      defaultTier: "default",
+      // Fotografije iz buildera se prodaju kao poseban tier (standardna cena),
+      // pa i rucno filovana uplata mora da nosi taj tier — inace se u knjizi
+      // uplata ne vidi zasto je iznos 5.000 a ne 4.500.
+      defaultTier: b.builder_images ? "default_slike" : "default",
       prefillAmount: receiptTotal(
         receiptFlags(b, bankAccountIdx) as unknown as ReceiptFlags,
         currentPriceTable(),

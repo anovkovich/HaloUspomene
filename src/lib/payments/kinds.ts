@@ -8,12 +8,16 @@
 import {
   pricing,
   getTier,
+  getPremiumRasporedPrice,
   getRodjendanPozivnicaPrice,
   getRodjendanRasporedPrice,
   getStandaloneSeatingPrice,
   isStandaloneSeatingPromoActive,
   getDogadjajPaketPrice,
   getDogadjajPaketPriceEur,
+  getRodjendanSlikePrice,
+  getRodjendanSlikePriceEur,
+  getRodjendanSlikeDelta,
 } from "@/data/pricing";
 import { getWeddingData, patchCouple } from "@/lib/couples";
 import { getBirthdayData, patchBirthday } from "@/lib/birthday";
@@ -55,6 +59,15 @@ export interface KindEntitySummary {
    *  purge-warning SMS could never be delivered. The add-on is hidden and
    *  refused rather than sold with silent data loss attached. */
   blockGallery?: boolean;
+  /** Birthday kinds: photos were picked in the builder, so the invitation sells
+   *  as tier `default_slike` (standard price, LS_VARIANT_OSNOVNI) instead of
+   *  the plain `default`. */
+  withBuilderImages?: boolean;
+  /** pozivnica: invitation is live (`draft: false`). Add-on tiers are sold only
+   *  on top of a published invitation — NOT derivable from `unlockedTiers`,
+   *  since a published premium couple counts as "premium unlocked" only once
+   *  every bundled flag is on. */
+  published?: boolean;
 }
 
 export interface KindTier {
@@ -137,7 +150,36 @@ const POZIVNICA_TIER_LABEL: Record<string, string> = {
   osnovni: "Osnovni paket",
   kompletan: "Kompletan paket",
   premium: "Premium paket",
+  raspored: "Raspored sedenja",
 };
+
+/**
+ * À-la-carte add-on for a couple who already paid for the invitation and only
+ * later wants the seating tool. Until this existed, the editor's upgrade modal
+ * could only say "javite nam se" — a customer with money in hand and nowhere to
+ * put it.
+ *
+ * Priced from `pozivnica.raspored` and sold through the SAME LS product as the
+ * rodjendan add-on ("Raspored uz pozivnicu", LS_VARIANT_RODJENDAN_RASPORED):
+ * both are 2.500. `pozivnicaRasporedSellable()` refuses to offer the tier if
+ * that ever stops being true, so a pricing.json edit can only take the tier
+ * off the shelf — never charge an amount the webhook would quarantine.
+ */
+function pozivnicaRasporedMoney(premium: boolean): { rsd: number; eur: number } {
+  return {
+    rsd: premium
+      ? getPremiumRasporedPrice()
+      : pricing.pozivnica.raspored.price,
+    eur: eur(pricing.rodjendan.raspored.priceEur, 25),
+  };
+}
+
+/** The one price the shared LS product charges. */
+function pozivnicaRasporedSellable(premium: boolean): boolean {
+  return (
+    pozivnicaRasporedMoney(premium).rsd === getRodjendanRasporedPrice()
+  );
+}
 
 function pozivnicaTierMoney(tierId: string): { rsd: number; eur: number } {
   switch (tierId) {
@@ -165,6 +207,7 @@ const pozivnica: KindAdapter = {
     const premium = !!w.premium;
     const published = !w.draft;
     const unlockedTiers: string[] = [];
+    if (w.paid_for_raspored) unlockedTiers.push("raspored");
     if (premium) {
       if (
         published &&
@@ -210,12 +253,13 @@ const pozivnica: KindAdapter = {
       premium,
       unlockedTiers,
       blockOsnovni,
+      published,
     };
   },
 
   tiers(e) {
     const ids = e.premium ? ["premium"] : ["osnovni", "kompletan"];
-    return ids
+    const packages = ids
       .filter((id) => !e.unlockedTiers.includes(id))
       .filter((id) => !(id === "osnovni" && e.blockOsnovni)) // Z1
       .map((id) => {
@@ -233,9 +277,38 @@ const pozivnica: KindAdapter = {
                 : "LS_VARIANT_PREMIUM",
         };
       });
+
+    // Add-on, and deliberately LAST: the checkout page defaults to the first
+    // tier, so appending it leaves every existing link's default untouched —
+    // it is reachable only through an explicit ?tier=raspored.
+    // Offered only on a PUBLISHED invitation: an add-on hanging off a draft is
+    // a feature the client cannot use (same rule as the rodjendan kinds).
+    if (
+      !e.unlockedTiers.includes("raspored") &&
+      e.published &&
+      pozivnicaRasporedSellable(e.premium)
+    ) {
+      const m = pozivnicaRasporedMoney(e.premium);
+      packages.push({
+        id: "raspored",
+        labelSr: POZIVNICA_TIER_LABEL.raspored,
+        rsd: m.rsd,
+        eur: m.eur,
+        lsVariantEnv: "LS_VARIANT_RODJENDAN_RASPORED",
+      });
+    }
+    return packages;
   },
 
   computeOrder(e, tierId) {
+    if (tierId === "raspored") {
+      if (e.unlockedTiers.includes("raspored"))
+        throw new PaymentError("ALREADY_UNLOCKED");
+      if (!e.published || !pozivnicaRasporedSellable(e.premium))
+        throw new PaymentError("INVALID_TIER");
+      const m = pozivnicaRasporedMoney(e.premium);
+      return oneLine(POZIVNICA_TIER_LABEL.raspored, m.rsd, m.eur);
+    }
     const valid = e.premium
       ? ["premium"]
       : ["osnovni", "kompletan"];
@@ -250,6 +323,11 @@ const pozivnica: KindAdapter = {
 
   async unlock(slug, order) {
     switch (order.tier) {
+      case "raspored":
+        // À-la-carte add-on: touches ONLY its own flag, never `draft` — the
+        // invitation was already published when this was sold.
+        await patchCouple(slug, { paid_for_raspored: true });
+        break;
       case "osnovni":
         await patchCouple(slug, { draft: false });
         break;
@@ -299,6 +377,9 @@ const pozivnica: KindAdapter = {
 
   async revoke(slug, order) {
     switch (order.tier) {
+      case "raspored":
+        await patchCouple(slug, { paid_for_raspored: false });
+        break;
       case "osnovni":
         await patchCouple(slug, { draft: true });
         break;
@@ -412,6 +493,16 @@ function isBirthdayAddon(id: string): id is BirthdayAddon {
   return (BIRTHDAY_ADDONS as readonly string[]).includes(id);
 }
 
+/** The invitation itself sells as one of these two tiers, never both: photos
+ *  picked in the builder lift it to the standard price and its own LS product.
+ *  A separate tier id (not a re-priced "default") keeps the pending-order tuple
+ *  honest — a 24h-old pending row can never be reused at the other price. */
+const BIRTHDAY_BASE_TIERS = ["default", "default_slike"] as const;
+
+function isBirthdayBaseTier(id: string): boolean {
+  return (BIRTHDAY_BASE_TIERS as readonly string[]).includes(id);
+}
+
 function makeBirthdayAdapter(opts: {
   /** Which docs this kind owns — the other kind must reject them. */
   isEighteenth: boolean;
@@ -422,10 +513,39 @@ function makeBirthdayAdapter(opts: {
 }): KindAdapter {
   const { isEighteenth, baseLabel, baseMoney, baseVariantEnv } = opts;
 
+  /** Invitation + builder photos. Priced at the `osnovno` tier so the shared
+   *  LS_VARIANT_OSNOVNI product charges exactly the frozen amount. */
+  const baseWithImagesMoney = () => ({
+    rsd: getRodjendanSlikePrice(),
+    eur: getRodjendanSlikePriceEur(),
+  });
+
+  const withImagesLabel = `${baseLabel} + fotografije`;
+
+  /** Two lines (invitation + the photo surcharge) so the checkout panel and the
+   *  receipt show WHY the price is the standard one, not the event one. */
+  const baseWithImagesLines = () => {
+    const delta = getRodjendanSlikeDelta(isEighteenth);
+    const total = getRodjendanSlikePrice();
+    const lines: CheckoutLine[] = [
+      { l: baseLabel, rsd: total - delta, eur: 0 },
+      { l: "Fotografije na pozivnici (do 3)", rsd: delta, eur: 0 },
+    ];
+    return { lines, totalRsd: total, totalEur: getRodjendanSlikePriceEur() };
+  };
+
   const tierMoney = (tierId: string) =>
-    isBirthdayAddon(tierId) ? birthdayAddonMoney(tierId) : baseMoney();
+    isBirthdayAddon(tierId)
+      ? birthdayAddonMoney(tierId)
+      : tierId === "default_slike"
+        ? baseWithImagesMoney()
+        : baseMoney();
   const tierLabel = (tierId: string) =>
-    isBirthdayAddon(tierId) ? BIRTHDAY_ADDON_LABEL[tierId] : baseLabel;
+    isBirthdayAddon(tierId)
+      ? BIRTHDAY_ADDON_LABEL[tierId]
+      : tierId === "default_slike"
+        ? withImagesLabel
+        : baseLabel;
 
   return {
     async loadEntity(slug) {
@@ -440,7 +560,9 @@ function makeBirthdayAdapter(opts: {
         : b.child_name || "Rođendan";
 
       const unlockedTiers: string[] = [];
-      if (!b.draft) unlockedTiers.push("default");
+      // Published ⇒ BOTH base tiers are spent (only one of them was ever
+      // purchasable), so an old link to either lands on "Već aktivirano".
+      if (!b.draft) unlockedTiers.push(...BIRTHDAY_BASE_TIERS);
       if (b.paid_for_raspored) unlockedTiers.push("raspored");
       if (b.paid_for_gallery) unlockedTiers.push("galerija");
       if (b.paid_for_images) unlockedTiers.push("slike");
@@ -456,6 +578,7 @@ function makeBirthdayAdapter(opts: {
         premium: false,
         unlockedTiers,
         blockGallery: !canSellGallery,
+        withBuilderImages: !!b.builder_images,
       };
     },
 
@@ -464,14 +587,18 @@ function makeBirthdayAdapter(opts: {
       // selling an add-on onto a draft would leave the client with a feature
       // hanging off an unpublished invitation.
       if (!e.unlockedTiers.includes("default")) {
-        const m = baseMoney();
+        const withImages = !!e.withBuilderImages;
+        const m = withImages ? baseWithImagesMoney() : baseMoney();
         return [
           {
-            id: "default",
-            labelSr: baseLabel,
+            id: withImages ? "default_slike" : "default",
+            labelSr: withImages ? withImagesLabel : baseLabel,
             rsd: m.rsd,
             eur: m.eur,
-            lsVariantEnv: baseVariantEnv,
+            // The photo variant rides the wedding "Osnovni paket" product —
+            // same 5.000 din, so the money invariant holds. Their prices are
+            // tied together in getRodjendanSlikePrice().
+            lsVariantEnv: withImages ? "LS_VARIANT_OSNOVNI" : baseVariantEnv,
           },
         ];
       }
@@ -493,7 +620,7 @@ function makeBirthdayAdapter(opts: {
     },
 
     computeOrder(e, tierId) {
-      if (tierId !== "default" && !isBirthdayAddon(tierId))
+      if (!isBirthdayBaseTier(tierId) && !isBirthdayAddon(tierId))
         throw new PaymentError("INVALID_TIER");
       if (e.unlockedTiers.includes(tierId))
         throw new PaymentError("ALREADY_UNLOCKED");
@@ -503,6 +630,12 @@ function makeBirthdayAdapter(opts: {
           throw new PaymentError("INVALID_TIER");
         if (tierId === "galerija" && e.blockGallery)
           throw new PaymentError("INVALID_TIER");
+      } else {
+        // The record decides which base tier exists — a hand-typed ?tier= must
+        // never buy the invitation at the other product's price.
+        const expected = e.withBuilderImages ? "default_slike" : "default";
+        if (tierId !== expected) throw new PaymentError("INVALID_TIER");
+        if (tierId === "default_slike") return baseWithImagesLines();
       }
       const m = tierMoney(tierId);
       return oneLine(tierLabel(tierId), m.rsd, m.eur);
@@ -513,6 +646,9 @@ function makeBirthdayAdapter(opts: {
         await patchBirthday(slug, { [BIRTHDAY_ADDON_FLAG[order.tier]]: true });
         return;
       }
+      // Both base tiers do the same thing: publish. `paid_for_images` is not
+      // touched here — the builder set it at create so the photos could be
+      // uploaded and previewed, and revoke must not strip a client's photos.
       await patchBirthday(slug, { draft: false });
     },
 

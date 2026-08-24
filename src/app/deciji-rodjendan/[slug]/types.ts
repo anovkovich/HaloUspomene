@@ -68,11 +68,20 @@ export interface BirthdayData {
   /**
    * Unlocks the polaroid photo gallery on the invitation. Mirrors the wedding
    * `paid_for_images` gate field-for-field so the admin panel, the upload route
-   * and PolaroidGallery all behave identically across products.
-   * Currently rendered only by punoletstvo; the children's birthday renderer
-   * ignores it until that product wants a gallery too.
+   * and PolaroidGallery all behave identically across products. Rendered by
+   * both products (punoletstvo and deciji rodjendan).
    */
   paid_for_images?: boolean;
+  /**
+   * The photos were picked in the BUILDER (step "Fotografije"), not bought as
+   * the 600-din add-on afterwards. That changes the money: such an invitation
+   * is sold at the standard invitation price (getRodjendanSlikePrice(), the
+   * `osnovno` tier / LS_VARIANT_OSNOVNI) instead of the plain event price.
+   *
+   * Kept as its own field rather than inferred from `paid_for_images`, so the
+   * price of a record can never flip because an admin gifted the gallery.
+   */
+  builder_images?: boolean;
   /**
    * Unlocks the QR guest gallery — guests scan a code and upload photos from
    * the party into a shared album.

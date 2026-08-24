@@ -106,6 +106,9 @@ interface Props {
   /** Display name shown in the toolbar (couple names, honoree name, event name). */
   coupleNames: string;
   paidForRaspored: boolean;
+  /** Checkout for the seating add-on, shown in the upgrade modal. Omitted where
+   *  there is no self-serve rail (draft invitation, hall templates). */
+  rasporedPayHref?: string;
   /** save/load/checkPaid server actions specific to the consumer route. */
   actions: RasporedActions;
   /** Back-link target, forwarded to Toolbar. */
@@ -198,6 +201,7 @@ export default function RasporedClient({
   slug,
   coupleNames,
   paidForRaspored: initialPaid,
+  rasporedPayHref,
   actions,
   backHref,
   hideBackButton,
@@ -1987,7 +1991,10 @@ export default function RasporedClient({
 
         {/* ── Upgrade modal ── */}
         {showUpgradeModal && (
-          <UpgradeModal onClose={() => setShowUpgradeModal(false)} />
+          <UpgradeModal
+            onClose={() => setShowUpgradeModal(false)}
+            payHref={rasporedPayHref}
+          />
         )}
       </div>
     );
@@ -2558,7 +2565,10 @@ export default function RasporedClient({
       )}
 
       {showUpgradeModal && (
-        <UpgradeModal onClose={() => setShowUpgradeModal(false)} />
+        <UpgradeModal
+          onClose={() => setShowUpgradeModal(false)}
+          payHref={rasporedPayHref}
+        />
       )}
 
       {showHallSchemes && (

@@ -14,7 +14,11 @@ import Footer from "@/components/layout/footer/Footer";
 import PunoletstvoQuestionnaireForm from "./PunoletstvoQuestionnaireForm";
 import InvitationClusterLinks from "@/components/seo/InvitationClusterLinks";
 import { resolveBypassInfo } from "@/lib/bypass-token";
-import { getRodjendanPozivnicaPrice, formatPrice } from "@/data/pricing";
+import {
+  getRodjendanPozivnicaPrice,
+  getRodjendanSlikePrice,
+  formatPrice,
+} from "@/data/pricing";
 
 export const metadata: Metadata = {
   title: "Digitalne Pozivnice za 18. Rođendan i Punoletstvo",
@@ -46,15 +50,17 @@ export const metadata: Metadata = {
 
 /** Cena se čita jednom i koristi i u tekstu i u schemi, da se ne raziđu. */
 const cena = formatPrice(getRodjendanPozivnicaPrice(true));
+/** Ista pozivnica sa fotografijama (do 3) — standardna cena pozivnice. */
+const cenaSaSlikama = formatPrice(getRodjendanSlikePrice());
 
 const faqItems = [
   {
     q: "Koliko košta pozivnica za 18. rođendan?",
-    a: `Pozivnica za punoletstvo košta ${cena}. U cenu ulazi personalizovana web pozivnica, forma za potvrdu dolaska, odbrojavanje, mapa lokacije i PDF pozivnica za štampu — bez naknadnih doplata.`,
+    a: `Pozivnica za punoletstvo košta ${cena}. U cenu ulazi personalizovana web pozivnica, forma za potvrdu dolaska, odbrojavanje, mapa lokacije i PDF pozivnica za štampu. Jedina opcija koja se doplaćuje su fotografije na pozivnici (do 3) — sa njima je cena ${cenaSaSlikama}.`,
   },
   {
     q: "Kada je pozivnica gotova?",
-    a: "Odmah. Popunite upitnik u četiri koraka, izaberete boje i font, i pozivnica je napravljena — otključavate je nakon uplate i istog trenutka možete da je šaljete gostima.",
+    a: "Odmah. Popunite upitnik u pet koraka, izaberete boje i font, i pozivnica je napravljena — otključavate je nakon uplate i istog trenutka možete da je šaljete gostima.",
   },
   {
     q: "Kako gosti potvrđuju dolazak?",
@@ -149,7 +155,7 @@ export default async function NapraviPunoletstvoPage({
               Pozivnica za punoletstvo
             </h1>
             <p className="text-[#7A242C] text-lg max-w-xl mx-auto">
-              Popunite upitnik u 4 koraka — klasičan dizajn sa elegantnim script
+              Popunite upitnik u 5 koraka — klasičan dizajn sa elegantnim script
               fontom, formom za potvrdu dolaska i odbrojavanjem. Gotova odmah.
             </p>
             <p className="inline-block mt-4 text-xs tracking-widest uppercase text-stone-400 border border-stone-200 rounded-full px-4 py-1.5">
@@ -255,7 +261,7 @@ export default async function NapraviPunoletstvoPage({
                 {
                   n: "01",
                   t: "Popunite upitnik",
-                  d: "Ime slavljenika, datum, lokacija, boje i font — četiri koraka.",
+                  d: "Ime slavljenika, datum, lokacija, boje, font i fotografije — pet koraka.",
                 },
                 {
                   n: "02",
@@ -442,7 +448,7 @@ export default async function NapraviPunoletstvoPage({
                   Pozivnica je gotova odmah
                 </p>
                 <p className="mt-1 text-sm text-[#F5F4DC]/50">
-                  Upitnik u četiri koraka. Cena {cena}, bez skrivenih troškova.
+                  Upitnik u pet koraka. Cena {cena}, bez skrivenih troškova.
                 </p>
               </div>
               <Link

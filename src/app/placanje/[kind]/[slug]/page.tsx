@@ -126,6 +126,19 @@ export default async function PlacanjePage({
   }
 
   const available = adapter.tiers(entity);
+  // An EXPLICIT ?tier= that is already unlocked says so, instead of quietly
+  // substituting whatever else is on the shelf. Without this, a couple who
+  // already bought the seating add-on and reopens a stale ?tier=raspored link
+  // would land on a 9.900 "Kompletan paket" checkout they never asked for.
+  if (requestedTier && entity.unlockedTiers.includes(requestedTier)) {
+    return (
+      <AlreadyUnlocked
+        kind={kind}
+        slug={slug}
+        displayName={entity.displayName}
+      />
+    );
+  }
   // No purchasable tier left ⇒ fully unlocked.
   if (available.length === 0) {
     return (

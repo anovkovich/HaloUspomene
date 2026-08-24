@@ -113,6 +113,12 @@ export async function POST(request: NextRequest) {
       admin_password: autoPassword,
       draft: true,
       ...(contactPhone ? { contact_phone: contactPhone } : {}),
+      // Photo step in the builder: the flag has to be on BEFORE the client's
+      // photos are pushed (the upload route gates on it) and it lifts the
+      // invitation to the standard price — see getRodjendanSlikePrice().
+      ...(body.images_enabled === true
+        ? { paid_for_images: true, builder_images: true }
+        : {}),
     };
 
     await upsertBirthday(slug, data);

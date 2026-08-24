@@ -58,6 +58,7 @@ import dynamic from "next/dynamic";
 import { PhoneAuthField } from "@/components/verification/PhoneAuthField";
 import type { BypassInfo } from "./FormPageWrapper";
 import { useRecaptcha } from "@/components/forms/RecaptchaProvider";
+import { ImagePicker } from "@/components/forms/ImagePicker";
 import { refreshPhoneTrustToken } from "@/lib/phone-trust-refresh";
 import { redactPayloadForEmail } from "@/lib/wizard-notify";
 
@@ -391,126 +392,6 @@ function Toggle({
         {label}
       </span>
     </label>
-  );
-}
-
-// Reusable inline file picker for the user-facing gallery feature.
-// Used by ExtrasAccordion (classic, max 3, paid 600 din) and PremiumStepAIPhoto
-// (Fountain theme, max 2, included in price). Files stay in client state until
-// the form's final submit, where they get pushed to Vercel Blob.
-export function ImagePicker({
-  files,
-  onChange,
-  max,
-  accentHex,
-  accentRgb,
-}: {
-  files: File[];
-  onChange: (files: File[]) => void;
-  max: number;
-  accentHex: string;
-  accentRgb: string;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState<string | null>(null);
-  // Object URLs are revoked when the file list changes so the browser doesn't
-  // leak memory across re-renders.
-  const [previews, setPreviews] = useState<string[]>([]);
-
-  React.useEffect(() => {
-    const urls = files.map((f) => URL.createObjectURL(f));
-    setPreviews(urls);
-    return () => {
-      urls.forEach((u) => URL.revokeObjectURL(u));
-    };
-  }, [files]);
-
-  const handlePick = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setError(null);
-    const picked = Array.from(e.target.files ?? []);
-    e.target.value = ""; // allow re-selecting the same file after removal
-    if (picked.length === 0) return;
-
-    const accepted: File[] = [];
-    for (const f of picked) {
-      if (!f.type.startsWith("image/")) {
-        setError("Samo slike su dozvoljene.");
-        continue;
-      }
-      if (f.size > 5 * 1024 * 1024) {
-        setError("Slika je veća od 5MB.");
-        continue;
-      }
-      accepted.push(f);
-    }
-    const next = [...files, ...accepted].slice(0, max);
-    onChange(next);
-  };
-
-  const removeAt = (i: number) => {
-    setError(null);
-    onChange(files.filter((_, idx) => idx !== i));
-  };
-
-  const canAdd = files.length < max;
-
-  return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-3 gap-2">
-        {previews.map((src, i) => (
-          <div
-            key={i}
-            className="relative aspect-square rounded-lg overflow-hidden border bg-stone-50"
-            style={{ borderColor: `rgba(${accentRgb}, 0.25)` }}
-          >
-            {/* Local object-URL preview of a user upload — next/image can't
-                optimize a blob: URL, so a plain <img> is correct. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt={`Slika ${i + 1}`}
-              className="w-full h-full object-cover"
-            />
-            <button
-              type="button"
-              onClick={() => removeAt(i)}
-              aria-label="Ukloni sliku"
-              className="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/95 shadow flex items-center justify-center hover:bg-white"
-            >
-              <X size={12} className="text-stone-700" />
-            </button>
-          </div>
-        ))}
-        {canAdd && (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="aspect-square rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors hover:bg-white/60"
-            style={{
-              borderColor: `rgba(${accentRgb}, 0.4)`,
-              color: accentHex,
-            }}
-          >
-            <Plus size={20} />
-            <span className="text-[10px] font-semibold uppercase tracking-wider">
-              Dodaj
-            </span>
-          </button>
-        )}
-      </div>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handlePick}
-        className="hidden"
-      />
-      <p className="text-[11px] text-stone-500">
-        {files.length}/{max} slika · do 5MB po slici · JPG, PNG, WebP
-      </p>
-      {error && <p className="text-[11px] text-red-500">{error}</p>}
-    </div>
   );
 }
 
@@ -3094,7 +2975,7 @@ export default function QuestionnaireForm({
         fd.append("image", imagesToUpload[i]);
         try {
           const r = await fetch(
-            `/api/pozivnica/${encodeURIComponent(slug)}/images-upload`,
+            `/api/pozivnica/${encodeURIComponent(slug)}/images-upload/`,
             { method: "POST", body: fd },
           );
           if (!r.ok) {
@@ -3137,7 +3018,7 @@ export default function QuestionnaireForm({
       fd.append("source_url", formData.pendingMusic.sourceUrl);
       try {
         const r = await fetch(
-          `/api/pozivnica/${encodeURIComponent(slug)}/music-upload`,
+          `/api/pozivnica/${encodeURIComponent(slug)}/music-upload/`,
           { method: "POST", body: fd },
         );
         if (!r.ok) {

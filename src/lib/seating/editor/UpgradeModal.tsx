@@ -1,18 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, X, Mail, Copy, Check } from "lucide-react";
+import { Lock, X, Mail, Copy, Check, ArrowRight } from "lucide-react";
 import { pricing, formatPrice } from "@/data/pricing";
 
 interface Props {
   onClose: () => void;
+  /**
+   * Checkout for THIS product's seating add-on (`/placanje/{kind}/{slug}/
+   * ?tier=raspored`). When absent — a draft invitation, or a product with no
+   * self-serve rail — the modal falls back to the contact details, which is
+   * what it always did.
+   */
+  payHref?: string;
 }
 
 /** Uvek iz pricing.json — cena je jednom već bila hardkodovana i ostala je
  *  zaglavljena na staroj vrednosti dok se cenovnik pomerio. */
 const RASPORED_PRICE = formatPrice(pricing.pozivnica.raspored.price);
 
-export default function UpgradeModal({ onClose }: Props) {
+export default function UpgradeModal({ onClose, payHref }: Props) {
   const [emailCopied, setEmailCopied] = useState(false);
 
   return (
@@ -66,9 +73,22 @@ export default function UpgradeModal({ onClose }: Props) {
             className="font-raleway text-xs leading-relaxed mt-3"
             style={{ color: "var(--theme-text-light)" }}
           >
-            Javite nam se i aktiviramo ga na vašoj pozivnici.
+            {payHref
+              ? "Aktivira se odmah nakon uplate — vaš raspored ostaje kakav jeste."
+              : "Javite nam se i aktiviramo ga na vašoj pozivnici."}
           </p>
         </div>
+
+        {payHref && (
+          <a
+            href={payHref}
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-lg text-sm font-raleway font-semibold transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "var(--theme-primary)", color: "white" }}
+          >
+            Aktiviraj raspored — {RASPORED_PRICE}
+            <ArrowRight size={14} />
+          </a>
+        )}
 
         <div className="w-full flex flex-col gap-2 mt-1">
           <div className="flex items-center w-full py-2.5 px-3 rounded-lg text-xs font-raleway font-medium border border-var(--theme-primary)">
@@ -92,11 +112,20 @@ export default function UpgradeModal({ onClose }: Props) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-xs font-raleway font-medium transition-opacity hover:opacity-80"
-            style={{
-              border: "1px solid var(--theme-border-light)",
-              backgroundColor: "var(--theme-primary)",
-              color: "white",
-            }}
+            style={
+              payHref
+                ? {
+                    // Checkout is the primary action now — Instagram drops to a
+                    // quiet outline so the two don't compete.
+                    border: "1px solid var(--theme-border-light)",
+                    color: "var(--theme-text-light)",
+                  }
+                : {
+                    border: "1px solid var(--theme-border-light)",
+                    backgroundColor: "var(--theme-primary)",
+                    color: "white",
+                  }
+            }
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />

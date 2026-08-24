@@ -12,6 +12,7 @@ import { BirthdayThemeProvider } from "./components/ThemeProvider";
 import { SceneDecorations, AgeBadge } from "./components/Illustrations";
 import { BirthdayCountdown } from "./components/Countdown";
 import { BirthdayRSVPForm } from "./components/BirthdayRSVPForm";
+import PolaroidGallery from "@/app/pozivnica/[slug]/PolaroidGallery";
 import PreviewRsvpLock from "@/components/PreviewRsvpLock";
 import { InvitationCredit } from "@/components/invitation/InvitationCredit";
 import { MultilineText } from "@/lib/multiline";
@@ -190,6 +191,17 @@ export default function BirthdayClient({ data, slug, preview = false, promoCode,
             )}
           </motion.div>
         </section>
+
+        {/* ── Fotografije (polaroid) ──
+            Theme-agnostic: PolaroidGallery reads only --theme-primary, which
+            the birthday ThemeProvider already supplies. */}
+        {data.paid_for_images && data.images && data.images.length > 0 && (
+          <PolaroidGallery
+            images={data.images}
+            imageLayout={data.image_layout}
+            showTitle={false}
+          />
+        )}
 
         {/* ── Countdown ── */}
         {data.countdown_enabled && (

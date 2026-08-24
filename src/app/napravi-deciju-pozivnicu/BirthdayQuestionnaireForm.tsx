@@ -28,6 +28,14 @@ import {
 } from "@/components/forms/RecaptchaProvider";
 import { refreshPhoneTrustToken } from "@/lib/phone-trust-refresh";
 import { redactPayloadForEmail } from "@/lib/wizard-notify";
+import { ImagePicker } from "@/components/forms/ImagePicker";
+import * as Sentry from "@sentry/nextjs";
+import {
+  formatPrice,
+  getRodjendanPozivnicaPrice,
+  getRodjendanSlikePrice,
+  getRodjendanSlikeDelta,
+} from "@/data/pricing";
 
 const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 
@@ -67,16 +75,23 @@ interface FormData {
   countdown_enabled: boolean;
   map_enabled: boolean;
   wishes: string;
+  /** Photos picked in the "Fotografije" step. Held in memory only; pushed to
+   *  Vercel Blob right after the invitation record is created. */
+  pendingImages: File[];
 }
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 const STEP_TITLES = [
   "Informacije o detetu",
   "Datum i lokacija",
   "Dizajn",
+  "Fotografije",
   "Poslednji korak",
 ];
+
+/** Same cap as the invitation renderer and the upload route. */
+const MAX_IMAGES = 3;
 
 const defaultFormData: FormData = {
   child_name: "",
@@ -98,6 +113,7 @@ const defaultFormData: FormData = {
   countdown_enabled: true,
   map_enabled: true,
   wishes: "",
+  pendingImages: [],
 };
 
 // ─── Shared UI helpers ──────────────────────────────────────────────────────
@@ -637,6 +653,45 @@ function Step3({
   );
 }
 
+function StepPhotos({
+  formData,
+  updateField,
+}: {
+  formData: FormData;
+  updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+}) {
+  const delta = getRodjendanSlikeDelta(false);
+  const withPhotos = getRodjendanSlikePrice();
+  const plain = getRodjendanPozivnicaPrice(false);
+  return (
+    <div>
+      <StepHeading
+        title="Fotografije"
+        desc="Do 3 fotografije na pozivnici, u polaroid stilu."
+      />
+
+      <div className="rounded-2xl px-5 py-4 mb-6 border border-[#FF6B6B]/25 bg-[#FF6B6B]/[0.06]">
+        <p className="text-sm font-bold text-stone-800 mb-1">
+          + {formatPrice(delta)}
+        </p>
+        <p className="text-xs text-stone-600 leading-relaxed">
+          Sa fotografijama pozivnica košta {formatPrice(withPhotos)} umesto{" "}
+          {formatPrice(plain)}. Ako ne dodate nijednu fotografiju, ne plaćate
+          ništa dodatno — korak možete slobodno preskočiti.
+        </p>
+      </div>
+
+      <ImagePicker
+        files={formData.pendingImages}
+        onChange={(f) => updateField("pendingImages", f)}
+        max={MAX_IMAGES}
+        accentHex="#FF6B6B"
+        accentRgb="255, 107, 107"
+      />
+    </div>
+  );
+}
+
 function Step4({
   formData,
   updateField,
@@ -719,6 +774,12 @@ export default function BirthdayQuestionnaireForm({
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
+  // Two-phase submit when photos are attached: create the record, then push the
+  // files. The client waits on the spinner through both.
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+  }>({ current: 0, total: 0 });
   const formTopRef = useRef<HTMLDivElement>(null);
   const { execute: executeRecaptcha } = useRecaptcha();
 
@@ -767,6 +828,42 @@ export default function BirthdayQuestionnaireForm({
     setStepError(null);
     setError(null);
     setIsSubmitting(true);
+
+    const imagesToUpload = formData.pendingImages.slice(0, MAX_IMAGES);
+
+    // Sequential upload, run AFTER the record exists. Each failure is logged to
+    // Sentry and skipped: the invitation is fine without a photo and admin (or
+    // the client, from the portal) can add it later — a hung upload must never
+    // cost the client their invitation.
+    const uploadPendingImages = async (slug: string) => {
+      if (imagesToUpload.length === 0) return;
+      setUploadProgress({ current: 0, total: imagesToUpload.length });
+      for (let i = 0; i < imagesToUpload.length; i++) {
+        setUploadProgress({ current: i, total: imagesToUpload.length });
+        const fd = new FormData();
+        fd.append("image", imagesToUpload[i]);
+        try {
+          const r = await fetch(
+            `/api/deciji-rodjendan/${encodeURIComponent(slug)}/images-upload/`,
+            { method: "POST", body: fd },
+          );
+          if (!r.ok) {
+            const j = await r.json().catch(() => ({}));
+            throw new Error(j.error || `Upload failed (${r.status})`);
+          }
+        } catch (err) {
+          Sentry.captureException(err, {
+            tags: { feature: "rodjendan-images-upload" },
+            extra: { slug, idx: i, total: imagesToUpload.length },
+          });
+        }
+      }
+      setUploadProgress({
+        current: imagesToUpload.length,
+        total: imagesToUpload.length,
+      });
+    };
+
     try {
       let recaptchaToken: string;
       try {
@@ -811,6 +908,10 @@ export default function BirthdayQuestionnaireForm({
         map_enabled: formData.map_enabled,
         contact_phone: contactPhoneE164,
         phone_trust_token: phoneTrustToken,
+        // Photo step: the flag is what turns on `paid_for_images` (so the
+        // upload below is accepted) and what prices the invitation at the
+        // standard rate instead of the plain event rate.
+        images_enabled: imagesToUpload.length > 0,
         ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
         recaptcha_token: recaptchaToken,
       };
@@ -821,6 +922,10 @@ export default function BirthdayQuestionnaireForm({
       });
       const created = await res.json();
       if (!res.ok) throw new Error(created.error || "Greška pri kreiranju pozivnice");
+
+      // Photos first — the success screen sends the client straight into the
+      // preview, which should already show them.
+      await uploadPendingImages(created.slug);
 
       setCreatedSlug(created.slug);
       if (typeof created.password === "string") setCreatedPassword(created.password);
@@ -857,6 +962,10 @@ export default function BirthdayQuestionnaireForm({
             "Rok za prijavu": formData.submit_until,
             Lokacija: `${formData.location_name}, ${formData.location_address}`,
             "Kontakt telefon": `${bypassInfo?.callingCode || "+381"}${formData.contact_phone}`,
+            Fotografije:
+              imagesToUpload.length > 0
+                ? `DA (${imagesToUpload.length}) — pozivnica se naplaćuje po standardnoj ceni`
+                : "ne",
             Napomena: formData.wishes || "(nema)",
             "Admin link": `https://halouspomene.rs/admin/rodjendan/${created.slug}`,
             "JSON podaci": redactPayloadForEmail(birthdayApiPayload),
@@ -871,6 +980,7 @@ export default function BirthdayQuestionnaireForm({
       );
     } finally {
       setIsSubmitting(false);
+      setUploadProgress({ current: 0, total: 0 });
     }
   };
 
@@ -991,6 +1101,9 @@ export default function BirthdayQuestionnaireForm({
               <Step3 formData={formData} updateField={updateField} />
             )}
             {step === 4 && (
+              <StepPhotos formData={formData} updateField={updateField} />
+            )}
+            {step === 5 && (
               <Step4 formData={formData} updateField={updateField} />
             )}
           </motion.div>
@@ -1046,7 +1159,12 @@ export default function BirthdayQuestionnaireForm({
               {isSubmitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Slanje...
+                  {uploadProgress.total > 0
+                    ? `Otpremamo slike (${Math.min(
+                        uploadProgress.current + 1,
+                        uploadProgress.total,
+                      )}/${uploadProgress.total})...`
+                    : "Slanje..."}
                 </>
               ) : (
                 <>

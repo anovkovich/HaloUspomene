@@ -80,6 +80,7 @@ export default async function RasporedSedenja({ params }: PageProps) {
         slug={slug}
         coupleNames={weddingData.couple_names.full_display}
         paidForRaspored={weddingData.paid_for_raspored ?? false}
+        published={!weddingData.draft}
         theme={weddingData.theme}
         scriptFont={weddingData.scriptFont}
         useCyrillic={weddingData.useCyrillic ?? false}

@@ -15,6 +15,10 @@ interface Props {
   slug: string;
   coupleNames: string;
   paidForRaspored: boolean;
+  /** Invitation is live. A draft has no seating add-on to sell yet — the
+   *  couple has to buy the invitation first — so the modal keeps its contact
+   *  fallback there. */
+  published: boolean;
   theme: ThemeType;
   scriptFont?: ScriptFontType;
   useCyrillic: boolean;
@@ -37,6 +41,7 @@ export default function WeddingRasporedRoot({
   slug,
   coupleNames,
   paidForRaspored,
+  published,
   theme,
   scriptFont,
   useCyrillic,
@@ -55,6 +60,9 @@ export default function WeddingRasporedRoot({
       slug={slug}
       coupleNames={coupleNames}
       paidForRaspored={paidForRaspored}
+      rasporedPayHref={
+        published ? `/placanje/pozivnica/${slug}/?tier=raspored` : undefined
+      }
       enableHallSchemes
       actions={{
         save: saveRaspored,
