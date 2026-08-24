@@ -21,13 +21,23 @@ if (!apiKey) {
 
 // Name fragment -> env var. Matched case-insensitively against the product name.
 const MAP = [
-  [/osnovni/i, "LS_VARIANT_OSNOVNI", 5000],
+  // Proizvod se u LS-u zove "Standardna pozivnica" (preimenovan sa "Osnovni
+  // paket" 2026-08-24, da opis ne pominje vencanje — istu 5.000 varijantu
+  // koristi i rodjendan/punoletstvo sa fotografijama). Stari naziv ostaje u
+  // paternu za slucaj da se negde vrati.
+  [/standardna pozivnica|osnovni/i, "LS_VARIANT_OSNOVNI", 5000],
   [/kompletan/i, "LS_VARIANT_KOMPLETAN", 9900],
   [/premium/i, "LS_VARIANT_PREMIUM", 13900],
   [/proslav/i, "LS_VARIANT_PROSLAVA", 4500],
   // Mora PRE generickog /raspored/i, inace bi prvi match pojeo ovaj proizvod:
-  // rodjendanski raspored je 2.500, samostalni je 5.000.
-  [/rodjendan\s*raspored/i, "LS_VARIANT_RODJENDAN_RASPORED", 2500],
+  // raspored uz pozivnicu je 2.500, samostalni je 5.000. Proizvod se u LS-u
+  // zove "Raspored uz pozivnicu" (preimenovan sa "RODJENDAN RASPORED"
+  // 2026-08-24); stari naziv ostaje u paternu ako se negde vrati.
+  [
+    /raspored uz pozivnicu|rodjendan\s*raspored/i,
+    "LS_VARIANT_RODJENDAN_RASPORED",
+    2500,
+  ],
   [/raspored/i, "LS_VARIANT_RASPORED", 5000],
   // QR galerija se DELI sa rodjendanima (ista cena) — jedan proizvod, dva kind-a.
   [/galerij/i, "LS_VARIANT_GALERIJA", 3500],
