@@ -245,7 +245,7 @@ export async function generateAndDownloadPDF(
 
   doc.setFont("Sans");
   doc.setFontSize(10);
-  doc.setTextColor(160, 160, 160);
+  doc.setTextColor(35, 35, 35);
   doc.text("RASPORED SEDENJA", PW / 2, y + 4, { align: "center" });
   y += 12;
 
@@ -255,7 +255,7 @@ export async function generateAndDownloadPDF(
   y += 8;
 
   doc.setFontSize(10);
-  doc.setTextColor(195, 195, 195);
+  doc.setTextColor(35, 35, 35);
   doc.text("PLAN SALE", MARGIN, y);
   y += 7;
 
@@ -286,8 +286,8 @@ export async function generateAndDownloadPDF(
       // Fits on the hall-schema page
       const qrX = PW / 2 - qrSizeInline / 2;
       doc.addImage(qrDataUrl, "PNG", qrX, y, qrSizeInline, qrSizeInline);
-      doc.setFontSize(7);
-      doc.setTextColor(160, 160, 160);
+      doc.setFontSize(8);
+      doc.setTextColor(35, 35, 35);
       doc.text(
         "QR kod za goste za brz pronalazak mesta",
         PW / 2,
@@ -301,7 +301,7 @@ export async function generateAndDownloadPDF(
       const qrY = 297 / 2 - qrSizePage / 2 - 10;
       doc.addImage(qrDataUrl, "PNG", qrX, qrY, qrSizePage, qrSizePage);
       doc.setFontSize(9);
-      doc.setTextColor(160, 160, 160);
+      doc.setTextColor(35, 35, 35);
       doc.text(
         "QR kod za goste za brz pronalazak mesta",
         PW / 2,
@@ -319,8 +319,16 @@ export async function generateAndDownloadPDF(
   // while keeping the file tiny (vector text instead of full-page bitmaps).
   const COL_GAP = 6; // mm between the two columns
   const COL_W = (CW - COL_GAP) / 2;
-  const ROW_H = 6; // mm per party row
-  const SUB_H = 4.6; // mm per named member listed under a party
+  // The printed list is read at arm's length in a hall, so the INDIVIDUAL
+  // guests carry the large type. A party holder that only heads a list of
+  // named members is a grouping label, so it prints small and in brackets;
+  // a party with no named members IS the guest, so it keeps the large type.
+  const ROW_H = 7.2; // mm per single-name party row / index row
+  const HEAD_H = 5; // mm per party holder heading a named member list
+  const SUB_H = 6.4; // mm per named member listed under a party
+  const NAME_PT = 12.5; // pt - individual guest names
+  const HEAD_PT = 8.5; // pt - party holder label above its members
+  const COUNT_PT = 9; // pt - seat counts
   const LABEL_H = 9; // mm for a table label + its divider
   const BLOCK_GAP = 4; // mm after each table block
   const TITLE_H = 10; // mm reserved for a page title
@@ -330,38 +338,60 @@ export async function generateAndDownloadPDF(
   const pageTitle = (label: string) => {
     doc.setFont("Sans");
     doc.setFontSize(9);
-    doc.setTextColor(170, 170, 170);
+    doc.setTextColor(35, 35, 35);
     doc.text(label, MARGIN, MARGIN + 6, { charSpace: 0.8 });
   };
 
   // ── Per-table guest lists ──────────────────────────────────────────────────
-  type GBlock = {
-    c: number;
-    y: number;
-    t: { label: string; guests: PartyRow[] };
+  // Blocks flow in strict reading order: left column top to bottom, then the
+  // right column, then the next page. This used to drop each table into
+  // whichever column was shorter, which scattered them - STO 12 could print
+  // above STO 1, unusable when a hostess looks a table up on paper.
+  // Flowing party-by-party (rather than whole tables) also means a table too
+  // tall for one column continues into the next instead of running off it.
+  type GUnit =
+    | { kind: "label"; label: string; h: number }
+    | { kind: "party"; g: PartyRow; h: number };
+  type GPlaced = { c: number; y: number; u: GUnit };
+
+  const partyHeight = (g: PartyRow) =>
+    (g.members.length > 0 ? HEAD_H : ROW_H) + g.members.length * SUB_H;
+
+  const gPages: GPlaced[][] = [];
+  let gPage: GPlaced[] = [];
+  let gCol = 0;
+  let gTop = TITLE_H; // page title only takes room on the first page
+  let gY = gTop;
+  const nextColumn = () => {
+    if (gCol === 0) {
+      gCol = 1;
+    } else {
+      gPages.push(gPage);
+      gPage = [];
+      gCol = 0;
+      gTop = 0;
+    }
+    gY = gTop;
   };
-  const blockHeight = (guests: PartyRow[]) =>
-    guests.reduce((h, g) => h + ROW_H + g.members.length * SUB_H, 0);
-  const gPages: GBlock[][] = [];
-  let gPage: GBlock[] = [];
-  let gColY = [TITLE_H, TITLE_H];
+  const place = (u: GUnit) => {
+    if (gY + u.h > USABLE_H) nextColumn();
+    gPage.push({ c: gCol, y: gY, u });
+    gY += u.h;
+  };
 
   for (const t of seatingTables) {
-    const bh = LABEL_H + blockHeight(t.guests) + BLOCK_GAP;
-    let c = gColY[0] <= gColY[1] ? 0 : 1;
-    if (gColY[c] + bh > USABLE_H) {
-      const oc = 1 - c;
-      if (gColY[oc] + bh <= USABLE_H) {
-        c = oc;
-      } else {
-        gPages.push(gPage);
-        gPage = [];
-        gColY = [0, 0];
-        c = 0;
+    // Never leave a table label stranded at the bottom of a column.
+    if (gY + LABEL_H + partyHeight(t.guests[0]) > USABLE_H) nextColumn();
+    place({ kind: "label", label: t.label, h: LABEL_H });
+    for (const g of t.guests) {
+      const h = partyHeight(g);
+      if (gY + h > USABLE_H) {
+        nextColumn();
+        place({ kind: "label", label: `${t.label} (nastavak)`, h: LABEL_H });
       }
+      place({ kind: "party", g, h });
     }
-    gPage.push({ c, y: gColY[c], t });
-    gColY[c] += bh;
+    gY += BLOCK_GAP;
   }
   if (gPage.length) gPages.push(gPage);
 
@@ -369,45 +399,49 @@ export async function generateAndDownloadPDF(
     doc.addPage();
     if (pi === 0) pageTitle("RASPORED GOSTIJU PO STOLOVIMA");
 
-    for (const { c, y: by, t } of gPages[pi]) {
+    for (const { c, y: by, u } of gPages[pi]) {
       const x = colX(c);
       const top = MARGIN + by;
-      // Table label
-      doc.setFont("Serif");
-      doc.setFontSize(13);
-      doc.setTextColor(35, 35, 35);
-      doc.text(t.label.toUpperCase(), x, top + LABEL_H * 0.62);
-      // Divider under label
-      doc.setDrawColor(221, 221, 221);
-      doc.setLineWidth(0.4);
-      doc.line(x, top + LABEL_H, x + COL_W, top + LABEL_H);
-      // Party rows (+ the individual members seated under each)
-      let gy = top + LABEL_H;
-      for (const g of t.guests) {
-        doc.setFontSize(10.5);
-        const ty = gy + ROW_H * 0.68;
+
+      if (u.kind === "label") {
+        doc.setFont("Serif");
+        doc.setFontSize(14);
         doc.setTextColor(35, 35, 35);
-        doc.text(g.name, x + 1, ty);
-        doc.setTextColor(170, 170, 170);
-        doc.text(`${g.here}/${g.total}`, x + COL_W - 1, ty, { align: "right" });
-        gy += ROW_H;
-
-        doc.setFontSize(9);
-        for (const m of g.members) {
-          const my = gy + SUB_H * 0.72;
-          doc.setTextColor(120, 120, 120);
-          doc.text(`· ${m.name}`, x + 4, my);
-          if (m.seats > 1) {
-            doc.setTextColor(180, 180, 180);
-            doc.text(`${m.seats}`, x + COL_W - 1, my, { align: "right" });
-          }
-          gy += SUB_H;
-        }
-
-        doc.setDrawColor(240, 240, 240);
-        doc.setLineWidth(0.2);
-        doc.line(x, gy, x + COL_W, gy);
+        doc.text(u.label.toUpperCase(), x, top + LABEL_H * 0.62);
+        doc.setDrawColor(120, 120, 120);
+        doc.setLineWidth(0.4);
+        doc.line(x, top + LABEL_H, x + COL_W, top + LABEL_H);
+        continue;
       }
+
+      // One party: its holder line, then every named individual under it.
+      const g = u.g;
+      const hasMembers = g.members.length > 0;
+      const headH = hasMembers ? HEAD_H : ROW_H;
+      doc.setFont("Serif");
+      doc.setTextColor(35, 35, 35);
+      const ty = top + headH * (hasMembers ? 0.74 : 0.7);
+      doc.setFontSize(hasMembers ? HEAD_PT : NAME_PT);
+      doc.text(hasMembers ? `(${g.name})` : g.name, x + 1, ty);
+      doc.setFontSize(hasMembers ? HEAD_PT : COUNT_PT);
+      doc.text(`${g.here}/${g.total}`, x + COL_W - 1, ty, { align: "right" });
+
+      let my = top + headH;
+      for (const m of g.members) {
+        doc.setFontSize(NAME_PT);
+        doc.text(m.name, x + 3, my + SUB_H * 0.72);
+        if (m.seats > 1) {
+          doc.setFontSize(COUNT_PT);
+          doc.text(`${m.seats}`, x + COL_W - 1, my + SUB_H * 0.72, {
+            align: "right",
+          });
+        }
+        my += SUB_H;
+      }
+
+      doc.setDrawColor(205, 205, 205);
+      doc.setLineWidth(0.2);
+      doc.line(x, top + u.h, x + COL_W, top + u.h);
     }
   }
 
@@ -444,15 +478,15 @@ export async function generateAndDownloadPDF(
       if (pi === 0) pageTitle("ABECEDNI SPISAK GOSTIJU");
 
       doc.setFont("Serif");
-      doc.setFontSize(10.5);
+      doc.setTextColor(35, 35, 35);
       for (const { c, y: by, g } of aPages[pi]) {
         const x = colX(c);
         const ty = MARGIN + by + ROW_H * 0.68;
-        doc.setTextColor(35, 35, 35);
+        doc.setFontSize(NAME_PT);
         doc.text(g.name, x + 1, ty);
-        doc.setTextColor(170, 170, 170);
+        doc.setFontSize(COUNT_PT);
         doc.text(g.tables, x + COL_W - 1, ty, { align: "right" });
-        doc.setDrawColor(240, 240, 240);
+        doc.setDrawColor(205, 205, 205);
         doc.setLineWidth(0.2);
         doc.line(x, MARGIN + by + ROW_H, x + COL_W, MARGIN + by + ROW_H);
       }

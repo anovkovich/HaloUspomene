@@ -27,6 +27,12 @@ export interface TableGuestList {
   guests: PartyRow[];
 }
 
+/** First integer in a table label, or +Infinity when it carries none. */
+function tableNumber(label: string): number {
+  const m = label.match(/\d+/);
+  return m ? parseInt(m[0], 10) : Number.MAX_SAFE_INTEGER;
+}
+
 export function buildTableGuestLists(
   tables: TableData[],
   attending: RSVPEntry[],
@@ -41,6 +47,13 @@ export function buildTableGuestLists(
       const sa = special(a.label),
         sb = special(b.label);
       if (sa !== sb) return sa - sb;
+      // Natural order: "Sto 2" before "Sto 10". A plain localeCompare sorts
+      // the labels as strings, which prints 1, 10, 11, 12, 2 - unusable when
+      // a hostess is looking a table up on paper. Labels without a number
+      // (named tables) go last, alphabetically.
+      const na = tableNumber(a.label),
+        nb = tableNumber(b.label);
+      if (na !== nb) return na - nb;
       return a.label.localeCompare(b.label, "sr");
     })
     .map((table) => {
