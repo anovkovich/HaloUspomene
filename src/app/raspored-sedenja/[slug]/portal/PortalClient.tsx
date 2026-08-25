@@ -21,6 +21,8 @@ import {
   Heart,
   Sparkles,
   UserCheck,
+  ArrowRight,
+  ClipboardList,
 } from "lucide-react";
 import { generateQrFlyerPDF } from "@/lib/qr-flyer";
 import { galleryQrDataUrl } from "@/lib/gallery-qr";
@@ -529,6 +531,38 @@ export default function PortalClient({
               </div>
             </div>
 
+            {/* Empty-state CTA — when no guests yet, guide the user to add them */}
+            {guestCount === 0 && (
+              <div
+                className="relative overflow-hidden rounded-2xl bg-white border border-[#d4af37]/40 p-5 shadow-[0_10px_26px_-18px_rgba(174,52,63,0.35)]"
+              >
+                <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
+                <div className="flex items-start gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#AE343F]/10 shrink-0">
+                    <ClipboardList size={18} className="text-[#AE343F]" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-serif text-lg text-[#232323] mb-1">
+                      Dodajte listu gostiju
+                    </p>
+                    <p className="text-[13px] text-[#232323]/70 leading-relaxed">
+                      Unesite koga zovete — imena, broj mesta i ko sa kim sedi.
+                      Kad dodate goste, možete da ih rasporedite po stolovima i
+                      pratite ko je potvrdio dolazak.
+                    </p>
+                    <a
+                      href={`/raspored-sedenja/${slug}/gosti`}
+                      className="mt-3.5 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#AE343F] text-white shadow-[0_6px_16px_-8px_rgba(174,52,63,0.6)] hover:bg-[#962d36] transition-colors"
+                    >
+                      <Users size={15} />
+                      Dodaj goste
+                      <ArrowRight size={14} />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Planiranje — wedding-only, see the pills above */}
             {isWedding && (
               <div>
@@ -629,7 +663,7 @@ export default function PortalClient({
               </a>
             )}
 
-            {/* Stranica za goste — quiet utility row */}
+            {/* Šta vide gosti — public-facing page guests use at the event */}
             <a
               href={`/raspored-sedenja/${slug}/gde-sedim`}
               target="_blank"
@@ -642,7 +676,7 @@ export default function PortalClient({
                   className="text-sm font-semibold"
                   style={{ color: "var(--theme-text)" }}
                 >
-                  Stranica za goste
+                  Šta vide gosti
                 </p>
                 <p
                   className="text-[11px]"
