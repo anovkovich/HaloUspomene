@@ -112,7 +112,7 @@ function daysUntil(eventDate: string): number | null {
 function formatEventDate(eventDate: string): string {
   const d = new Date(eventDate);
   if (isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("sr-RS", {
+  return d.toLocaleDateString("sr-Latn-RS", {
     day: "numeric",
     month: "long",
     year: "numeric",

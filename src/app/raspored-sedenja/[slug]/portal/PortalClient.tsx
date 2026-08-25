@@ -422,7 +422,7 @@ export default function PortalClient({
                   style={{ color: "#b9962f" }}
                 >
                   {new Date(eventDate)
-                    .toLocaleDateString("sr-RS", {
+                    .toLocaleDateString("sr-Latn-RS", {
                       day: "numeric",
                       month: "long",
                       year: "numeric",

@@ -74,7 +74,7 @@ function buildCells(year: number, month: number): { date: string; day: number; o
 }
 
 function dayLabel(date: string): string {
-  return new Date(date + "T12:00:00Z").toLocaleDateString("sr-RS", {
+  return new Date(date + "T12:00:00Z").toLocaleDateString("sr-Latn-RS", {
     weekday: "long",
     day: "numeric",
     month: "long",
