@@ -546,7 +546,7 @@ export default function PortalClient({
                       Dodajte listu gostiju
                     </p>
                     <p className="text-[13px] text-[#232323]/70 leading-relaxed">
-                      Unesite koga zovete — imena, broj mesta i ko sa kim sedi.
+                      Unesite ko dolazi — imena, broj mesta i ko sa kim sedi.
                       Kad dodate goste, možete da ih rasporedite po stolovima i
                       pratite ko je potvrdio dolazak.
                     </p>
