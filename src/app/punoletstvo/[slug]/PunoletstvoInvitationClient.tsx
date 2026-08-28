@@ -882,6 +882,7 @@ export default function PunoletstvoInvitationClient({
                   promoCode={promoCode}
                   promoValidUntil={promoValidUntil}
                   ctaBase="/napravi-punoletstvo"
+                  hideCounterNNote={data.hideCounterNNote}
                 />
               )}
             </motion.div>
@@ -913,7 +914,14 @@ export default function PunoletstvoInvitationClient({
               className="text-[10px] uppercase tracking-[0.4em]"
               style={{ color: "var(--theme-text-light)", textIndent: "0.4em" }}
             >
-              Hvala što ćete biti deo moje proslave
+              {(data.thankYouFooter || "Hvala što ćete biti deo moje proslave")
+                .split(/\n/)
+                .map((line, i, arr) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < arr.length - 1 && <div className="h-1" />}
+                  </React.Fragment>
+                ))}
             </p>
             <InvitationCredit className="mt-10" />
           </footer>

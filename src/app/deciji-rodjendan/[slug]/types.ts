@@ -136,6 +136,18 @@ export interface BirthdayData {
   receipt_valid?: boolean;
   receipt_created?: string;
   custom_discount?: number;
+  /**
+   * Custom closing message shown in the invitation footer. When omitted, the
+   * default "Hvala što ćete biti deo moje proslave" is used. May contain "\n"
+   * to split into multiple lines (rendered as the wedding `thankYouFooter`).
+   */
+  thankYouFooter?: string;
+  /**
+   * Opt-in flag: when true, hides the guest-count stepper and the optional
+   * "Poruka (napomena)" textarea from the RSVP form. Guest count then stays at
+   * the default of 1.
+   */
+  hideCounterNNote?: boolean;
 }
 
 export interface BirthdayThemeConfig {

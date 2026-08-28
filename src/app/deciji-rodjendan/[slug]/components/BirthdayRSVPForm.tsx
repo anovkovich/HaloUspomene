@@ -28,6 +28,8 @@ interface BirthdayRSVPFormProps {
   promoValidUntil?: string;
   /** Funnel the offer CTA points at (birthday / punoletstvo builder). */
   ctaBase?: string;
+  /** Hide the guest-count stepper and the "Poruka (napomena)" textarea. */
+  hideCounterNNote?: boolean;
 }
 
 export function BirthdayRSVPForm({
@@ -39,6 +41,7 @@ export function BirthdayRSVPForm({
   promoCode,
   promoValidUntil,
   ctaBase,
+  hideCounterNNote = false,
 }: BirthdayRSVPFormProps) {
   const { execute: executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState("");
@@ -268,7 +271,7 @@ export function BirthdayRSVPForm({
 
       {/* Guest count */}
       <AnimatePresence>
-        {attending === "Da" && (
+        {attending === "Da" && !hideCounterNNote && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -318,26 +321,28 @@ export function BirthdayRSVPForm({
       </AnimatePresence>
 
       {/* Message */}
-      <div>
-        <label
-          className="block text-sm font-bold mb-2"
-          style={{ color: "var(--theme-text)" }}
-        >
-          Poruka (opciono)
-        </label>
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Ostavite napomenu ili navedite imena osoba koje dolaze sa vama..."
-          rows={3}
-          className="w-full px-4 py-3 rounded-xl text-base outline-none transition-colors resize-none"
-          style={{
-            backgroundColor: "var(--theme-background)",
-            border: "1px solid var(--theme-border-light)",
-            color: "var(--theme-text)",
-          }}
-        />
-      </div>
+      {!hideCounterNNote && (
+        <div>
+          <label
+            className="block text-sm font-bold mb-2"
+            style={{ color: "var(--theme-text)" }}
+          >
+            Poruka (opciono)
+          </label>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Ostavite napomenu ili navedite imena osoba koje dolaze sa vama..."
+            rows={3}
+            className="w-full px-4 py-3 rounded-xl text-base outline-none transition-colors resize-none"
+            style={{
+              backgroundColor: "var(--theme-background)",
+              border: "1px solid var(--theme-border-light)",
+              color: "var(--theme-text)",
+            }}
+          />
+        </div>
+      )}
 
       {/* Error */}
       {error && (
