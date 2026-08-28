@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Trash2,
   Plus,
@@ -16,7 +16,10 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
-  GripVertical,
+  MoreVertical,
+  Pencil,
+  Users,
+  Check,
   CakeSlice,
   UtensilsCrossed,
 } from "lucide-react";
@@ -915,6 +918,11 @@ interface Props {
   onTap?: (table: TableData) => void;
   /** Canvas zoom; passed to react-draggable so drag tracks the cursor 1:1. */
   scale?: number;
+  /** True when this table's names are queued for the A4 name-card export. */
+  exportSelected?: boolean;
+  /** Toggle this table in/out of the name-card export queue. Omitted in
+   *  read-only / PWA / template modes where the per-table menu is absent. */
+  onToggleExport?: (tableId: string) => void;
 }
 
 export default function TableNode({
@@ -931,8 +939,22 @@ export default function TableNode({
   readOnly,
   onTap,
   scale = 1,
+  exportSelected = false,
+  onToggleExport,
 }: Props) {
   const nodeRef = useRef<HTMLDivElement>(null);
+  // Close the table's kebab menu when a pointer-down lands anywhere else.
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [menuOpen]);
   // Bring this table above the others by bumping its z-index directly on the
   // DOM node — no setState, so hovering/grabbing a table never re-renders the
   // rest of the canvas.
@@ -1135,15 +1157,86 @@ export default function TableNode({
     </div>
   );
 
-  const grabHandle = (
-    <span
-      className="shrink-0 flex items-center opacity-60 hover:opacity-100 transition-opacity"
-      style={{ cursor: "grab" }}
-      onMouseEnter={() => elementHover?.("Pomeri sto")}
-      onMouseLeave={() => elementHover?.(null)}
-    >
-      <GripVertical size={12} />
-    </span>
+  const startRename = () => {
+    setLabelInput(table.label);
+    setIsEditing(true);
+    setMenuOpen(false);
+  };
+
+  // Replace the old 6-dot grab handle with a 3-dot menu. The whole card is
+  // still draggable by its body, so moving a table is unchanged — the kebab
+  // just carries actions that used to hide behind double-click (rename) plus
+  // the new "export names" toggle.
+  const grabHandle = readOnly ? null : (
+    <div ref={menuRef} className="relative shrink-0 flex items-center">
+      <span
+        className="flex items-center opacity-60 hover:opacity-100 transition-opacity"
+        style={{ cursor: "pointer" }}
+        onMouseEnter={() => elementHover?.("Opcije stola")}
+        onMouseLeave={() => elementHover?.(null)}
+      >
+        <span
+          role="button"
+          tabIndex={0}
+          aria-label={`Opcije stola ${table.label}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen((v) => !v);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              setMenuOpen((v) => !v);
+            }
+          }}
+          className="flex items-center justify-center w-5 h-5 rounded hover:bg-white/20"
+        >
+          <MoreVertical size={13} />
+        </span>
+      </span>
+
+      {menuOpen && (
+        <div
+          className="absolute left-0 top-full mt-1 z-30 rounded-lg overflow-hidden shadow-xl"
+          style={{
+            minWidth: 180,
+            backgroundColor: "var(--theme-background)",
+            border: "1px solid var(--theme-border-light)",
+            color: "var(--theme-text)",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={startRename}
+            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-raleway font-medium text-left hover:bg-black/5 cursor-pointer"
+          >
+            <Pencil size={13} style={{ color: "var(--theme-primary)" }} />
+            Preimenuj sto
+          </button>
+          {onToggleExport && (
+            <button
+              type="button"
+              onClick={() => {
+                onToggleExport(table.id);
+                setMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-raleway font-medium text-left hover:bg-black/5 cursor-pointer"
+            >
+              {exportSelected ? (
+                <Check size={13} style={{ color: "#16a34a" }} />
+              ) : (
+                <Users size={13} style={{ color: "var(--theme-primary)" }} />
+              )}
+              {exportSelected
+                ? "Ukloni iz imena"
+                : "Dodaj imena za export"}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 
   const rotateBtn =
@@ -1278,6 +1371,11 @@ export default function TableNode({
           borderRadius: 8,
           transition: "background-color 150ms",
           transform: `translate(${table.x}px, ${table.y}px)`,
+          // Exported tables wear a gold ring + check so the couple sees at a
+          // glance which tables' names are queued.
+          boxShadow: exportSelected
+            ? "0 0 0 2px #d4af37, 0 6px 16px -8px rgba(35,35,35,0.18)"
+            : undefined,
           // Whole body is draggable (seats/buttons are excluded via the drag
           // helper's `ignore`), so a table buried under another can be grabbed
           // by its center.
@@ -1307,10 +1405,23 @@ export default function TableNode({
           raiseSelf();
         }}
         onMouseLeave={readOnly ? undefined : (e) => {
+          // Keep the header (and its open kebab menu) visible while the menu is
+          // open — otherwise leaving the table fades the header out under the
+          // pointer before the couple can pick an option.
+          if (menuOpen) return;
           e.currentTarget.style.backgroundColor = "transparent";
           e.currentTarget.querySelectorAll<HTMLElement>(".table-header").forEach(el => el.style.opacity = "0");
         }}
       >
+        {exportSelected && (
+          <div
+            className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#d4af37] text-white shadow z-30"
+            style={{ pointerEvents: "none" }}
+          >
+            <Check size={12} strokeWidth={3} />
+          </div>
+        )}
+
         {readOnly ? (
           <div
             className="flex items-center gap-1.5 px-2 py-1 rounded-t-lg"

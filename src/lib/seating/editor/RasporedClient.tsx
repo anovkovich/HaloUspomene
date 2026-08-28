@@ -225,6 +225,10 @@ export default function RasporedClient({
   const resolvedLookupUrl =
     guestLookupUrl ?? `https://halouspomene.rs/pozivnica/${slug}/gde-sedim/`;
   const [tables, setTables] = useState<TableData[]>([]);
+  // Table ids queued for the A4 name-card export. Toggled per-table from the
+  // table's 3-dot menu; the floating bottom-right button renders the PDF.
+  const [exportTableIds, setExportTableIds] = useState<Set<string>>(new Set());
+  const [nameCardBusy, setNameCardBusy] = useState(false);
   // Per-party individual member names, keyed by RSVP id. When present, placing
   // a party fills seats with these names instead of the party label.
   const [members, setMembers] = useState<Record<string, string[]>>({});
@@ -749,6 +753,40 @@ export default function RasporedClient({
     setHoverHint(null);
     setHoverSeat(null);
     setTables((prev) => prev.filter((t) => t.id !== id));
+    // A deleted table must leave the export queue.
+    setExportTableIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const toggleExportTable = (id: string) =>
+    setExportTableIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  // Renders the A4 name-card PDF for the currently queued tables, then clears
+  // the queue — it is a one-shot download task, not a persistent selection.
+  const handleDownloadNameCards = async () => {
+    const ids = exportTableIds;
+    const selected = tables.filter((t) => ids.has(t.id) && !t.bridal);
+    const { generateNameCardsPDF } = await import("../pdf/nameCards");
+    if (selected.length === 0) return;
+    setNameCardBusy(true);
+    try {
+      await generateNameCardsPDF(selected, attending, coupleNames);
+      setExportTableIds(new Set());
+    } catch (err) {
+      console.error("Name-card PDF failed:", err);
+      showToast("Greška pri generisanju PDF-a sa imenima");
+    } finally {
+      setNameCardBusy(false);
+    }
   };
 
   const handleSeatClick = async (tableId: string, seatIndex: number) => {
@@ -2174,6 +2212,10 @@ export default function RasporedClient({
                       onUpdate={updateTable}
                       onDelete={deleteTable}
                       scale={canvasZoom}
+                      exportSelected={exportTableIds.has(table.id)}
+                      onToggleExport={
+                        templateMode ? undefined : toggleExportTable
+                      }
                     />
                   ))}
 
@@ -2242,6 +2284,32 @@ export default function RasporedClient({
           )}
 
           {!isPWADesktop && <CanvasHintNote />}
+
+          {/* Floating export button — bottom-right, once at least one table's
+              names are queued. Renders the A4 name cards for those tables. */}
+          {!isPWADesktop && !templateMode && exportTableIds.size > 0 && (
+            <button
+              onClick={handleDownloadNameCards}
+              disabled={nameCardBusy}
+              className="absolute z-10 flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-raleway font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:opacity-70 cursor-pointer"
+              style={{
+                bottom: 16,
+                right: 16,
+                backgroundColor: "var(--theme-primary)",
+                boxShadow:
+                  "0 6px 20px -6px color-mix(in srgb, var(--theme-primary) 70%, transparent)",
+              }}
+            >
+              {nameCardBusy
+                ? <span className="loading loading-spinner loading-xs" />
+                : <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold"
+                    style={{ color: "var(--theme-primary)" }}
+                  >
+                    {exportTableIds.size}
+                  </span>}
+              {nameCardBusy ? "Pripremam PDF..." : "Preuzmi imena"}
+            </button>
+          )}
         </div>
       </div>
 
