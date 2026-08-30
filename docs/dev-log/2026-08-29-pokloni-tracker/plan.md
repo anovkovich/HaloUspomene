@@ -1,7 +1,7 @@
 # Pokloni (evidencija svadbenih poklona)
 
 - **ID:** 2026-08-29-pokloni-tracker
-- **Status:** in-progress (implementation done, verification pending)
+- **Status:** deployed (push na `deploy` 2026-08-30, `5121f07`)
 - **Created:** 2026-08-29
 - **Owner:** Aleksa
 

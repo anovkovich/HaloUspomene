@@ -215,3 +215,36 @@
   gotove, čeka commit)
 - **Blokade / sledeći korak:** Isto kao pre — vlasnikova odluka o
   commit-u/push-u.
+
+## 2026-08-30 — Commit + push na deploy
+
+- **Šta je urađeno:** Sve izmene sa grane `pokloni-tracker` komitovane
+  jednim commit-om (`5121f07`, 18 fajlova) i fast-forward mergovane u
+  `deploy` (bez konflikta — `deploy` se nije pomerio od kada je grana
+  napravljena). `tsc --noEmit` ponovo pokrenut NA `deploy` posle merge-a
+  (ne samo na feature grani) — čist. `git push origin deploy` uspešan:
+  `8f88d62..5121f07`. Push nosi i vlasnikov raniji `f77982d` (gde-sedim
+  fix) i `642ab28` (plan dokumenti), koji su čekali od ranije neisporučeni.
+- **Commit / PR:** `5121f07` (Pokloni + NBS kurs + PDF izvoz), plus
+  `f77982d` i `642ab28` isporučeni istim push-om — svi na `origin/deploy`.
+- **Na šta utiče dalje:** Vercel automatski deploy-uje `deploy` granu
+  (CLAUDE.md: "Vercel handles CI/CD") — feature ide u produkciju bez
+  dodatnog koraka. Vredi pratiti prvi realan poziv ka NBS-u u produkciji
+  (Vercel edge/serverless environment može imati drugačija mrežna pravila
+  nego lokalni dev — ako `fetchNbsEurRate()` tamo ne uspe, fallback lanac
+  ga tiho pokriva, ali vredi jednom ručno proveriti u produkciji da se ne
+  oslanja samo na fallback zauvek).
+- **Posledice:** Živo na produkciji čim Vercel završi build. Nema
+  migracije podataka (nova kolekcija se kreira lenjo, prvi upis prvog
+  para). Rollback: `git revert 5121f07` (ne dira `f77982d`/`642ab28`,
+  koji su samostalni i van obima ovog fixa).
+- **Šta je rešeno:** Ceo zadatak iz `plan.md` — Pokloni feature, live
+  NBS kurs, PDF izvoz, sve isporučeno.
+- **Šta je odblokirano:** Task je funkcionalno završen; ostaje samo
+  terensko posmatranje (da li NBS scrape stvarno radi iz Vercel-a, da li
+  parovi počinju da koriste funkciju).
+- **Status:** in-progress → deployed
+- **Blokade / sledeći korak:** Nema. Preporuka: proveriti produkcioni
+  render `/moje-vencanje` Pregled/Pokloni tab kod pravog para posle prvog
+  Vercel deploy-a, i pratiti da `fetchNbsEurRate()` stvarno vraća sveže
+  vrednosti (ne samo fallback) u produkcionom okruženju.
