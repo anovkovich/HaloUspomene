@@ -32,6 +32,7 @@ import {
   FileImage,
   FileText,
   Loader2,
+  Gift,
 } from "lucide-react";
 import {
   loadOverviewAction,
@@ -41,6 +42,7 @@ import {
 import type { ActiveView } from "./Sidebar";
 import type { ChecklistItem, PortalBudget } from "./types";
 import type { WeddingData } from "@/app/pozivnica/[slug]/types";
+import { FALLBACK_EUR_RATE } from "@/lib/currency";
 
 // Povlači i „Listu zvanica" sa sobom (deli birač i dijalog odgovora), pa se
 // učitava tek kad par klikne prečicu — Pregled se ne debljа zbog nje.
@@ -70,6 +72,9 @@ interface Props {
   ) => void;
   /** Lifts a freshly extended RSVP deadline back to the portal shell. */
   onSubmitUntilChange?: (submitUntil: string) => void;
+  /** Live EUR→RSD rate (see src/lib/nbs-rate.ts); defaults to a fixed
+   *  fallback while it's still loading. */
+  eurRate?: number;
 }
 
 /** Same cap the server enforces — the stepper must not offer what it will reject. */
@@ -92,6 +97,18 @@ function daysUntil(dateStr: string): number {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return Math.max(0, Math.round((target.getTime() - today.getTime()) / 86_400_000));
+}
+
+/** True from the calendar day of the wedding onward. Unlike `daysUntil()`,
+ *  which clamps to 0, this can tell "today is the day" apart from "it hasn't
+ *  arrived yet" — both of which `daysUntil` reports as 0. */
+function isOnOrAfterWeddingDay(dateStr: string): boolean {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return false;
+  d.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today.getTime() >= d.getTime();
 }
 
 /** Serbian numeric declension: pick the right noun form for a count. */
@@ -128,6 +145,7 @@ export default function OverviewCard({
   budget,
   onNavigate,
   onSubmitUntilChange,
+  eurRate = FALLBACK_EUR_RATE,
 }: Props) {
   const [guestStats, setGuestStats] = useState<{
     attending: number;
@@ -423,19 +441,18 @@ export default function OverviewCard({
   const checklistPct =
     checklist.length > 0 ? (completedCount / checklist.length) * 100 : 0;
 
-  const EUR_RATE = 117.5;
   const totalPlanned = budget.categories.reduce(
-    (s, c) => s + (c.currency === "EUR" ? c.planned * EUR_RATE : c.planned),
+    (s, c) => s + (c.currency === "EUR" ? c.planned * eurRate : c.planned),
     0,
   );
   const totalSpent = budget.categories.reduce(
-    (s, c) => s + (c.currency === "EUR" ? c.spent * EUR_RATE : c.spent),
+    (s, c) => s + (c.currency === "EUR" ? c.spent * eurRate : c.spent),
     0,
   );
   const budgetBase =
     (budget.totalBudget
       ? budget.totalBudgetCurrency === "EUR"
-        ? budget.totalBudget * EUR_RATE
+        ? budget.totalBudget * eurRate
         : budget.totalBudget
       : totalPlanned) || 1;
   const budgetPct = Math.min(100, (totalSpent / budgetBase) * 100);
@@ -784,6 +801,34 @@ export default function OverviewCard({
           onClose={() => setQuickAnswerOpen(false)}
           onSaved={refreshOverview}
         />
+      )}
+
+      {/* Pokloni CTA — pojavljuje se na dan venčanja i ostaje trajno, dok se
+       *  par ne obriše kaskadno. Jedini ulaz u Pokloni je ovo dugme — nema
+       *  sopstvene nav stavke (odluka vlasnika). */}
+      {!loading && !coupleInfo.draft && isOnOrAfterWeddingDay(coupleInfo.eventDate) && (
+        <motion.div {...sectionMotion(0.13)}>
+          <button
+            onClick={() => onNavigate("pokloni")}
+            className="group w-full text-left flex items-center gap-3 rounded-xl border border-[#d4af37]/45 bg-[#d4af37]/[0.08] px-4 py-3 hover:bg-[#d4af37]/[0.14] hover:border-[#d4af37]/65 transition-colors cursor-pointer"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#d4af37]/45 bg-white text-[#d4af37] shrink-0">
+              <Gift size={17} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-[#232323] flex items-center gap-1.5">
+                Unesite poklone
+                <ArrowRight
+                  size={13}
+                  className="text-[#d4af37] transition-transform group-hover:translate-x-0.5"
+                />
+              </p>
+              <p className="text-[12px] text-[#232323]/60">
+                Evidencija poklona i priloga koje ste dobili od gostiju.
+              </p>
+            </div>
+          </button>
+        </motion.div>
       )}
 
       {/* Status band: 3 numeric stats fused with the Pažnja strip. Bez naslova —

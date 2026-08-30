@@ -5,8 +5,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Banknote, Euro } from "lucide-react";
 import { saveBudgetAction } from "./actions";
 import type { PortalBudget, BudgetCategory } from "./types";
-
-const EUR_RATE = 117.5;
+import { FALLBACK_EUR_RATE, toRSD } from "@/lib/currency";
 
 interface Props {
   budget: PortalBudget;
@@ -14,6 +13,10 @@ interface Props {
   /** Persist handler — defaults to the couple action; the standalone owner
    *  portal passes a seating-scoped equivalent. */
   onSave?: (budget: PortalBudget) => void | Promise<unknown>;
+  /** Live EUR→RSD rate (see src/lib/nbs-rate.ts); defaults to a fixed
+   *  fallback for callers that don't fetch a live one (e.g. the standalone
+   *  seating owner portal). */
+  eurRate?: number;
 }
 
 function formatK(value: number): string {
@@ -25,14 +28,11 @@ function formatK(value: number): string {
   return `${sign}${k < 10 ? k.toFixed(1) : k.toFixed(0)}K`;
 }
 
-function toRSD(value: number, currency?: "RSD" | "EUR"): number {
-  return currency === "EUR" ? value * EUR_RATE : value;
-}
-
 export default function BudgetCard({
   budget,
   setBudget,
   onSave = saveBudgetAction,
+  eurRate = FALLBACK_EUR_RATE,
 }: Props) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -89,17 +89,17 @@ export default function BudgetCard({
           const to = from === "RSD" ? "EUR" : "RSD";
           const planned =
             from === "RSD"
-              ? Math.round((c.planned / EUR_RATE) * 10) / 10
-              : Math.round(c.planned * EUR_RATE * 10) / 10;
+              ? Math.round((c.planned / eurRate) * 10) / 10
+              : Math.round(c.planned * eurRate * 10) / 10;
           const spent =
             from === "RSD"
-              ? Math.round((c.spent / EUR_RATE) * 10) / 10
-              : Math.round(c.spent * EUR_RATE * 10) / 10;
+              ? Math.round((c.spent / eurRate) * 10) / 10
+              : Math.round(c.spent * eurRate * 10) / 10;
           return { ...c, currency: to, planned, spent };
         }),
       }));
     },
-    [updateBudget]
+    [updateBudget, eurRate]
   );
 
   const addCategory = useCallback(() => {
@@ -134,16 +134,16 @@ export default function BudgetCard({
       const to = from === "RSD" ? "EUR" : "RSD";
       const converted =
         from === "RSD"
-          ? Math.round((prev.totalBudget / EUR_RATE) * 10) / 10
-          : Math.round(prev.totalBudget * EUR_RATE * 10) / 10;
+          ? Math.round((prev.totalBudget / eurRate) * 10) / 10
+          : Math.round(prev.totalBudget * eurRate * 10) / 10;
       return { ...prev, totalBudget: converted, totalBudgetCurrency: to };
     });
-  }, [updateBudget]);
+  }, [updateBudget, eurRate]);
 
   // All sums converted to RSD
-  const totalBudgetRSD = toRSD(budget.totalBudget, budget.totalBudgetCurrency);
-  const totalPlanned = budget.categories.reduce((s, c) => s + toRSD(c.planned, c.currency), 0);
-  const totalSpent = budget.categories.reduce((s, c) => s + toRSD(c.spent, c.currency), 0);
+  const totalBudgetRSD = toRSD(budget.totalBudget, budget.totalBudgetCurrency, eurRate);
+  const totalPlanned = budget.categories.reduce((s, c) => s + toRSD(c.planned, c.currency, eurRate), 0);
+  const totalSpent = budget.categories.reduce((s, c) => s + toRSD(c.spent, c.currency, eurRate), 0);
   const remaining = (totalBudgetRSD || totalPlanned) - totalSpent;
   const totalCurr = budget.totalBudgetCurrency ?? "RSD";
 
@@ -156,19 +156,19 @@ export default function BudgetCard({
         <div className="rounded-xl p-3 text-center">
           <p className="text-[10px] uppercase tracking-wider text-[#232323]/65 mb-0.5">Planirano</p>
           <p className="text-sm font-bold text-[#232323]">
-            {formatK(totalCurr === "EUR" ? totalPlanned / EUR_RATE : totalPlanned)} <span className="text-[10px] font-normal text-[#232323]/55">{totalCurr}</span>
+            {formatK(totalCurr === "EUR" ? totalPlanned / eurRate : totalPlanned)} <span className="text-[10px] font-normal text-[#232323]/55">{totalCurr}</span>
           </p>
         </div>
         <div className="rounded-xl p-3 text-center">
           <p className="text-[10px] uppercase tracking-wider text-[#232323]/65 mb-0.5">Potrošeno</p>
           <p className="text-sm font-bold text-[#232323]">
-            {formatK(totalCurr === "EUR" ? totalSpent / EUR_RATE : totalSpent)} <span className="text-[10px] font-normal text-[#232323]/55">{totalCurr}</span>
+            {formatK(totalCurr === "EUR" ? totalSpent / eurRate : totalSpent)} <span className="text-[10px] font-normal text-[#232323]/55">{totalCurr}</span>
           </p>
         </div>
         <div className="rounded-xl p-3 text-center">
           <p className="text-[10px] uppercase tracking-wider text-[#232323]/65 mb-0.5">Preostalo</p>
           <p className={`text-sm font-bold ${remaining < 0 ? "text-red-500" : "text-green-600"}`}>
-            {formatK(totalCurr === "EUR" ? remaining / EUR_RATE : remaining)} <span className="text-[10px] font-normal text-[#232323]/55">{totalCurr}</span>
+            {formatK(totalCurr === "EUR" ? remaining / eurRate : remaining)} <span className="text-[10px] font-normal text-[#232323]/55">{totalCurr}</span>
           </p>
         </div>
       </div>

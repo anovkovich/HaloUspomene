@@ -9,6 +9,8 @@ import { getWeddingData } from "@/data/pozivnice";
 import { patchCouple, toPortalCoupleInfo } from "@/lib/couples";
 import type { PortalCoupleInfo } from "@/lib/couples";
 import type { MeniData } from "@/app/pozivnica/[slug]/types";
+import { loadPokloni, saveGifts as dbSaveGifts } from "@/lib/pokloni";
+import { getEurRate } from "@/lib/nbs-rate";
 import {
   loadPortalData as dbLoadPortal,
   saveChecklist as dbSaveChecklist,
@@ -50,6 +52,7 @@ import type {
   ChecklistItem,
   PortalBudget,
   GuestList,
+  GiftEntry,
   Vendor,
   VendorCategoryMeta,
   VendorTrackKind,
@@ -160,6 +163,26 @@ export async function saveMeniAction(meni: MeniData) {
   // Meni lives on the couple record (WeddingData) so the guest hub can read it.
   await patchCouple(slug, { meni });
   return { ok: true };
+}
+
+/* ── Pokloni (private wedding-gift tracker, own collection) ─────────── */
+
+export async function loadPokloniAction(): Promise<GiftEntry[]> {
+  const slug = await getAuthSlug();
+  if (!slug) return [];
+  const data = await loadPokloni(slug);
+  return data.gifts;
+}
+
+export async function saveGiftsAction(gifts: GiftEntry[]) {
+  const slug = await getAuthSlug();
+  if (!slug) return { error: "Niste prijavljeni" };
+  await dbSaveGifts(slug, gifts);
+  return { ok: true };
+}
+
+export async function getEurRateAction(): Promise<number> {
+  return getEurRate();
 }
 
 /* ── Rok za potvrde dolaska (submit_until) ─────────────────── */

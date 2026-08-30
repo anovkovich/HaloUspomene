@@ -9,6 +9,7 @@ export const LINKED_COLLECTIONS = [
   "seating_layouts",
   "audio_messages",
   "wedding_portal",
+  "pokloni",
   "gallery_photos",
   "share_links",
   "upload_links",

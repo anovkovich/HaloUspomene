@@ -1,7 +1,7 @@
 # Pokloni (evidencija svadbenih poklona)
 
 - **ID:** 2026-08-29-pokloni-tracker
-- **Status:** in-progress
+- **Status:** in-progress (implementation done, verification pending)
 - **Created:** 2026-08-29
 - **Owner:** Aleksa
 
@@ -32,8 +32,9 @@ zvanica pre nje rešila problem "ko dolazi" umesto usmene predaje.
 
 - Nema veze sa gostinjskim (javnim) delom sajta — ovo je isključivo
   privatan alat para, gost ga nikad ne vidi (za razliku od `Meni`).
-- Nema izvoza u PDF/Excel u prvoj verziji (može kasnije, kao checklist stavka
-  koju par može sam da otkuca).
+- ~~Nema izvoza u PDF~~ — **DODATO 2026-08-30 na zahtev vlasnika**, v.
+  Impact/Steps ispod (`generatePokloniPDF.ts`). Excel izvoz i dalje van
+  obima.
 - Nema automatskog povezivanja poklona sa RSVP potvrdom niti sa `Invitee`
   brojem gostiju (`count`) — link je samo referenca na ime, ne menja
   postojeće RSVP/Invitee zapise.
@@ -61,11 +62,27 @@ zvanica pre nje rešila problem "ko dolazi" umesto usmene predaje.
 4. **Draft parovi (`coupleInfo.draft === true`) ne vide dugme** — draft nema
    pravi datum venčanja koji je "prošao/nastupio", isto kao što Pregled već
    sakriva/blokira više akcija za draft parove.
-5. **`EUR_RATE` se izvlači u deljeni helper** (`src/lib/pricing.ts` ili
-   `src/data/pricing.ts`) umesto da se duplira treći put — trenutno postoji
-   samo u `OverviewCard.tsx` (`EUR_RATE = 117.5`), Pokloni bi bio drugi
-   potrošač. Uzgred se prepravlja i postojeća upotreba u `OverviewCard.tsx`
-   da koristi isti izvor (mala, bezbedna izmena u fajlu koji se već dira).
+5. **`EUR_RATE` se izvlači u deljeni helper** (`src/lib/currency.ts`)
+   umesto da se duplira treći put — postojao je zasebno u `OverviewCard.tsx`
+   I `BudgetCard.tsx` (oba `EUR_RATE = 117.5`), Pokloni je treći potrošač.
+   **PROŠIRENO 2026-08-30 na zahtev vlasnika:** vrednost više NIJE
+   hardkodovana konstanta — `src/lib/nbs-rate.ts` čita zvanični "srednji
+   kurs" direktno sa javne NBS stranice
+   (`webappcenter.nbs.rs/ExchangeRateWebApp/ExchangeRate/CurrentMiddleRate`,
+   HTML bez potrebe za registracijom — NBS-ov registrovani veb-servis
+   sistem TRAŽI pravno lice/preduzetnika, ova javna stranica ne). Keš u
+   `site_config` kolekciji (`getCachedEurRateConfig`/`setCachedEurRateConfig`
+   u `src/lib/portal.ts`), osvežava se najviše jednom u 24h — organski, pri
+   prvom load-u kad je keš zastareo, BEZ novog cron job-a. Fallback lanac:
+   sveže sa NBS → poslednja keširana vrednost → `FALLBACK_EUR_RATE = 117.5`
+   (samo ako ni jedno ni drugo ne postoji, npr. prvi ikad poziv i NBS
+   nedostupan). `toRSD()` sad prima `eurRate` kao parametar (ne čita globalnu
+   konstantu) — `OverviewCard.tsx`/`BudgetCard.tsx`/`PokloniCard.tsx` sve
+   dobijaju `eurRate` kao prop iz `MojeVencanjeClient.tsx`, koji ga učitava
+   jednom po loginu preko nove `getEurRateAction()`. `BudgetCard.tsx` se
+   deli sa `raspored-sedenja` standalone portalom — tamo `eurRate` ostaje
+   opciono sa fallback default-om, taj poziv NIJE dirnut (van obima ovog
+   taska).
 
 ## Impact
 
@@ -177,33 +194,39 @@ OpenCode-u.
 
 ## Steps
 
-- [ ] **Data layer** — `src/lib/pokloni.ts` facade + `pokloni` kolekcija +
-      tipovi u `types.ts`. _Acceptance:_ `loadPokloni`/`saveGifts` rade kroz
-      ručni test skript ili server action, upsert ne duplira dokument.
-- [ ] **Kaskadno brisanje** — `deletePokloni` u DELETE ruti +
-      `LINKED_COLLECTIONS` u `couple-slug.mjs`. _Acceptance:_ brisanje test
-      para uklanja `pokloni` dokument; `rename-couple-slug.mjs --dry-run`
-      prijavljuje kolekciju.
-- [ ] **Server akcije** — `loadPokloniAction`/`saveGiftAction`/
-      `deleteGiftAction` u `actions.ts`, autentikovane kroz `getAuthSlug()`.
-      _Acceptance:_ akcija vraća grešku bez validnog cookie-ja, uspeva sa
-      njim.
-- [ ] **Deljeni `EUR_RATE`/`toRSD()`** — izvući iz `OverviewCard.tsx` u
-      `src/lib/pricing.ts` (ili `data/pricing.ts`), `OverviewCard.tsx`
-      prelazi na novi izvor. _Acceptance:_ postojeći prikaz budžeta na
-      Pregledu ostaje identičan (regresija = 0).
-- [ ] **`PokloniCard.tsx` UI** — prazan state, pretraga/link ka zvanici,
+- [x] **Data layer** — `src/lib/pokloni.ts` facade + `pokloni` kolekcija +
+      tipovi u `types.ts` (log: 2026-08-30).
+- [x] **Kaskadno brisanje** — `deletePokloni` u DELETE ruti +
+      `LINKED_COLLECTIONS` u `couple-slug.mjs` (log: 2026-08-30).
+- [x] **Server akcije** — `loadPokloniAction`/`saveGiftsAction` u
+      `actions.ts` (celokupna lista se čuva odjednom, ne po stavci —
+      jednostavnije od originalno planiranog per-entry API-ja, isti
+      `getAuthSlug()` auth) (log: 2026-08-30).
+- [x] **Deljeni `EUR_RATE`/`toRSD()`** — novi `src/lib/currency.ts` (NE
+      `data/pricing.ts` — taj fajl je eksplicitno rezervisan za katalošku
+      cenu proizvoda, komentar u fajlu upozorava da nije za FX konverziju);
+      `OverviewCard.tsx` I `BudgetCard.tsx` prelaze na njega (obe ranije
+      duplirane kopije) (log: 2026-08-30). **Prošireno (log: 2026-08-30,
+      drugi unos):** live NBS "srednji kurs" umesto hardkodovane vrednosti
+      — `src/lib/nbs-rate.ts` + keš u `site_config`, `toRSD()` prima rate
+      kao parametar, sve 3 komponente ga dobijaju kao prop.
+- [x] **PDF izvoz** — `src/app/moje-vencanje/generatePokloniPDF.ts` (novi,
+      po uzoru na `generateAudioFlyerPDF.ts`: isti font-učitavanje obrazac,
+      A4 lista sa paginacijom za duge spiskove, ime skripte para +
+      "Pokloni" naslov + tabela gost/vrednost + ukupno + broj opisnih
+      poklona van sume) + "Preuzmi PDF" dugme u `PokloniCard.tsx`, koristi
+      postojeću `getWeddingDataForPDF()` akciju (ista kao za invitation
+      PDF). Ručno testirano u browseru — pravi 43KB PDF, ispravan `%PDF`
+      header, vizuelno proveren sadržaj (log: 2026-08-30, treći unos).
+- [x] **`PokloniCard.tsx` UI** — prazan state, pretraga/link ka zvanici,
       forma (numerički EUR default / RSD / opisni tekst), lista, suma na
-      dnu. _Acceptance:_ ručni test u browseru — dodavanje, brisanje, mešani
-      RSD+EUR+opisni unosi daju tačnu sumu.
-- [ ] **Ožičenje navigacije** — dugme na `OverviewCard.tsx` (gejtovano
-      `isOnOrAfterWeddingDay() && !draft`), `nav-items.tsx` (samo
-      `ActiveView` union + `LOCKED_FEATURE_INFO` unos, BEZ `NAV_ITEMS`
+      dnu (log: 2026-08-30). **Ručni test u browseru sa test parom JOŠ NIJE
+      urađen — v. log.**
+- [x] **Ožičenje navigacije** — dugme na `OverviewCard.tsx`, `nav-items.tsx`
+      (samo `ActiveView` union + `LOCKED_FEATURE_INFO`, bez `NAV_ITEMS`
       reda), `MojeVencanjeClient.tsx` (lazy import, validTabs×2, `?tab=`
-      sync, render grana — bez mobile nav/sidebar). _Acceptance:_ dugme se
-      pojavljuje tačno na dan venčanja (ne pre), ostaje posle; `?tab=pokloni`
-      deep-link radi; Pokloni se NE pojavljuje ni u desktop sidebaru ni u
-      mobilnom meniju; `tsc --noEmit` čist.
+      sync, render grana — mobile nav/sidebar potvrđeno netaknuti, grep
+      posle izmene) (log: 2026-08-30). `tsc --noEmit` čist na svakom koraku.
 
 ## Verification
 

@@ -27,6 +27,7 @@ import {
   loadHighlightedVendorsAction,
   loadVendorsAction,
   loadMyEndorsementsAction,
+  getEurRateAction,
 } from "./actions";
 import type {
   ChecklistItem,
@@ -54,6 +55,7 @@ const AudioCard = React.lazy(() => import("./AudioCard"));
 const GalleryCard = React.lazy(() => import("./GalleryCard"));
 const GuestsCard = React.lazy(() => import("./GuestsCard"));
 const MeniCard = React.lazy(() => import("./MeniCard"));
+const PokloniCard = React.lazy(() => import("./PokloniCard"));
 import OverviewCard from "./OverviewCard";
 import { coupleDisplayName } from "@/lib/couple-display-name";
 
@@ -145,6 +147,7 @@ export default function MojeVencanjeClient() {
   const [dbCategories, setDbCategories] = useState<VendorCategoryMeta[]>([]);
   const [dbCities, setDbCities] = useState<string[]>([]);
   const [myEndorsements, setMyEndorsements] = useState<string[]>([]);
+  const [eurRate, setEurRate] = useState(117.5);
 
   // Read tab from URL query param on mount
   useEffect(() => {
@@ -156,6 +159,7 @@ export default function MojeVencanjeClient() {
     if (tab === "galerija") setActiveView("galerija");
     if (tab === "meni") setActiveView("meni");
     if (tab === "guests") setActiveView("guests");
+    if (tab === "pokloni") setActiveView("pokloni");
   }, []);
 
   // Sync activeView to URL query param
@@ -191,12 +195,13 @@ export default function MojeVencanjeClient() {
             paidForGallery: result.paid_for_gallery ?? false,
             galleryOnly: isGalleryOnly,
           });
-          const [data, highlighted, vendorData, endorsements] =
+          const [data, highlighted, vendorData, endorsements, liveEurRate] =
             await Promise.all([
               loadPortalDataAction(),
               loadHighlightedVendorsAction(),
               loadVendorsAction(),
               loadMyEndorsementsAction(),
+              getEurRateAction(),
             ]);
           if (data) {
             setChecklist(data.checklist);
@@ -209,9 +214,10 @@ export default function MojeVencanjeClient() {
           setDbCategories(vendorData.categories);
           setDbCities(vendorData.cities);
           setMyEndorsements(endorsements);
+          setEurRate(liveEurRate);
           // Respect ?tab= deep-link for regular users
           const tab = new URLSearchParams(window.location.search).get("tab");
-          const validTabs: ActiveView[] = ["checklist", "budget", "vendors", "audio", "galerija", "meni", "guests"];
+          const validTabs: ActiveView[] = ["checklist", "budget", "vendors", "audio", "galerija", "meni", "guests", "pokloni"];
           if (isGalleryOnly) {
             setActiveView("galerija");
           } else if (!tab || !validTabs.includes(tab as ActiveView)) {
@@ -308,12 +314,13 @@ export default function MojeVencanjeClient() {
           galleryOnly: isGalleryOnly,
         });
 
-        const [data, highlighted, vendorData2, endorsements2] =
+        const [data, highlighted, vendorData2, endorsements2, liveEurRate2] =
           await Promise.all([
             loadPortalDataAction(),
             loadHighlightedVendorsAction(),
             loadVendorsAction(),
             loadMyEndorsementsAction(),
+            getEurRateAction(),
           ]);
         if (data) {
           setChecklist(data.checklist);
@@ -326,9 +333,10 @@ export default function MojeVencanjeClient() {
         setDbCategories(vendorData2.categories);
         setDbCities(vendorData2.cities);
         setMyEndorsements(endorsements2);
+        setEurRate(liveEurRate2);
         // Respect ?tab= deep-link for regular users
         const tab = new URLSearchParams(window.location.search).get("tab");
-        const validTabs: ActiveView[] = ["checklist", "budget", "vendors", "audio", "galerija", "meni", "guests"];
+        const validTabs: ActiveView[] = ["checklist", "budget", "vendors", "audio", "galerija", "meni", "guests", "pokloni"];
         if (isGalleryOnly) {
           setActiveView("galerija");
         } else if (!tab || !validTabs.includes(tab as ActiveView)) {
@@ -700,7 +708,7 @@ export default function MojeVencanjeClient() {
                       />
                     )}
                     {pwaSubView === "budget" && (
-                      <BudgetCard budget={budget} setBudget={setBudget} />
+                      <BudgetCard budget={budget} setBudget={setBudget} eurRate={eurRate} />
                     )}
                     {pwaSubView === "none" && (
                       <OverviewCard
@@ -708,6 +716,7 @@ export default function MojeVencanjeClient() {
                         checklist={checklist}
                         budget={budget}
                         onSubmitUntilChange={handleSubmitUntilChange}
+                        eurRate={eurRate}
                         onNavigate={(v, opts) => {
                           applyOverviewNavOpts(opts);
                           if (v === "checklist" || v === "budget") {
@@ -727,6 +736,7 @@ export default function MojeVencanjeClient() {
                       checklist={checklist}
                       budget={budget}
                       onSubmitUntilChange={handleSubmitUntilChange}
+                      eurRate={eurRate}
                       onNavigate={(v, opts) => {
                         applyOverviewNavOpts(opts);
                         setActiveView(v);
@@ -757,7 +767,7 @@ export default function MojeVencanjeClient() {
                       <ChevronLeft size={15} />
                       Nazad na pregled
                     </button>
-                    <BudgetCard budget={budget} setBudget={setBudget} />
+                    <BudgetCard budget={budget} setBudget={setBudget} eurRate={eurRate} />
                   </>
                 )}
               {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
@@ -851,6 +861,19 @@ export default function MojeVencanjeClient() {
                     draft={coupleInfo.draft}
                     initialSubView={guestsSubView}
                   />
+                </React.Suspense>
+              )}
+              {(!coupleInfo?.galleryOnly || activeView === "galerija") &&
+                activeView === "pokloni" &&
+                coupleInfo && (
+                <React.Suspense
+                  fallback={
+                    <div className="flex justify-center py-12">
+                      <span className="loading loading-spinner loading-lg text-[#AE343F]" />
+                    </div>
+                  }
+                >
+                  <PokloniCard eurRate={eurRate} />
                 </React.Suspense>
               )}
             </div>

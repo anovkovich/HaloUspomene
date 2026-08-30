@@ -5,6 +5,7 @@ import { upsertCouple, deleteCouple, patchCouple, getWeddingData } from "@/lib/c
 import { deleteRSVPResponses } from "@/lib/rsvp";
 import { deleteSeatingLayout } from "@/lib/seating";
 import { deletePortalData } from "@/lib/portal";
+import { deletePokloni } from "@/lib/pokloni";
 import { getAudioMessages, deleteAllAudioMessages } from "@/lib/audio";
 import { deleteAllGalleryPhotos } from "@/lib/gallery";
 import { deleteByPrefix } from "@/lib/r2";
@@ -110,6 +111,7 @@ export async function DELETE(
     deleteRSVPResponses(slug),
     deleteSeatingLayout(slug),
     deletePortalData(slug),
+    deletePokloni(slug),
     deleteAllAudioMessages(slug),
     deleteAllGalleryPhotos(slug),
     deleteShareLinksForProduct("couple", slug),

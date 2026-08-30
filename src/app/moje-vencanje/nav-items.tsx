@@ -16,7 +16,8 @@ export type ActiveView =
   | "audio"
   | "galerija"
   | "meni"
-  | "guests";
+  | "guests"
+  | "pokloni";
 
 export interface NavItem {
   view: ActiveView;
@@ -116,5 +117,10 @@ export const LOCKED_FEATURE_INFO: Record<
     title: "Lista gostiju",
     description:
       "Pratite potvrde dolaska, kategorizujte goste i imajte uvek tačan broj za sve vendore.",
+  },
+  pokloni: {
+    title: "Pokloni",
+    description:
+      "Evidencija poklona i priloga koje ste dobili od gostiju na dan venčanja.",
   },
 };

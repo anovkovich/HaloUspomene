@@ -96,6 +96,34 @@ export interface GuestList {
   keyRoles?: KeyRole[];
 }
 
+/* ── Pokloni (private wedding-gift tracker, own MongoDB collection) ── */
+
+export type GiftKind = "amount" | "note";
+
+export interface GiftEntry {
+  id: string;
+  /** Free text, or copied from the linked Invitee's name at add-time. */
+  name: string;
+  /** Id of an Invitee (from GuestList.invitees) this gift is attributed to, if picked from the list. */
+  linkedInviteeId?: string;
+  kind: GiftKind;
+  /** Set when kind === "amount". */
+  amount?: number;
+  /** Set when kind === "amount". */
+  currency?: "RSD" | "EUR";
+  /** Set when kind === "note". */
+  note?: string;
+  /** ISO timestamp, set client-side when the entry is added. */
+  createdAt: string;
+}
+
+export interface PokloniData {
+  slug: string;
+  gifts: GiftEntry[];
+  updatedAt: Date;
+  createdAt: Date;
+}
+
 export interface PortalData {
   slug: string;
   checklist: ChecklistItem[];

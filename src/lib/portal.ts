@@ -116,6 +116,8 @@ export async function saveSeatingNudge(
 interface SiteConfig {
   key: string;
   vendorIds?: string[];
+  rate?: number;
+  updatedAt?: Date;
 }
 
 async function configCol() {
@@ -134,6 +136,25 @@ export async function setHighlightedVendors(vendorIds: string[]): Promise<void> 
   await c.updateOne(
     { key: "highlighted_vendors" },
     { $set: { vendorIds } },
+    { upsert: true }
+  );
+}
+
+/** Cached EUR→RSD rate — see src/lib/nbs-rate.ts for the fetch/refresh
+ *  logic. This module only reads/writes the cache document. */
+export async function getCachedEurRateConfig(): Promise<{ rate: number; updatedAt: Date } | null> {
+  const c = await configCol();
+  const doc = await c.findOne({ key: "eur_rate" });
+  return doc?.rate != null && doc.updatedAt
+    ? { rate: doc.rate, updatedAt: doc.updatedAt }
+    : null;
+}
+
+export async function setCachedEurRateConfig(rate: number): Promise<void> {
+  const c = await configCol();
+  await c.updateOne(
+    { key: "eur_rate" },
+    { $set: { rate, updatedAt: new Date() } },
     { upsert: true }
   );
 }
