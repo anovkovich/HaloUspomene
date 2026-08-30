@@ -23,7 +23,11 @@ export default function BirthdayPassedGuard({ eventDate, children }: Props) {
 
   // Management routes bypass the guard
   const isManagementRoute =
-    pathname.includes("/portal") || pathname.includes("/prijava");
+    pathname.includes("/portal") ||
+    pathname.includes("/prijava") ||
+    pathname.includes("/raspored-sedenja") ||
+    pathname.includes("/gde-sedim") ||
+    pathname.includes("/galerija");
 
   if (!isEventOver || isManagementRoute) return <>{children}</>;
 

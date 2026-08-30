@@ -28,6 +28,7 @@ export default function EventPassedGuard({ eventDate, children }: Props) {
     pathname.includes("/prijava") ||
     pathname.includes("/raspored-sedenja") ||
     pathname.includes("/audio-knjiga") ||
+    pathname.includes("/gde-sedim") ||
     pathname.includes("/galerija");
 
   if (!isEventOver || isManagementRoute) return <>{children}</>;
