@@ -376,6 +376,15 @@ export default function GdeSedimClient({
                   >
                     {selected.tables[0].tableLabel}
                   </p>
+                  {selected.tables[0].assignedSeats > 1 && (
+                    <p
+                      className="font-raleway text-xs"
+                      style={{ color: "var(--theme-text-muted)" }}
+                    >
+                      ({selected.tables[0].assignedSeats}{" "}
+                      {tr.seatUnit(selected.tables[0].assignedSeats)})
+                    </p>
+                  )}
                   <p
                     className="font-raleway text-xs pt-2"
                     style={{ color: "var(--theme-text-muted)" }}

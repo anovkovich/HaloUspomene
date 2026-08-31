@@ -112,9 +112,36 @@ export interface SeatingParty {
 }
 
 interface NameSeats {
-  name: string;
-  /** tableId → seats occupied by this name at that table */
+  /** raw guestName spelling → total seats assigned under exactly that spelling.
+   *  A party can carry more than one spelling for the same person (word order,
+   *  diacritics) when seats were added separately — see `canonicalPersonKey`. */
+  variants: Map<string, number>;
+  /** tableId → seats occupied by this person (any spelling) at that table */
   tables: Map<string, number>;
+}
+
+/** Groups name spellings that are almost certainly the same person: same
+ *  tokens, regardless of order or diacritics — "Anicic Josif" and "Josif
+ *  Aničić" both key to "anicic josif". Genuinely different family members
+ *  ("Jovan Glavonjić" / "Anastasija Glavonjić") have different tokens and stay
+ *  distinct. */
+function canonicalPersonKey(name: string): string {
+  const tokens = normalizeName(name).split(" ").filter(Boolean).sort();
+  return tokens.length ? tokens.join(" ") : name;
+}
+
+/** Picks the spelling to display for a person seated under 2+ spellings: the
+ *  one used for the most seats, first-seen breaking ties. */
+function pickDisplayName(variants: Map<string, number>): string {
+  let best = "";
+  let bestCount = -1;
+  for (const [name, count] of variants) {
+    if (count > bestCount) {
+      best = name;
+      bestCount = count;
+    }
+  }
+  return best;
 }
 
 /**
@@ -157,11 +184,13 @@ export function buildGuestLookup(
         names = new Map();
         byParty.set(partyId, names);
       }
-      let entry = names.get(name);
+      const dedupeKey = canonicalPersonKey(name);
+      let entry = names.get(dedupeKey);
       if (!entry) {
-        entry = { name, tables: new Map() };
-        names.set(name, entry);
+        entry = { variants: new Map(), tables: new Map() };
+        names.set(dedupeKey, entry);
       }
+      entry.variants.set(name, (entry.variants.get(name) ?? 0) + 1);
       entry.tables.set(table.id, (entry.tables.get(table.id) ?? 0) + 1);
     }
   }
@@ -183,7 +212,10 @@ export function buildGuestLookup(
   const lookup: GuestLookupEntry[] = [];
 
   for (const [partyId, names] of byParty) {
-    const people = Array.from(names.values());
+    const people = Array.from(names.values()).map((p) => ({
+      name: pickDisplayName(p.variants),
+      tables: p.tables,
+    }));
     const partyName = partyNameById.get(partyId);
     // A party is only worth breaking down when the couple actually named 2+
     // people; a party seated under one repeated label stays a single entry.
