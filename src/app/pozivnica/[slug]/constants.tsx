@@ -7,46 +7,89 @@ export interface ScriptFontConfig {
   description: string;
 }
 
+/**
+ * Wedding-only theme keys, in display order. THEME_CONFIGS still contains
+ * punoletstvo themes (white_gold_burgundy, white_gold_navy) because shared
+ * helpers like getThemeCSSVariables / OG image / PDF rendering must resolve
+ * them — but the wedding theme picker UIs must not surface them.
+ */
+export const WEDDING_THEME_KEYS: ThemeType[] = [
+  "classic_rose",
+  "luxury_gold",
+  "modern_mono",
+  "minimal_sage",
+  "warm_terracotta",
+];
+
+/**
+ * Every script/display font a client can pick, in picker order: the Latin-only
+ * scripts first, then the two that carry both alphabets, then the Cyrillic ones.
+ *
+ * `description` is rendered straight into the Serbian wizards, so it is written
+ * in Serbian — do not translate it back.
+ *
+ * Adding a font here is not enough on its own. It also needs: the next/font
+ * declaration + CSS variable in src/app/layout.tsx, a .ttf in BOTH
+ * public/fonts/invitation/ (jsPDF) and src/app/pozivnica/[slug]/fonts/ (OG
+ * images), an entry in every SCRIPT_FONT_FILES map, and — if it does not carry
+ * both alphabets — a place in LATIN_ONLY_FONTS or CYRILLIC_ONLY_FONTS in
+ * QuestionnaireForm.tsx.
+ */
 export const SCRIPT_FONT_CONFIGS: Record<ScriptFontType, ScriptFontConfig> = {
   "great-vibes": {
     name: "Great Vibes",
     variable: "var(--font-great-vibes)",
-    description: "Elegant flowing script (Latin & Cyrillic)",
+    description: "Elegantni ukošeni script — latinica i ćirilica",
   },
   "dancing-script": {
     name: "Dancing Script",
     variable: "var(--font-dancing-script)",
-    description: "Casual and friendly",
+    description: "Opušten i prijateljski",
   },
   "alex-brush": {
     name: "Alex Brush",
     variable: "var(--font-alex-brush)",
-    description: "Brush-style calligraphy",
+    description: "Kaligrafska kičica",
   },
   parisienne: {
     name: "Parisienne",
     variable: "var(--font-parisienne)",
-    description: "Romantic French style",
+    description: "Romantičan francuski stil",
   },
   allura: {
     name: "Allura",
     variable: "var(--font-allura)",
-    description: "Classic formal script",
+    description: "Klasičan svečani script",
+  },
+  "cormorant-garamond": {
+    name: "Cormorant Garamond",
+    variable: "var(--font-serif)",
+    description: "Elegantna antikva — latinica i ćirilica",
+  },
+  "poiret-one": {
+    name: "Poiret One",
+    variable: "var(--font-poiret-one)",
+    description: "Prozračni art deco — latinica i ćirilica",
   },
   "marck-script": {
     name: "Marck Script",
     variable: "var(--font-marck-script)",
-    description: "Elegant Cyrillic script",
+    description: "Elegantna ćirilica",
   },
   caveat: {
     name: "Caveat",
     variable: "var(--font-caveat)",
-    description: "Flowing handwritten Cyrillic",
+    description: "Tečna ćirilica rukopisa",
   },
   "bad-script": {
     name: "Bad Script",
     variable: "var(--font-bad-script)",
-    description: "Casual handwritten Cyrillic",
+    description: "Opuštena ćirilica",
+  },
+  jasminum: {
+    name: "Jasminum",
+    variable: "var(--font-jasminum)",
+    description: "Uska kaligrafija, samo ćirilica",
   },
 };
 
@@ -155,6 +198,48 @@ export const THEME_CONFIGS: Record<ThemeType, ThemeConfig> = {
       waxSealDark: "#7E3810",
     },
   },
+
+  // Punoletstvo — burgundy/gold/ivory (classic, regal, feminine-leaning)
+  white_gold_burgundy: {
+    name: "White · Gold · Burgundy",
+    symbolism: "Svečanost, bogatstvo i klasičan duh starih vremena",
+    colors: {
+      primary: "#800020", // Deep burgundy
+      primaryLight: "#A8324A",
+      primaryMuted: "rgba(128, 0, 32, 0.12)",
+      background: "#fffdf5", // Warm ivory
+      surface: "#ffffff",
+      surfaceAlt: "#fff8e1",
+      text: "#2A0A12",
+      textMuted: "#6A2A38",
+      textLight: "#B08090",
+      border: "rgba(128, 0, 32, 0.2)",
+      borderLight: "rgba(128, 0, 32, 0.08)",
+      waxSeal: "#d4af37", // Gold wax seal
+      waxSealDark: "#A6851C",
+    },
+  },
+
+  // Punoletstvo — navy/gold/ivory (classic, regal, masculine-leaning)
+  white_gold_navy: {
+    name: "White · Gold · Navy",
+    symbolism: "Ponos, otmenost i bezvremenska svečanost",
+    colors: {
+      primary: "#0A1F44", // Deep navy
+      primaryLight: "#1E3A6E",
+      primaryMuted: "rgba(10, 31, 68, 0.12)",
+      background: "#fffdf5",
+      surface: "#ffffff",
+      surfaceAlt: "#fff8e1",
+      text: "#081530",
+      textMuted: "#3A4E7A",
+      textLight: "#8090B0",
+      border: "rgba(10, 31, 68, 0.2)",
+      borderLight: "rgba(10, 31, 68, 0.08)",
+      waxSeal: "#d4af37",
+      waxSealDark: "#A6851C",
+    },
+  },
 };
 
 // Helper to generate CSS variables from theme config
@@ -162,8 +247,9 @@ export function getThemeCSSVariables(
   theme: ThemeType,
   scriptFont: ScriptFontType = "great-vibes",
 ): Record<string, string> {
-  const config = THEME_CONFIGS[theme];
-  const fontConfig = SCRIPT_FONT_CONFIGS[scriptFont];
+  const config = THEME_CONFIGS[theme] ?? THEME_CONFIGS["classic_rose"];
+  const fontConfig =
+    SCRIPT_FONT_CONFIGS[scriptFont] ?? SCRIPT_FONT_CONFIGS["great-vibes"];
   return {
     "--theme-primary": config.colors.primary,
     "--theme-primary-light": config.colors.primaryLight,
@@ -186,10 +272,70 @@ export function getThemeCSSVariables(
 
 // Get script font config
 export function getScriptFontConfig(font: ScriptFontType): ScriptFontConfig {
-  return SCRIPT_FONT_CONFIGS[font];
+  return SCRIPT_FONT_CONFIGS[font] ?? SCRIPT_FONT_CONFIGS["great-vibes"];
 }
 
 // Get theme config
 export function getThemeConfig(theme: ThemeType): ThemeConfig {
-  return THEME_CONFIGS[theme];
+  return THEME_CONFIGS[theme] ?? THEME_CONFIGS["classic_rose"];
+}
+
+// Convert hex to RGB components
+export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
+}
+
+// Blend two hex colors by ratio
+export function blendHex(hex1: string, hex2: string, ratio: number): string {
+  const rgb1 = hexToRgb(hex1);
+  const rgb2 = hexToRgb(hex2);
+  if (!rgb1 || !rgb2) return hex1;
+
+  const r = Math.round(rgb1.r * (1 - ratio) + rgb2.r * ratio);
+  const g = Math.round(rgb1.g * (1 - ratio) + rgb2.g * ratio);
+  const b = Math.round(rgb1.b * (1 - ratio) + rgb2.b * ratio);
+
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
+// Build CSS variable overrides for custom primary and optional background colors
+export function buildCustomColorOverrides(
+  primaryHex: string,
+  bgHex?: string
+): Record<string, string> {
+  const rgb = hexToRgb(primaryHex);
+  if (!rgb) return {};
+
+  const { r, g, b } = rgb;
+  // Lighten by 15% toward white for the "light" variant
+  const lr = Math.min(255, Math.round(r + (255 - r) * 0.15));
+  const lg = Math.min(255, Math.round(g + (255 - g) * 0.15));
+  const lb = Math.min(255, Math.round(b + (255 - b) * 0.15));
+  const light = `#${lr.toString(16).padStart(2, "0")}${lg.toString(16).padStart(2, "0")}${lb.toString(16).padStart(2, "0")}`;
+
+  const overrides: Record<string, string> = {
+    "--theme-primary": primaryHex,
+    "--theme-primary-light": light,
+    "--theme-primary-muted": `rgba(${r},${g},${b},0.12)`,
+    "--theme-wax-seal": primaryHex,
+    "--theme-wax-seal-dark": light,
+    "--theme-border": `rgba(${r},${g},${b},0.2)`,
+    "--theme-border-light": `rgba(${r},${g},${b},0.1)`,
+  };
+
+  // If custom background provided, use it without blending (respects user's explicit choice)
+  if (bgHex) {
+    overrides["--theme-background"] = bgHex;
+    overrides["--theme-surface"] = bgHex;
+    overrides["--theme-surface-alt"] = bgHex;
+  }
+
+  return overrides;
 }

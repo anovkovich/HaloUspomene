@@ -7,6 +7,9 @@ node_modules
 
 .idea/
 
+# Claude Code local state (scheduled tasks, run locks, etc.)
+.claude/
+
 # macOS junk
 .DS_Store
 .AppleDouble
@@ -89,3 +92,16 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+
+# Rucni backup-i env fajlova — nikad u git (.env*.local ih ne hvata)
+.env*.bak*
+
+# Scratch: saved web pages / scrape dumps (npr. ch.html iz vendor scrapinga)
+*.scrape.html
+ch.html
+
+# Lokalni pregledi (npr. scripts/preview-welcome-sign.mjs)
+tmp/
+
+# Sirov ispis Apify sync-a (scripts/sync-google-reviews.mjs --raw)
+apify-raw.json

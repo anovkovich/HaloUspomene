@@ -1,0 +1,72 @@
+import { getWeddingData } from "@/lib/couples";
+import { notFound } from "next/navigation";
+import type { Viewport } from "next";
+
+export async function generateViewport({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Viewport> {
+  const { slug } = await params;
+  const data = await getWeddingData(slug).catch(() => null);
+  const isLineArt = data?.premium_theme === "line_art";
+  return {
+    themeColor: isLineArt ? "#fffdf5" : "#0a0805",
+  };
+}
+
+export default async function PremiumInvitationLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const data = await getWeddingData(slug);
+
+  if (!data?.premium) notFound();
+
+  // Check if event has passed (similar to EventPassedGuard for classic)
+  if (data.event_date) {
+    const eventDate = new Date(data.event_date);
+    const now = new Date();
+    const dayAfterEvent = new Date(eventDate);
+    dayAfterEvent.setDate(dayAfterEvent.getDate() + 7); // Grace period of 7 days
+    if (now > dayAfterEvent) {
+      return (
+        <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center p-4">
+          <div className="text-center max-w-md">
+            <h1 className="text-2xl font-serif text-[#d4af37] mb-4">
+              Venčanje je prošlo
+            </h1>
+            <p className="text-[#8B7355]">
+              Ova pozivnica više nije aktivna. Hvala na interesovanju!
+            </p>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  const isLineArt = data.premium_theme === "line_art";
+  const bgColor = isLineArt ? "#fffdf5" : "#0a0805";
+
+  return (
+    <>
+      {/* Preload critical envelope assets so they show instantly on first paint */}
+      <link rel="preload" as="image" href="/images/premium/envelope-details/gold-wax.webp" fetchPriority="high" />
+      <link rel="preload" as="image" href="/images/premium/envelope-details/tie.webp" fetchPriority="high" />
+      {/* Force theme/status-bar color inline in the head so iOS Chrome/Safari pick it up on first paint */}
+      <meta name="theme-color" content={bgColor} />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content={isLineArt ? "default" : "black-translucent"}
+      />
+      {/* Overscroll bounce area color — iOS Safari shows html bg when bouncing past top */}
+      <style>{`html, body { background-color: ${bgColor}; }`}</style>
+      {children}
+    </>
+  );
+}

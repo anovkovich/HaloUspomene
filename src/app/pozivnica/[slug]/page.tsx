@@ -1,32 +1,34 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getWeddingData, getAllWeddingSlugs } from "@/data/pozivnice";
+import { getWeddingData, getClassicWeddingSlugs } from "@/data/pozivnice";
 import InvitationClient from "./InvitationClient";
+import InvitationFrame from "@/components/invitation/InvitationFrame";
+import AiCopyrightNotice from "@/components/invitation/AiCopyrightNotice";
+import PreviewWatermark from "@/components/PreviewWatermark";
+import BackgroundMusicPlayer from "@/components/BackgroundMusicPlayer";
+import { issuePromo } from "@/lib/payments/promo";
+import { builderPayHref } from "@/lib/payments/builder-pricing";
 
-const BASE_URL = "https://halouspomene.rs";
+// Allow slugs not in generateStaticParams (new couples added via admin)
+export const dynamicParams = true;
+
+// Revalidate from DB every 10 seconds (picks up admin changes quickly)
+export const revalidate = 10;
 
 interface PageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
 }
 
-// Generate static params for all known wedding slugs
 export async function generateStaticParams() {
-  const slugs = getAllWeddingSlugs();
+  const slugs = await getClassicWeddingSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
-// Generate metadata with OG image for social sharing
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const weddingData = getWeddingData(slug);
+  const weddingData = await getWeddingData(slug);
 
-  if (!weddingData) {
-    return {};
-  }
+  if (!weddingData || weddingData.premium) return {};
 
   const title = `${weddingData.couple_names.full_display} - Pozivnica`;
   const description = `Website pozivnica za venčanje - ${weddingData.couple_names.bride} & ${weddingData.couple_names.groom}`;
@@ -34,35 +36,66 @@ export async function generateMetadata({
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      images: [
-        {
-          url: `${BASE_URL}/images/gallery/website-pozivnica.png`,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [`${BASE_URL}/images/gallery/website-pozivnica.png`],
-    },
+    robots: { index: false, follow: false },
+    openGraph: { title, description, type: "website" },
+    twitter: { card: "summary_large_image", title, description },
+    // When the couple opted into a German variant, point search engines to it.
+    alternates: weddingData.german_enabled
+      ? {
+          languages: {
+            "de-DE": `/hochzeitseinladung/${slug}/`,
+          },
+        }
+      : undefined,
   };
 }
 
 export default async function InvitationPage({ params }: PageProps) {
   const { slug } = await params;
-  const weddingData = getWeddingData(slug);
+  const weddingData = await getWeddingData(slug);
 
-  if (!weddingData) {
-    notFound();
-  }
+  if (!weddingData) notFound();
+  // Premium invitations live at /premium-pozivnica/[slug] only — don't leak
+  // premium couples through the classic template if someone guesses the slug.
+  if (weddingData.premium) notFound();
 
-  return <InvitationClient data={weddingData} />;
+  // Freemium (B3): a draft used to 404 in production. Now it renders a
+  // watermarked, RSVP-locked PREVIEW so the couple can see their built
+  // invitation and pay to publish. The guest-write server gates
+  // (RSVP/audio `draft → 403`) are the real wall — this render is safe only
+  // because those ship in the same deploy. Metadata already sets
+  // robots:{ index:false } for every couple, so drafts stay unindexed.
+  const isDraft = !!weddingData.draft;
+
+  // Guest-referral promo: a code derived from this couple's event, shown on the
+  // RSVP success screen (only surfaces on published couples — drafts lock RSVP).
+  //
+  // Demo pozivnice su izuzete: one stoje javno na /pozivnice da bi ih posetilac
+  // isprobao, pa bi im posle probne potvrde dolaska iskocio pravi promo kod za
+  // popust — kod koji nije zaradio i koji nema veze sa njegovom proslavom.
+  const promo = weddingData.example
+    ? null
+    : issuePromo(weddingData.event_date, slug);
+
+  // Route the "pay & unlock" CTA to the right checkout (full package → fixed
+  // tier, partial combo → custom IPS).
+  const payHref = builderPayHref(slug, weddingData.builder_extras);
+
+  return (
+    <InvitationFrame>
+      <InvitationClient
+        data={weddingData}
+        slug={slug}
+        preview={isDraft}
+        payHref={payHref}
+        promoCode={promo?.code}
+        promoValidUntil={promo?.validUntil}
+      />
+      {isDraft && <PreviewWatermark payHref={payHref} />}
+      <AiCopyrightNotice />
+      {weddingData.paid_for_music && weddingData.music_url && (
+        <BackgroundMusicPlayer src={weddingData.music_url} />
+      )}
+    </InvitationFrame>
+  );
 }

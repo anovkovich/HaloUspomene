@@ -1,15 +1,20 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DatePickerProps {
   value: string;
   onChange: (date: string) => void;
   minDate?: string;
+  /** Poslednji dozvoljen datum (uključujući njega). Koristi se npr. da rok za
+   *  potvrdu dolaska ne može da padne posle dana proslave. */
+  maxDate?: string;
   placeholder?: string;
   variant?: "dark" | "light";
   showQuickActions?: boolean;
+  accentColor?: string;
 }
 
 const MONTHS = [
@@ -23,9 +28,11 @@ const DatePicker: React.FC<DatePickerProps> = ({
   value,
   onChange,
   minDate,
+  maxDate,
   placeholder = "Izaberite datum",
   variant = "dark",
   showQuickActions = true,
+  accentColor,
 }) => {
   const isLight = variant === "light";
   const [isOpen, setIsOpen] = useState(false);
@@ -43,29 +50,36 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const minDateObj = minDate ? new Date(minDate) : today;
   minDateObj.setHours(0, 0, 0, 0);
 
+  const maxDateObj = maxDate ? new Date(maxDate) : null;
+  maxDateObj?.setHours(0, 0, 0, 0);
+
+  const isOutOfRange = (d: Date) =>
+    d < minDateObj || (maxDateObj !== null && d > maxDateObj);
+
   // Colors based on variant
+  const ac = accentColor || "#AE343F";
   const colors = isLight
     ? {
-        accent: "#AE343F",
-        accentHover: "#8B2833",
+        accent: ac,
+        accentHover: accentColor ? accentColor : "#8B2833",
         text: "#1a1a1a",
         textMuted: "#78716c",
         textPlaceholder: "#a8a29e",
         bg: "#faf9f6",
         bgDropdown: "#ffffff",
         border: "#e7e5e4",
-        borderFocus: "#AE343F",
+        borderFocus: ac,
       }
     : {
-        accent: "#AE343F",
-        accentHover: "#8A2A32",
+        accent: ac,
+        accentHover: accentColor ? accentColor : "#8A2A32",
         text: "#F5F4DC",
         textMuted: "rgba(255,255,255,0.6)",
         textPlaceholder: "rgba(255,255,255,0.2)",
         bg: "transparent",
         bgDropdown: "#1a1a1a",
         border: "rgba(255,255,255,0.1)",
-        borderFocus: "#AE343F",
+        borderFocus: ac,
       };
 
   const formatDisplayDate = (dateStr: string) => {
@@ -93,7 +107,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
   const handleDateClick = (day: number) => {
     const newDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
-    if (newDate >= minDateObj) {
+    if (!isOutOfRange(newDate)) {
       const dateStr = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
       onChange(dateStr);
       setIsOpen(false);
@@ -103,11 +117,25 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const handleOpen = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      setDropdownPos({
-        top: rect.bottom + 8,
-        left: rect.left,
-        width: rect.width,
-      });
+      const calendarWidth = Math.max(rect.width, 320);
+      const overflowsRight = rect.left + calendarWidth > window.innerWidth - 8;
+      const left = overflowsRight
+        ? Math.max(8, rect.right - calendarWidth)
+        : rect.left;
+
+      // Estimated calendar height: header (~40) + day labels (~32) +
+      // 6 rows × 40 + paddings (~32). With quick actions add ~52.
+      const estimatedHeight = showQuickActions ? 440 : 390;
+      const spaceBelow = window.innerHeight - rect.bottom - 8;
+      const spaceAbove = rect.top - 8;
+      const flipAbove =
+        spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+
+      const top = flipAbove
+        ? Math.max(8, rect.top - 8 - estimatedHeight)
+        : rect.bottom + 8;
+
+      setDropdownPos({ top, left, width: calendarWidth });
     }
     setIsOpen(true);
   };
@@ -138,7 +166,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(year, month, day);
       currentDate.setHours(0, 0, 0, 0);
-      const isDisabled = currentDate < minDateObj;
+      const isDisabled = isOutOfRange(currentDate);
       const isSelected = selectedDate &&
         selectedDate.getDate() === day &&
         selectedDate.getMonth() === month &&
@@ -192,6 +220,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
     return prevMonth >= minDateObj;
   };
 
+  const canGoNext = () => {
+    if (!maxDateObj) return true;
+    // Prvi dan sledećeg meseca — ako je i on iza granice, tamo nema šta da se bira.
+    const nextMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+    return nextMonth <= maxDateObj;
+  };
+
   return (
     <div className="relative">
       {/* Trigger button */}
@@ -201,9 +236,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
         onClick={() => (isOpen ? setIsOpen(false) : handleOpen())}
         className={`w-full flex items-center justify-between py-3 px-4 text-left focus:outline-none transition-all group ${
           isLight
-            ? "bg-[#faf9f6] border border-stone-200 rounded-xl focus:border-[#AE343F] focus:ring-2 focus:ring-[#AE343F]/10"
-            : "bg-transparent border-b border-white/10 focus:border-[#AE343F]"
-        } ${isOpen && isLight ? "border-[#AE343F] ring-2 ring-[#AE343F]/10" : ""}`}
+            ? "bg-[#faf9f6] border border-stone-200 rounded-xl"
+            : "bg-white/5 border border-white/10 rounded-xl"
+        }`}
+        style={{
+          ...(isOpen || undefined
+            ? { borderColor: colors.accent, boxShadow: isLight ? `0 0 0 2px ${colors.accent}1a` : undefined }
+            : {}),
+        }}
       >
         <span style={{ color: value ? colors.text : colors.textPlaceholder }}>
           {value ? formatDisplayDate(value) : placeholder}
@@ -215,17 +255,18 @@ const DatePicker: React.FC<DatePickerProps> = ({
         />
       </button>
 
-      {/* Dropdown — fixed positioned to escape overflow-hidden parents */}
-      {isOpen && (
+      {/* Dropdown — portalled to body to escape backdrop-filter ancestors.
+          z-[100]/[110] sits above all app-level modals (which top out at z-[81]). */}
+      {isOpen && typeof document !== "undefined" && createPortal(
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[100]"
             onClick={() => setIsOpen(false)}
           />
 
           <div
-            className="fixed z-50 rounded-2xl shadow-2xl p-4"
+            className="fixed z-[110] rounded-2xl shadow-2xl p-4"
             style={{
               top: dropdownPos.top,
               left: dropdownPos.left,
@@ -256,8 +297,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
               <button
                 type="button"
                 onClick={handleNextMonth}
+                disabled={!canGoNext()}
                 className="p-2 rounded-full transition-colors"
-                style={{ color: colors.text }}
+                style={{
+                  color: canGoNext() ? colors.text : colors.textPlaceholder,
+                  cursor: canGoNext() ? "pointer" : "not-allowed",
+                }}
               >
                 <ChevronRight size={20} />
               </button>
@@ -307,31 +352,40 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 >
                   Danas
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextWeek = new Date(today);
-                    nextWeek.setDate(nextWeek.getDate() + 7);
-                    onChange(`${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, '0')}-${String(nextWeek.getDate()).padStart(2, '0')}`);
-                    setIsOpen(false);
-                  }}
-                  className="flex-1 py-2 text-sm font-medium rounded-lg transition-colors"
-                  style={{ color: colors.textMuted }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = colors.text;
-                    e.currentTarget.style.backgroundColor = isLight ? "#f5f5f4" : "rgba(255,255,255,0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = colors.textMuted;
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
-                  Za nedelju dana
-                </button>
+                {/* Skriva se kada bi preskočila `maxDate` — npr. kada je
+                    proslava za tri dana, „za nedelju dana" bi postavio rok za
+                    potvrde POSLE proslave. */}
+                {(() => {
+                  const nextWeek = new Date(today);
+                  nextWeek.setDate(nextWeek.getDate() + 7);
+                  if (isOutOfRange(nextWeek)) return null;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(`${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, '0')}-${String(nextWeek.getDate()).padStart(2, '0')}`);
+                        setIsOpen(false);
+                      }}
+                      className="flex-1 py-2 text-sm font-medium rounded-lg transition-colors"
+                      style={{ color: colors.textMuted }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = colors.text;
+                        e.currentTarget.style.backgroundColor = isLight ? "#f5f5f4" : "rgba(255,255,255,0.05)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = colors.textMuted;
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
+                      Za nedelju dana
+                    </button>
+                  );
+                })()}
               </div>
             )}
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );

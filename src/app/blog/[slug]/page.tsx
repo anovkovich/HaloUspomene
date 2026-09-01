@@ -1,15 +1,24 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Clock, ArrowLeft, ArrowRight, Tag } from "lucide-react";
-import { blogPosts, getBlogPost, getRelatedPosts } from "@/data/blog/posts";
+import { Clock, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { compileMDX } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
+import { getPublishedPosts, getBlogPost, getRelatedPosts } from "@/data/blog/posts";
+import { mdxComponents } from "@/components/blog/mdx-components";
+import TableOfContents from "@/components/blog/TableOfContents";
+import { extractTableOfContents } from "@/lib/slugify-heading";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import { notFound } from "next/navigation";
 
+// Re-render hourly; render not-yet-built (scheduled) posts on demand once live.
+export const revalidate = 3600;
+export const dynamicParams = true;
+
 export function generateStaticParams() {
-  return blogPosts.map((post) => ({ slug: post.slug }));
+  return getPublishedPosts().map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({
@@ -35,259 +44,6 @@ export async function generateMetadata({
   };
 }
 
-// Simple markdown-like renderer for blog content
-function renderContent(content: string) {
-  const lines = content.trim().split("\n");
-  const elements: React.ReactNode[] = [];
-  let inList = false;
-  let listItems: React.ReactNode[] = [];
-  let inTable = false;
-  let tableRows: string[][] = [];
-  let tableHeaders: string[] = [];
-
-  const processInline = (text: string): React.ReactNode => {
-    const parts: React.ReactNode[] = [];
-    let remaining = text;
-    let key = 0;
-
-    while (remaining.length > 0) {
-      // Bold
-      const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
-      // Link
-      const linkMatch = remaining.match(/\[([^\]]+)\]\(([^)]+)\)/);
-      // Italic (single *)
-      const italicMatch = remaining.match(
-        /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/,
-      );
-
-      const matches = [
-        boldMatch
-          ? { type: "bold", index: boldMatch.index!, match: boldMatch }
-          : null,
-        linkMatch
-          ? { type: "link", index: linkMatch.index!, match: linkMatch }
-          : null,
-        italicMatch
-          ? { type: "italic", index: italicMatch.index!, match: italicMatch }
-          : null,
-      ]
-        .filter(Boolean)
-        .sort((a, b) => a!.index - b!.index);
-
-      if (matches.length === 0) {
-        parts.push(remaining);
-        break;
-      }
-
-      const first = matches[0]!;
-      if (first.index > 0) {
-        parts.push(remaining.slice(0, first.index));
-      }
-
-      if (first.type === "bold") {
-        parts.push(<strong key={key++}>{first.match[1]}</strong>);
-        remaining = remaining.slice(first.index + first.match[0].length);
-      } else if (first.type === "link") {
-        parts.push(
-          <Link
-            key={key++}
-            href={first.match[2]}
-            className="text-[#AE343F] hover:underline"
-          >
-            {first.match[1]}
-          </Link>,
-        );
-        remaining = remaining.slice(first.index + first.match[0].length);
-      } else if (first.type === "italic") {
-        parts.push(<em key={key++}>{first.match[1]}</em>);
-        remaining = remaining.slice(first.index + first.match[0].length);
-      }
-    }
-
-    return parts.length === 1 ? parts[0] : parts;
-  };
-
-  const flushList = () => {
-    if (listItems.length > 0) {
-      elements.push(
-        <ul
-          key={`list-${elements.length}`}
-          className="list-disc pl-6 space-y-2 text-[#232323]/70 mb-6"
-        >
-          {listItems}
-        </ul>,
-      );
-      listItems = [];
-      inList = false;
-    }
-  };
-
-  const flushTable = () => {
-    if (tableRows.length > 0) {
-      elements.push(
-        <div key={`table-${elements.length}`} className="overflow-x-auto mb-6">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr>
-                {tableHeaders.map((h, i) => (
-                  <th
-                    key={i}
-                    className="text-left p-3 bg-[#faf9f6] font-semibold text-[#232323] border-b border-stone-200"
-                  >
-                    {h.trim()}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {tableRows.map((row, i) => (
-                <tr key={i}>
-                  {row.map((cell, j) => (
-                    <td
-                      key={j}
-                      className="p-3 text-[#232323]/70 border-b border-stone-100"
-                    >
-                      {cell.trim()}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>,
-      );
-      tableRows = [];
-      tableHeaders = [];
-      inTable = false;
-    }
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmed = line.trim();
-
-    if (trimmed === "") {
-      flushList();
-      flushTable();
-      continue;
-    }
-
-    // Table
-    if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
-      const cells = trimmed
-        .slice(1, -1)
-        .split("|")
-        .map((c) => c.trim());
-      if (cells.every((c) => /^[-:]+$/.test(c))) continue; // separator row
-      if (!inTable) {
-        inTable = true;
-        tableHeaders = cells;
-      } else {
-        tableRows.push(cells);
-      }
-      continue;
-    } else if (inTable) {
-      flushTable();
-    }
-
-    // Headings
-    if (trimmed.startsWith("# ")) {
-      flushList();
-      elements.push(
-        <h1
-          key={`h1-${i}`}
-          className="text-3xl sm:text-4xl font-serif font-semibold text-[#232323] mb-6 mt-8 first:mt-0"
-        >
-          {processInline(trimmed.slice(2))}
-        </h1>,
-      );
-      continue;
-    }
-    if (trimmed.startsWith("## ")) {
-      flushList();
-      elements.push(
-        <h2
-          key={`h2-${i}`}
-          className="text-2xl sm:text-3xl font-serif font-semibold text-[#232323] mb-4 mt-10"
-        >
-          {processInline(trimmed.slice(3))}
-        </h2>,
-      );
-      continue;
-    }
-    if (trimmed.startsWith("### ")) {
-      flushList();
-      elements.push(
-        <h3
-          key={`h3-${i}`}
-          className="text-xl font-serif font-semibold text-[#232323] mb-3 mt-8"
-        >
-          {processInline(trimmed.slice(4))}
-        </h3>,
-      );
-      continue;
-    }
-
-    // Blockquote
-    if (trimmed.startsWith("> ")) {
-      flushList();
-      elements.push(
-        <blockquote
-          key={`bq-${i}`}
-          className="border-l-4 border-[#AE343F]/30 pl-6 py-2 mb-6 text-[#232323]/60 italic"
-        >
-          {processInline(trimmed.slice(2))}
-        </blockquote>,
-      );
-      continue;
-    }
-
-    // Horizontal rule
-    if (trimmed === "---") {
-      flushList();
-      elements.push(<hr key={`hr-${i}`} className="my-8 border-stone-200" />);
-      continue;
-    }
-
-    // List items
-    if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-      inList = true;
-      listItems.push(
-        <li key={`li-${i}`}>{processInline(trimmed.slice(2))}</li>,
-      );
-      continue;
-    }
-
-    // Numbered list
-    if (/^\d+\.\s/.test(trimmed)) {
-      if (!inList) {
-        flushList();
-        inList = true;
-      }
-      listItems.push(
-        <li key={`li-${i}`}>
-          {processInline(trimmed.replace(/^\d+\.\s/, ""))}
-        </li>,
-      );
-      continue;
-    }
-
-    flushList();
-
-    // Paragraph
-    elements.push(
-      <p key={`p-${i}`} className="text-[#232323]/70 leading-relaxed mb-4">
-        {processInline(trimmed)}
-      </p>,
-    );
-  }
-
-  flushList();
-  flushTable();
-
-  return elements;
-}
-
 export default async function BlogPostPage({
   params,
 }: {
@@ -302,6 +58,17 @@ export default async function BlogPostPage({
 
   const relatedPosts = getRelatedPosts(slug);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
+  const toc = extractTableOfContents(post.content);
+  const hasToc = toc.length >= 2;
+
+  const { content } = await compileMDX({
+    source: post.content,
+    components: mdxComponents,
+    options: {
+      parseFrontmatter: false,
+      mdxOptions: { remarkPlugins: [remarkGfm] },
+    },
+  });
 
   const articleSchema = {
     "@context": "https://schema.org",
@@ -347,7 +114,7 @@ export default async function BlogPostPage({
           {
             "@type": "HowToStep",
             name: "Dostava",
-            text: "Telefon se dostavlja kurirskom službom (Essential) ili lično sa profesionalnom instalacijom (Full Service).",
+            text: "Telefon se dostavlja kurirskom službom u celoj Srbiji. Lična dostava i montaža dostupna je u Novom Sadu.",
           },
           {
             "@type": "HowToStep",
@@ -368,6 +135,81 @@ export default async function BlogPostPage({
       }
     : null;
 
+  // Add FAQPage schema for the invitation-timing post
+  const isInvitationTiming = post.slug === "kada-slati-pozivnice-za-vencanje";
+  const faqSchema = isInvitationTiming
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: "Kada se šalju pozivnice za venčanje?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Glavne pozivnice šalju se 6 do 8 nedelja pre venčanja. Gostima iz inostranstva 2 do 3 meseca ranije, a najavu (save the date) svima kojima treba vremena za planiranje šaljete 6 do 12 meseci ranije.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Šta je save the date i da li je obavezan?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "To je kratka najava datuma koju šaljete pre zvanične pozivnice. Nije obavezna, ali je vrlo korisna za goste iz inostranstva i za venčanja u špicu sezone, kada se kalendari brzo popune.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Koliko ranije poslati pozivnice gostima u inostranstvu?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Gostima iz inostranstva pozivnicu šaljete 2 do 3 meseca ranije, a idealno im još pre toga pošaljete najavu — 6 i više meseci unapred — da na vreme rezervišu karte i godišnji odmor.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Da li je kasno poslati pozivnice mesec dana pre venčanja?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Nije idealno, ali je rešivo — naročito digitalnom pozivnicom koja do gosta stiže odmah. Ključno je da rok za potvrdu dolaska ostane bar 2 nedelje pre venčanja.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Kada postaviti rok za potvrdu dolaska?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Rok postavite 2 do 3 nedelje pre venčanja, jer restoran obično traži konačan broj gostiju 7 do 10 dana ranije, a vama posle roka treba vremena za raspored sedenja.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Kada naručiti izradu štampanih pozivnica?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Štampane pozivnice naručujete 3 do 4 meseca pre venčanja — toliko traje dizajn, štampa i vreme potrebno da pozivnice uručite svim gostima.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Da li se pozivnice uručuju lično ili šalju?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "U Srbiji se najbližima pozivnica tradicionalno uručuje lično, uz kafu. Praktičan moderan model je kombinacija: papir za goste koje obilazite, a link i QR kod za ostale — pri čemu sve potvrde dolaska stižu na jedno mesto.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Šta ako gost ne potvrdi dolazak do roka?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Pošaljite podsetnik nedelju dana pre isteka roka. Za goste koji potvrde naknadno, njihove odgovore ručno dodajete na spisak — kod digitalne pozivnice to traje nekoliko sekundi.",
+            },
+          },
+        ],
+      }
+    : null;
+
   return (
     <>
       <Header />
@@ -382,113 +224,135 @@ export default async function BlogPostPage({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
           />
         )}
+        {faqSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+          />
+        )}
 
-        <article className="container mx-auto px-4 max-w-3xl">
-          <div className="mb-8">
-            <Breadcrumbs
-              items={[
-                { label: "Početna", href: "/" },
-                { label: "Blog", href: "/blog" },
-                { label: post.title },
-              ]}
-            />
-          </div>
-
-          {/* Post Header */}
-          <header className="mb-10 sm:mb-12">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="px-3 py-1 bg-[#AE343F]/10 rounded-full text-xs font-bold text-[#AE343F] uppercase tracking-wider">
-                {post.category}
-              </span>
-              <span className="flex items-center gap-1 text-xs text-[#232323]/40">
-                <Clock size={12} />
-                {post.readTime} min čitanja
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-[#232323] mb-4 leading-tight">
-              {post.title}
-            </h1>
-            <p className="text-lg text-[#232323]/50">{post.description}</p>
-            <div className="flex flex-wrap gap-2 mt-6">
-              {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-white rounded-full text-xs text-[#232323]/40 border border-stone-100"
-                >
-                  <Tag size={10} />
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <p className="text-sm text-[#232323]/30 mt-4">
-              Objavljeno:{" "}
-              {new Date(post.publishDate).toLocaleDateString("sr-RS", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-          </header>
-
-          {/* Post Content */}
-          <div className="prose-custom">{renderContent(post.content)}</div>
-
-          {/* Related Posts */}
-          {relatedPosts.length > 0 && (
-            <section className="mt-16 pt-12 border-t border-stone-200">
-              <h2 className="text-2xl font-serif text-[#232323] mb-8">
-                Povezani članci
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {relatedPosts.map((related) => (
-                  <Link
-                    key={related.slug}
-                    href={`/blog/${related.slug}`}
-                    className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100 hover:shadow-lg transition-shadow group"
-                  >
-                    <span className="px-2 py-1 bg-[#AE343F]/10 rounded-full text-xs font-bold text-[#AE343F] uppercase">
-                      {related.category}
-                    </span>
-                    <h3 className="font-serif font-semibold text-[#232323] mt-3 mb-2 group-hover:text-[#AE343F] transition-colors">
-                      {related.title}
-                    </h3>
-                    <span className="inline-flex items-center gap-1 text-sm text-[#AE343F]">
-                      Pročitaj <ArrowRight size={14} />
-                    </span>
-                  </Link>
-                ))}
+        <div
+          className={`container mx-auto px-4 ${
+            hasToc ? "max-w-3xl xl:max-w-6xl" : "max-w-3xl"
+          }`}
+        >
+          <div
+            className={
+              hasToc
+                ? "xl:grid xl:grid-cols-[minmax(0,48rem)_15rem] xl:justify-center xl:gap-16"
+                : undefined
+            }
+          >
+            <article className="min-w-0">
+              <div className="mb-6">
+                <Breadcrumbs
+                  items={[
+                    { label: "Početna", href: "/" },
+                    { label: "Blog", href: "/blog" },
+                    { label: post.title },
+                  ]}
+                />
               </div>
-            </section>
-          )}
 
-          {/* CTA */}
-          <div className="mt-12 bg-[#232323] rounded-3xl p-8 sm:p-12 text-center">
-            <h2 className="text-2xl sm:text-3xl font-serif text-[#F5F4DC] mb-4">
-              Spremni za audio guest book?
-            </h2>
-            <p className="text-[#F5F4DC]/60 mb-6 max-w-lg mx-auto">
-              Rezervišite vaš termin kod HALO Uspomene i sačuvajte glasove sa
-              vašeg venčanja zauvek.
-            </p>
-            <Link
-              href="/#kontakt"
-              className="btn bg-[#AE343F] hover:bg-[#8A2A32] text-[#F5F4DC] rounded-full px-10 border-none"
-            >
-              Rezervišite termin
-            </Link>
-          </div>
+              {/* Post Header */}
+              <header className="mb-8 border-b border-[#232323]/10 pb-6">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+                  <span className="px-3 py-1 bg-[#AE343F]/10 rounded-full text-xs font-bold text-[#AE343F] uppercase tracking-wider">
+                    {post.category}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-[#232323]/40">
+                    <Clock size={12} />
+                    {post.readTime} min čitanja
+                  </span>
+                  <span className="text-[#232323]/20" aria-hidden="true">
+                    ·
+                  </span>
+                  <span className="text-xs text-[#232323]/40">
+                    {new Date(post.publishDate).toLocaleDateString("sr-Latn-RS", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#232323] mb-3 leading-tight">
+                  {post.title}
+                </h1>
+                <p className="text-base sm:text-lg text-[#232323]/55 leading-relaxed">
+                  {post.description}
+                </p>
+              </header>
 
-          {/* Back to blog */}
-          <div className="mt-8 text-center">
-            <Link
-              href="/blog"
-              className="inline-flex items-center gap-2 text-[#232323]/50 hover:text-[#AE343F] transition-colors"
-            >
-              <ArrowLeft size={16} />
-              Nazad na blog
-            </Link>
+              {/* Collapsible TOC (below xl) */}
+              {hasToc && <TableOfContents items={toc} variant="collapsible" />}
+
+              {/* Post Content */}
+              <div className="prose-custom">{content}</div>
+
+              {/* AI-generated content disclaimer */}
+              <div className="mt-12 sm:mt-14 p-4 sm:p-5 bg-[#F5F4DC]/60 border border-stone-200 rounded-xl flex items-start gap-3">
+                <Sparkles
+                  size={18}
+                  className="text-[#AE343F] mt-0.5 shrink-0"
+                  aria-hidden="true"
+                />
+                <p className="text-sm text-[#232323]/70 leading-relaxed italic">
+                  AI generisan sadržaj! Ispravnost informacija proverite
+                  direktno sa timom HaloUspomene — kontakt se nalazi u podnožju
+                  sajta (u footeru).
+                </p>
+              </div>
+
+              {/* Related Posts */}
+              {relatedPosts.length > 0 && (
+                <section className="mt-16 pt-12 border-t border-stone-200">
+                  <h2 className="text-2xl font-serif text-[#232323] mb-8">
+                    Povezani članci
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {relatedPosts.map((related) => (
+                      <Link
+                        key={related.slug}
+                        href={`/blog/${related.slug}`}
+                        className="bg-white rounded-2xl p-6 shadow-sm border border-stone-100 hover:shadow-lg transition-shadow group"
+                      >
+                        <span className="px-2 py-1 bg-[#AE343F]/10 rounded-full text-xs font-bold text-[#AE343F] uppercase">
+                          {related.category}
+                        </span>
+                        <h3 className="font-serif font-semibold text-[#232323] mt-3 mb-2 group-hover:text-[#AE343F] transition-colors">
+                          {related.title}
+                        </h3>
+                        <span className="inline-flex items-center gap-1 text-sm text-[#AE343F]">
+                          Pročitaj <ArrowRight size={14} />
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Back to blog */}
+              <div className="mt-8 text-center">
+                <Link
+                  href="/blog"
+                  className="inline-flex items-center gap-2 text-[#232323]/50 hover:text-[#AE343F] transition-colors"
+                >
+                  <ArrowLeft size={16} />
+                  Nazad na blog
+                </Link>
+              </div>
+            </article>
+
+            {/* Sticky TOC (xl and up) */}
+            {hasToc && (
+              <aside className="hidden xl:block">
+                <div className="sticky top-28">
+                  <TableOfContents items={toc} variant="sidebar" />
+                </div>
+              </aside>
+            )}
           </div>
-        </article>
+        </div>
       </main>
       <Footer />
     </>

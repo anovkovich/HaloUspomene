@@ -3,21 +3,50 @@ export type ThemeType =
   | "modern_mono"
   | "minimal_sage"
   | "luxury_gold"
-  | "warm_terracotta";
+  | "warm_terracotta"
+  | "white_gold_burgundy"
+  | "white_gold_navy";
 export type ScriptFontType =
   | "great-vibes"
   | "dancing-script"
   | "alex-brush"
   | "parisienne"
   | "allura"
+  | "cormorant-garamond"
+  | "poiret-one"
   | "marck-script"
   | "caveat"
-  | "bad-script";
+  | "bad-script"
+  | "jasminum";
+
+// Premium AI types
+export type PremiumThemeType =
+  | "watercolor"
+  | "disney_pixar"
+  | "line_art"
+  | "fountain";
+
+export interface EnvelopeItem {
+  type:
+    | "clover"
+    | "champagne"
+    | "boutonniere"
+    | "bouquet"
+    | "rings"
+    | "tulips"
+    | "roses"
+    | "gold_bow";
+  zone: number; // 0-8 predefined snap position
+}
 
 export interface Location {
   name: string;
-  time: string;
+  /** German variant of `name`. Rendered when invitation lang is "de". */
+  name_de?: string;
+  time?: string;
   address: string;
+  /** German variant of `address`. */
+  address_de?: string;
   lat?: number;
   lng?: number;
   map_url?: string;
@@ -26,37 +55,189 @@ export interface Location {
 
 export interface TimelineItem {
   title: string;
+  /** German variant of `title`. */
+  title_de?: string;
   time: string;
   description?: string;
+  /** German variant of `description`. */
+  description_de?: string;
+  what?: string; // e.g. "Polazak od kuće", "Crkveno venčanje", "Skup u svečanoj sali"
+  /** German variant of `what`. */
+  what_de?: string;
   icon: string;
-}
-
-export interface Entry_IDs {
-  name: string;
-  attending: string;
-  plusOnes: string;
-  details: string;
 }
 
 export interface WeddingData {
   theme: ThemeType;
   scriptFont?: ScriptFontType;
   useCyrillic?: boolean; // Use Cyrillic script for static text
-  rsvp_form_url: string;
-  entry_IDs: Entry_IDs;
+  potvrde_password?: string; // Password for /potvrde + /moje-vencanje login. Auto-create routes generate ${groom}${random4}; admin/Quick-Start accepts whatever is typed. Legacy couples (pre-2026-04-18) may have ${groom}${DDMM} format from the old lead-gen generator.
   couple_names: {
     bride: string;
     groom: string;
     full_display: string;
   };
-  event_date: string; // ISO string or YYYY-MM-DD
-  submit_until: string;
+  event_date: string; // ISO string: YYYY-MM-DDTHH:mm:ss
+  submit_until: string; // ISO date: YYYY-MM-DD — deadline for RSVP submissions
   tagline?: string;
+  /** German variant of `tagline`. Used on /hochzeitseinladung/[slug]/. */
+  tagline_de?: string;
+  /**
+   * Optional free-form note rendered between the map and the RSVP section.
+   * Manually populated via the admin JSON editor; absent for couples that
+   * don't need an extra message. Same font/size as `tagline` but in
+   * theme primary color.
+   */
+  note?: string;
+  /** German variant of `note`. */
+  note_de?: string;
   thankYouFooter?: string;
+  /** German variant of `thankYouFooter`. */
+  thankYouFooter_de?: string;
+  /** Opt-in: when true, the couple is also reachable at
+   *  /hochzeitseinladung/[slug]/ rendered in German. Defaults to false. */
+  german_enabled?: boolean;
   locations: Location[];
   timeline: TimelineItem[];
   countdown_enabled: boolean;
   map_enabled: boolean;
+  /**
+   * Prints the QR pano dobrodošlice in Cyrillic even though the invitation
+   * itself stays in Latin — the sign is the one physical piece, and a couple
+   * can reasonably want it in the other script. Switches the fixed sign copy,
+   * forces a Cyrillic-capable script font, and transliterates the names.
+   * Ignored when `useCyrillic` is already true (the sign is Cyrillic anyway).
+   */
+  pano_cyrillic?: boolean;
+  /**
+   * Exact names for the sign, bypassing transliteration — e.g. "Џенана".
+   * Set either, both, or neither: a name left empty is transliterated from
+   * `couple_names`, so a couple only fills in what the rules get wrong (see the
+   * `dj` / `dz` note in src/lib/serbian-script.ts). Applies to the printed sign
+   * only — the invitation keeps `couple_names` untouched.
+   */
+  pano_bride_name?: string;
+  pano_groom_name?: string;
+  /**
+   * Script font for the printed sign only, overriding `scriptFont`. The sign is
+   * set at billboard scale on cream and answers to different constraints than a
+   * phone screen, so a couple can carry one face on the invitation and another
+   * on the board. Falls back to `scriptFont` when unset.
+   */
+  pano_script_font?: ScriptFontType;
+  paid_for_raspored?: boolean; // Unlocks full seating chart (default: false = demo, 1 seat only)
+  paid_for_pdf?: boolean; // Unlocks watermark-free PDF export
+  paid_for_audio?: boolean; // Unlocks audio guest book recording
+  paid_for_audio_USB?: "" | "kaseta" | "bocica"; // USB suvenir choice
+  paid_for_images?: boolean; // Unlocks photo gallery add-on
+  images?: Array<{ url: string; pathname: string }>; // Up to 3 uploaded photos
+  image_layout?: "line" | "triangle"; // Gallery layout: "line" (default) or "triangle"
+  paid_for_gallery?: boolean; // Unlocks the QR guest photo gallery (/galerija). Sellable standalone, independent of the invitation.
+  gallery_sms_last_access_sent?: boolean; // Gallery lifecycle: SMS #1 (last couple-access day, d4) sent
+  gallery_sms_purge_warning_sent?: boolean; // Gallery lifecycle: SMS #2 (deletion warning, d5) sent
+  gallery_purged_at?: string; // Gallery lifecycle: ISO timestamp when photos were system-purged (end of d5)
+  gallery_extra_days?: number; // Gallery lifecycle: admin-granted extra days of couple access before purge (default 0)
+  /** Record created for the standalone QR gallery product (self-serve signup at
+   *  /qr-galerija-slika-sa-vencanja, or admin create). Immutable origin marker —
+   *  NEVER cleared on later purchases; isGalleryOnlyCouple() derives the portal
+   *  lock from this plus "no other paid product". Absent on couples that came in
+   *  through the planner or an invitation. */
+  standalone_gallery?: boolean;
+  /** Bearer key for the gallery link the couple forwards to guests (`?k=`).
+   *  Its only power is opening the upload window BEFORE the event — the printed
+   *  QR carries no key and works on the event day and the day after. Generated
+   *  lazily by `ensureGalleryKey`, so older couples get one on first share. */
+  gallery_key?: string;
+  meni?: MeniData; // Free value-add: food and/or drink menu shown in the guest hub. Either group may be present independently.
+  paid_for_music?: boolean; // Unlocks background music add-on (1000 din)
+  music_url?: string; // Vercel Blob URL of the audio file (.m4a/.mp3)
+  music_pathname?: string; // Blob pathname — required for cleanup on delete
+  music_title?: string; // YouTube title at fetch time, for admin reference
+  music_source_url?: string; // Original YouTube link, for admin reference
+  custom_primary_color?: string; // Custom primary color in hex (e.g. "#A23B8C"), overrides theme
+  custom_background_color?: string; // Custom background color in hex, overrides theme background
+  stamp_color?: string; // Custom wax seal color in hex (e.g. "#8B2252"), overrides theme waxSeal
+  draft?: boolean; // Only visible in dev, returns 404 in production
+  // Snapshot of the /napravi-pozivnicu builder selection, written by the create/
+  // upgrade routes. Used ONLY to server-compute the custom (partial-combo) IPS
+  // amount and for admin insight — never trusted for money on its own. Shape
+  // matches BuilderSelection in src/lib/payments/builder-pricing.ts.
+  builder_extras?: {
+    premium: boolean;
+    raspored: boolean;
+    audio: boolean;
+    galerija: boolean;
+    music: boolean;
+    usb: "" | "kaseta" | "bocica";
+    images: boolean;
+    customColor: boolean;
+  };
+  example?: boolean; // Demo/example couple — sorts to the bottom of the admin list
+  /** One-off marker: the seating-tool offer SMS has been sent. Never cleared —
+   *  the offer is sent once per couple, ever. */
+  seating_sms_offer_sent?: boolean;
+  /** One-off marker: the planner reminder SMS has been sent. Never cleared. */
+  planner_reminder_sent?: boolean;
+  /** Last time this account'''s credentials were SMS-ed back to its own phone
+   *  (quick-register recovery). Throttles repeat sends; not a one-off marker. */
+  credentials_sms_at?: Date;
+  receipt_valid?: boolean; // Receipt link is active (set false after payment)
+  receipt_created?: string; // ISO date when receipt was generated
+  custom_discount?: number; // Custom discount in RSD on website pozivnica
+  /** Free-form extra lines the admin put on this couple's receipt (Galerija tab:
+   *  izrada zahvalnica, štampa stalaka, …), in the same `{l, p}` shape the /racun
+   *  payload uses. Persisted because the receipt link, the "Kopiraj link" rebuild
+   *  and the mark-paid prefill are all derived from it — keeping it only in React
+   *  state meant a reload silently dropped the extras and undercharged. */
+  receipt_custom_items?: { l: string; p: number }[];
+  // Premium AI fields
+  premium?: boolean;
+  premium_theme?: PremiumThemeType;
+  ai_couple_image_url?: string;
+  envelope_items?: EnvelopeItem[];
+  envelope_style?: "classic" | "wing";
+  envelope_rose_petals?: boolean;
+  premium_city?: string; // Watercolor theme: city background key
+  premium_car?: string; // Watercolor theme: car illustration key
+  couple_description?: string; // Line art theme: AI couple description
+  /** Watercolor: couple's free-text description of a CUSTOM background to paint
+   *  (beyond the predefined premium_city list). Team-produced after payment. */
+  premium_custom_bg_note?: string;
+  /** Premium delivery state for the hand-crafted asset (watercolor custom bg /
+   *  line_art HQ illustration). "u_izradi" = final asset pending; "isporuceno"
+   *  = delivered (fountain needs no manual step, so it's isporuceno at create). */
+  premium_status?: "u_izradi" | "isporuceno";
+  premium_paid?: boolean;
+  /** Comma-separated E.164 phone numbers collected at submission (e.g. "+381638261775,+381615000363"). Optional. */
+  contact_phone?: string;
+  /** Per-number toggle for displaying call-CTA on the RSVP page. Parallel to `contact_phone`'s split-by-comma order. */
+  show_numbers?: boolean[];
+  /** Optional per-number labels rendered above each phone in the call-CTA (e.g. "Mama mlade"). Parallel to `contact_phone`. */
+  number_names?: string[];
+  /** Country code for the primary contact phone (region quick-picks or "INT" for
+   *  an arbitrary foreign number). Defaults to RS for legacy/Serbian submissions. */
+  phone_country?: "RS" | "BA" | "HR" | "ME" | "MK" | "SI" | "INT";
+  /** True when the primary phone passed SMS verification; false for couples created via a foreign-customer bypass link. Absent on pre-bypass records. */
+  phone_verified?: boolean;
+  /** UUID of the bypass token that authorized this submission. Audit-only; absent for normal SMS-verified submissions. */
+  bypass_token_id?: string;
+}
+
+// ── Guest-hub menu (free value-add) ─────────────────────────────────────────
+// Food and drinks are two independent groups: a couple may add only drinks, only
+// food, or both. Rendered as a "Meni" tab in the guest hub when non-empty.
+export interface MeniItem {
+  id: string;
+  /** Sub-category within the group. Food: "predjelo"|"glavno"|"desert"|"ostalo".
+   *  Drinks: "alkoholno"|"bezalkoholno"|"toplo"|"ostalo". */
+  kategorija: string;
+  naziv: string;
+  opis?: string;
+}
+
+export interface MeniData {
+  food?: MeniItem[];
+  drinks?: MeniItem[];
 }
 
 // Comprehensive theme configuration

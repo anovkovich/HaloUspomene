@@ -10,8 +10,15 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { locations, getLocation } from "@/data/locations";
-import { testimonials } from "@/data/testimonials";
+import { googleReviews } from "@/data/testimonials";
+import {
+  getGoogleReviews,
+  getGoogleReviewsSummary,
+  type GoogleReview,
+} from "@/lib/google-reviews";
+import { getAllVendors } from "@/lib/vendors";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
+import GoogleReviewCard from "@/components/ui/GoogleReviewCard";
 import { Header } from "@/components/layout";
 import Footer from "@/components/layout/footer/Footer";
 import { notFound } from "next/navigation";
@@ -19,6 +26,11 @@ import { notFound } from "next/navigation";
 export function generateStaticParams() {
   return locations.map((loc) => ({ city: loc.slug }));
 }
+
+// Blok sa recenzijama čita iz baze; bez ovoga bi gradske stranice ostale na
+// onome što je zateklo `next build`. Sync recenzija je mesečni, pa je dnevno
+// osvežavanje sasvim dovoljno.
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,
@@ -50,9 +62,25 @@ export default async function CityPage({
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://halouspomene.rs";
 
-  const cityTestimonials = testimonials.filter((t) =>
-    loc.testimonialIds.includes(t.id),
-  );
+  // Google recenzije nisu vezane za grad — profil ih ne deli po lokaciji, pa
+  // se ovde prikazuju iste najnovije kao i na početnoj, samo kraća lista.
+  // Ako baza zakaže, blok se svede na ocenu i link umesto da sruši stranicu.
+  let reviews: GoogleReview[] = [];
+  let rating = googleReviews.ratingValue;
+  let reviewCount = googleReviews.reviewCount;
+  try {
+    const [fromDb, summary] = await Promise.all([
+      getGoogleReviews(3),
+      getGoogleReviewsSummary(),
+    ]);
+    reviews = fromDb;
+    if (summary) {
+      rating = summary.rating;
+      reviewCount = summary.count;
+    }
+  } catch {
+    // rezervne vrednosti iz testimonials.ts
+  }
 
   const serviceSchema = {
     "@context": "https://schema.org",
@@ -164,7 +192,7 @@ export default async function CityPage({
                 <p className="text-sm text-[#232323]/50">
                   {loc.deliveryType === "Kurirska dostava"
                     ? "telefon i uputstvo stižu sigurno upakovani spremni za korišćenje"
-                    : "telefon, a i govornicu ukoliko izaberete Full Service paket"}
+                    : "profesionalna montaža telefona na idealnom mestu u sali"}
                 </p>
               </div>
               <div className="text-center p-4">
@@ -218,59 +246,46 @@ export default async function CityPage({
             </div>
           </section>
 
-          {/* Local Testimonials */}
-          {cityTestimonials.length > 0 && (
-            <section className="mb-12">
-              <h2 className="text-2xl sm:text-3xl font-serif text-[#232323] mb-6">
-                Utisci parova iz{" "}
-                {loc.name === "Niš"
-                  ? "Niša"
-                  : loc.name === "Beograd"
-                    ? "Beograda"
-                    : loc.name === "Novi Sad"
-                      ? "Novog Sada"
-                      : loc.name === "Kragujevac"
-                        ? "Kragujevca"
-                        : loc.name === "Subotica"
-                          ? "Subotice"
-                          : loc.name}
-              </h2>
-              <div className="space-y-4">
-                {cityTestimonials.map((t) => (
+          {/* Recenzije sa Google profila. Nisu gradske — profil ih ne deli po
+              lokaciji — pa naslov namerno ne pominje grad. */}
+          <section className="mb-12">
+            <div className="bg-white rounded-2xl border border-stone-100 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-5">
+              <div className="flex items-center gap-4 shrink-0">
+                <div className="flex gap-0.5" aria-hidden="true">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      size={18}
+                      className="text-[#d4af37] fill-[#d4af37]"
+                    />
+                  ))}
+                </div>
+                <span className="font-serif text-3xl text-[#232323]">
+                  {rating.toFixed(1)}
+                </span>
+              </div>
+              <p className="text-sm text-[#232323]/60 flex-1 leading-relaxed">
+                Prosečna ocena na osnovu {reviewCount} recenzija parova širom
+                Srbije, ostavljenih na našem Google profilu.
+              </p>
+            </div>
+
+            {/* Ovde CSS `columns` sme: lista je fiksna (tri komada) i nema
+                dugme za dopunu, pa nema ni prebalansiranja koje je na
+                početnoj nateralo prelazak na fiksne kolone. */}
+            {reviews.length > 0 && (
+              <div className="mt-6 columns-1 md:columns-2 gap-6">
+                {reviews.map((r) => (
                   <div
-                    key={t.id}
-                    className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-stone-100"
+                    key={r.review_id}
+                    className="break-inside-avoid mb-6"
                   >
-                    <div className="flex gap-1 mb-3">
-                      {Array.from({ length: t.rating }).map((_, i) => (
-                        <Star
-                          key={i}
-                          size={16}
-                          className="text-[#d4af37] fill-[#d4af37]"
-                        />
-                      ))}
-                    </div>
-                    <p className="text-[#232323]/70 leading-relaxed mb-4 italic">
-                      &ldquo;{t.quote}&rdquo;
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#AE343F]/10 rounded-xl flex items-center justify-center text-[#AE343F] font-bold text-xs">
-                        {t.initials}
-                      </div>
-                      <div>
-                        <p className="font-serif font-semibold text-[#232323] text-sm">
-                          {t.coupleName}
-                        </p>
-                        <p className="text-xs text-[#232323]/40">
-                          {t.date} — {t.packageType}
-                        </p>
-                      </div>
-                    </div>
+                    <GoogleReviewCard review={r} />
                   </div>
                 ))}
               </div>
-            </section>
-          )}
+            )}
+          </section>
 
           {/* Local FAQ */}
           <section className="mb-12">
@@ -316,7 +331,21 @@ export default async function CityPage({
             </h2>
             <p className="text-[#F5F4DC]/60 mb-6 max-w-lg mx-auto">
               Rezervišite vaš audio guest book na vreme i sačuvajte glasove sa
-              svog venčanja zauvek.
+              svog venčanja zauvek. Uz rezervaciju dobijate pristup besplatnom
+              planeru venčanja sa{" "}
+              {(await getAllVendors()).filter((v) => v.city === loc.name).length}+ vendora u{" "}
+              {loc.name === "Niš"
+                ? "Nišu"
+                : loc.name === "Beograd"
+                  ? "Beogradu"
+                  : loc.name === "Novi Sad"
+                    ? "Novom Sadu"
+                    : loc.name === "Kragujevac"
+                      ? "Kragujevcu"
+                      : loc.name === "Subotica"
+                        ? "Subotici"
+                        : loc.name}
+              .
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

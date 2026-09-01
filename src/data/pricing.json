@@ -1,52 +1,123 @@
 {
   "packages": {
     "essential": {
-      "name": "Essential",
-      "price": 9000
-    },
-    "fullService": {
-      "name": "Full Service",
-      "price": 10000
+      "name": "Audio Guest Book",
+      "price": 6900,
+      "priceEur": 59,
+      "discountPrice": null,
+      "discountActive": false
     }
+  },
+  "pozivnica": {
+    "website": {
+      "label": "Website pozivnica",
+      "price": 5000
+    },
+    "pdf": {
+      "label": "Dizajn štampanih pozivnica",
+      "price": 0
+    },
+    "raspored": {
+      "label": "Raspored sedenja",
+      "price": 2500
+    },
+    "audio": {
+      "label": "Digitalna audio knjiga",
+      "price": 3000
+    },
+    "galerija": {
+      "label": "QR galerija fotografija",
+      "price": 3500,
+      "priceEur": 30
+    },
+    "bundlePrice": 8500,
+    "bundleFullPrice": 10500
+  },
+  "tiers": {
+    "osnovno": { "label": "Osnovni paket", "price": 5000, "priceEur": 45 },
+    "kompletno": { "label": "Kompletan paket", "price": 9900, "fullPrice": 14000, "priceEur": 85 },
+    "premium": { "label": "Premium paket", "price": 13900, "fullPrice": 19000, "priceEur": 120, "includes": ["raspored", "audio", "galerija"] }
   },
   "addons": [
     {
       "id": "usb_kaseta",
-      "label": "USB retro kaseta",
+      "label": "Retro kaseta — USB",
       "price": 2500,
-      "note": "Fizički suvenir"
+      "note": "Fizički retro suvenir",
+      "for_retro_phone": true
     },
     {
       "id": "usb_bocica",
-      "label": "Uspomene u boci — USB u bočici",
+      "label": "USB Uspomene u bočici",
       "price": 2000,
-      "note": "Fizički suvenir"
+      "note": "Fizički suvenir",
+      "for_retro_phone": true
     },
     {
-      "id": "mini_govornica",
-      "label": "MINI govornica",
-      "price": 3000,
-      "note": "Drvena, kompaktna"
+      "id": "personalizovana_dobrodoslica",
+      "label": "Audio dobrodošlica",
+      "price": 0,
+      "note": "Vaša lična poruka dobrodošlice",
+      "for_retro_phone": true
     },
     {
-      "id": "maxi_govornica",
-      "label": "MAXI govornica",
-      "price": 5000,
-      "note": "Centralni detalj sale"
+      "id": "custom_color",
+      "label": "Prilagođena boja teme",
+      "price": 600,
+      "note": "Prilagodite primarnu boju pozivnice po vašem ukusu."
     },
     {
-      "id": "website_pozivnica",
-      "label": "Website pozivnica",
-      "price": 5000,
-      "note": ""
+      "id": "images",
+      "label": "Galerija fotografija",
+      "price": 600,
+      "note": "Do 3 fotografije u polaroid stilu na vašoj pozivnici."
+    },
+    {
+      "id": "background_music",
+      "label": "Muzika u pozadini",
+      "price": 1000,
+      "note": "Vaša pesma kao muzika u pozadini pozivnice (do 6 min)."
     }
   ],
-  "discounts": {
-    "bundleWebsitePozivnica": {
-      "label": "Website pozivnica uz Audio Uspomene paket",
-      "active": true,
-      "percent": 30,
-      "discountedPrice": 3500
+  "premium": {
+    "label": "Premium AI Pozivnica",
+    "price": 10000,
+    "promoActive": false
+  },
+  "rodjendan": {
+    "pozivnica": {
+      "label": "Rođendanska pozivnica",
+      "price": 4500,
+      "priceEur": 40
+    },
+    "punoletstvo": {
+      "label": "Pozivnica za punoletstvo",
+      "price": 4500,
+      "priceEur": 40
+    },
+    "raspored": {
+      "label": "Raspored sedenja",
+      "price": 2500,
+      "priceEur": 25
+    }
+  },
+  "standalone_seating": {
+    "label": "Raspored sedenja za organizatore",
+    "price": 5000,
+    "promoPrice": 4000,
+    "promoActive": true,
+    "priceEur": 45
+  },
+  "dogadjaj": {
+    "pozivnica": {
+      "label": "Pozivnica za događaj",
+      "price": 6000,
+      "priceEur": 50
+    },
+    "paket": {
+      "label": "Korporativni paket",
+      "price": 12000,
+      "priceEur": 100
     }
   }
 }

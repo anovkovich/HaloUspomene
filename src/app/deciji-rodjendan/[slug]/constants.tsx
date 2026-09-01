@@ -1,0 +1,242 @@
+import { BirthdayThemeType, BirthdayThemeConfig, BirthdayFontType } from "./types";
+
+export interface BirthdayFontConfig {
+  name: string;
+  variable: string;
+  description: string;
+}
+
+export const BIRTHDAY_FONT_CONFIGS: Record<BirthdayFontType, BirthdayFontConfig> = {
+  fredoka: {
+    name: "Fredoka",
+    variable: "var(--font-fredoka)",
+    description: "Zaobljeni i moderni",
+  },
+  "bubblegum-sans": {
+    name: "Bubblegum Sans",
+    variable: "var(--font-bubblegum-sans)",
+    description: "Veseli i zabavni",
+  },
+  "baloo-2": {
+    name: "Baloo 2",
+    variable: "var(--font-baloo-2)",
+    description: "Prijateljski i topli",
+  },
+  "patrick-hand": {
+    name: "Patrick Hand",
+    variable: "var(--font-patrick-hand)",
+    description: "Dečiji rukopis",
+  },
+  chewy: {
+    name: "Chewy",
+    variable: "var(--font-chewy)",
+    description: "Debeli i razigrani",
+  },
+};
+
+export const BIRTHDAY_THEME_CONFIGS: Record<BirthdayThemeType, BirthdayThemeConfig> = {
+  boy_animals: {
+    name: "Safari",
+    gender: "boy",
+    colors: {
+      primary: "#2D6A4F",
+      primaryLight: "#52B788",
+      primaryMuted: "rgba(45, 106, 79, 0.12)",
+      secondary: "#8B5E3C",
+      background: "#FEFCF3",
+      surface: "#F5F0E1",
+      surfaceAlt: "#EDE5D0",
+      text: "#1B3A2A",
+      textMuted: "#5A7A68",
+      textLight: "#8AAA98",
+      border: "rgba(45, 106, 79, 0.2)",
+      borderLight: "rgba(45, 106, 79, 0.1)",
+      confetti: ["#2D6A4F", "#8B5E3C", "#E9C46A", "#F4A261", "#52B788"],
+    },
+    illustration: "animals",
+  },
+
+  boy_space: {
+    name: "Svemir",
+    gender: "boy",
+    colors: {
+      primary: "#5B8DEF",
+      primaryLight: "#8BB0F4",
+      primaryMuted: "rgba(91, 141, 239, 0.12)",
+      secondary: "#7B68EE",
+      background: "#F5F7FF",
+      surface: "#EAEFFF",
+      surfaceAlt: "#DEE5FF",
+      text: "#1A2340",
+      textMuted: "#4A5580",
+      textLight: "#8A95B8",
+      border: "rgba(91, 141, 239, 0.2)",
+      borderLight: "rgba(91, 141, 239, 0.1)",
+      confetti: ["#5B8DEF", "#7B68EE", "#FFD93D", "#FF6B6B", "#6BCB77"],
+    },
+    illustration: "space",
+  },
+
+  girl_fairy: {
+    name: "Vila",
+    gender: "girl",
+    colors: {
+      primary: "#FF6B9D",
+      primaryLight: "#FF9DC0",
+      primaryMuted: "rgba(255, 107, 157, 0.12)",
+      secondary: "#C084FC",
+      background: "#FFF5F9",
+      surface: "#FFECF3",
+      surfaceAlt: "#FFE0EB",
+      text: "#3A1A28",
+      textMuted: "#8A5A6E",
+      textLight: "#C090A5",
+      border: "rgba(255, 107, 157, 0.2)",
+      borderLight: "rgba(255, 107, 157, 0.1)",
+      confetti: ["#FF6B9D", "#C084FC", "#FFD93D", "#67E8F9", "#A78BFA"],
+    },
+    illustration: "fairy",
+  },
+
+  girl_princess: {
+    name: "Princeza",
+    gender: "girl",
+    colors: {
+      primary: "#F472B6",
+      primaryLight: "#F9A8D4",
+      primaryMuted: "rgba(244, 114, 182, 0.12)",
+      secondary: "#FFD700",
+      background: "#FFFBFE",
+      surface: "#FFF1F9",
+      surfaceAlt: "#FFE4F0",
+      text: "#3A1A2E",
+      textMuted: "#8A5A75",
+      textLight: "#C090A8",
+      border: "rgba(244, 114, 182, 0.2)",
+      borderLight: "rgba(244, 114, 182, 0.1)",
+      confetti: ["#F472B6", "#FFD700", "#FCA5A5", "#FBBF24", "#F9A8D4"],
+    },
+    illustration: "princess",
+  },
+
+  neutral_safari: {
+    name: "Jungle",
+    gender: "neutral",
+    colors: {
+      primary: "#DDA15E",
+      primaryLight: "#E9C088",
+      primaryMuted: "rgba(221, 161, 94, 0.12)",
+      secondary: "#606C38",
+      background: "#F0F5E8",
+      surface: "#E6EDDA",
+      surfaceAlt: "#DAE4CC",
+      text: "#2A2010",
+      textMuted: "#7A6A48",
+      textLight: "#B0A080",
+      border: "rgba(221, 161, 94, 0.2)",
+      borderLight: "rgba(221, 161, 94, 0.1)",
+      confetti: ["#DDA15E", "#606C38", "#BC6C25", "#FEFAE0", "#283618"],
+    },
+    illustration: "safari",
+  },
+
+  neutral_circus: {
+    name: "Cirkus",
+    gender: "neutral",
+    colors: {
+      primary: "#E63946",
+      primaryLight: "#EE6B75",
+      primaryMuted: "rgba(230, 57, 70, 0.12)",
+      secondary: "#FFD60A",
+      background: "#FFFEF5",
+      surface: "#FFF8E1",
+      surfaceAlt: "#FFEFB5",
+      text: "#2A1A10",
+      textMuted: "#7A5A40",
+      textLight: "#B09070",
+      border: "rgba(230, 57, 70, 0.2)",
+      borderLight: "rgba(230, 57, 70, 0.1)",
+      confetti: ["#E63946", "#FFD60A", "#457B9D", "#F1FAEE", "#A8DADC"],
+    },
+    illustration: "circus",
+  },
+
+  // Punoletstvo (18th birthday) palettes — rendered by the dedicated
+  // classic-wedding-styled invitation route. confetti stays in the shape
+  // for type compatibility but is unused outside the child flows.
+  white_gold_burgundy: {
+    name: "White · Gold · Burgundy",
+    gender: "girl",
+    colors: {
+      primary: "#800020",
+      primaryLight: "#A8324A",
+      primaryMuted: "rgba(128, 0, 32, 0.12)",
+      secondary: "#d4af37",
+      background: "#fffdf5",
+      surface: "#ffffff",
+      surfaceAlt: "#fff8e1",
+      text: "#2A0A12",
+      textMuted: "#6A2A38",
+      textLight: "#B08090",
+      border: "rgba(128, 0, 32, 0.2)",
+      borderLight: "rgba(128, 0, 32, 0.08)",
+      confetti: ["#800020", "#d4af37", "#ffffff", "#f5e6c8", "#A8324A"],
+    },
+    illustration: "classic",
+  },
+
+  white_gold_navy: {
+    name: "White · Gold · Navy",
+    gender: "boy",
+    colors: {
+      primary: "#0A1F44",
+      primaryLight: "#1E3A6E",
+      primaryMuted: "rgba(10, 31, 68, 0.12)",
+      secondary: "#d4af37",
+      background: "#fffdf5",
+      surface: "#ffffff",
+      surfaceAlt: "#fff8e1",
+      text: "#081530",
+      textMuted: "#3A4E7A",
+      textLight: "#8090B0",
+      border: "rgba(10, 31, 68, 0.2)",
+      borderLight: "rgba(10, 31, 68, 0.08)",
+      confetti: ["#0A1F44", "#d4af37", "#ffffff", "#f5e6c8", "#1E3A6E"],
+    },
+    illustration: "classic",
+  },
+
+};
+
+export function getBirthdayThemeCSSVariables(
+  theme: BirthdayThemeType,
+  displayFont: BirthdayFontType = "fredoka",
+): Record<string, string> {
+  const config = BIRTHDAY_THEME_CONFIGS[theme];
+  const fontConfig = BIRTHDAY_FONT_CONFIGS[displayFont];
+  return {
+    "--theme-primary": config.colors.primary,
+    "--theme-primary-light": config.colors.primaryLight,
+    "--theme-primary-muted": config.colors.primaryMuted,
+    "--theme-secondary": config.colors.secondary,
+    "--theme-background": config.colors.background,
+    "--theme-surface": config.colors.surface,
+    "--theme-surface-alt": config.colors.surfaceAlt,
+    "--theme-text": config.colors.text,
+    "--theme-text-muted": config.colors.textMuted,
+    "--theme-text-light": config.colors.textLight,
+    "--theme-border": config.colors.border,
+    "--theme-border-light": config.colors.borderLight,
+    "--theme-radius": "1.25rem",
+    "--theme-shadow": "0 4px 12px -2px rgba(0,0,0,0.08)",
+    "--theme-display-font": fontConfig.variable,
+  };
+}
+
+export function getBirthdayThemeConfig(theme: BirthdayThemeType): BirthdayThemeConfig {
+  return BIRTHDAY_THEME_CONFIGS[theme];
+}
+
+export function getBirthdayFontConfig(font: BirthdayFontType): BirthdayFontConfig {
+  return BIRTHDAY_FONT_CONFIGS[font];
+}

@@ -1,0 +1,131 @@
+import { NextRequest, NextResponse } from "next/server";
+import { upsertBirthday } from "@/lib/birthday";
+import { generateUniqueBirthdaySlug } from "@/lib/slug";
+import type {
+  BirthdayData,
+  BirthdayGender,
+  BirthdayThemeType,
+  BirthdayFontType,
+} from "@/app/deciji-rodjendan/[slug]/types";
+import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
+import {
+  resolvePhoneAuthorization,
+  PhoneAuthError,
+} from "@/lib/phone-verification";
+
+// IP-based rate limiting — same shape as /api/pozivnica/create
+const ipMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 5;
+const RATE_WINDOW = 60 * 60 * 1000;
+
+export async function POST(request: NextRequest) {
+  try {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown";
+    const now = Date.now();
+    const entry = ipMap.get(ip);
+    if (entry && now < entry.resetAt && entry.count >= RATE_LIMIT) {
+      return NextResponse.json(
+        { error: "Too many requests. Try again later." },
+        { status: 429 },
+      );
+    }
+    if (!entry || now >= entry.resetAt) {
+      ipMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW });
+    } else {
+      entry.count++;
+    }
+
+    const body = await request.json();
+    const childName: string = (body.child_name || "").trim();
+    if (!childName) {
+      return NextResponse.json(
+        { error: "child_name is required" },
+        { status: 400 },
+      );
+    }
+
+    try {
+      await verifyRecaptcha(body.recaptcha_token, "create_birthday", {
+        remoteIp: ip,
+      });
+    } catch (err) {
+      if (err instanceof RecaptchaError) {
+        return NextResponse.json(
+          { error: "Provera neuspešna. Osvežite stranicu i pokušajte ponovo." },
+          { status: 403 },
+        );
+      }
+      throw err;
+    }
+
+    // Keep the E.164 number — the QR gallery's purge warnings go out by SMS,
+    // so a record without a phone can never safely carry `paid_for_gallery`.
+    let contactPhone = "";
+    try {
+      const auth = await resolvePhoneAuthorization({
+        rawPhone: body.contact_phone,
+        bypassToken: body.bypass_token,
+        phoneTrustToken: body.phone_trust_token,
+      });
+      contactPhone = auth.phoneE164;
+    } catch (err) {
+      if (err instanceof PhoneAuthError) {
+        return NextResponse.json({ error: err.message }, { status: err.status });
+      }
+      throw err;
+    }
+
+    const slug = await generateUniqueBirthdaySlug(childName);
+    const digits = String(Math.floor(1000 + Math.random() * 9000));
+    const autoPassword = `${childName.split(" ")[0]}${digits}`;
+
+    // Auto-generate the Google Maps embed URL so the preview shows the map
+    // immediately (mirrors the admin "Generiši map_url" button: name OR address).
+    const locName = (body.location?.name || "").trim();
+    const locAddr = (body.location?.address || "").trim();
+    const locQuery = [locName, locAddr].filter(Boolean).join(", ");
+    const locMapUrl =
+      body.location?.map_url ||
+      (locQuery
+        ? `https://maps.google.com/maps?q=${encodeURIComponent(locQuery)}&output=embed`
+        : "");
+
+    const data: BirthdayData = {
+      type: "child",
+      theme: (body.theme || "boy_animals") as BirthdayThemeType,
+      gender: (body.gender || "boy") as BirthdayGender,
+      displayFont: (body.displayFont || "fredoka") as BirthdayFontType,
+      child_name: childName,
+      parent_names: (body.parent_names || "").trim(),
+      age: Number.isFinite(body.age) ? Number(body.age) : 1,
+      event_date: body.event_date || "",
+      submit_until: body.submit_until || "",
+      tagline: body.tagline || "",
+      location: {
+        name: locName,
+        address: locAddr,
+        map_url: locMapUrl,
+      },
+      countdown_enabled: body.countdown_enabled ?? true,
+      map_enabled: body.map_enabled ?? true,
+      admin_password: autoPassword,
+      draft: true,
+      ...(contactPhone ? { contact_phone: contactPhone } : {}),
+      // Photo step in the builder: the flag has to be on BEFORE the client's
+      // photos are pushed (the upload route gates on it) and it lifts the
+      // invitation to the standard price — see getRodjendanSlikePrice().
+      ...(body.images_enabled === true
+        ? { paid_for_images: true, builder_images: true }
+        : {}),
+    };
+
+    await upsertBirthday(slug, data);
+
+    return NextResponse.json({ slug, password: autoPassword });
+  } catch (err) {
+    console.error("Birthday creation error:", err);
+    return NextResponse.json({ error: "Creation failed" }, { status: 500 });
+  }
+}

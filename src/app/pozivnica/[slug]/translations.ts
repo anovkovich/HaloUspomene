@@ -1,5 +1,7 @@
 // Static text translations for wedding invitations
-// Latin (default) and Cyrillic versions
+// Three locales: Serbian Latin, Serbian Cyrillic, German (formal "Sie")
+
+export type Lang = "sr-Latn" | "sr-Cyrl" | "de";
 
 export interface Translations {
   // Hero section
@@ -23,6 +25,7 @@ export interface Translations {
 
   // Location
   location: string;
+  locations: string;
 
   // RSVP
   rsvpTitle: string;
@@ -52,14 +55,61 @@ export interface Translations {
   people: string;
   notAttending: string;
 
+  // Add to calendar
+  addToCalendar: string;
+  calendarDialogTitle: string;
+  calendarGoogle: string;
+  calendarApple: string;
+  calendarWeddingTitle: string;
+  calendarWeddingDesc: string;
+  reminderIn15: string;
+  reminderDayBefore: string;
+  reminderEventTitle: string;
+  reminderEventDesc: string;
+
   // Footer
   thankYouFooter: string;
 
+  // RSVP closed
+  rsvpClosed: string;
+  rsvpClosedSub: string;
+
+  // RSVP error states
+  rsvpRecaptchaFailed: string;
+  rsvpSendError: string;
+
+  // Seating lookup
+  findSeating: string;
+  seatingAvailableNote: string;
+
+  // PDF
+  downloadPDF: string;
+
   // Envelope
   inviteYou: string;
+  tapToOpen: string;
+
+  // Audio guest book
+  audioGuestBook: string;
+  audioRecordMessage: string;
+  audioRecordButton: string;
+  audioStopButton: string;
+  audioYourName: string;
+  audioSendMessage: string;
+  audioThankYou: string;
+  audioRecordAnother: string;
+  audioMaxDuration: string;
+  audioNotAvailableYet: string;
+  audioDemoTitle: string;
+  audioDemoDescription: string;
+  audioListenTitle: string;
+  audioNoMessages: string;
+  audioBeFirst: string;
+  audioDownloadAll: string;
 
   // Date labels
   months: string[];
+  months_genitive: string[];
   days_week: string[];
 }
 
@@ -85,6 +135,7 @@ export const latinTranslations: Translations = {
 
   // Location
   location: "Lokacija",
+  locations: "Lokacije",
 
   // RSVP
   rsvpTitle: "Potvrda dolaska",
@@ -98,9 +149,10 @@ export const latinTranslations: Translations = {
   attendingNoSub: "Sve najlepše!",
   guestCount: "Broj osoba (uključujući Vas)",
   additionalNotes: "Dodatne napomene",
-  notesPlaceholder: "Posebni zahtevi ili poruka mladencima...",
+  notesPlaceholder:
+    "Ostavite napomenu ili navedite imena osoba koje dolaze sa vama...",
   sending: "Šaljem...",
-  confirmAttendance: "Potvrdi dolazak",
+  confirmAttendance: "Potvrdite dolazak",
 
   // Success messages
   thankYou: "Hvala Vam!",
@@ -114,26 +166,87 @@ export const latinTranslations: Translations = {
   people: "osobe",
   notAttending: "Neće prisustvovati",
 
+  // Add to calendar
+  addToCalendar: "Dodaj u kalendar",
+  calendarDialogTitle: "Dodaj u kalendar",
+  calendarGoogle: "Google kalendar",
+  calendarApple: "Apple / Outlook",
+  calendarWeddingTitle: "Venčanje",
+  calendarWeddingDesc: "Radujemo se što ćemo vas videti na proslavi!",
+  reminderIn15: "Podseti me za 15 dana",
+  reminderDayBefore: "Podseti me dan pre roka",
+  reminderEventTitle: "Podsetnik: potvrdi dolazak",
+  reminderEventDesc: "Ne zaboravi da potvrdiš dolazak na venčanje.",
+
+  // RSVP closed
+  rsvpClosed: "Prijave su zatvorene",
+  rsvpClosedSub: "Rok za prijavu je istekao.",
+
+  // RSVP error states
+  rsvpRecaptchaFailed: "Provera neuspešna. Osvežite stranicu i pokušajte ponovo.",
+  rsvpSendError: "Greška pri slanju. Pokušajte ponovo.",
+
+  // Seating lookup
+  findSeating: "✦ Pronađite mesto sedenja ✦",
+  seatingAvailableNote:
+    "Dan pre proslave biće dostupna provera gde ste raspoređeni sa sedenjem.",
+
   // Footer
   thankYouFooter: "Hvala Vam što ste deo naše sreće",
 
+  // PDF
+  downloadPDF: "Preuzmi pozivnicu",
+
   // Envelope
   inviteYou: "Pozivaju Vas na venčanje",
+  tapToOpen: "Tapnite na kovertu",
+
+  // Audio guest book
+  audioGuestBook: "Audio knjiga utisaka",
+  audioRecordMessage: "Ostavite audio poruku mladencima",
+  audioRecordButton: "Snimite poruku",
+  audioStopButton: "Zaustavite",
+  audioYourName: "Vaše ime",
+  audioSendMessage: "Pošaljite poruku",
+  audioThankYou: "Hvala na poruci!",
+  audioRecordAnother: "Snimite još jednu",
+  audioMaxDuration: "Maksimalno trajanje: 60 sekundi",
+  audioNotAvailableYet: "Audio knjiga utisaka biće dostupna na dan venčanja",
+  audioDemoTitle: "Audio knjiga utisaka — Demo",
+  audioDemoDescription: "Ovo je demo verzija. Kontaktirajte nas za aktivaciju.",
+  audioListenTitle: "Audio poruke gostiju",
+  audioNoMessages: "Još uvek nema audio poruka",
+  audioBeFirst: "Budite prvi koji će ostaviti poruku!",
+  audioDownloadAll: "Preuzmi sve poruke",
 
   // Date labels
   months: [
-    "Januar",
-    "Februar",
-    "Mart",
-    "April",
-    "Maj",
-    "Jun",
-    "Jul",
-    "Avgust",
-    "Septembar",
-    "Oktobar",
-    "Novembar",
-    "Decembar",
+    "januar",
+    "februar",
+    "mart",
+    "april",
+    "maj",
+    "jun",
+    "jul",
+    "avgust",
+    "septembar",
+    "oktobar",
+    "novembar",
+    "decembar",
+  ],
+  months_genitive: [
+    "januara",
+    "februara",
+    "marta",
+    "aprila",
+    "maja",
+    "juna",
+    "jula",
+    "avgusta",
+    "septembra",
+    "oktobra",
+    "novembra",
+    "decembra",
   ],
   days_week: [
     "Nedelja",
@@ -168,6 +281,7 @@ export const cyrillicTranslations: Translations = {
 
   // Location
   location: "Локација",
+  locations: "Локације",
 
   // RSVP
   rsvpTitle: "Потврда доласка",
@@ -181,9 +295,10 @@ export const cyrillicTranslations: Translations = {
   attendingNoSub: "Све најлепше!",
   guestCount: "Број особа (укључујући Вас)",
   additionalNotes: "Додатне напомене",
-  notesPlaceholder: "Посебни захтеви или порука младенцима...",
+  notesPlaceholder:
+    "Оставите напомену или наведите имена особа које долазе са вама...",
   sending: "Шаљем...",
-  confirmAttendance: "Потврди долазак",
+  confirmAttendance: "Потврдите долазак",
 
   // Success messages
   thankYou: "Хвала Вам!",
@@ -197,26 +312,87 @@ export const cyrillicTranslations: Translations = {
   people: "особе",
   notAttending: "Неће присуствовати",
 
+  // Add to calendar
+  addToCalendar: "Додај у календар",
+  calendarDialogTitle: "Додај у календар",
+  calendarGoogle: "Google календар",
+  calendarApple: "Apple / Outlook",
+  calendarWeddingTitle: "Венчање",
+  calendarWeddingDesc: "Радујемо се што ћемо вас видети на прослави!",
+  reminderIn15: "Подсети ме за 15 дана",
+  reminderDayBefore: "Подсети ме дан пре рока",
+  reminderEventTitle: "Подсетник: потврди долазак",
+  reminderEventDesc: "Не заборави да потврдиш долазак на венчање.",
+
+  // RSVP closed
+  rsvpClosed: "Пријаве су затворене",
+  rsvpClosedSub: "Рок за пријаву је истекао.",
+
+  // RSVP error states
+  rsvpRecaptchaFailed: "Провера неуспешна. Освежите страницу и покушајте поново.",
+  rsvpSendError: "Грешка при слању. Покушајте поново.",
+
+  // Seating lookup
+  findSeating: "✦ Пронађите место седења ✦",
+  seatingAvailableNote:
+    "Дан пре прославе биће доступна провера где сте распоређени са седењем.",
+
   // Footer
   thankYouFooter: "Хвала Вам што сте део наше среће",
 
+  // PDF
+  downloadPDF: "Преузми позивницу",
+
   // Envelope
   inviteYou: "Позивају Вас на венчање",
+  tapToOpen: "Тапните на коверту",
+
+  // Audio guest book
+  audioGuestBook: "Audio knjiga utisaka",
+  audioRecordMessage: "Ostavite audio poruku mladencima",
+  audioRecordButton: "Snimite poruku",
+  audioStopButton: "Zaustavite",
+  audioYourName: "Vaše ime",
+  audioSendMessage: "Pošaljite poruku",
+  audioThankYou: "Hvala na poruci!",
+  audioRecordAnother: "Snimite još jednu",
+  audioMaxDuration: "Maksimalno trajanje: 60 sekundi",
+  audioNotAvailableYet: "Audio knjiga utisaka biće dostupna na dan venčanja",
+  audioDemoTitle: "Audio knjiga utisaka — Demo",
+  audioDemoDescription: "Ovo je demo verzija. Kontaktirajte nas za aktivaciju.",
+  audioListenTitle: "Audio poruke gostiju",
+  audioNoMessages: "Još uvek nema audio poruka",
+  audioBeFirst: "Budite prvi koji će ostaviti poruku!",
+  audioDownloadAll: "Preuzmi sve poruke",
 
   // Date labels
   months: [
-    "Јануар",
-    "Фебруар",
-    "Март",
-    "Април",
-    "Мај",
-    "Јун",
-    "Јул",
-    "Август",
-    "Септембар",
-    "Октобар",
-    "Новембар",
-    "Децембар",
+    "јануар",
+    "фебруар",
+    "март",
+    "април",
+    "мај",
+    "јун",
+    "јул",
+    "август",
+    "септембар",
+    "октобар",
+    "новембар",
+    "децембар",
+  ],
+  months_genitive: [
+    "јануара",
+    "фебруара",
+    "марта",
+    "априла",
+    "маја",
+    "јуна",
+    "јула",
+    "августа",
+    "септембра",
+    "октобра",
+    "новембра",
+    "децембра",
   ],
   days_week: [
     "Недеља",
@@ -229,6 +405,212 @@ export const cyrillicTranslations: Translations = {
   ],
 };
 
-export function getTranslations(useCyrillic: boolean): Translations {
-  return useCyrillic ? cyrillicTranslations : latinTranslations;
+export const germanTranslations: Translations = {
+  // Hero section
+  celebrateLove: "Wir feiern die Liebe",
+  when: "Wann:",
+
+  // Countdown — "Countdown" is a loanword in German; use a native phrase
+  // that reads as a section heading rather than tech jargon.
+  countdown: "Bis zum großen Tag",
+  days: "Tage",
+  hours: "Stunden",
+  minutes: "Minuten",
+  seconds: "Sekunden",
+
+  // Feature cards
+  where: "Wo",
+  whenLabel: "Wann",
+
+  // Timeline
+  protocol: "Ablauf",
+  ourDayPlan: "Unser Tagesablauf",
+
+  // Location
+  location: "Ort",
+  locations: "Orte",
+
+  // RSVP — informal plural (ihr/Euch) since the rest of the user-facing copy
+  // also uses that register. System errors below stay on Sie.
+  rsvpTitle: "Antwort erbeten",
+  rsvpSubtitle: "Bitte bestätigt Eure Teilnahme bis",
+  nameLabel: "Vor- und Nachname",
+  namePlaceholder: "Euer Name",
+  attendingLabel: "Kommt Ihr?",
+  attendingYes: "Ich komme",
+  attendingYesSub: "Mit Freude!",
+  attendingNo: "Leider nein",
+  attendingNoSub: "Alles Gute!",
+  guestCount: "Anzahl der Personen (Euch eingeschlossen)",
+  additionalNotes: "Anmerkungen",
+  notesPlaceholder:
+    "Hinterlasst eine Notiz oder die Namen der Personen, die mit Euch kommen...",
+  sending: "Wird gesendet...",
+  confirmAttendance: "Teilnahme bestätigen",
+
+  // Success messages
+  thankYou: "Danke!",
+  thankYouResponse: "Danke für Eure Antwort!",
+  confirmationRecorded: "Eure Bestätigung wurde erfolgreich gespeichert.",
+  sorryNotAttending: "Schade, dass Ihr nicht dabei sein könnt.",
+  lookingForward: "Wir freuen uns darauf, Euch auf der Feier zu sehen!",
+  hopeToSee: "Wir hoffen, uns ein anderes Mal zu sehen.",
+  submitAnother: "Neue Antwort senden",
+  person: "Person",
+  people: "Personen",
+  notAttending: "Wird nicht teilnehmen",
+
+  // Add to calendar
+  addToCalendar: "Zum Kalender hinzufügen",
+  calendarDialogTitle: "Zum Kalender hinzufügen",
+  calendarGoogle: "Google Kalender",
+  calendarApple: "Apple / Outlook",
+  calendarWeddingTitle: "Hochzeit",
+  calendarWeddingDesc: "Wir freuen uns darauf, Euch auf der Feier zu sehen!",
+  reminderIn15: "In 15 Tagen erinnern",
+  reminderDayBefore: "Am Vortag der Frist erinnern",
+  reminderEventTitle: "Erinnerung: Teilnahme bestätigen",
+  reminderEventDesc: "Vergiss nicht, Deine Teilnahme an der Hochzeit zu bestätigen.",
+
+  // RSVP closed
+  rsvpClosed: "Die Anmeldung ist geschlossen",
+  rsvpClosedSub: "Die Anmeldefrist ist abgelaufen.",
+
+  // RSVP error states
+  rsvpRecaptchaFailed:
+    "Überprüfung fehlgeschlagen. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
+  rsvpSendError:
+    "Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+
+  // Seating lookup
+  findSeating: "✦ Findet Euren Sitzplatz ✦",
+  seatingAvailableNote:
+    "Einen Tag vor der Feier könnt Ihr Euren Sitzplatz nachschauen.",
+
+  // Footer
+  thankYouFooter: "Danke, dass Ihr Teil unseres Glücks seid",
+
+  // PDF
+  downloadPDF: "Einladung herunterladen",
+
+  // Envelope
+  inviteYou: "Laden Euch ein zur Hochzeit",
+  tapToOpen: "Tippen Sie auf den Umschlag",
+
+  // Audio guest book
+  audioGuestBook: "Audio-Gästebuch",
+  audioRecordMessage: "Hinterlasst eine Audio-Nachricht für das Brautpaar",
+  audioRecordButton: "Nachricht aufnehmen",
+  audioStopButton: "Stoppen",
+  audioYourName: "Euer Name",
+  audioSendMessage: "Nachricht senden",
+  audioThankYou: "Danke für Eure Nachricht!",
+  audioRecordAnother: "Noch eine aufnehmen",
+  audioMaxDuration: "Maximale Dauer: 60 Sekunden",
+  audioNotAvailableYet: "Das Audio-Gästebuch ist am Hochzeitstag verfügbar",
+  audioDemoTitle: "Audio-Gästebuch — Demo",
+  audioDemoDescription: "Dies ist eine Demo-Version. Kontaktieren Sie uns für die Aktivierung.",
+  audioListenTitle: "Audio-Nachrichten der Gäste",
+  audioNoMessages: "Noch keine Audio-Nachrichten",
+  audioBeFirst: "Hinterlasst als erste eine Nachricht!",
+  audioDownloadAll: "Alle Nachrichten herunterladen",
+
+  // Date labels
+  months: [
+    "Januar",
+    "Februar",
+    "März",
+    "April",
+    "Mai",
+    "Juni",
+    "Juli",
+    "August",
+    "September",
+    "Oktober",
+    "November",
+    "Dezember",
+  ],
+  months_genitive: [
+    "Januar",
+    "Februar",
+    "März",
+    "April",
+    "Mai",
+    "Juni",
+    "Juli",
+    "August",
+    "September",
+    "Oktober",
+    "November",
+    "Dezember",
+  ],
+  days_week: [
+    "Sonntag",
+    "Montag",
+    "Dienstag",
+    "Mittwoch",
+    "Donnerstag",
+    "Freitag",
+    "Samstag",
+  ],
+};
+
+// Ijekavica variant of the Latin translations — applied to invitations
+// whose contact phone is NOT Serbian (phone_country !== "RS"). Only the
+// words that differ from ekavica are swapped (vjenčanje, vidjeti, mjesto,
+// najljepše, prije, gdje, sjedenje, dio, srijeda, etc.). For BA/HR/ME
+// couples this reads as native; for the rare Cyrillic ijekavica case we
+// don't add a separate object — ME/BA Cyrillic is an edge case.
+export const latinIjekavicaTranslations: Translations = {
+  ...latinTranslations,
+  where: "Gdje",
+  attendingNoSub: "Sve najljepše!",
+  confirmationRecorded: "Vaša potvrda je uspješno zabilježena.",
+  lookingForward: "Radujemo se što ćemo Vas vidjeti na proslavi!",
+  hopeToSee: "Nadamo se da ćemo se vidjeti nekom drugom prilikom.",
+  rsvpRecaptchaFailed:
+    "Provjera neuspješna. Osvježite stranicu i pokušajte ponovo.",
+  findSeating: "✦ Pronađite mjesto sjedenja ✦",
+  seatingAvailableNote:
+    "Dan prije proslave biće dostupna provjera gdje ste raspoređeni sa sjedenjem.",
+  thankYouFooter: "Hvala Vam što ste dio naše sreće",
+  calendarWeddingTitle: "Vjenčanje",
+  reminderEventDesc: "Ne zaboravi da potvrdiš dolazak na vjenčanje.",
+  inviteYou: "Pozivaju Vas na vjenčanje",
+  audioNotAvailableYet:
+    "Audio knjiga utisaka biće dostupna na dan vjenčanja",
+  audioNoMessages: "Još uvijek nema audio poruka",
+  days_week: [
+    "Nedjelja",
+    "Ponedjeljak",
+    "Utorak",
+    "Srijeda",
+    "Četvrtak",
+    "Petak",
+    "Subota",
+  ],
+};
+
+/** Returns translations for the given language. Accepts the legacy boolean
+ *  signature (true → Cyrillic, false → Latin) for backward compatibility
+ *  with existing call sites in the audio/PDF/sub-routes. Pass
+ *  `ijekavica: true` to swap Latin to the BA/HR/ME variant — ignored for
+ *  Cyrillic and German. */
+export function getTranslations(
+  langOrUseCyrillic: Lang | boolean,
+  ijekavica = false,
+): Translations {
+  if (typeof langOrUseCyrillic === "boolean") {
+    if (langOrUseCyrillic) return cyrillicTranslations;
+    return ijekavica ? latinIjekavicaTranslations : latinTranslations;
+  }
+  switch (langOrUseCyrillic) {
+    case "sr-Cyrl":
+      return cyrillicTranslations;
+    case "de":
+      return germanTranslations;
+    case "sr-Latn":
+    default:
+      return ijekavica ? latinIjekavicaTranslations : latinTranslations;
+  }
 }

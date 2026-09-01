@@ -1,0 +1,1181 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Send,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import DatePicker from "@/components/ui/DatePicker";
+import type { BirthdayThemeType, BirthdayGender, BirthdayFontType } from "@/app/deciji-rodjendan/[slug]/types";
+import {
+  BIRTHDAY_THEME_CONFIGS,
+  BIRTHDAY_FONT_CONFIGS,
+  getBirthdayThemeCSSVariables,
+} from "@/app/deciji-rodjendan/[slug]/constants";
+import { SceneDecorations } from "@/app/deciji-rodjendan/[slug]/components/Illustrations";
+import { validateStep } from "@/lib/wizard-validation";
+import { decijiValidators, STEP_KEYS } from "./validators";
+import { PhoneAuthField } from "@/components/verification/PhoneAuthField";
+import type { BypassInfo } from "@/lib/bypass-token";
+import {
+  useRecaptcha,
+  RecaptchaDisclosure,
+} from "@/components/forms/RecaptchaProvider";
+import { refreshPhoneTrustToken } from "@/lib/phone-trust-refresh";
+import { redactPayloadForEmail } from "@/lib/wizard-notify";
+import { ImagePicker } from "@/components/forms/ImagePicker";
+import * as Sentry from "@sentry/nextjs";
+import {
+  formatPrice,
+  getRodjendanPozivnicaPrice,
+  getRodjendanSlikePrice,
+  getRodjendanSlikeDelta,
+} from "@/data/pricing";
+
+const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+
+// ─── Date helpers ───────────────────────────────────────────────────────────
+
+const MONTHS_GEN = [
+  "Januara", "Februara", "Marta", "Aprila", "Maja", "Juna",
+  "Jula", "Avgusta", "Septembra", "Oktobra", "Novembra", "Decembra",
+];
+
+function toSerbianDeadline(dateStr: string): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  return `${d.getDate()}. ${MONTHS_GEN[d.getMonth()]} ${d.getFullYear()}.`;
+}
+
+// ─── Form data ──────────────────────────────────────────────────────────────
+
+interface FormData {
+  child_name: string;
+  parent_names: string;
+  age: number;
+  gender: BirthdayGender;
+  event_date_only: string;
+  event_time: string;
+  submit_until_date: string;
+  submit_until: string;
+  contact_phone: string;
+  phone_trust_token: string;
+  /** Set once from the bypass link — read by validators to skip the SMS gate. */
+  bypassActive: boolean;
+  location_name: string;
+  location_address: string;
+  theme: BirthdayThemeType;
+  displayFont: BirthdayFontType;
+  tagline: string;
+  countdown_enabled: boolean;
+  map_enabled: boolean;
+  wishes: string;
+  /** Photos picked in the "Fotografije" step. Held in memory only; pushed to
+   *  Vercel Blob right after the invitation record is created. */
+  pendingImages: File[];
+}
+
+const TOTAL_STEPS = 5;
+
+const STEP_TITLES = [
+  "Informacije o detetu",
+  "Datum i lokacija",
+  "Dizajn",
+  "Fotografije",
+  "Poslednji korak",
+];
+
+/** Same cap as the invitation renderer and the upload route. */
+const MAX_IMAGES = 3;
+
+const defaultFormData: FormData = {
+  child_name: "",
+  parent_names: "",
+  age: 1,
+  gender: "boy",
+  event_date_only: "",
+  event_time: "16:00",
+  submit_until_date: "",
+  submit_until: "",
+  contact_phone: "",
+  phone_trust_token: "",
+  bypassActive: false,
+  location_name: "",
+  location_address: "",
+  theme: "boy_animals",
+  displayFont: "fredoka",
+  tagline: "",
+  countdown_enabled: true,
+  map_enabled: true,
+  wishes: "",
+  pendingImages: [],
+};
+
+// ─── Shared UI helpers ──────────────────────────────────────────────────────
+
+const inputCls =
+  "w-full border-b border-stone-200 focus:border-[#FF6B6B] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300";
+
+const labelCls =
+  "block text-xs font-bold uppercase tracking-[0.18em] text-stone-400 mb-1.5";
+
+function Field({
+  label,
+  children,
+  hint,
+}: {
+  label: string;
+  children: React.ReactNode;
+  hint?: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <label className={labelCls}>{label}</label>
+      {children}
+      {hint && <p className="text-xs text-stone-400 mt-1.5">{hint}</p>}
+    </div>
+  );
+}
+
+function TextInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <input
+      type="text"
+      className={inputCls}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+    />
+  );
+}
+
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+}) {
+  return (
+    <label className="flex items-start gap-2 sm:gap-3 cursor-pointer">
+      <div
+        onClick={() => onChange(!checked)}
+        className={`relative w-10 h-6 sm:w-11 sm:h-6 rounded-full transition-colors duration-200 flex-shrink-0 mt-0.5 flex items-center ${checked ? "bg-[#FF6B6B]" : "bg-stone-200"}`}
+      >
+        <div
+          className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? "sm:translate-x-6 translate-x-5" : "translate-x-1"}`}
+        />
+      </div>
+      <span className="text-stone-600 text-xs sm:text-sm leading-tight">
+        {label}
+      </span>
+    </label>
+  );
+}
+
+function StepHeading({ title, desc }: { title: string; desc?: string }) {
+  return (
+    <div className="mb-8">
+      <h2 className="text-2xl font-serif text-stone-800 mb-1">{title}</h2>
+      {desc && <p className="text-stone-400 text-sm">{desc}</p>}
+    </div>
+  );
+}
+
+// ─── Birthday preview ───────────────────────────────────────────────────────
+
+function BirthdayPreview({
+  theme,
+  displayFont,
+  childName,
+  age,
+}: {
+  theme: BirthdayThemeType;
+  displayFont: BirthdayFontType;
+  childName: string;
+  age: number;
+}) {
+  const cssVars = getBirthdayThemeCSSVariables(theme, displayFont);
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-2xl"
+      style={{
+        ...(cssVars as React.CSSProperties),
+        backgroundColor: "var(--theme-surface)",
+        minHeight: "280px",
+      }}
+    >
+      {/* Preview label */}
+      <div className="absolute top-3 right-3 z-10">
+        <span
+          className="text-[9px] uppercase tracking-widest font-bold px-2 py-1 rounded-full"
+          style={{
+            backgroundColor: "var(--theme-primary-muted)",
+            color: "var(--theme-primary)",
+          }}
+        >
+          Preview
+        </span>
+      </div>
+
+      <div className="relative flex flex-col items-center justify-center min-h-[280px] py-8 px-6 text-center">
+        {/* Age badge */}
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+          style={{
+            background: `linear-gradient(135deg, var(--theme-primary), var(--theme-secondary))`,
+          }}
+        >
+          <span
+            className="text-3xl font-bold text-white"
+            style={{ fontFamily: "var(--theme-display-font)" }}
+          >
+            {age}
+          </span>
+        </div>
+
+        {/* Birthday label */}
+        <p
+          className="text-xs uppercase tracking-[0.3em] mb-3"
+          style={{ color: "var(--theme-text-light)" }}
+        >
+          {age === 1 ? "prvi rođendan" : `${age}. rođendan`}
+        </p>
+
+        {/* Child name */}
+        <h2
+          className="text-4xl sm:text-5xl font-bold leading-tight"
+          style={{
+            color: "var(--theme-text)",
+            fontFamily: "var(--theme-display-font)",
+          }}
+        >
+          {childName || "Ime Deteta"}
+        </h2>
+
+        {/* Decorative line */}
+        <div className="flex items-center gap-3 mt-4">
+          <div
+            className="h-px w-12"
+            style={{ backgroundColor: "var(--theme-primary)", opacity: 0.3 }}
+          />
+          <span style={{ color: "var(--theme-secondary)", fontSize: 16 }}>&#9733;</span>
+          <div
+            className="h-px w-12"
+            style={{ backgroundColor: "var(--theme-primary)", opacity: 0.3 }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Time picker ────────────────────────────────────────────────────────────
+
+const HOURS = Array.from({ length: 13 }, (_, i) => i + 9);
+const MINUTES = ["00", "15", "30", "45"];
+
+function TimePicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (t: string) => void;
+}) {
+  const [h, m] = value.split(":") ?? ["16", "00"];
+
+  const selectCls =
+    "bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-stone-800 text-base outline-none focus:border-[#FF6B6B] transition-colors cursor-pointer appearance-none text-center font-medium";
+
+  return (
+    <div className="flex items-center gap-2">
+      <select
+        className={selectCls + " w-20"}
+        value={h}
+        onChange={(e) => onChange(`${e.target.value}:${m}`)}
+      >
+        {HOURS.map((hr) => (
+          <option key={hr} value={String(hr).padStart(2, "0")}>
+            {String(hr).padStart(2, "0")}
+          </option>
+        ))}
+      </select>
+      <span className="text-stone-400 font-bold text-lg select-none">:</span>
+      <select
+        className={selectCls + " w-20"}
+        value={m}
+        onChange={(e) => onChange(`${h}:${e.target.value}`)}
+      >
+        {MINUTES.map((min) => (
+          <option key={min} value={min}>
+            {min}
+          </option>
+        ))}
+      </select>
+      <span className="text-stone-500 text-sm ml-1">h</span>
+    </div>
+  );
+}
+
+// ─── Steps ──────────────────────────────────────────────────────────────────
+
+function Step1({
+  formData,
+  updateField,
+}: {
+  formData: FormData;
+  updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+}) {
+  return (
+    <div>
+      <StepHeading
+        title="Informacije o detetu"
+        desc="Unesite osnovne podatke o slavljeniku."
+      />
+
+      <div className="space-y-6">
+        <Field label="Ime deteta">
+          <TextInput
+            value={formData.child_name}
+            onChange={(v) => updateField("child_name", v)}
+            placeholder="npr. Marko"
+          />
+        </Field>
+
+        <Field label="Roditelji">
+          <TextInput
+            value={formData.parent_names}
+            onChange={(v) => updateField("parent_names", v)}
+            placeholder="npr. Mama Ana i tata Petar"
+          />
+        </Field>
+
+        <div>
+          <p className={labelCls}>Koji rođendan?</p>
+          <div className="flex gap-2 mt-1">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => updateField("age", n)}
+                className={`w-12 h-12 rounded-xl border text-lg font-bold transition-all cursor-pointer ${
+                  formData.age === n
+                    ? "bg-[#FF6B6B] border-[#FF6B6B] text-white"
+                    : "border-stone-200 text-stone-500 hover:border-stone-300"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className={labelCls}>Pol deteta</p>
+          <div className="flex gap-3 mt-1">
+            {[
+              { val: "boy" as const, label: "Dečak 👦", color: "#4ECDC4" },
+              { val: "girl" as const, label: "Devojčica 👧", color: "#FF6B9D" },
+            ].map(({ val, label, color }) => (
+              <button
+                key={val}
+                type="button"
+                onClick={() => {
+                  updateField("gender", val);
+                  // Auto-switch theme when gender changes (skip punoletstvo
+                  // palettes — their illustration is "classic")
+                  const currentThemeGender = BIRTHDAY_THEME_CONFIGS[formData.theme].gender;
+                  if (val !== currentThemeGender && currentThemeGender !== "neutral") {
+                    const firstTheme = Object.entries(BIRTHDAY_THEME_CONFIGS).find(
+                      ([, cfg]) =>
+                        (cfg.gender === val || cfg.gender === "neutral") &&
+                        cfg.illustration !== "classic",
+                    );
+                    if (firstTheme) updateField("theme", firstTheme[0] as BirthdayThemeType);
+                  }
+                }}
+                className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
+                  formData.gender === val
+                    ? "text-white"
+                    : "border-stone-200 text-stone-500 hover:border-stone-300"
+                }`}
+                style={
+                  formData.gender === val
+                    ? { backgroundColor: color, borderColor: color }
+                    : {}
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Step2({
+  formData,
+  updateField,
+  bypassInfo,
+}: {
+  formData: FormData;
+  updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+  bypassInfo?: BypassInfo;
+}) {
+  return (
+    <div>
+      <StepHeading
+        title="Datum i lokacija"
+        desc="Kada i gde je proslava?"
+      />
+      <div className="space-y-8">
+        <div>
+          <p className={labelCls}>Datum proslave</p>
+          <DatePicker
+            value={formData.event_date_only}
+            onChange={(v) => {
+              updateField("event_date_only", v);
+              // Ako je rok već izabran a proslava pomerena unapred pa nazad,
+              // stari rok može da ostane IZA proslave — `maxDate` to sprečava
+              // samo pri novom biranju, ne i za već upisanu vrednost.
+              if (formData.submit_until_date && formData.submit_until_date > v) {
+                updateField("submit_until_date", v);
+                updateField("submit_until", toSerbianDeadline(v));
+              }
+            }}
+            placeholder="Izaberite datum"
+            variant="light"
+            showQuickActions={false}
+          />
+        </div>
+
+        <div>
+          <p className={labelCls}>Vreme proslave</p>
+          <TimePicker
+            value={formData.event_time}
+            onChange={(v) => updateField("event_time", v)}
+          />
+        </div>
+
+        <div>
+          <p className={labelCls}>Rok za potvrdu dolaska</p>
+          <DatePicker
+            value={formData.submit_until_date}
+            onChange={(v) => {
+              updateField("submit_until_date", v);
+              updateField("submit_until", toSerbianDeadline(v));
+            }}
+            // Rok za potvrde ne sme da padne posle same proslave — potvrda
+            // posle tog dana nema smisla.
+            maxDate={formData.event_date_only || undefined}
+            placeholder="Izaberite krajnji datum"
+            variant="light"
+            showQuickActions={false}
+          />
+          {formData.submit_until && (
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-xs text-stone-400 uppercase tracking-widest font-bold">
+                Prikaz:
+              </span>
+              <span className="text-sm text-stone-600 font-medium">
+                {formData.submit_until}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <Field label="Naziv lokacije">
+          <TextInput
+            value={formData.location_name}
+            onChange={(v) => updateField("location_name", v)}
+            placeholder="npr. Igraonica Jungle / Restoran Zvezdica"
+          />
+        </Field>
+
+        <Field label="Adresa lokacije">
+          <TextInput
+            value={formData.location_address}
+            onChange={(v) => updateField("location_address", v)}
+            placeholder="npr. Bulevar Mihajla Pupina 12, Novi Sad"
+          />
+        </Field>
+
+        <Field label="Vaš kontakt telefon (za naš tim, nije na pozivnici)">
+          <PhoneAuthField
+            bypassInfo={bypassInfo}
+            value={formData.contact_phone}
+            onChange={(v) => updateField("contact_phone", v)}
+            onVerified={(token) => updateField("phone_trust_token", token)}
+            onUnverified={() => updateField("phone_trust_token", "")}
+          />
+          {!bypassInfo && !formData.phone_trust_token && (
+            <p className="text-[11px] text-stone-400 mt-1.5">
+              Kliknite na dugme „Kod&rdquo; kako biste dobili verifikacioni kod putem SMS-a.
+            </p>
+          )}
+        </Field>
+      </div>
+      <RecaptchaDisclosure className="mt-4 text-[10px] text-stone-400 text-center" />
+    </div>
+  );
+}
+
+function Step3({
+  formData,
+  updateField,
+}: {
+  formData: FormData;
+  updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+}) {
+  const themes = Object.entries(BIRTHDAY_THEME_CONFIGS) as [
+    BirthdayThemeType,
+    (typeof BIRTHDAY_THEME_CONFIGS)[BirthdayThemeType],
+  ][];
+
+  // Filter themes by gender (show matching + neutral) and exclude the
+  // "classic" illustration palettes — those are punoletstvo-only and live
+  // in /napravi-punoletstvo, not this children's flow.
+  const filteredThemes = themes.filter(
+    ([, cfg]) =>
+      (cfg.gender === formData.gender || cfg.gender === "neutral") &&
+      cfg.illustration !== "classic",
+  );
+
+  const fonts = Object.entries(BIRTHDAY_FONT_CONFIGS) as [
+    BirthdayFontType,
+    (typeof BIRTHDAY_FONT_CONFIGS)[BirthdayFontType],
+  ][];
+
+  return (
+    <div>
+      <StepHeading
+        title="Dizajn"
+        desc="Izaberite temu i font — pregled se ažurira uživo."
+      />
+
+      {/* Live preview */}
+      <div className="mb-6">
+        <p className={labelCls + " mb-3"}>Pregled pozivnice</p>
+        <BirthdayPreview
+          theme={formData.theme}
+          displayFont={formData.displayFont}
+          childName={formData.child_name}
+          age={formData.age}
+        />
+      </div>
+
+      {/* Font dropdown */}
+      <div className="mb-8">
+        <p className={labelCls + " mb-2"}>Font za ime</p>
+        <div className="relative">
+          <select
+            value={formData.displayFont}
+            onChange={(e) =>
+              updateField("displayFont", e.target.value as BirthdayFontType)
+            }
+            className="w-full appearance-none bg-white border border-stone-200 rounded-xl px-4 py-3 pr-10 text-stone-800 text-sm font-medium outline-none focus:border-[#FF6B6B] focus:ring-2 focus:ring-[#FF6B6B]/10 transition-all cursor-pointer"
+          >
+            {fonts.map(([key, cfg]) => (
+              <option key={key} value={key}>
+                {cfg.name} — {cfg.description}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-stone-400">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M4 6l4 4 4-4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Theme selector */}
+      <p className={labelCls + " mb-3"}>Tema pozivnice</p>
+      <div className="grid grid-cols-2 gap-3">
+        {filteredThemes.map(([key, cfg]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => updateField("theme", key)}
+            className={`relative p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+              formData.theme === key
+                ? "border-[#FF6B6B] shadow-md"
+                : "border-stone-100 hover:border-stone-200"
+            }`}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div
+                className="w-6 h-6 rounded-full border border-black/5"
+                style={{ backgroundColor: cfg.colors.primary }}
+              />
+              <div
+                className="w-6 h-6 rounded-full border border-black/5"
+                style={{ backgroundColor: cfg.colors.secondary }}
+              />
+            </div>
+            <p className="text-sm font-semibold text-stone-700">{cfg.name}</p>
+            <p className="text-xs text-stone-400">
+              {cfg.gender === "boy" ? "Dečak" : cfg.gender === "girl" ? "Devojčica" : "Neutralno"}
+            </p>
+            {formData.theme === key && (
+              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#FF6B6B] flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-white" />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StepPhotos({
+  formData,
+  updateField,
+}: {
+  formData: FormData;
+  updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+}) {
+  const delta = getRodjendanSlikeDelta(false);
+  const withPhotos = getRodjendanSlikePrice();
+  const plain = getRodjendanPozivnicaPrice(false);
+  return (
+    <div>
+      <StepHeading
+        title="Fotografije"
+        desc="Do 3 fotografije na pozivnici, u polaroid stilu."
+      />
+
+      <div className="rounded-2xl px-5 py-4 mb-6 border border-[#FF6B6B]/25 bg-[#FF6B6B]/[0.06]">
+        <p className="text-sm font-bold text-stone-800 mb-1">
+          + {formatPrice(delta)}
+        </p>
+        <p className="text-xs text-stone-600 leading-relaxed">
+          Sa fotografijama pozivnica košta {formatPrice(withPhotos)} umesto{" "}
+          {formatPrice(plain)}. Ako ne dodate nijednu fotografiju, ne plaćate
+          ništa dodatno — korak možete slobodno preskočiti.
+        </p>
+      </div>
+
+      <ImagePicker
+        files={formData.pendingImages}
+        onChange={(f) => updateField("pendingImages", f)}
+        max={MAX_IMAGES}
+        accentHex="#FF6B6B"
+        accentRgb="255, 107, 107"
+      />
+    </div>
+  );
+}
+
+function Step4({
+  formData,
+  updateField,
+}: {
+  formData: FormData;
+  updateField: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
+}) {
+  return (
+    <div>
+      <StepHeading
+        title="Poslednji korak!"
+      />
+      <div className="space-y-6 -mt-4">
+        <div>
+          <div className="bg-[#FF6B6B]/5 border border-[#FF6B6B]/15 rounded-2xl px-5 py-4 text-sm text-[#E55A5A] leading-relaxed">
+            <p className="font-semibold mb-1">🎉 Skoro sve je spremno!</p>
+            <p>
+              Mapu, formu za potvrdu dolaska i odbrojavanje ćemo podesiti mi — vi samo
+              kliknite <em>Pošalji zahtev</em> i mi ćemo se pobrinuti za sve.
+            </p>
+          </div>
+        </div>
+
+        <Field label="Tagline (poruka na pozivnici)">
+          <textarea
+            className="w-full border-b border-stone-200 focus:border-[#FF6B6B] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
+            rows={2}
+            value={formData.tagline}
+            onChange={(e) => updateField("tagline", e.target.value)}
+            placeholder="npr. Naša mala zvezda slavi prvi rođendan!"
+          />
+        </Field>
+
+        <div className="space-y-5">
+          <p className={labelCls}>Šta prikazati gostima?</p>
+          <Toggle
+            checked={formData.countdown_enabled}
+            onChange={(v) => updateField("countdown_enabled", v)}
+            label="Odbrojavanje do proslave (dani, sati, minuti, sekunde)"
+          />
+          <Toggle
+            checked={formData.map_enabled}
+            onChange={(v) => updateField("map_enabled", v)}
+            label="Interaktivna google mapa do lokacije"
+          />
+        </div>
+
+        <Field label="Posebne napomene ili zahtevi (opciono)">
+          <textarea
+            className="w-full border-b border-stone-200 focus:border-[#FF6B6B] bg-transparent py-2.5 px-1 text-stone-800 text-base outline-none transition-colors placeholder:text-stone-300 resize-none"
+            rows={3}
+            value={formData.wishes}
+            onChange={(e) => updateField("wishes", e.target.value)}
+            placeholder="Ovde napišite ukoliko imate posebne zahteve..."
+          />
+        </Field>
+
+      </div>
+    </div>
+  );
+}
+
+// ─── Main form ──────────────────────────────────────────────────────────────
+
+export default function BirthdayQuestionnaireForm({
+  bypassInfo,
+}: {
+  bypassInfo?: BypassInfo;
+}) {
+  const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState(1);
+  const [formData, setFormData] = useState<FormData>(() => ({
+    ...defaultFormData,
+    bypassActive: !!bypassInfo,
+  }));
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  // B3 self-serve: preview link + one-time portal password after create.
+  const [createdSlug, setCreatedSlug] = useState<string | null>(null);
+  const [createdPassword, setCreatedPassword] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [stepError, setStepError] = useState<string | null>(null);
+  // Two-phase submit when photos are attached: create the record, then push the
+  // files. The client waits on the spinner through both.
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+  }>({ current: 0, total: 0 });
+  const formTopRef = useRef<HTMLDivElement>(null);
+  const { execute: executeRecaptcha } = useRecaptcha();
+
+  const updateField = <K extends keyof FormData>(
+    key: K,
+    value: FormData[K],
+  ) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (stepError) setStepError(null);
+  };
+
+  const goNext = () => {
+    const key = STEP_KEYS[step - 1];
+    const err = validateStep(decijiValidators, key, formData);
+    if (err) {
+      setStepError(err);
+      return;
+    }
+    setStepError(null);
+    setDirection(1);
+    setStep((s) => Math.min(s + 1, TOTAL_STEPS));
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
+  const goPrev = () => {
+    setStepError(null);
+    setDirection(-1);
+    setStep((s) => Math.max(s - 1, 1));
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
+
+  const handleSubmit = async () => {
+    // Re-run all validators before sending — defense in depth.
+    for (const k of STEP_KEYS) {
+      const msg = validateStep(decijiValidators, k, formData);
+      if (msg) {
+        const badStep = STEP_KEYS.indexOf(k) + 1;
+        setStep(badStep);
+        setStepError(msg);
+        return;
+      }
+    }
+    setStepError(null);
+    setError(null);
+    setIsSubmitting(true);
+
+    const imagesToUpload = formData.pendingImages.slice(0, MAX_IMAGES);
+
+    // Sequential upload, run AFTER the record exists. Each failure is logged to
+    // Sentry and skipped: the invitation is fine without a photo and admin (or
+    // the client, from the portal) can add it later — a hung upload must never
+    // cost the client their invitation.
+    const uploadPendingImages = async (slug: string) => {
+      if (imagesToUpload.length === 0) return;
+      setUploadProgress({ current: 0, total: imagesToUpload.length });
+      for (let i = 0; i < imagesToUpload.length; i++) {
+        setUploadProgress({ current: i, total: imagesToUpload.length });
+        const fd = new FormData();
+        fd.append("image", imagesToUpload[i]);
+        try {
+          const r = await fetch(
+            `/api/deciji-rodjendan/${encodeURIComponent(slug)}/images-upload/`,
+            { method: "POST", body: fd },
+          );
+          if (!r.ok) {
+            const j = await r.json().catch(() => ({}));
+            throw new Error(j.error || `Upload failed (${r.status})`);
+          }
+        } catch (err) {
+          Sentry.captureException(err, {
+            tags: { feature: "rodjendan-images-upload" },
+            extra: { slug, idx: i, total: imagesToUpload.length },
+          });
+        }
+      }
+      setUploadProgress({
+        current: imagesToUpload.length,
+        total: imagesToUpload.length,
+      });
+    };
+
+    try {
+      let recaptchaToken: string;
+      try {
+        recaptchaToken = await executeRecaptcha("create_birthday");
+      } catch {
+        setError("Provera neuspešna. Osvežite stranicu i pokušajte ponovo.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // The phone was verified on an early step; this form is routinely filled
+      // in longer than the trust token lives. Re-sign it for the same number
+      // (no SMS, no user-visible step) so a slow submit isn't rejected as
+      // unverified. Bypass links carry their own authorization.
+      const contactPhoneE164 = `${bypassInfo?.callingCode || "+381"}${formData.contact_phone}`;
+      const phoneTrustToken = bypassInfo
+        ? formData.phone_trust_token
+        : await refreshPhoneTrustToken({
+            phoneE164: contactPhoneE164,
+            currentToken: formData.phone_trust_token,
+            executeRecaptcha,
+          });
+
+      // 1) Persist as draft in MongoDB (mirrors wedding classic flow).
+      const birthdayApiPayload = {
+        theme: formData.theme,
+        gender: formData.gender,
+        displayFont: formData.displayFont,
+        child_name: formData.child_name,
+        parent_names: formData.parent_names,
+        age: formData.age,
+        event_date: formData.event_date_only
+          ? `${formData.event_date_only}T${formData.event_time}:00`
+          : "",
+        submit_until: formData.submit_until_date,
+        tagline: formData.tagline,
+        location: {
+          name: formData.location_name,
+          address: formData.location_address,
+        },
+        countdown_enabled: formData.countdown_enabled,
+        map_enabled: formData.map_enabled,
+        contact_phone: contactPhoneE164,
+        phone_trust_token: phoneTrustToken,
+        // Photo step: the flag is what turns on `paid_for_images` (so the
+        // upload below is accepted) and what prices the invitation at the
+        // standard rate instead of the plain event rate.
+        images_enabled: imagesToUpload.length > 0,
+        ...(bypassInfo ? { bypass_token: bypassInfo.token } : {}),
+        recaptcha_token: recaptchaToken,
+      };
+      const res = await fetch("/api/deciji-rodjendan/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(birthdayApiPayload),
+      });
+      const created = await res.json();
+      if (!res.ok) throw new Error(created.error || "Greška pri kreiranju pozivnice");
+
+      // Photos first — the success screen sends the client straight into the
+      // preview, which should already show them.
+      await uploadPendingImages(created.slug);
+
+      setCreatedSlug(created.slug);
+      if (typeof created.password === "string") setCreatedPassword(created.password);
+      setIsSubmitted(true);
+
+      // 2) Notify admin from client (Web3Forms blocks server requests).
+      if (WEB3FORMS_ACCESS_KEY) {
+        const formattedDate = formData.event_date_only
+          ? new Date(formData.event_date_only + "T12:00:00").toLocaleDateString(
+              "sr-Latn-RS",
+              { weekday: "long", year: "numeric", month: "long", day: "numeric" },
+            )
+          : "";
+        const genderLabel =
+          formData.gender === "boy"
+            ? "Dečak"
+            : formData.gender === "girl"
+            ? "Devojčica"
+            : "Neutralno";
+
+        fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_ACCESS_KEY,
+            subject: `🎈 Novi Rođendan — ${formData.child_name} (${formData.age}. rođendan)`,
+            from_name: "Halo Rođendani",
+            "Ime deteta": formData.child_name,
+            Slug: created.slug,
+            Roditelji: formData.parent_names,
+            Uzrast: `${formData.age}. rođendan`,
+            Pol: genderLabel,
+            "Datum proslave": `${formattedDate}, ${formData.event_time}h`,
+            "Rok za prijavu": formData.submit_until,
+            Lokacija: `${formData.location_name}, ${formData.location_address}`,
+            "Kontakt telefon": `${bypassInfo?.callingCode || "+381"}${formData.contact_phone}`,
+            Fotografije:
+              imagesToUpload.length > 0
+                ? `DA (${imagesToUpload.length}) — pozivnica se naplaćuje po standardnoj ceni`
+                : "ne",
+            Napomena: formData.wishes || "(nema)",
+            "Admin link": `https://halouspomene.rs/admin/rodjendan/${created.slug}`,
+            "JSON podaci": redactPayloadForEmail(birthdayApiPayload),
+          }),
+        }).catch(() => {});
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Došlo je do greške pri slanju. Pokušajte ponovo.",
+      );
+    } finally {
+      setIsSubmitting(false);
+      setUploadProgress({ current: 0, total: 0 });
+    }
+  };
+
+  const currentThemeConfig = BIRTHDAY_THEME_CONFIGS[formData.theme];
+
+  // Sync page background with selected theme
+  useEffect(() => {
+    const main = document.querySelector(".birthday-form-page") as HTMLElement;
+    if (main) {
+      main.style.backgroundColor = currentThemeConfig.colors.background;
+    }
+    return () => {
+      if (main) main.style.backgroundColor = "";
+    };
+  }, [currentThemeConfig.colors.background]);
+
+  // Success screen — B3 self-serve: preview + publish CTA + one-time password.
+  if (isSubmitted) {
+    return (
+      <div className="bg-white rounded-3xl shadow-sm border border-stone-100 p-10 sm:p-12 text-center max-w-2xl mx-auto">
+        <div className="w-20 h-20 bg-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-[#FF6B6B]/25">
+          <CheckCircle2 size={40} className="text-white" />
+        </div>
+        <h2 className="text-3xl font-serif text-[#FF6B6B] mb-4">
+          Pozivnica je spremna!
+        </h2>
+        <p className="text-[#E55A5A] text-lg mb-8">
+          Pogledajte kako izgleda pozivnica za {formData.child_name} — pa je
+          objavite kad budete spremni.
+        </p>
+        {createdSlug && (
+          <a
+            href={`/deciji-rodjendan/${createdSlug}`}
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white font-semibold text-base transition-all hover:opacity-90 shadow-lg shadow-[#FF6B6B]/25 bg-[#FF6B6B]"
+          >
+            Pogledaj i objavi pozivnicu →
+          </a>
+        )}
+        {createdPassword && (
+          <div className="mt-8 mx-auto max-w-sm rounded-2xl border border-[#FF6B6B]/30 bg-[#FF6B6B]/[0.06] p-5 text-left">
+            <p className="text-xs font-bold uppercase tracking-wider mb-1 text-[#E55A5A]">
+              Lozinka za pristup pozivnici
+            </p>
+            <p className="font-mono text-lg font-bold mb-2 text-[#FF6B6B]">
+              {createdPassword}
+            </p>
+            <p className="text-xs leading-relaxed text-[#E55A5A]">
+              Sačuvajte je — sa njom pristupate potvrdama dolaska i upravljanju
+              pozivnicom.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const progress = ((step - 1) / (TOTAL_STEPS - 1)) * 100;
+
+  return (
+    <div ref={formTopRef} className="max-w-2xl mx-auto scroll-mt-4">
+      {/* Floating illustrations — updates with selected theme */}
+      <SceneDecorations
+        illustration={currentThemeConfig.illustration}
+        confetti={currentThemeConfig.colors.confetti}
+      />
+      {/* Progress indicator */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-sm font-medium text-[#E55A5A]">
+            {STEP_TITLES[step - 1]}
+          </span>
+          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#FF6B6B]">
+            Korak {step} od {TOTAL_STEPS}
+          </span>
+        </div>
+        <div className="w-full h-1.5 bg-[#FF6B6B]/15 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-[#FF6B6B] rounded-full"
+            initial={false}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.4 }}
+          />
+        </div>
+        <div className="flex justify-between mt-3">
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+            <div
+              key={i}
+              className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${
+                i + 1 <= step ? "bg-[#FF6B6B]" : "bg-[#FF6B6B]/25"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Card */}
+      <div className="bg-white rounded-3xl shadow-sm border border-stone-100 overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: direction * 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction * -40 }}
+            transition={{ duration: 0.28, ease: "easeInOut" }}
+            className="p-8"
+          >
+            {step === 1 && (
+              <Step1 formData={formData} updateField={updateField} />
+            )}
+            {step === 2 && (
+              <Step2
+                formData={formData}
+                updateField={updateField}
+                bypassInfo={bypassInfo}
+              />
+            )}
+            {step === 3 && (
+              <Step3 formData={formData} updateField={updateField} />
+            )}
+            {step === 4 && (
+              <StepPhotos formData={formData} updateField={updateField} />
+            )}
+            {step === 5 && (
+              <Step4 formData={formData} updateField={updateField} />
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {stepError && (
+          <div className="mx-8 mb-4 flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-700 text-sm">
+            <AlertCircle size={18} className="shrink-0" />
+            <span>{stepError}</span>
+          </div>
+        )}
+
+        {error && (
+          <div className="mx-8 mb-4 flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-500 text-sm">
+            <AlertCircle size={18} className="shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="px-8 pb-8 flex justify-between items-center">
+          <button
+            type="button"
+            onClick={goPrev}
+            disabled={step === 1}
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-stone-200 text-stone-500 hover:border-stone-300 hover:text-stone-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed font-medium text-sm cursor-pointer"
+          >
+            <ChevronLeft size={16} />
+            Nazad
+          </button>
+
+          {step < TOTAL_STEPS ? (
+            <button
+              type="button"
+              onClick={goNext}
+              disabled={
+                STEP_KEYS[step - 1] === "date_location" &&
+                !bypassInfo &&
+                !formData.phone_trust_token
+              }
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#FF6B6B] text-white hover:bg-[#E55A5A] transition-all font-medium text-sm shadow-md shadow-[#FF6B6B]/20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              Dalje
+              <ChevronRight size={16} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-[#FF6B6B] text-white hover:bg-[#E55A5A] transition-all font-medium text-sm shadow-md shadow-[#FF6B6B]/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  {uploadProgress.total > 0
+                    ? `Otpremamo slike (${Math.min(
+                        uploadProgress.current + 1,
+                        uploadProgress.total,
+                      )}/${uploadProgress.total})...`
+                    : "Slanje..."}
+                </>
+              ) : (
+                <>
+                  Pošalji zahtev
+                  <Send size={16} />
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

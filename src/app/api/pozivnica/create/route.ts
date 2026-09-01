@@ -1,0 +1,178 @@
+import { NextRequest, NextResponse } from "next/server";
+import { upsertCouple } from "@/lib/couples";
+import { generateUniqueSlug, InvalidSlugInputError } from "@/lib/slug";
+import type { WeddingData } from "@/app/pozivnica/[slug]/types";
+import { verifyRecaptcha, RecaptchaError } from "@/lib/recaptcha";
+import {
+  resolvePhoneAuthorization,
+  PhoneAuthError,
+} from "@/lib/phone-verification";
+
+// Simple IP-based rate limiting (5 per IP per hour)
+const ipMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 5;
+const RATE_WINDOW = 60 * 60 * 1000;
+
+export async function POST(request: NextRequest) {
+  try {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown";
+    const now = Date.now();
+    const entry = ipMap.get(ip);
+    if (entry && now < entry.resetAt && entry.count >= RATE_LIMIT) {
+      return NextResponse.json(
+        { error: "Too many requests. Try again later." },
+        { status: 429 },
+      );
+    }
+    if (!entry || now >= entry.resetAt) {
+      ipMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW });
+    } else {
+      entry.count++;
+    }
+
+    const body = await request.json();
+    const { bride, groom, event_date, submit_until_date } = body;
+
+    if (!bride?.trim() || !groom?.trim()) {
+      return NextResponse.json(
+        { error: "Bride and groom names are required" },
+        { status: 400 },
+      );
+    }
+
+    try {
+      await verifyRecaptcha(body.recaptcha_token, "create_invitation", {
+        remoteIp: ip,
+      });
+    } catch (err) {
+      if (err instanceof RecaptchaError) {
+        return NextResponse.json(
+          { error: "Provera neuspešna. Osvežite stranicu i pokušajte ponovo." },
+          { status: 403 },
+        );
+      }
+      throw err;
+    }
+
+    // Phone authorization (SMS trust token OR admin bypass link) — shared across
+    // every create endpoint. contact_phone arrives as comma-separated E.164
+    // strings; only the primary is authorized.
+    let phoneAuth;
+    try {
+      phoneAuth = await resolvePhoneAuthorization({
+        rawPhone: body.contact_phone,
+        bypassToken: body.bypass_token,
+        phoneTrustToken: body.phone_trust_token,
+      });
+    } catch (err) {
+      if (err instanceof PhoneAuthError) {
+        return NextResponse.json({ error: err.message }, { status: err.status });
+      }
+      throw err;
+    }
+    const { phoneCountry, phoneVerified, bypassTokenId } = phoneAuth;
+
+    let slug: string;
+    try {
+      slug = await generateUniqueSlug(bride, groom);
+    } catch (err) {
+      if (err instanceof InvalidSlugInputError) {
+        return NextResponse.json({ error: err.message }, { status: 400 });
+      }
+      throw err;
+    }
+
+    // Auto-generate password: GroomName + 4 random digits
+    const digits = String(Math.floor(1000 + Math.random() * 9000));
+    const autoPassword = `${groom}${digits}`;
+
+    const weddingData: WeddingData = {
+      theme: body.theme || "classic_rose",
+      scriptFont: body.scriptFont || "great-vibes",
+      useCyrillic: body.useCyrillic ?? false,
+      potvrde_password: autoPassword,
+      couple_names: {
+        bride: bride.trim(),
+        groom: groom.trim(),
+        full_display: body.full_display || `${bride.trim()} & ${groom.trim()}`,
+      },
+      event_date: event_date || "",
+      submit_until: submit_until_date || "",
+      tagline: body.tagline || "",
+      thankYouFooter: body.thankYouFooter || "",
+      // Auto-generate the Google Maps embed URL at creation so the couple sees
+      // the map in their preview immediately (mirrors the admin "Generiši
+      // map_url" button: builds from name OR address, whichever is present —
+      // builder locations often carry only a venue name, no full address).
+      locations: (body.locations || []).map(
+        (loc: { name?: string; address?: string; map_url?: string }) => {
+          if (loc.map_url) return loc;
+          const query = [loc.name, loc.address].filter(Boolean).join(", ");
+          if (!query) return loc;
+          return {
+            ...loc,
+            map_url: `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed`,
+          };
+        },
+      ),
+      timeline: body.timeline || [],
+      countdown_enabled: body.countdown_enabled ?? true,
+      map_enabled: body.map_enabled ?? true,
+      paid_for_raspored: body.paid_for_raspored ?? false,
+      paid_for_audio: body.paid_for_audio ?? false,
+      paid_for_audio_USB: body.paid_for_audio_USB || "",
+      paid_for_pdf: false,
+      paid_for_images: body.paid_for_images ?? false,
+      images: [],
+      paid_for_gallery: body.paid_for_gallery ?? false,
+      paid_for_music: body.paid_for_music ?? false,
+      ...(body.custom_primary_color
+        ? { custom_primary_color: body.custom_primary_color }
+        : {}),
+      ...(body.custom_background_color
+        ? { custom_background_color: body.custom_background_color }
+        : {}),
+      // Snapshot of the builder selection, derived server-side from the same
+      // flags above — used to server-compute the custom (partial-combo) IPS
+      // amount. Never trusted for money on its own.
+      builder_extras: {
+        premium: false,
+        raspored: body.paid_for_raspored ?? false,
+        audio: body.paid_for_audio ?? false,
+        galerija: body.paid_for_gallery ?? false,
+        music: body.paid_for_music ?? false,
+        usb: (body.paid_for_audio_USB || "") as "" | "kaseta" | "bocica",
+        images: body.paid_for_images ?? false,
+        customColor: !!(
+          body.custom_primary_color || body.custom_background_color
+        ),
+      },
+      draft: true,
+    };
+
+    const weddingDataWithContact: WeddingData = {
+      ...weddingData,
+      contact_phone: String(body.contact_phone || ""),
+      phone_country: phoneCountry,
+      phone_verified: phoneVerified,
+      ...(bypassTokenId ? { bypass_token_id: bypassTokenId } : {}),
+      // Per-number toggle + label, parallel to the comma-split contact_phone.
+      // Only persisted when the user opted in (they typed a label) — admin
+      // can always flip later via the panel.
+      ...(Array.isArray(body.show_numbers) ? { show_numbers: body.show_numbers } : {}),
+      ...(Array.isArray(body.number_names) ? { number_names: body.number_names } : {}),
+    };
+
+    await upsertCouple(slug, weddingDataWithContact);
+
+    // Return the auto-generated portal password so the self-serve success
+    // screen can reveal it once to the couple (their own credential, over
+    // HTTPS). They need it to log in to /moje-vencanje later.
+    return NextResponse.json({ slug, password: autoPassword });
+  } catch (err) {
+    console.error("Classic invitation creation error:", err);
+    return NextResponse.json({ error: "Creation failed" }, { status: 500 });
+  }
+}

@@ -1,18 +1,62 @@
 import React from "react";
-import { Star, MapPin, Package, BadgeCheck } from "lucide-react";
-import { testimonials } from "@/data/testimonials";
+import { Star } from "lucide-react";
+import { googleReviews } from "@/data/testimonials";
+import {
+  getGoogleReviews,
+  getRatingOnlyGoogleReviews,
+  getGoogleReviewsSummary,
+  type GoogleReview,
+} from "@/lib/google-reviews";
+import ReviewsGrid from "./ReviewsGrid";
 
-const Testimonials: React.FC = () => {
+/**
+ * Sekcija sa utiscima.
+ *
+ * Recenzije su prave, sa našeg Google Business Profila, prepisane doslovno i
+ * poređane od najnovije. Atribucija stoji na svakoj kartici („recenzija sa
+ * Google-a"); odluka vlasnika je da javnog linka ka profilu nema.
+ *
+ * Namerno NEMA dugmeta za ostavljanje recenzije: javni poziv bi pozvao i
+ * konkurenciju da obori ocenu. Link za ostavljanje šalje se ciljano zadovoljnim
+ * parovima, preko /recenzija stranice.
+ *
+ * Ako baza zakaže, ostaje samo kartica sa ocenom umesto da padne cela početna.
+ */
+
+/** Vidljivo pre klika na „Prikaži još"; ostatak je jedan klik daleko. */
+const PRIKAZANO = 9;
+
+const Testimonials = async () => {
+  let reviews: GoogleReview[] = [];
+  let rating = googleReviews.ratingValue;
+  let count = googleReviews.reviewCount;
+
+  try {
+    // Sve odjednom, pa „Prikaži još" samo otkriva ostatak bez novog upita —
+    // reč je o šesnaest kratkih zapisa, ne o listi koju vredi paginirati.
+    const [saTekstom, bezTeksta, summary] = await Promise.all([
+      getGoogleReviews(),
+      getRatingOnlyGoogleReviews(),
+      getGoogleReviewsSummary(),
+    ]);
+    // Ocene bez komentara idu na kraj, a ne po datumu među ostale: nose istu
+    // karticu, ali ništa ne govore pa bi razbijale niz onih koje govore.
+    reviews = [...saTekstom, ...bezTeksta];
+    if (summary) {
+      rating = summary.rating;
+      count = summary.count;
+    }
+  } catch {
+    // Baza nedostupna — ostaju rezervne vrednosti i prazna lista.
+  }
 
   return (
     <section
       id="utisci"
-      className="py-16 sm:py-24 md:py-32 bg-gradient-to-b from-[#f5f4dc] to-[#faf9f6] relative overflow-hidden"
+      className="pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32 bg-[#F5F4DC] relative overflow-hidden"
     >
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d4af37]/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
-
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-12 sm:mb-16 md:mb-20">
+        <div className="text-center mb-10 sm:mb-14">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#AE343F] mb-4">
             Utisci naših parova
           </p>
@@ -20,120 +64,36 @@ const Testimonials: React.FC = () => {
             Glasovi koji govore za nas
           </h2>
           <p className="text-lg text-[#232323]/50 max-w-2xl mx-auto">
-            Više od 40 parova u Srbiji već čuva audio uspomene sa svog venčanja.
-            Evo šta kažu o svom iskustvu sa HALO Uspomene.
+            Recenzije su prenete sa našeg Google profila, onako kako su ih
+            parovi napisali — od najnovije ka starijima.
           </p>
         </div>
 
-        {/* Mobile & Tablet: Horizontal scrolling */}
-        <div className="lg:hidden">
-          <div className="flex gap-6 sm:gap-8 overflow-x-auto pb-4 scroll-pl-4 scroll-pr-4">
-            {testimonials.map((t) => (
-              <div
-                key={t.id}
-                className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-100 hover:shadow-lg transition-shadow duration-300 flex flex-col"
-              >
-                {/* Header: Avatar + Info */}
-                <div className="flex items-start gap-4 mb-5">
-                  <div className="w-12 h-12 bg-[#AE343F]/10 rounded-2xl flex items-center justify-center text-[#AE343F] font-bold text-sm shrink-0">
-                    {t.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-serif font-semibold text-[#232323] truncate">
-                        {t.coupleName}
-                      </h3>
-                      <BadgeCheck size={16} className="text-[#AE343F] shrink-0" />
-                    </div>
-                    <p className="text-sm text-[#232323]/40">{t.date}</p>
-                  </div>
-                </div>
-
-                {/* Stars */}
-                <div className="flex gap-1 mb-4">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      className="text-[#d4af37] fill-[#d4af37]"
-                    />
-                  ))}
-                </div>
-
-                {/* Quote */}
-                <p className="text-[#232323]/70 leading-relaxed flex-1 mb-5">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-
-                {/* Badges */}
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
-                    <MapPin size={12} />
-                    {t.city}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
-                    <Package size={12} />
-                    {t.packageType}
-                  </span>
-                </div>
-              </div>
+        <div className="max-w-2xl mx-auto bg-white rounded-3xl border border-stone-100 shadow-sm p-8 sm:p-10 text-center">
+          <div
+            className="flex items-center justify-center gap-1 mb-4"
+            aria-hidden="true"
+          >
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                size={26}
+                className="text-[#d4af37] fill-[#d4af37]"
+              />
             ))}
           </div>
+
+          <p className="font-serif text-5xl sm:text-6xl text-[#232323] mb-2">
+            {rating.toFixed(1)}
+          </p>
+          <p className="text-[#232323]/55">
+            Prosečna ocena na osnovu {count} recenzija na Google-u
+          </p>
         </div>
 
-        {/* Desktop: Grid layout */}
-        <div className="hidden lg:grid lg:grid-cols-3 lg:gap-8">
-          {testimonials.map((t) => (
-            <div
-              key={t.id}
-              className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-100 hover:shadow-lg transition-shadow duration-300 flex flex-col"
-            >
-              {/* Header: Avatar + Info */}
-              <div className="flex items-start gap-4 mb-5">
-                <div className="w-12 h-12 bg-[#AE343F]/10 rounded-2xl flex items-center justify-center text-[#AE343F] font-bold text-sm shrink-0">
-                  {t.initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-serif font-semibold text-[#232323] truncate">
-                      {t.coupleName}
-                    </h3>
-                    <BadgeCheck size={16} className="text-[#AE343F] shrink-0" />
-                  </div>
-                  <p className="text-sm text-[#232323]/40">{t.date}</p>
-                </div>
-              </div>
-
-              {/* Stars */}
-              <div className="flex gap-1 mb-4">
-                {Array.from({ length: t.rating }).map((_, i) => (
-                  <Star
-                    key={i}
-                    size={16}
-                    className="text-[#d4af37] fill-[#d4af37]"
-                  />
-                ))}
-              </div>
-
-              {/* Quote */}
-              <p className="text-[#232323]/70 leading-relaxed flex-1 mb-5">
-                &ldquo;{t.quote}&rdquo;
-              </p>
-
-              {/* Badges */}
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
-                  <MapPin size={12} />
-                  {t.city}
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f6] rounded-full text-xs font-medium text-[#232323]/60">
-                  <Package size={12} />
-                  {t.packageType}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        {reviews.length > 0 && (
+          <ReviewsGrid reviews={reviews} initial={PRIKAZANO} />
+        )}
       </div>
     </section>
   );

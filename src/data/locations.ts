@@ -8,7 +8,6 @@ export interface Location {
   shortDescription: string;
   popularVenues: string[];
   localFaq: { question: string; answer: string }[];
-  testimonialIds: number[];
 }
 
 export const locations: Location[] = [
@@ -21,7 +20,7 @@ export const locations: Location[] = [
     description:
       "HALO Uspomene nudi audio guest book uslugu za venčanja u Beogradu i okolini. Kao glavni grad Srbije sa najvećim brojem venčanja godišnje, Beograd je naše najtraženije tržište. Dostava se vrši putem kurirske službe — telefon stiže direktno na vašu adresu.",
     shortDescription:
-      "Audio guest book za venčanja u Beogradu — telefon na adresi za 2 dana!",
+      "Audio guest book za venčanja u Beogradu — retro telefon uspomena stiže na vašu adresu za 2 dana. Gosti ostavljaju glasovne poruke koje čuvate zauvek.",
     popularVenues: [
       "Restoran Madera",
       "Hotel Hyatt Regency",
@@ -41,12 +40,11 @@ export const locations: Location[] = [
       },
       {
         question:
-          "Da li nudite Full Service paket sa ličnom dostavom u Beogradu?",
+          "Da li nudite ličnu dostavu u Beogradu?",
         answer:
-          "Trenutno ličnu dostavu i instalaciju nudimo u Novom Sadu. Za Beograd je dostupan Essential paket sa detaljnim uputstvom za jednostavno postavljanje.",
+          "Trenutno ličnu dostavu i montažu nudimo samo u Novom Sadu. Za Beograd telefon stiže kurirskom dostavom sa detaljnim uputstvom za jednostavno postavljanje.",
       },
     ],
-    testimonialIds: [],
   },
   {
     slug: "novi-sad",
@@ -55,9 +53,9 @@ export const locations: Location[] = [
     deliveryType: "Lična dostava",
     deliveryTime: "na dan proslave ili dan pre, po dogovoru",
     description:
-      "HALO Uspomene ima sedište u Novom Sadu, što znači da ovde nudimo kompletnu Full Service uslugu — ličnu dostavu, profesionalnu montažu, ekskluzivnu drvenu govornicu (mini & maxi). Novi Sad je naš domaći grad i mesto gde je sve počelo.",
+      "HALO Uspomene ima sedište u Novom Sadu, što znači da ovde nudimo i ličnu dostavu i profesionalnu montažu telefona na lokaciji. Novi Sad je naš domaći grad i mesto gde je sve počelo.",
     shortDescription:
-      "Audio guest book sa ličnom dostavom i instalacijom u Novom Sadu — dostupan Full Service.",
+      "Audio guest book za venčanja u Novom Sadu — lična dostava i instalacija retro telefona uspomena. HALO Uspomene ima sedište baš u Novom Sadu.",
     popularVenues: [
       "Restoran Aqua Doria",
       "Čarda Ribarsko Ostrvo",
@@ -67,14 +65,14 @@ export const locations: Location[] = [
     localFaq: [
       {
         question:
-          "Da li je Full Service paket dostupan za venčanja u Novom Sadu?",
+          "Da li je lična dostava dostupna za venčanja u Novom Sadu?",
         answer:
-          "Da! Novi Sad je naš domaći grad i jedini grad gde trenutno nudimo Full Service paket sa ličnom dostavom, profesionalnom montažom, drvenom govornicom.",
+          "Da! Novi Sad je naš domaći grad i jedini grad gde trenutno nudimo ličnu dostavu i profesionalnu montažu telefona na lokaciji venčanja.",
       },
       {
         question: "Koliko košta audio guest book za venčanje u Novom Sadu?",
         answer:
-          "U Novom Sadu su dostupna oba paketa — Essential i Full Service. Kontaktirajte nas za personalizovanu ponudu prilagođenu vašem datumu i lokaciji.",
+          "U Novom Sadu nudimo i ličnu dostavu i montažu na lokaciji venčanja. Kontaktirajte nas za personalizovanu ponudu prilagođenu vašem datumu i lokaciji.",
       },
       {
         question: "Da li pokrivate i okolinu Novog Sada?",
@@ -82,7 +80,6 @@ export const locations: Location[] = [
           "Da! Ličnu dostavu nudimo u Novom Sadu i okolini do 20km — uključujući Sremske Karlovce, Futog, Veternik i okolne salaše.",
       },
     ],
-    testimonialIds: [1, 2],
   },
   {
     slug: "subotica",
@@ -102,9 +99,9 @@ export const locations: Location[] = [
     ],
     localFaq: [
       {
-        question: "Da li dostavljate Halo govornicu u Suboticu?",
+        question: "Da li je dostupna lična dostava u Subotici?",
         answer:
-          "Nažalost ne, govornica je trenutno dostupna samo uz ličnu dostavu u Novom Sadu. Kurirskom dostavom šaljemo samo telefon sa uputsvom.",
+          "Lična dostava i montaža su trenutno dostupni samo u Novom Sadu. Za Suboticu šaljemo telefon kurirskom dostavom sa detaljnim uputstvom.",
       },
       {
         question: "Da li je moguće lično preuzimanje za venčanja u Subotici?",
@@ -117,7 +114,6 @@ export const locations: Location[] = [
           "Apsolutno! Palić, Subotica i sva okolna mesta su pokrivena kurirskom dostavom, telefon stiže direktno na Vašu adresu.",
       },
     ],
-    testimonialIds: [],
   },
   {
     slug: "cacak",
@@ -153,7 +149,6 @@ export const locations: Location[] = [
           "Da! Kurirska dostava pokriva celu Srbiju, uključujući sva manja mesta i u okolini Čačka.",
       },
     ],
-    testimonialIds: [],
   },
   {
     slug: "kragujevac",
@@ -175,7 +170,7 @@ export const locations: Location[] = [
       {
         question: "Da li HALO Uspomene isporučuju telefon u Kragujevac?",
         answer:
-          "Da! I Kragujevac i cela Srbija su pokriveni kurirskom dostavom. Telefon stiže i na vreme, ali nažalost ne dostavljamo govornicu, samo telefon i uputstvo.",
+          "Da! I Kragujevac i cela Srbija su pokriveni kurirskom dostavom. Telefon stiže na vreme sa detaljnim uputstvom za jednostavno postavljanje.",
       },
       {
         question:
@@ -189,7 +184,6 @@ export const locations: Location[] = [
           "Da! Kurirska dostava pokriva celu Srbiju, uključujući sva manja mesta u okolini Kragujevca.",
       },
     ],
-    testimonialIds: [3],
   },
   {
     slug: "nis",
@@ -224,7 +218,6 @@ export const locations: Location[] = [
           "Telefon šaljete nazad u istoj kutiji kurirskom službom — mi pokrivamo troškove povratne dostave. Rok za povratak je 2 radna dana nakon venčanja.",
       },
     ],
-    testimonialIds: [4],
   },
 ];
 
