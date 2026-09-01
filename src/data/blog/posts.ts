@@ -809,7 +809,7 @@ const allBlogPosts: BlogPost[] = [
     title:
       "Moje Venčanje — Besplatan Online Planer Venčanja sa Checklistom, Budžetom i Vendorima",
     description:
-      "Online planer venčanja koji objedinjuje checklistu, budžet, listu gostiju, vendor direktorijum i audio guest book na jednom mestu. Besplatno uz HALO Uspomene pozivnicu, lokalizovano za Srbiju.",
+      "Online planer venčanja koji objedinjuje checklistu, budžet, listu gostiju, vendor direktorijum i audio guest book na jednom mestu. Potpuno besplatan, uz opcionu nadogradnju website pozivnicom — lokalizovano za Srbiju.",
     category: "Vodič",
     tags: [
       "planer venčanja",
